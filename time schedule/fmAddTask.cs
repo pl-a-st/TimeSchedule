@@ -84,15 +84,21 @@ namespace time_schedule
             bTnColor.BackColor = Program.Task.Color;
             cmBxPerson.Text = Program.Task.PersonFamaly;
             cmBxTaskStatus.Text = ((TaskStatusRusEnum)Enum.Parse(typeof(TaskStatusEnum), Program.Task.Status.ToString(), true)).ToString();
-                
             nUpDnPreviousTask.Value = Program.Task.TaskNumberAfter;
-            
-            foreach(Task task in Program.ListTasksAllPerson.Tasks)
+            rBnDayStart.Checked = true;
+            if (nUpDnPreviousTask.Value>0)
             {
-                if (nUpDnPreviousTask.Value == task.Number)
-                    tBxPreviousTask.Text = task.Name;
+                foreach (Task task in Program.ListTasksAllPerson.Tasks)
+                {
+                    if (nUpDnPreviousTask.Value == task.Number)
+                        tBxPreviousTask.Text = task.Name;
+                }
+                rBnPreviousTask.Checked = true;
             }
-
+            rBnWorksDay.Checked = true;
+            nUpDnCounWorkDay.Value = Program.Task.CountWorkingDays;
+            dTmTaskDateStart.Value = Program.Task.DateStart;
+            dTmTaskDateFinish.Value = Program.Task.DateFinish;
         }
         public void WorkDaysDatesCalculate()
         {
