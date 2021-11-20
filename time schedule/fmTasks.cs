@@ -64,6 +64,12 @@ namespace time_schedule
 
         private void btnChangeTask_Click(object sender, EventArgs e)
         {
+            if (lBxTasks.SelectedIndex == -1)
+            {
+                MessageBox.Show("Не выбрана задача.");
+                return;
+            }
+
             fmAddTask fmAddTask = new fmAddTask();
             fmAddTask.GhangeNamebtnCreateTask("Изменить");
             fmAddTask.SetCreateOrChange(CreateOrChange.Change);

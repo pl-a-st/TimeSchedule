@@ -173,13 +173,33 @@ namespace time_schedule
 
         private void btnCreateTask_Click(object sender, EventArgs e)
         {
+            Task task = new Task();
+            if (CreateOrChange == CreateOrChange.Create)
+            {
+                task = GetTaskForCreateChange(Program.ListTasksAllPerson.Tasks.Count + 1);
+                Program.ListTasksAllPerson.AddTask(task);
+            }  
+            if (CreateOrChange == CreateOrChange.Change)
+            {
+                task = GetTaskForCreateChange(Program.Task.Number);
+                for(int i=0; i<Program.ListTasksAllPerson.Tasks.Count; i++)
+                {
+                    if (Program.ListTasksAllPerson.Tasks[i].Number == Program.Task.Number)
+                        Program.ListTasksAllPerson.Tasks[i] = task;
+                }
+            }
+            Dals.WriteListProjectFileAppend(Constants.TASKS, Program.ListTasksAllPerson.GetListForSave());
+            this.Close();
+        }
+        private Task GetTaskForCreateChange(long numTask)
+        {
             TaskStatusEnum taskStatus = (TaskStatusEnum)Enum.Parse(typeof(TaskStatusRusEnum), cmBxTaskStatus.Text, true);
-            Task task = new Task
+            return  new Task
                 (
                 taskStatus,
                 tBxTaskName.Text,
                 cmBxPerson.Text,
-                Program.ListTasksAllPerson.Tasks.Count + 1,
+                numTask,
                 Convert.ToInt32(nUpDnPreviousTask.Value),
                 dTmTaskDateStart.Value,
                 dTmTaskDateFinish.Value,
@@ -187,11 +207,7 @@ namespace time_schedule
                 Convert.ToInt32(nUpDnCounWorkDay.Value),
                 bTnColor.BackColor
                 );
-            Program.ListTasksAllPerson.AddTask(task);
-            Dals.WriteListProjectFileAppend(Constants.TASKS, Program.ListTasksAllPerson.GetListForSave());
-            this.Close();
         }
-
         private void cmBxPerson_SelectedIndexChanged(object sender, EventArgs e)
         {
 
