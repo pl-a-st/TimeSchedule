@@ -54,16 +54,19 @@
             this.bTnColor = new System.Windows.Forms.Button();
             this.cmBxTaskStatus = new System.Windows.Forms.ComboBox();
             this.label7 = new System.Windows.Forms.Label();
+            this.nUpDnTaskNumber = new System.Windows.Forms.NumericUpDown();
+            this.lBlTaskNum = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.nUpDnCounWorkDay)).BeginInit();
             this.groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nUpDnPreviousTask)).BeginInit();
             this.groupBox2.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.nUpDnTaskNumber)).BeginInit();
             this.SuspendLayout();
             // 
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(9, 50);
+            this.label1.Location = new System.Drawing.Point(12, 67);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(74, 13);
             this.label1.TabIndex = 0;
@@ -72,7 +75,7 @@
             // cmBxPerson
             // 
             this.cmBxPerson.FormattingEnabled = true;
-            this.cmBxPerson.Location = new System.Drawing.Point(12, 66);
+            this.cmBxPerson.Location = new System.Drawing.Point(15, 83);
             this.cmBxPerson.Name = "cmBxPerson";
             this.cmBxPerson.Size = new System.Drawing.Size(269, 21);
             this.cmBxPerson.TabIndex = 1;
@@ -81,7 +84,7 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(9, 9);
+            this.label2.Location = new System.Drawing.Point(12, 26);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(115, 13);
             this.label2.TabIndex = 2;
@@ -89,7 +92,7 @@
             // 
             // tBxTaskName
             // 
-            this.tBxTaskName.Location = new System.Drawing.Point(12, 25);
+            this.tBxTaskName.Location = new System.Drawing.Point(15, 42);
             this.tBxTaskName.Name = "tBxTaskName";
             this.tBxTaskName.Size = new System.Drawing.Size(400, 20);
             this.tBxTaskName.TabIndex = 3;
@@ -140,6 +143,7 @@
             0,
             0});
             this.nUpDnCounWorkDay.ValueChanged += new System.EventHandler(this.nUpDnCounWorkDay_ValueChanged);
+            this.nUpDnCounWorkDay.KeyUp += new System.Windows.Forms.KeyEventHandler(this.nUpDnCounWorkDay_KeyUp);
             // 
             // rBnWorksDay
             // 
@@ -184,7 +188,7 @@
             this.groupBox1.Controls.Add(this.label3);
             this.groupBox1.Controls.Add(this.dTmTaskDateStart);
             this.groupBox1.Controls.Add(this.nUpDnPreviousTask);
-            this.groupBox1.Location = new System.Drawing.Point(12, 101);
+            this.groupBox1.Location = new System.Drawing.Point(15, 118);
             this.groupBox1.Name = "groupBox1";
             this.groupBox1.Size = new System.Drawing.Size(269, 148);
             this.groupBox1.TabIndex = 13;
@@ -256,7 +260,7 @@
             // 
             // btnCreateTask
             // 
-            this.btnCreateTask.Location = new System.Drawing.Point(478, 18);
+            this.btnCreateTask.Location = new System.Drawing.Point(481, 35);
             this.btnCreateTask.Name = "btnCreateTask";
             this.btnCreateTask.Size = new System.Drawing.Size(95, 35);
             this.btnCreateTask.TabIndex = 14;
@@ -272,7 +276,7 @@
             this.groupBox2.Controls.Add(this.label5);
             this.groupBox2.Controls.Add(this.rBnWorksDay);
             this.groupBox2.Controls.Add(this.rBnDayFinish);
-            this.groupBox2.Location = new System.Drawing.Point(287, 101);
+            this.groupBox2.Location = new System.Drawing.Point(290, 118);
             this.groupBox2.Name = "groupBox2";
             this.groupBox2.Size = new System.Drawing.Size(286, 148);
             this.groupBox2.TabIndex = 15;
@@ -281,7 +285,7 @@
             // 
             // button1
             // 
-            this.button1.Location = new System.Drawing.Point(478, 59);
+            this.button1.Location = new System.Drawing.Point(481, 76);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(95, 36);
             this.button1.TabIndex = 14;
@@ -291,7 +295,7 @@
             // 
             // bTnColor
             // 
-            this.bTnColor.Location = new System.Drawing.Point(418, 18);
+            this.bTnColor.Location = new System.Drawing.Point(421, 35);
             this.bTnColor.Name = "bTnColor";
             this.bTnColor.Size = new System.Drawing.Size(54, 77);
             this.bTnColor.TabIndex = 16;
@@ -302,7 +306,7 @@
             // cmBxTaskStatus
             // 
             this.cmBxTaskStatus.FormattingEnabled = true;
-            this.cmBxTaskStatus.Location = new System.Drawing.Point(287, 66);
+            this.cmBxTaskStatus.Location = new System.Drawing.Point(290, 83);
             this.cmBxTaskStatus.Name = "cmBxTaskStatus";
             this.cmBxTaskStatus.Size = new System.Drawing.Size(125, 21);
             this.cmBxTaskStatus.TabIndex = 17;
@@ -310,17 +314,39 @@
             // label7
             // 
             this.label7.AutoSize = true;
-            this.label7.Location = new System.Drawing.Point(284, 50);
+            this.label7.Location = new System.Drawing.Point(287, 67);
             this.label7.Name = "label7";
             this.label7.Size = new System.Drawing.Size(41, 13);
             this.label7.TabIndex = 18;
             this.label7.Text = "Статус";
+            // 
+            // nUpDnTaskNumber
+            // 
+            this.nUpDnTaskNumber.Enabled = false;
+            this.nUpDnTaskNumber.Location = new System.Drawing.Point(75, 3);
+            this.nUpDnTaskNumber.Name = "nUpDnTaskNumber";
+            this.nUpDnTaskNumber.ReadOnly = true;
+            this.nUpDnTaskNumber.Size = new System.Drawing.Size(89, 20);
+            this.nUpDnTaskNumber.TabIndex = 19;
+            this.nUpDnTaskNumber.Visible = false;
+            // 
+            // lBlTaskNum
+            // 
+            this.lBlTaskNum.AutoSize = true;
+            this.lBlTaskNum.Location = new System.Drawing.Point(12, 5);
+            this.lBlTaskNum.Name = "lBlTaskNum";
+            this.lBlTaskNum.Size = new System.Drawing.Size(57, 13);
+            this.lBlTaskNum.TabIndex = 20;
+            this.lBlTaskNum.Text = "Задача №";
+            this.lBlTaskNum.Visible = false;
             // 
             // fmAddTask
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(585, 303);
+            this.Controls.Add(this.lBlTaskNum);
+            this.Controls.Add(this.nUpDnTaskNumber);
             this.Controls.Add(this.label7);
             this.Controls.Add(this.cmBxTaskStatus);
             this.Controls.Add(this.bTnColor);
@@ -341,6 +367,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.nUpDnPreviousTask)).EndInit();
             this.groupBox2.ResumeLayout(false);
             this.groupBox2.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.nUpDnTaskNumber)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -378,5 +405,7 @@
         private System.Windows.Forms.Button bTnColor;
         private System.Windows.Forms.ComboBox cmBxTaskStatus;
         private System.Windows.Forms.Label label7;
+        private System.Windows.Forms.NumericUpDown nUpDnTaskNumber;
+        private System.Windows.Forms.Label lBlTaskNum;
     }
 }

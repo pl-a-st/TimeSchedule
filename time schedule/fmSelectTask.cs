@@ -37,6 +37,7 @@ namespace time_schedule
 
         private void fmSelectTask_Load(object sender, EventArgs e)
         {
+            this.TopMost = true;
             Program.Task = new Task();
             LoadLBxTasks();
         }

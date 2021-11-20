@@ -81,6 +81,9 @@ namespace time_schedule
         }
         private void LoadFmAddTaskToCangeTask()
         {
+            nUpDnTaskNumber.Visible = true;
+            nUpDnTaskNumber.Value = Program.Task.Number;
+            lBlTaskNum.Visible = true;
             tBxTaskName.Text = Program.Task.Name;
             bTnColor.BackColor = Program.Task.Color;
             cmBxPerson.Text = Program.Task.PersonFamaly;
@@ -182,15 +185,36 @@ namespace time_schedule
             }  
             if (CreateOrChange == CreateOrChange.Change)
             {
-                task = GetTaskForCreateChange(Program.Task.Number);
+                task = GetTaskForCreateChange(Convert.ToInt32(nUpDnTaskNumber.Value));
                 for(int i=0; i<Program.ListTasksAllPerson.Tasks.Count; i++)
                 {
-                    if (Program.ListTasksAllPerson.Tasks[i].Number == Program.Task.Number)
+                    if (Program.ListTasksAllPerson.Tasks[i].Number == nUpDnTaskNumber.Value)
+                    {
+                        bool needToCheck = false;
+                        if (Program.ListTasksAllPerson.Tasks[i].DateFinish != task.DateFinish)
+                        {
+                            needToCheck = true;
+                        }
                         Program.ListTasksAllPerson.Tasks[i] = task;
+                        if (needToCheck)
+                            ChekTaskAfter(Program.ListTasksAllPerson.Tasks[i]);
+                    }    
                 }
             }
             Dals.WriteListProjectFileAppend(Constants.TASKS, Program.ListTasksAllPerson.GetListForSave());
             this.Close();
+        }
+        private void ChekTaskAfter(Task task)
+        {
+            for (int i=0;i<Program.ListTasksAllPerson.Tasks.Count; i++)
+            {
+                if (Program.ListTasksAllPerson.Tasks[i].TaskNumberAfter==task.Number)
+                {
+                    //Program.ListTasksAllPerson.Tasks[i].SetDateStart();
+                    Program.ListTasksAllPerson.Tasks[i].ChangeDatesCountDays(task.DateFinish.AddDays(1), Program.ListTasksAllPerson.Tasks[i].CountWorkingDays);
+                    ChekTaskAfter(Program.ListTasksAllPerson.Tasks[i]);
+                }
+            }
         }
         private Task GetTaskForCreateChange(long numTask)
         {
@@ -221,12 +245,17 @@ namespace time_schedule
             nUpDnPreviousTask.Value = Program.Task.Number;
             tBxPreviousTask.Text = Program.Task.Name;
             if (nUpDnPreviousTask.Value != 0)
-            dTmTaskDateStart.Value = Program.Task.DateFinish;
+            dTmTaskDateStart.Value = Program.Task.DateFinish.AddDays(1);
         }
 
         private void button1_Click(object sender, EventArgs e)
         {
             this.Close();
+        }
+
+        private void nUpDnCounWorkDay_KeyUp(object sender, KeyEventArgs e)
+        {
+            WorkDaysDatesCalculate();
         }
     }
 }
