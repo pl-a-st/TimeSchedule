@@ -19,7 +19,12 @@ namespace time_schedule
 
         private void btnSelectTask_Click(object sender, EventArgs e)
         {
-            foreach(Task task in Program.ListTasksAllPerson.Tasks)
+            if (lBxTasks.SelectedIndex == -1)
+            {
+                MessageBox.Show("Не выбрана задача.");
+                return;
+            }
+            foreach (Task task in Program.ListTasksAllPerson.Tasks)
             {
                 if (task.Number == Convert.ToInt32(lBxTasks.SelectedItem.ToString().Split('\t')[0]))
                 {

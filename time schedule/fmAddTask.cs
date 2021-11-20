@@ -52,6 +52,7 @@ namespace time_schedule
 
         private void fmAddTask_Load(object sender, EventArgs e)
         {
+            this.TopMost = true;
             foreach (Person person in Program.listPersons.Persons)
             {
                 cmBxPerson.Items.Add(person.PersonFamaly);

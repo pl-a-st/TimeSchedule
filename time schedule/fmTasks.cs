@@ -49,6 +49,26 @@ namespace time_schedule
 
         private void btnDeleteTask_Click(object sender, EventArgs e)
         {
+            if (lBxTasks.SelectedIndex == -1)
+            {
+                MessageBox.Show("Не выбрана задача.");
+                return;
+            }
+            DialogResult result = MessageBox.Show(
+                "Вы уверены что хотите удалить задачу?",
+                "Сообщение",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Warning,
+                MessageBoxDefaultButton.Button1,
+                MessageBoxOptions.DefaultDesktopOnly);
+            if (result == DialogResult.No)
+            {
+                Program.fmMain.TopMost = true;
+                this.TopMost = true;
+
+                return;
+            }
+                
             foreach (Task task in Program.ListTasksAllPerson.Tasks)
             {
                 if (task.Number == Convert.ToInt32(lBxTasks.SelectedItem.ToString().Split('\t')[0]))
