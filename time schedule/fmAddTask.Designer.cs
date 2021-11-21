@@ -134,6 +134,16 @@
             // nUpDnCounWorkDay
             // 
             this.nUpDnCounWorkDay.Location = new System.Drawing.Point(6, 56);
+            this.nUpDnCounWorkDay.Maximum = new decimal(new int[] {
+            10000000,
+            0,
+            0,
+            0});
+            this.nUpDnCounWorkDay.Minimum = new decimal(new int[] {
+            10000000,
+            0,
+            0,
+            -2147483648});
             this.nUpDnCounWorkDay.Name = "nUpDnCounWorkDay";
             this.nUpDnCounWorkDay.Size = new System.Drawing.Size(140, 20);
             this.nUpDnCounWorkDay.TabIndex = 9;

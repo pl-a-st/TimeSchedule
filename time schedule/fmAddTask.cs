@@ -180,7 +180,7 @@ namespace time_schedule
             Task task = new Task();
             if (CreateOrChange == CreateOrChange.Create)
             {
-                task = GetTaskForCreateChange(Program.ListTasksAllPerson.Tasks.Count + 1);
+                task = GetTaskForCreateChange(Program.ListTasksAllPerson.GetNextNumForTask());
                 Program.ListTasksAllPerson.AddTask(task);
             }  
             if (CreateOrChange == CreateOrChange.Change)

@@ -138,6 +138,16 @@ namespace time_schedule
                 AddTask(task);
             }
         }
+         public long GetNextNumForTask()
+        {
+            long nextNumForTask=0;
+            foreach(Task task in Tasks)
+            {
+                if (task.Number > nextNumForTask)
+                    nextNumForTask = task.Number;
+            }
+            return nextNumForTask + 1;
+        }
     }
 
     public class ListNonWorkingDays
@@ -167,8 +177,8 @@ namespace time_schedule
     {
         public Task ()
         { }
-        
-        public Task (string allParamTab)
+
+        public Task(string allParamTab)
         {
             string[] allParam = allParamTab.Split('\t');
             const int TASK_NAME = 0;
@@ -181,12 +191,12 @@ namespace time_schedule
             const int COUNT_DAYS = 7;
             const int COUNT_WORKING_DAYS = 8;
             const int TASK_COLOR = 9;
-            if (allParam[TASK_NAME]!=null)
+            if (allParam[TASK_NAME] != null)
                 Name = allParam[TASK_NAME];
             if (allParam[PERSON_FAMALY] != null)
                 PersonFamaly = allParam[PERSON_FAMALY];
             if (allParam[TASK_STATUS] != null)
-                Status = (TaskStatusEnum)Enum.Parse(typeof(TaskStatusEnum),allParam[TASK_STATUS],true);
+                Status = (TaskStatusEnum)Enum.Parse(typeof(TaskStatusEnum), allParam[TASK_STATUS], true);
             if (allParam[TASK_NUMBER] != null)
                 Number = Convert.ToInt32(allParam[TASK_NUMBER]);
             if (allParam[TASK_NUMBER_AFTER] != null)
@@ -196,9 +206,8 @@ namespace time_schedule
             if (allParam[DATE_FINISH] != null)
                 DateFinish = Convert.ToDateTime(allParam[DATE_FINISH]);
             if (allParam[COUNT_DAYS] != null)
-                CountDays = Convert.ToInt32(allParam[COUNT_DAYS]);
-            if (allParam[COUNT_WORKING_DAYS] != null)
-                CountWorkingDays = Convert.ToInt32(allParam[COUNT_WORKING_DAYS]);
+                if (allParam[COUNT_WORKING_DAYS] != null)
+                    CountWorkingDays = Convert.ToInt32(allParam[COUNT_WORKING_DAYS]);
             if (allParam[TASK_COLOR] != null)
                 Color = Color.FromArgb(Convert.ToInt32(allParam[TASK_COLOR]));
         }
