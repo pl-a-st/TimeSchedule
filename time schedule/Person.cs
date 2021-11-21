@@ -92,19 +92,21 @@ namespace time_schedule
                     AddTasks(task);
             }
         }
-        public long GetCountDaysSynchTask(ListTasksAllPerson listTasksAllPerson)
+        public long GetMaxCountSynchTask(ListTasksAllPerson listTasksAllPerson)
         {
+            setTasks(listTasksAllPerson);
             long CountDaysSynchTask1 = 1;
-            foreach (Task task1 in listTasksAllPerson.Tasks)
+            foreach (Task task1 in Tasks)
             {
                 Task SynchTask = task1;
                 long CountDaysSynchTask2 = 0;
-                foreach (Task task2 in listTasksAllPerson.Tasks)
+                foreach (Task task2 in Tasks)
                 {
                     if (task1 != task2)
                     {
                         if (task2.DateStart> SynchTask.DateStart&& task2.DateStart < SynchTask.DateFinish||
-                            task2.DateFinish > SynchTask.DateStart && task2.DateFinish < SynchTask.DateFinish
+                            //task2.DateFinish > SynchTask.DateStart && task2.DateFinish < SynchTask.DateFinish||
+                            task2.DateStart < SynchTask.DateStart && task2.DateFinish > SynchTask.DateStart 
                             )
                         {
                             DateTime dateStart;
