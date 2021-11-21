@@ -29,9 +29,21 @@ namespace time_schedule
             Program.ListTasksAllPerson.SetTasksFromList(Dals.ReadListFromProjectFile(Constants.TASKS));
             Program.listPersons.Persons.Clear();
             Program.listPersons.SetPersonsFromList(Dals.ReadListFromProjectFile(Constants.PERSONS), Program.ListTasksAllPerson.Tasks);
-            PersonButton personButton = new PersonButton(Program.listPersons.Persons[1], Program.ListTasksAllPerson, 10);
-            
-            this.Controls.Add(personButton.Button);
+            PersonButton personButton = new PersonButton(Program.listPersons.Persons[1], Program.ListTasksAllPerson, 100);
+            for (int i = 0; i < 50; i++)
+            {
+                string nameAndText = Convert.ToString(i);
+                dataGridView3.Columns.Add(nameAndText, nameAndText);
+            }
+            for (int i = 0; i < 50; i++)
+            {
+                string nameAndText = Convert.ToString(i);
+                dataGridView3.Rows.Add(nameAndText, nameAndText);
+            }
+            dataGridView3.Controls.Add(personButton.Button);
+            //panel1.Controls.Add(personButton.Button);
+            personButton.Button.BringToFront();
+            personButton.Button.Region = dataGridView3.Region;
         }
         private void Form1_Load(object sender, EventArgs e)
         {
@@ -172,7 +184,8 @@ namespace time_schedule
             Person.setTasks(listTasksAllPerson);
             Button.Text = person.PersonFamaly;
             Button.Height = GetHightBooton(hightRowForTasks);
-            Button.Location = new Point(200, 200);
+            Button.Location = new Point(50, 50);
+            Button.BringToFront();
         }
 
         public Button Button
