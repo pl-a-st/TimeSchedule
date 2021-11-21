@@ -161,10 +161,8 @@ namespace time_schedule
             {
                 btnPreviousTask.Enabled = true;
                 dTmTaskDateStart.Enabled = false;
-               
             }
         }
-
         private void bTnColor_Click(object sender, EventArgs e)
         {
             colorDialog1.FullOpen = true;

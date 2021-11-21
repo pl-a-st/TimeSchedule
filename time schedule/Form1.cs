@@ -22,13 +22,19 @@ namespace time_schedule
         {
 
         }
+        public void LoadRefreshForm()
+        {
+            Program.ListTasksAllPerson.Tasks.Clear();
+            Program.ListTasksAllPerson.SetTasksFromList(Dals.ReadListFromProjectFile(Constants.TASKS));
+            Program.listPersons.Persons.Clear();
+            Program.listPersons.SetPersonsFromList(Dals.ReadListFromProjectFile(Constants.PERSONS), Program.ListTasksAllPerson.Tasks);
+        }
         private void Form1_Load(object sender, EventArgs e)
         {
             Dals.WriteProjectFolder(true);
             this.Activate();
-            Program.ListTasksAllPerson.SetTasksFromList(Dals.ReadListFromProjectFile(Constants.TASKS));
-            Program.listPersons.SetPersonsFromList(Dals.ReadListFromProjectFile(Constants.PERSONS), Program.ListTasksAllPerson.Tasks);
-            
+            LoadRefreshForm();
+            NonWorkDaysWrite(DateTime.Now.AddYears(-1).Date, DateTime.Now.AddYears(1).Date);
             dataGridView1.Columns[0].HeaderText = "01.01.2021";
             dataGridView1.RowHeadersWidth = 100;
             for (int i = 0; i < 50; i++)
@@ -95,7 +101,7 @@ namespace time_schedule
             //panel2.AutoScroll = false;
 
             //panel2.HorizontalScroll.Value = panel2.HorizontalScroll.Value+100;
-            NonWorkDaysWrite(DateTime.Now.AddYears(-1).Date, DateTime.Now.AddYears(1).Date);
+            
             dataGridView2.Select();
             dataGridView1.Select();
         }

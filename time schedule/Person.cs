@@ -82,6 +82,15 @@ namespace time_schedule
             }
             return stringForSave;
         }
+        public void setTasks(ListTasksAllPerson listTasksAllPerson)
+        {
+            Tasks.Clear();
+            foreach(Task task in listTasksAllPerson.Tasks)
+            {
+                if (task.PersonFamaly == PersonFamaly)
+                    AddTasks(task);
+            }
+        }
     }
     public class ListPersons
     {
