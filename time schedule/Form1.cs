@@ -44,6 +44,8 @@ namespace time_schedule
             //panel1.Controls.Add(personButton.Button);
             personButton.Button.BringToFront();
             personButton.Button.Region = dataGridView3.Region;
+            DataGridViewButtonCell dataGridViewButtonCell = new DataGridViewButtonCell();
+            dataGridView3.Controls.Add(dataGridViewButtonCell);
         }
         private void Form1_Load(object sender, EventArgs e)
         {
