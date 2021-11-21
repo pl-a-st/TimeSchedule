@@ -210,6 +210,11 @@ namespace time_schedule
             SetCountDays(Program.listNonWorkingDays);
             SetDateFinish();
         }
+        static public DateTime GetDateFinish(DateTime dateStart, int workDayCount)
+        {
+            Task task = new Task(dateStart, workDayCount);
+            return task.DateFinish;
+        }
         public void ChangeDatesCountDays(DateTime dateStart, long countWorksDays)
         {
             dateStart = dateStart.Date;

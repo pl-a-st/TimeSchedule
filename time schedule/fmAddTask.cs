@@ -210,8 +210,7 @@ namespace time_schedule
             {
                 if (Program.ListTasksAllPerson.Tasks[i].TaskNumberAfter==task.Number)
                 {
-                    //Program.ListTasksAllPerson.Tasks[i].SetDateStart();
-                    Program.ListTasksAllPerson.Tasks[i].ChangeDatesCountDays(task.DateFinish.AddDays(1), Program.ListTasksAllPerson.Tasks[i].CountWorkingDays);
+                    Program.ListTasksAllPerson.Tasks[i].ChangeDatesCountDays(Task.GetDateFinish(task.DateFinish,2), Program.ListTasksAllPerson.Tasks[i].CountWorkingDays);
                     ChekTaskAfter(Program.ListTasksAllPerson.Tasks[i]);
                 }
             }
@@ -245,7 +244,10 @@ namespace time_schedule
             nUpDnPreviousTask.Value = Program.Task.Number;
             tBxPreviousTask.Text = Program.Task.Name;
             if (nUpDnPreviousTask.Value != 0)
-            dTmTaskDateStart.Value = Program.Task.DateFinish.AddDays(1);
+            {
+                dTmTaskDateStart.Value = Task.GetDateFinish(Program.Task.DateFinish,2);
+            }
+            
         }
 
         private void button1_Click(object sender, EventArgs e)
