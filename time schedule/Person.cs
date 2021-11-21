@@ -19,6 +19,7 @@ namespace time_schedule
         В_работе= TaskStatusEnum.Active,
         Закрыто=TaskStatusEnum.Closed
     }
+   
     /// <summary>
     /// Исполнители
     /// </summary>
@@ -91,7 +92,51 @@ namespace time_schedule
                     AddTasks(task);
             }
         }
+        public long GetCountDaysSynchTask(ListTasksAllPerson listTasksAllPerson)
+        {
+            long CountDaysSynchTask1 = 1;
+            foreach (Task task1 in listTasksAllPerson.Tasks)
+            {
+                Task SynchTask = task1;
+                long CountDaysSynchTask2 = 0;
+                foreach (Task task2 in listTasksAllPerson.Tasks)
+                {
+                    if (task1 != task2)
+                    {
+                        if (task2.DateStart> SynchTask.DateStart&& task2.DateStart < SynchTask.DateFinish||
+                            task2.DateFinish > SynchTask.DateStart && task2.DateFinish < SynchTask.DateFinish
+                            )
+                        {
+                            DateTime dateStart;
+                            DateTime dateFinish;
+                            if(task2.DateStart > SynchTask.DateStart)
+                            {
+                                dateStart = task2.DateStart;
+                            }
+                            else
+                            {
+                                dateStart = SynchTask.DateStart;
+                            }
+                            if (task2.DateFinish < SynchTask.DateFinish)
+                            {
+                                dateFinish = task2.DateFinish;
+                            }
+                            else
+                            {
+                                dateFinish = SynchTask.DateFinish;
+                            }
+                            CountDaysSynchTask2++;
+                            SynchTask = new Task(dateStart, dateFinish);
+                        }
+                    }
+                }
+                if (CountDaysSynchTask2 > CountDaysSynchTask1)
+                    CountDaysSynchTask1 = CountDaysSynchTask2;
+            }
+            return CountDaysSynchTask1;
+        }
     }
+    
     public class ListPersons
     {
         public List<Person> Persons
@@ -200,6 +245,7 @@ namespace time_schedule
             const int COUNT_DAYS = 7;
             const int COUNT_WORKING_DAYS = 8;
             const int TASK_COLOR = 9;
+            const int PRIORITY = 10;
             if (allParam[TASK_NAME] != null)
                 Name = allParam[TASK_NAME];
             if (allParam[PERSON_FAMALY] != null)
@@ -215,10 +261,13 @@ namespace time_schedule
             if (allParam[DATE_FINISH] != null)
                 DateFinish = Convert.ToDateTime(allParam[DATE_FINISH]);
             if (allParam[COUNT_DAYS] != null)
+                CountDays = Convert.ToInt32(allParam[COUNT_DAYS]);
                 if (allParam[COUNT_WORKING_DAYS] != null)
                     CountWorkingDays = Convert.ToInt32(allParam[COUNT_WORKING_DAYS]);
             if (allParam[TASK_COLOR] != null)
                 Color = Color.FromArgb(Convert.ToInt32(allParam[TASK_COLOR]));
+            if (allParam.Length>10&& allParam[PRIORITY] != null)
+                Priority = Convert.ToInt32(allParam[PRIORITY]);
         }
         public Task(DateTime dateStart, long countWorksDays)
         {
@@ -251,7 +300,7 @@ namespace time_schedule
             SetCountWorkingDays(Program.listNonWorkingDays);
         }
         public Task(TaskStatusEnum taskStatus, string taskName, string personFamaly, long taskNumber, long taskNumberAfter,
-            DateTime dateStart, DateTime dateFinish, long countDays, long countWorkingDays, Color taskColor)
+            DateTime dateStart, DateTime dateFinish, long countDays, long countWorkingDays, Color taskColor, long priority)
         {
             Status = taskStatus;
             Name = taskName;
@@ -263,6 +312,7 @@ namespace time_schedule
             CountDays = countDays;
             CountWorkingDays = countWorkingDays;
             Color = taskColor;
+            Priority = priority;
         }
 
         public TaskStatusEnum Status
@@ -389,8 +439,16 @@ namespace time_schedule
             stringForSave += "\t";
             stringForSave += CountWorkingDays;
             stringForSave += "\t";
-            stringForSave += Color.ToArgb();
+            stringForSave += Color.ToArgb(); 
+            stringForSave += "\t";
+            stringForSave += Priority;
             return stringForSave;
+        }
+        public long Priority
+        { get; private set;}
+        public void SetPriority(int newPriority)
+        {
+            Priority = newPriority;
         }
     }
 }

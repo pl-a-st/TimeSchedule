@@ -10,6 +10,7 @@ using System.Windows.Forms;
 
 namespace time_schedule
 {
+   
     public partial class Form1 : Form
     {
         public Form1()
@@ -28,6 +29,9 @@ namespace time_schedule
             Program.ListTasksAllPerson.SetTasksFromList(Dals.ReadListFromProjectFile(Constants.TASKS));
             Program.listPersons.Persons.Clear();
             Program.listPersons.SetPersonsFromList(Dals.ReadListFromProjectFile(Constants.PERSONS), Program.ListTasksAllPerson.Tasks);
+            PersonButton personButton = new PersonButton(Program.listPersons.Persons[1], Program.ListTasksAllPerson, 10);
+            
+            this.Controls.Add(personButton.Button);
         }
         private void Form1_Load(object sender, EventArgs e)
         {
@@ -155,5 +159,30 @@ namespace time_schedule
             // panel2.Select();
             panel1.HorizontalScroll.Value = panel2.HorizontalScroll.Value;
         }
+    }
+    public class TaskButton
+    {
+
+    }
+    public class PersonButton
+    {
+        public PersonButton(Person person, ListTasksAllPerson listTasksAllPerson, int hightRowForTasks)
+        {
+            Person = person;
+            Person.setTasks(listTasksAllPerson);
+            Button.Text = person.PersonFamaly;
+            Button.Height = GetHightBooton(hightRowForTasks);
+            Button.Location = new Point(200, 200);
+        }
+
+        public Button Button
+        { get; private set; } = new Button();
+        public Person Person
+        { get; private set; }
+        private int GetHightBooton(int hightRowForTasks)
+        {
+            return Person.Tasks.Count * hightRowForTasks;
+        }
+
     }
 }

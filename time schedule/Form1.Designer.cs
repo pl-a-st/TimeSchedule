@@ -80,9 +80,9 @@
             this.panel1.AutoScroll = true;
             this.panel1.Controls.Add(this.button1);
             this.panel1.Controls.Add(this.dataGridView1);
-            this.panel1.Location = new System.Drawing.Point(12, 66);
+            this.panel1.Location = new System.Drawing.Point(120, 66);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(885, 463);
+            this.panel1.Size = new System.Drawing.Size(777, 463);
             this.panel1.TabIndex = 0;
             this.panel1.Scroll += new System.Windows.Forms.ScrollEventHandler(this.ScrollChange);
             // 
@@ -195,9 +195,9 @@
             this.panel2.AutoScroll = true;
             this.panel2.Controls.Add(this.button2);
             this.panel2.Controls.Add(this.dataGridView2);
-            this.panel2.Location = new System.Drawing.Point(12, 42);
+            this.panel2.Location = new System.Drawing.Point(120, 42);
             this.panel2.Name = "panel2";
-            this.panel2.Size = new System.Drawing.Size(885, 50);
+            this.panel2.Size = new System.Drawing.Size(777, 50);
             this.panel2.TabIndex = 1;
             // 
             // button2

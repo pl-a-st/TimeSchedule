@@ -56,11 +56,14 @@
             this.label7 = new System.Windows.Forms.Label();
             this.nUpDnTaskNumber = new System.Windows.Forms.NumericUpDown();
             this.lBlTaskNum = new System.Windows.Forms.Label();
+            this.label8 = new System.Windows.Forms.Label();
+            this.nUpDnPrioirity = new System.Windows.Forms.NumericUpDown();
             ((System.ComponentModel.ISupportInitialize)(this.nUpDnCounWorkDay)).BeginInit();
             this.groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nUpDnPreviousTask)).BeginInit();
             this.groupBox2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nUpDnTaskNumber)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.nUpDnPrioirity)).BeginInit();
             this.SuspendLayout();
             // 
             // label1
@@ -94,7 +97,7 @@
             // 
             this.tBxTaskName.Location = new System.Drawing.Point(15, 42);
             this.tBxTaskName.Name = "tBxTaskName";
-            this.tBxTaskName.Size = new System.Drawing.Size(400, 20);
+            this.tBxTaskName.Size = new System.Drawing.Size(269, 20);
             this.tBxTaskName.TabIndex = 3;
             // 
             // dTmTaskDateStart
@@ -350,11 +353,35 @@
             this.lBlTaskNum.Text = "Задача №";
             this.lBlTaskNum.Visible = false;
             // 
+            // label8
+            // 
+            this.label8.AutoSize = true;
+            this.label8.Location = new System.Drawing.Point(287, 27);
+            this.label8.Name = "label8";
+            this.label8.Size = new System.Drawing.Size(61, 13);
+            this.label8.TabIndex = 22;
+            this.label8.Text = "Приоритет";
+            this.label8.Click += new System.EventHandler(this.label8_Click);
+            // 
+            // nUpDnPrioirity
+            // 
+            this.nUpDnPrioirity.Location = new System.Drawing.Point(290, 43);
+            this.nUpDnPrioirity.Name = "nUpDnPrioirity";
+            this.nUpDnPrioirity.Size = new System.Drawing.Size(125, 20);
+            this.nUpDnPrioirity.TabIndex = 23;
+            this.nUpDnPrioirity.Value = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            // 
             // fmAddTask
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(585, 303);
+            this.Controls.Add(this.nUpDnPrioirity);
+            this.Controls.Add(this.label8);
             this.Controls.Add(this.lBlTaskNum);
             this.Controls.Add(this.nUpDnTaskNumber);
             this.Controls.Add(this.label7);
@@ -378,6 +405,7 @@
             this.groupBox2.ResumeLayout(false);
             this.groupBox2.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nUpDnTaskNumber)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.nUpDnPrioirity)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -417,5 +445,7 @@
         private System.Windows.Forms.Label label7;
         private System.Windows.Forms.NumericUpDown nUpDnTaskNumber;
         private System.Windows.Forms.Label lBlTaskNum;
+        private System.Windows.Forms.Label label8;
+        private System.Windows.Forms.NumericUpDown nUpDnPrioirity;
     }
 }

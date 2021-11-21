@@ -90,6 +90,7 @@ namespace time_schedule
             cmBxTaskStatus.Text = ((TaskStatusRusEnum)Enum.Parse(typeof(TaskStatusEnum), Program.Task.Status.ToString(), true)).ToString();
             nUpDnPreviousTask.Value = Program.Task.TaskNumberAfter;
             rBnDayStart.Checked = true;
+            nUpDnPrioirity.Value= Program.Task.Priority;
             if (nUpDnPreviousTask.Value>0)
             {
                 foreach (Task task in Program.ListTasksAllPerson.Tasks)
@@ -227,7 +228,8 @@ namespace time_schedule
                 dTmTaskDateFinish.Value,
                 thisTask.CountDays,
                 Convert.ToInt32(nUpDnCounWorkDay.Value),
-                bTnColor.BackColor
+                bTnColor.BackColor,
+                Convert.ToInt32(nUpDnPrioirity.Value)
                 );
         }
         private void cmBxPerson_SelectedIndexChanged(object sender, EventArgs e)
@@ -256,6 +258,11 @@ namespace time_schedule
         private void nUpDnCounWorkDay_KeyUp(object sender, KeyEventArgs e)
         {
             WorkDaysDatesCalculate();
+        }
+
+        private void label8_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }
