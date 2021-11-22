@@ -30,21 +30,27 @@ namespace time_schedule
             Program.ListTasksAllPerson.SetTasksFromList(Dals.ReadListFromProjectFile(Constants.TASKS));
             Program.listPersons.Persons.Clear();
             Program.listPersons.SetPersonsFromList(Dals.ReadListFromProjectFile(Constants.PERSONS), Program.ListTasksAllPerson.Tasks);
-            PersonButton personButton = new PersonButton(Program.listPersons.Persons[1], Program.ListTasksAllPerson, 100);
-            for (int i = 0; i < 50; i++)
+            PersonButton personButton;
+            if (Program.listPersons.Persons.Count > 0)
             {
-                string nameAndText = Convert.ToString(i);
-                dataGridView3.Columns.Add(nameAndText, nameAndText);
+                personButton = new PersonButton(Program.listPersons.Persons[1], Program.ListTasksAllPerson, 100);
+                panel3.Controls.Add(personButton.Button);
             }
-            for (int i = 0; i < 50; i++)
-            {
-                string nameAndText = Convert.ToString(i);
-                dataGridView3.Rows.Add(nameAndText, nameAndText);
-            }
-            dataGridView3.Controls.Add(personButton.Button);
-            //panel1.Controls.Add(personButton.Button);
-            personButton.Button.BringToFront();
-            personButton.Button.Region = dataGridView3.Region;
+                
+            //for (int i = 0; i < 50; i++)
+            //{
+            //    string nameAndText = Convert.ToString(i);
+            //    dataGridView3.Columns.Add(nameAndText, nameAndText);
+            //}
+            //for (int i = 0; i < 50; i++)
+            //{
+            //    string nameAndText = Convert.ToString(i);
+            //    dataGridView3.Rows.Add(nameAndText, nameAndText);
+            //}
+            //dataGridView3.Controls.Add(personButton.Button);
+            
+            //personButton.Button.BringToFront();
+            //personButton.Button.Region = dataGridView3.Region;
             //DataGridViewButtonCell dataGridViewButtonCell = new DataGridViewButtonCell();
             //dataGridView3.dataGridViewButtonCell;
         }
@@ -118,12 +124,23 @@ namespace time_schedule
             button1.FlatAppearance.BorderColor= Color.Black;
             button1.FlatAppearance.BorderSize = 1;
             //panel2.AutoScroll = false;
-
-            //panel2.HorizontalScroll.Value = panel2.HorizontalScroll.Value+100;
             
+            plMain.AutoScrollPosition = new Point (0,50) ;
+            ScrollToBottom(plMain);
+            //plMain.
             dataGridView2.Select();
             dataGridView1.Select();
         }
+        public void ScrollToBottom(Panel p)
+        {
+            using (Control c = new Control() { Parent = p, Dock = DockStyle.Bottom })
+            {
+                p.ScrollControlIntoView(c);
+                c.Parent = null;
+            }
+        }
+
+
         public void NonWorkDaysWrite(DateTime вeginningPeriod, DateTime endPeriod)
         {
             int i = 0;
@@ -138,7 +155,7 @@ namespace time_schedule
        
         private void ScrollChange(object sender, ScrollEventArgs e)
         {
-            panel2.HorizontalScroll.Value = panel1.HorizontalScroll.Value;
+           panel2.HorizontalScroll.Value = plMain.HorizontalScroll.Value;
         }
        
 
@@ -172,7 +189,22 @@ namespace time_schedule
         private void Form1_Activated(object sender, EventArgs e)
         {
             // panel2.Select();
-            panel1.HorizontalScroll.Value = panel2.HorizontalScroll.Value;
+            plMain.HorizontalScroll.Value = panel2.HorizontalScroll.Value;
+        }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            plMain.HorizontalScroll.Value = 200;
+            plMain.HorizontalScroll.Value = 200;
+            panel2.HorizontalScroll.Value = 200;
+            panel2.HorizontalScroll.Value = 200;
+            //MessageBox.Show(Convert.ToString(plMain.HorizontalScroll.Value));
+        }
+
+        private void Form1_Shown(object sender, EventArgs e)
+        {
+            plMain.HorizontalScroll.Value = 0;
+            panel2.HorizontalScroll.Value = 0;
         }
     }
     public class TaskButton
@@ -187,7 +219,7 @@ namespace time_schedule
             Person.setTasks(listTasksAllPerson);
             Button.Text = person.PersonFamaly;
             Button.Height = GetHightBooton(hightRowForTasks);
-            Button.Location = new Point(50, 50);
+            Button.Location = new Point(10, 10);
             Button.BringToFront();
         }
 
