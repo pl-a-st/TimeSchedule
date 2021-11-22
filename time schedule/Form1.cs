@@ -10,11 +10,15 @@ using System.Windows.Forms;
 
 namespace time_schedule
 {
-   
+    
+
     public partial class Form1 : Form
     {
+        const int COLUMN_WITH = 75;
+        const int ROW_HIGHT = 25;
         public Form1()
         {
+
             Program.fmMain = this;
             InitializeComponent();
            
@@ -125,8 +129,8 @@ namespace time_schedule
             button1.FlatAppearance.BorderSize = 1;
             //panel2.AutoScroll = false;
             
-            plMain.AutoScrollPosition = new Point (0,50) ;
-            ScrollToBottom(plMain);
+            //plMain.AutoScrollPosition = new Point (0,50) ;
+            //ScrollToBottom(plMain);
             //plMain.
             dataGridView2.Select();
             dataGridView1.Select();
