@@ -15,7 +15,11 @@ namespace time_schedule
     public partial class Form1 : Form
     {
         const int COLUMN_WITH = 75;
+        const int MIN_COLUMN_WITH = 2;
+        Color MIN_COLUMN_COLOR = Color.Black;
         const int ROW_HIGHT = 25;
+        const int PERSON_BUTTON_WITH = 100;
+
         public Form1()
         {
 
@@ -215,16 +219,23 @@ namespace time_schedule
     {
 
     }
+
     public class PersonButton
     {
-        public PersonButton(Person person, ListTasksAllPerson listTasksAllPerson, int hightRowForTasks)
+        public PersonButton(Person person, ListTasksAllPerson listTasksAllPerson, int hightRowForTasks, Point buttonLocation)
         {
             Person = person;
             Person.setTasks(listTasksAllPerson);
             Button.Text = person.PersonFamaly;
             Button.Height = GetHightBooton(hightRowForTasks);
-            Button.Location = new Point(10, 10);
+            Button.Location = buttonLocation;
             Button.BringToFront();
+            Button.Click += PersonButton_Click;
+        }
+
+        private void PersonButton_Click(object sender, EventArgs e)
+        {
+            throw new NotImplementedException();
         }
 
         public Button Button
