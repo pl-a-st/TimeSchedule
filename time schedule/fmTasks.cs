@@ -17,9 +17,13 @@ namespace time_schedule
             InitializeComponent();
         }
 
-        private void fmTasks_Load(object sender, EventArgs e)
+        public void fmTasks_Load(object sender, EventArgs e)
         {
             LoadLBxTasks();
+        }
+        public ListBox RetunlBxTasks()
+        {
+            return lBxTasks;
         }
         private void LoadLBxTasks()
         {

@@ -41,7 +41,7 @@ namespace time_schedule
             PersonButton personButton;
             if (Program.listPersons.Persons.Count > 0)
             {
-                personButton = new PersonButton(Program.listPersons.Persons[1], Program.ListTasksAllPerson, 100);
+                personButton = new PersonButton(Program.listPersons.Persons[1], Program.ListTasksAllPerson, 100, new Point(10,10));
                 panel3.Controls.Add(personButton.Button);
             }
                 
@@ -219,7 +219,16 @@ namespace time_schedule
     {
 
     }
+    public class ListPersonButton
+    {
+        public List<PersonButton> ListPersonButtons
+        { get; private set; } = new List<PersonButton>();
+        public void ListPersonButtonsAdd(PersonButton personButton)
+        {
+            ListPersonButtons.Add(personButton);
+        }
 
+    }
     public class PersonButton
     {
         public PersonButton(Person person, ListTasksAllPerson listTasksAllPerson, int hightRowForTasks, Point buttonLocation)
@@ -235,9 +244,22 @@ namespace time_schedule
 
         private void PersonButton_Click(object sender, EventArgs e)
         {
-            throw new NotImplementedException();
+            fmTasks fmTasks = new fmTasks();
+            fmTasks.Load -= fmTasks.fmTasks_Load;
+            fmTasks.Load += FmTasks_Load;
+            void FmTasks_Load(object sender1, EventArgs e1)
+            {
+                fmTasks.Text = "Испольнитель:" + Person.PersonFamaly +"- задачи";
+                
+                //fmTasks.RetunlBxTasks().Items.Clear();
+                foreach (Task task in Program.ListTasksAllPerson.Tasks)
+                {
+                    if (task.PersonFamaly== Person.PersonFamaly)
+                    fmTasks.RetunlBxTasks().Items.Add(task.Number.ToString() + "\t" + task.Name);
+                }
+            }
+            fmTasks.ShowDialog();
         }
-
         public Button Button
         { get; private set; } = new Button();
         public Person Person
