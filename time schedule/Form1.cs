@@ -34,7 +34,10 @@ namespace time_schedule
             Program.ListTasksAllPerson.SetTasksFromList(Dals.ReadListFromProjectFile(Constants.TASKS));
             Program.listPersons.Persons.Clear();
             Program.listPersons.SetPersonsFromList(Dals.ReadListFromProjectFile(Constants.PERSONS), Program.ListTasksAllPerson.Tasks);
-            Program.ListPersonButton.LoadListPersonButtons(Program.listPersons.Persons, Program.ListTasksAllPerson,Constants.ROW_HIGHT)
+            Program.ListPersonButton.LoadListPersonButtons(
+                Program.listPersons.Persons,
+                Program.ListTasksAllPerson,
+                Constants.ROW_HIGHT);
             PersonButton personButton;
             if (Program.listPersons.Persons.Count > 0)
             {
