@@ -214,6 +214,12 @@ namespace time_schedule
             plMain.HorizontalScroll.Value = 0;
             panel2.HorizontalScroll.Value = 0;
         }
+        private void LoadDataGridPersonButton(ref DataGridView dataGridView, ListPersonButton listPersonButton)
+        {
+            Point startPositionPersonButton;
+
+        }
+        
     }
     public class TaskButton
     {
@@ -227,7 +233,13 @@ namespace time_schedule
         {
             ListPersonButtons.Add(personButton);
         }
+        public void LoadListPersonButtons(List<Person> persons)
+        {
+            foreach (Person person in persons)
+            {
 
+            }
+        }
     }
     public class PersonButton
     {
@@ -259,7 +271,16 @@ namespace time_schedule
                 }
             }
             fmTasks.ShowDialog();
+            fmTasks.Load -= fmTasks.textBox1_TextChanged;
+            fmTasks.Load += FmTasks_Load1;
+            void FmTasks_Load1(object sender2, EventArgs e2)
+            {
+                fmTasks.LoadLBxTasksPerson(fmTasks.SetTextBox1().Text, Person.PersonFamaly);
+            }
         }
+
+       
+
         public Button Button
         { get; private set; } = new Button();
         public Person Person

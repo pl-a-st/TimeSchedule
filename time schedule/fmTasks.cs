@@ -28,7 +28,7 @@ namespace time_schedule
         private void LoadLBxTasks()
         {
             lBxTasks.Items.Clear();
-            foreach(Task task in Program.ListTasksAllPerson.Tasks)
+            foreach (Task task in Program.ListTasksAllPerson.Tasks)
             {
                 lBxTasks.Items.Add(task.Number.ToString() + "\t" + task.Name);
             }
@@ -38,6 +38,20 @@ namespace time_schedule
             lBxTasks.Items.Clear();
             foreach (Task task in Program.ListTasksAllPerson.Tasks)
             {
+                if (task.Name.ToUpper().Contains(targetTaskName.ToUpper()))
+                    lBxTasks.Items.Add(task.Number.ToString() + "\t" + task.Name);
+            }
+        }
+        public TextBox SetTextBox1()
+        {
+            return tBxTargetTask;
+        }
+        public void LoadLBxTasksPerson(string targetTaskName, string personFamaly)
+        {
+            lBxTasks.Items.Clear();
+            foreach (Task task in Program.ListTasksAllPerson.Tasks)
+            {
+                if (task.PersonFamaly== personFamaly)
                 if (task.Name.ToUpper().Contains(targetTaskName.ToUpper()))
                     lBxTasks.Items.Add(task.Number.ToString() + "\t" + task.Name);
             }
@@ -111,7 +125,7 @@ namespace time_schedule
         }
         
 
-        private void textBox1_TextChanged(object sender, EventArgs e)
+        public void textBox1_TextChanged(object sender, EventArgs e)
         {
             LoadLBxTasks(tBxTargetTask.Text);
         }
