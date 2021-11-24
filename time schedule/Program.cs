@@ -18,6 +18,7 @@ namespace time_schedule
         public static Task Task = new Task();
         public static ListNonWorkingDays listNonWorkingDays= new ListNonWorkingDays();
         public static Color TaskColor = Color.White;
+        public static ListPersonButton ListPersonButton = new ListPersonButton();
         
 
         [STAThread]

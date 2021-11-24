@@ -92,7 +92,7 @@ namespace time_schedule
                     AddTasks(task);
             }
         }
-        public long GetMaxCountSynchTask(ListTasksAllPerson listTasksAllPerson)
+        public int GetMaxCountSynchTask(ListTasksAllPerson listTasksAllPerson)
         {
             setTasks(listTasksAllPerson);
             long CountDaysSynchTask1 = 1;

@@ -51,8 +51,7 @@ namespace time_schedule
             lBxTasks.Items.Clear();
             foreach (Task task in Program.ListTasksAllPerson.Tasks)
             {
-                if (task.PersonFamaly== personFamaly)
-                if (task.Name.ToUpper().Contains(targetTaskName.ToUpper()))
+                if (task.PersonFamaly== personFamaly&&task.Name.ToUpper().Contains(targetTaskName.ToUpper()))
                     lBxTasks.Items.Add(task.Number.ToString() + "\t" + task.Name);
             }
         }

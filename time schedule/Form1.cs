@@ -14,11 +14,7 @@ namespace time_schedule
 
     public partial class Form1 : Form
     {
-        const int COLUMN_WITH = 75;
-        const int MIN_COLUMN_WITH = 2;
-        Color MIN_COLUMN_COLOR = Color.Black;
-        const int ROW_HIGHT = 25;
-        const int PERSON_BUTTON_WITH = 100;
+        
 
         public Form1()
         {
@@ -38,10 +34,11 @@ namespace time_schedule
             Program.ListTasksAllPerson.SetTasksFromList(Dals.ReadListFromProjectFile(Constants.TASKS));
             Program.listPersons.Persons.Clear();
             Program.listPersons.SetPersonsFromList(Dals.ReadListFromProjectFile(Constants.PERSONS), Program.ListTasksAllPerson.Tasks);
+            Program.ListPersonButton.LoadListPersonButtons(Program.listPersons.Persons, Program.ListTasksAllPerson,Constants.ROW_HIGHT)
             PersonButton personButton;
             if (Program.listPersons.Persons.Count > 0)
             {
-                personButton = new PersonButton(Program.listPersons.Persons[1], Program.ListTasksAllPerson, 100, new Point(10,10));
+                personButton = new PersonButton(Program.listPersons.Persons[1], Program.ListTasksAllPerson, 100);
                 panel3.Controls.Add(personButton.Button);
             }
                 
@@ -233,23 +230,22 @@ namespace time_schedule
         {
             ListPersonButtons.Add(personButton);
         }
-        public void LoadListPersonButtons(List<Person> persons)
+        public void LoadListPersonButtons(List<Person> persons, ListTasksAllPerson listTasksAllPerson, int hightRowForTasks)
         {
             foreach (Person person in persons)
             {
-
+                PersonButton personButton = new PersonButton(person, listTasksAllPerson, hightRowForTasks);
             }
         }
     }
     public class PersonButton
     {
-        public PersonButton(Person person, ListTasksAllPerson listTasksAllPerson, int hightRowForTasks, Point buttonLocation)
+        public PersonButton(Person person, ListTasksAllPerson listTasksAllPerson, int hightRowForTasks)
         {
             Person = person;
             Person.setTasks(listTasksAllPerson);
             Button.Text = person.PersonFamaly;
-            Button.Height = GetHightBooton(hightRowForTasks);
-            Button.Location = buttonLocation;
+            Button.Height = GetHightBooton(listTasksAllPerson, hightRowForTasks);
             Button.BringToFront();
             Button.Click += PersonButton_Click;
         }
@@ -262,32 +258,30 @@ namespace time_schedule
             void FmTasks_Load(object sender1, EventArgs e1)
             {
                 fmTasks.Text = "Испольнитель:" + Person.PersonFamaly +"- задачи";
-                
-                //fmTasks.RetunlBxTasks().Items.Clear();
                 foreach (Task task in Program.ListTasksAllPerson.Tasks)
                 {
                     if (task.PersonFamaly== Person.PersonFamaly)
                     fmTasks.RetunlBxTasks().Items.Add(task.Number.ToString() + "\t" + task.Name);
                 }
             }
-            fmTasks.ShowDialog();
-            fmTasks.Load -= fmTasks.textBox1_TextChanged;
-            fmTasks.Load += FmTasks_Load1;
-            void FmTasks_Load1(object sender2, EventArgs e2)
+            fmTasks.SetTextBox1().TextChanged -= fmTasks.textBox1_TextChanged;
+            fmTasks.SetTextBox1().TextChanged += PersonButton_TextChanged;
+            void PersonButton_TextChanged(object sender2, EventArgs e2)
             {
                 fmTasks.LoadLBxTasksPerson(fmTasks.SetTextBox1().Text, Person.PersonFamaly);
             }
+            fmTasks.ShowDialog();
         }
 
-       
+        
 
         public Button Button
         { get; private set; } = new Button();
         public Person Person
         { get; private set; }
-        private int GetHightBooton(int hightRowForTasks)
+        private int GetHightBooton(ListTasksAllPerson listTasksAllPerson, int hightRowForTasks)
         {
-            return Person.Tasks.Count * hightRowForTasks;
+            return Person.GetMaxCountSynchTask(listTasksAllPerson) * hightRowForTasks;
         }
 
     }
