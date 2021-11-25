@@ -102,14 +102,14 @@ namespace time_schedule
             }
             rBnWorksDay.Checked = true;
             nUpDnCounWorkDay.Value = Program.Task.CountWorkingDays;
-            dTmTaskDateStart.Value = Program.Task.DateStart;
-            dTmTaskDateFinish.Value = Program.Task.DateFinish;
+            dTmTaskDateStart.Value = Program.Task.DateStart.Date;
+            dTmTaskDateFinish.Value = Program.Task.DateFinish.Date;
         }
         public void WorkDaysDatesCalculate()
         {
             if (rBnDayFinish.Checked)
             {
-                thisTask = new Task(dTmTaskDateStart.Value.Date, dTmTaskDateFinish.Value);
+                thisTask = new Task(dTmTaskDateStart.Value.Date, dTmTaskDateFinish.Value.Date);
                 nUpDnCounWorkDay.Value = thisTask.CountWorkingDays;
             }
             if (rBnWorksDay.Checked)
@@ -190,7 +190,7 @@ namespace time_schedule
                     if (Program.ListTasksAllPerson.Tasks[i].Number == nUpDnTaskNumber.Value)
                     {
                         bool needToCheck = false;
-                        if (Program.ListTasksAllPerson.Tasks[i].DateFinish != task.DateFinish)
+                        if (Program.ListTasksAllPerson.Tasks[i].DateFinish.Date != task.DateFinish.Date)
                         {
                             needToCheck = true;
                         }
@@ -245,7 +245,7 @@ namespace time_schedule
             tBxPreviousTask.Text = Program.Task.Name;
             if (nUpDnPreviousTask.Value != 0)
             {
-                dTmTaskDateStart.Value = Task.GetDateFinish(Program.Task.DateFinish,2);
+                dTmTaskDateStart.Value = Task.GetDateFinish(Program.Task.DateFinish.Date,2);
             }
             
         }

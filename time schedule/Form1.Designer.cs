@@ -28,8 +28,8 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle7 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle8 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle21 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle22 = new System.Windows.Forms.DataGridViewCellStyle();
             this.plMain = new System.Windows.Forms.Panel();
             this.button1 = new System.Windows.Forms.Button();
             this.CalendarTasks = new System.Windows.Forms.DataGridView();
@@ -87,6 +87,8 @@
             this.plMain.Size = new System.Drawing.Size(777, 466);
             this.plMain.TabIndex = 0;
             this.plMain.Scroll += new System.Windows.Forms.ScrollEventHandler(this.ScrollChange);
+            this.plMain.MouseEnter += new System.EventHandler(this.plMain_MouseEnter);
+            this.plMain.MouseMove += new System.Windows.Forms.MouseEventHandler(this.plMain_MouseMove);
             // 
             // button1
             // 
@@ -126,8 +128,8 @@
             // 
             // Column1
             // 
-            dataGridViewCellStyle7.BackColor = System.Drawing.Color.White;
-            this.Column1.DefaultCellStyle = dataGridViewCellStyle7;
+            dataGridViewCellStyle21.BackColor = System.Drawing.Color.White;
+            this.Column1.DefaultCellStyle = dataGridViewCellStyle21;
             this.Column1.HeaderText = "Column1";
             this.Column1.Name = "Column1";
             this.Column1.ReadOnly = true;
@@ -253,8 +255,8 @@
             // dataGridViewTextBoxColumn1
             // 
             this.dataGridViewTextBoxColumn1.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
-            dataGridViewCellStyle8.BackColor = System.Drawing.Color.White;
-            this.dataGridViewTextBoxColumn1.DefaultCellStyle = dataGridViewCellStyle8;
+            dataGridViewCellStyle22.BackColor = System.Drawing.Color.White;
+            this.dataGridViewTextBoxColumn1.DefaultCellStyle = dataGridViewCellStyle22;
             this.dataGridViewTextBoxColumn1.HeaderText = "31.12.2021";
             this.dataGridViewTextBoxColumn1.Name = "dataGridViewTextBoxColumn1";
             this.dataGridViewTextBoxColumn1.Resizable = System.Windows.Forms.DataGridViewTriState.False;
@@ -381,9 +383,12 @@
             // 
             // plPeraonButton
             // 
+            this.plPeraonButton.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left)));
+            this.plPeraonButton.AutoScroll = true;
             this.plPeraonButton.Location = new System.Drawing.Point(12, 51);
             this.plPeraonButton.Name = "plPeraonButton";
-            this.plPeraonButton.Size = new System.Drawing.Size(200, 466);
+            this.plPeraonButton.Size = new System.Drawing.Size(200, 451);
             this.plPeraonButton.TabIndex = 4;
             // 
             // bTnToDay

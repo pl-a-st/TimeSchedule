@@ -99,7 +99,7 @@ namespace time_schedule
             foreach (Task task1 in Tasks)
             {
                 Task SynchTask = task1;
-                int CountDaysSynchTask2 = 0;
+                int CountDaysSynchTask2 = 1;
                 foreach (Task task2 in Tasks)
                 {
                     if (task1 != task2)
@@ -132,7 +132,7 @@ namespace time_schedule
                         }
                     }
                 }
-                if (CountDaysSynchTask2 > CountDaysSynchTask1)
+                if (CountDaysSynchTask2 >= CountDaysSynchTask1)
                     CountDaysSynchTask1 = CountDaysSynchTask2;
             }
             return CountDaysSynchTask1;

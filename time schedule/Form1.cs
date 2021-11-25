@@ -5,6 +5,7 @@ using System.Data;
 using System.Drawing;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -21,8 +22,18 @@ namespace time_schedule
 
             Program.fmMain = this;
             InitializeComponent();
-           
+            CalendarTasks.MouseWheel += CalendarTasks_MouseWheel;
+            CalendarTasks.MouseWheel += CalendarTasks_MouseWheel1;
         }
+
+        private void CalendarTasks_MouseWheel1(object sender, MouseEventArgs e)
+        {
+            panel2.HorizontalScroll.Value = plMain.HorizontalScroll.Value;
+
+            int test = plMain.VerticalScroll.Value;
+            plPeraonButton.VerticalScroll.Value = test;
+        }
+
         private void button1_Click(object sender, EventArgs e)
         {
 
@@ -190,7 +201,20 @@ namespace time_schedule
             //plMain.
             dataGridView2.Select();
             CalendarTasks.Select();
+            
         }
+
+        private void CalendarTasks_MouseWheel(object sender, MouseEventArgs e)
+        {
+            plMain.Focus();
+            panel2.HorizontalScroll.Value = plMain.HorizontalScroll.Value;
+           
+            int test = plMain.VerticalScroll.Value;
+            plPeraonButton.VerticalScroll.Value = test;
+
+
+        }
+
         public void ScrollToBottom(Panel p)
         {
             using (Control c = new Control() { Parent = p, Dock = DockStyle.Bottom })
@@ -272,7 +296,16 @@ namespace time_schedule
             Point startPositionPersonButton;
 
         }
-        
+
+        private void plMain_MouseEnter(object sender, EventArgs e)
+        {
+
+        }
+
+        private void plMain_MouseMove(object sender, MouseEventArgs e)
+        {
+
+        }
     }
     public class TaskButton
     {
