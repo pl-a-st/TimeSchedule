@@ -95,37 +95,37 @@ namespace time_schedule
         public int GetMaxCountSynchTask(ListTasksAllPerson listTasksAllPerson)
         {
             setTasks(listTasksAllPerson);
-            long CountDaysSynchTask1 = 1;
+            int CountDaysSynchTask1 = 1;
             foreach (Task task1 in Tasks)
             {
                 Task SynchTask = task1;
-                long CountDaysSynchTask2 = 0;
+                int CountDaysSynchTask2 = 0;
                 foreach (Task task2 in Tasks)
                 {
                     if (task1 != task2)
                     {
-                        if (task2.DateStart> SynchTask.DateStart&& task2.DateStart < SynchTask.DateFinish||
+                        if (task2.DateStart.Date >= SynchTask.DateStart.Date && task2.DateStart.Date <= SynchTask.DateFinish.Date ||
                             //task2.DateFinish > SynchTask.DateStart && task2.DateFinish < SynchTask.DateFinish||
-                            task2.DateStart < SynchTask.DateStart && task2.DateFinish > SynchTask.DateStart 
+                            task2.DateStart.Date <= SynchTask.DateStart.Date && task2.DateFinish.Date >= SynchTask.DateStart.Date
                             )
                         {
                             DateTime dateStart;
                             DateTime dateFinish;
-                            if(task2.DateStart > SynchTask.DateStart)
+                            if(task2.DateStart.Date >= SynchTask.DateStart.Date)
                             {
-                                dateStart = task2.DateStart;
+                                dateStart = task2.DateStart.Date;
                             }
                             else
                             {
-                                dateStart = SynchTask.DateStart;
+                                dateStart = SynchTask.DateStart.Date;
                             }
-                            if (task2.DateFinish < SynchTask.DateFinish)
+                            if (task2.DateFinish.Date <= SynchTask.DateFinish.Date)
                             {
-                                dateFinish = task2.DateFinish;
+                                dateFinish = task2.DateFinish.Date;
                             }
                             else
                             {
-                                dateFinish = SynchTask.DateFinish;
+                                dateFinish = SynchTask.DateFinish.Date;
                             }
                             CountDaysSynchTask2++;
                             SynchTask = new Task(dateStart, dateFinish);
@@ -161,6 +161,7 @@ namespace time_schedule
             foreach(string stringAllParamTab in listString)
             {
                 Person person = new Person(stringAllParamTab, tasks);
+                person.setTasks(Program.ListTasksAllPerson);
                 AddPerson(person);
             }
         }
