@@ -27,8 +27,11 @@ namespace time_schedule
         {
 
         }
-        //public void 
-        public void LoadRefreshForm()
+        public int GetPersonButtonWith()
+        {
+            return plMain.Location.X - plPeraonButton.Location.X;
+        }
+        public void LoadRefreshForm(ref Panel plPersonButton)
         {
             Program.ListTasksAllPerson.Tasks.Clear();
             Program.ListTasksAllPerson.SetTasksFromList(Dals.ReadListFromProjectFile(Constants.TASKS));
@@ -38,12 +41,19 @@ namespace time_schedule
                 Program.listPersons.Persons,
                 Program.ListTasksAllPerson,
                 Constants.ROW_HIGHT);
-            PersonButton personButton;
-            if (Program.listPersons.Persons.Count > 0)
+            int nextLocationY = 0;
+            foreach (PersonButton personButton in Program.ListPersonButton.PersonButtons)
             {
-                personButton = new PersonButton(Program.listPersons.Persons[1], Program.ListTasksAllPerson, 100);
-                panel3.Controls.Add(personButton.Button);
+                personButton.SetLocation(0, nextLocationY);
+                plPersonButton.Controls.Add(personButton.Button);
+                nextLocationY = personButton.Button.Height + Constants.MIN_ROW_HIGHT;
             }
+            //PersonButton personButton;
+            //if (Program.listPersons.Persons.Count > 0)
+            //{
+            //    personButton = new PersonButton(Program.listPersons.Persons[1], Program.ListTasksAllPerson, 100);
+            //    plPeraonButton.Controls.Add(personButton.Button);
+            //}
                 
             //for (int i = 0; i < 50; i++)
             //{
@@ -66,7 +76,7 @@ namespace time_schedule
         {
             Dals.WriteProjectFolder(true);
             this.Activate();
-            LoadRefreshForm();
+            LoadRefreshForm(ref plPeraonButton);
             NonWorkDaysWrite(DateTime.Now.AddYears(-1).Date, DateTime.Now.AddYears(1).Date);
             dataGridView1.Columns[0].HeaderText = "01.01.2021";
             dataGridView1.RowHeadersWidth = 100;
@@ -227,17 +237,18 @@ namespace time_schedule
     }
     public class ListPersonButton
     {
-        public List<PersonButton> ListPersonButtons
+        public List<PersonButton> PersonButtons
         { get; private set; } = new List<PersonButton>();
         public void ListPersonButtonsAdd(PersonButton personButton)
         {
-            ListPersonButtons.Add(personButton);
+            PersonButtons.Add(personButton);
         }
         public void LoadListPersonButtons(List<Person> persons, ListTasksAllPerson listTasksAllPerson, int hightRowForTasks)
         {
             foreach (Person person in persons)
             {
                 PersonButton personButton = new PersonButton(person, listTasksAllPerson, hightRowForTasks);
+                ListPersonButtonsAdd(personButton);
             }
         }
     }
@@ -251,8 +262,14 @@ namespace time_schedule
             Button.Height = GetHightBooton(listTasksAllPerson, hightRowForTasks);
             Button.BringToFront();
             Button.Click += PersonButton_Click;
-        }
+            Form1 form1 = new Form1();
+            Button.Width = form1.GetPersonButtonWith();
 
+        }
+        public void SetLocation(int locationХ, int locationY)
+        {
+            Button.Location = new Point(locationХ, locationY);
+        }
         private void PersonButton_Click(object sender, EventArgs e)
         {
             fmTasks fmTasks = new fmTasks();
@@ -275,9 +292,6 @@ namespace time_schedule
             }
             fmTasks.ShowDialog();
         }
-
-        
-
         public Button Button
         { get; private set; } = new Button();
         public Person Person
