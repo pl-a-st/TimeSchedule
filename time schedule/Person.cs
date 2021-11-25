@@ -105,7 +105,6 @@ namespace time_schedule
                     if (task1 != task2)
                     {
                         if (task2.DateStart.Date >= SynchTask.DateStart.Date && task2.DateStart.Date <= SynchTask.DateFinish.Date ||
-                            //task2.DateFinish > SynchTask.DateStart && task2.DateFinish < SynchTask.DateFinish||
                             task2.DateStart.Date <= SynchTask.DateStart.Date && task2.DateFinish.Date >= SynchTask.DateStart.Date
                             )
                         {
