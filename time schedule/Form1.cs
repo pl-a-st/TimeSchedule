@@ -19,19 +19,24 @@ namespace time_schedule
 
         public Form1()
         {
-
             Program.fmMain = this;
             InitializeComponent();
-            CalendarTasks.MouseWheel += CalendarTasks_MouseWheel;
+            plMain.MouseWheel += CalendarTasks_MouseWheel;
             CalendarTasks.MouseWheel += CalendarTasks_MouseWheel1;
         }
 
         private void CalendarTasks_MouseWheel1(object sender, MouseEventArgs e)
         {
-            panel2.HorizontalScroll.Value = plMain.HorizontalScroll.Value;
-
-            int test = plMain.VerticalScroll.Value;
-            plPeraonButton.VerticalScroll.Value = test;
+            try
+            {
+                panel2.HorizontalScroll.Value = plMain.HorizontalScroll.Value;
+                int test = plMain.VerticalScroll.Value;
+                plPeraonButton.VerticalScroll.Value = test;
+            }
+            catch
+            {
+            }
+            
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -52,55 +57,51 @@ namespace time_schedule
                 Program.listPersons.Persons,
                 Program.ListTasksAllPerson,
                 Constants.ROW_HIGHT);
+           
             int nextLocationY = 0;
-            //calendarTasks.Rows.RemoveAt(1);
-            int rowsIndex = 0;
+            int nextRowsIndex;
             foreach (PersonButton personButton in Program.ListPersonButton.PersonButtons)
             {
                 if (personButton.Person.Tasks.Count > 0)
                 {
                     personButton.SetLocation(0, nextLocationY);
-                    plPersonButton.Controls.Add(personButton.Button);
 
-                    nextLocationY += (personButton.Button.Height + Constants.MIN_ROW_HIGHT);
+                    plPersonButton.Controls.Add(personButton.Button);
+                    nextLocationY += (personButton.Button.Height + Constants.MIN_ROW_HIGHT+1);
                     const int TO_NEXT_ROWS = 1;
-                    int nextRowsIndex = rowsIndex+personButton.Person.GetMaxCountSynchTask(Program.ListTasksAllPerson);
                     calendarTasks.Rows.Add(personButton.Person.GetMaxCountSynchTask(Program.ListTasksAllPerson)+ TO_NEXT_ROWS);
-                    while (rowsIndex< nextRowsIndex)
-                    {
-                        calendarTasks.Rows[rowsIndex].Height = Constants.ROW_HIGHT;
-                        rowsIndex++;
-                    }
-                    calendarTasks.Rows[rowsIndex].Height = Constants.ROW_HIGHT;
-                    //calendarTasks.Rows[rowsIndex].Height = Constants.MIN_ROW_HIGHT;
-                    //calendarTasks.Rows[rowsIndex].DefaultCellStyle.BackColor = Constants.MIN_COLUMN_COLOR;
-                    //calendarTasks.Rows[rowsIndex].HeaderCell.Style.BackColor = Color.Black;
                 }  
             }
-            rowsIndex = 0;
+            if (calendarTasks.Rows.Count > 1)
+            {
+                calendarTasks.Rows.RemoveAt(calendarTasks.Rows.Count - 2);
+                calendarTasks.Rows.RemoveAt(calendarTasks.Rows.Count - 2);
+            }
+
+            int rowIndex = 0;
+            while(rowIndex< calendarTasks.Rows.Count)
+            {
+                calendarTasks.Rows[rowIndex].Height = Constants.ROW_HIGHT;
+                rowIndex++;
+            }
+            nextRowsIndex = -1;
             foreach (PersonButton personButton in Program.ListPersonButton.PersonButtons)
             {
                 if (personButton.Person.Tasks.Count > 0)
                 {
                     const int TO_NEXT_ROWS = 1;
-                    int nextRowsIndex = rowsIndex + personButton.Person.GetMaxCountSynchTask(Program.ListTasksAllPerson);
-                    while (rowsIndex <= nextRowsIndex)
+                    
+                    nextRowsIndex += (personButton.Person.GetMaxCountSynchTask(Program.ListTasksAllPerson) + TO_NEXT_ROWS);
+                    if (nextRowsIndex < calendarTasks.Rows.Count - 1)
                     {
-                        rowsIndex++;
+                        calendarTasks.Rows[nextRowsIndex].Height = Constants.MIN_ROW_HIGHT;
+                        calendarTasks.Rows[nextRowsIndex].DefaultCellStyle.BackColor = Constants.MIN_COLUMN_COLOR;
+                        calendarTasks.Rows[nextRowsIndex].HeaderCell.Style.BackColor = Color.Black;
                     }
-                    calendarTasks.Rows[rowsIndex].Height = Constants.MIN_ROW_HIGHT;
-                    calendarTasks.Rows[rowsIndex].DefaultCellStyle.BackColor = Constants.MIN_COLUMN_COLOR;
-                    calendarTasks.Rows[rowsIndex].HeaderCell.Style.BackColor = Color.Black;
+                    
                 }
             }
-            try
-            {
-                calendarTasks.Rows.RemoveAt(0);
-            }
-            catch
-            {
-
-            }
+            
             //PersonButton personButton;
             //if (Program.listPersons.Persons.Count > 0)
             //{
@@ -108,22 +109,22 @@ namespace time_schedule
             //    plPeraonButton.Controls.Add(personButton.Button);
             //}
 
-            //for (int i = 0; i < 50; i++)
-            //{
-            //    string nameAndText = Convert.ToString(i);
-            //    dataGridView3.Columns.Add(nameAndText, nameAndText);
-            //}
-            //for (int i = 0; i < 50; i++)
-            //{
-            //    string nameAndText = Convert.ToString(i);
-            //    dataGridView3.Rows.Add(nameAndText, nameAndText);
-            //}
-            //dataGridView3.Controls.Add(personButton.Button);
+                //for (int i = 0; i < 50; i++)
+                //{
+                //    string nameAndText = Convert.ToString(i);
+                //    dataGridView3.Columns.Add(nameAndText, nameAndText);
+                //}
+                //for (int i = 0; i < 50; i++)
+                //{
+                //    string nameAndText = Convert.ToString(i);
+                //    dataGridView3.Rows.Add(nameAndText, nameAndText);
+                //}
+                //dataGridView3.Controls.Add(personButton.Button);
 
-            //personButton.Button.BringToFront();
-            //personButton.Button.Region = dataGridView3.Region;
-            //DataGridViewButtonCell dataGridViewButtonCell = new DataGridViewButtonCell();
-            //dataGridView3.dataGridViewButtonCell;
+                //personButton.Button.BringToFront();
+                //personButton.Button.Region = dataGridView3.Region;
+                //DataGridViewButtonCell dataGridViewButtonCell = new DataGridViewButtonCell();
+                //dataGridView3.dataGridViewButtonCell;
         }
         private void Form1_Load(object sender, EventArgs e)
         {
