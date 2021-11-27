@@ -194,15 +194,35 @@ namespace time_schedule
                 AddTask(task);
             }
         }
-         public long GetNextNumForTask()
+        public long GetNextNumForTask()
         {
-            long nextNumForTask=0;
-            foreach(Task task in Tasks)
+            long nextNumForTask = 0;
+            foreach (Task task in Tasks)
             {
                 if (task.Number > nextNumForTask)
                     nextNumForTask = task.Number;
             }
             return nextNumForTask + 1;
+        }
+        public DateTime GetMinDateStartTasks()
+        {
+            DateTime dateStartTasks = DateTime.MaxValue;
+            foreach(Task task in Tasks)
+            {
+                if (task.DateStart < dateStartTasks)
+                    dateStartTasks = task.DateStart;
+            }
+            return dateStartTasks;
+        }
+        public DateTime GetMaxDateFinishTasks()
+        {
+            DateTime dateFinishTasks = DateTime.MinValue;
+            foreach (Task task in Tasks)
+            {
+                if (task.DateStart > dateFinishTasks)
+                    dateFinishTasks = task.DateStart;
+            }
+            return dateFinishTasks;
         }
     }
 
