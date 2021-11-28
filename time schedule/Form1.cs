@@ -15,8 +15,6 @@ namespace time_schedule
 
     public partial class Form1 : Form
     {
-        
-
         public Form1()
         {
             Program.fmMain = this;
@@ -375,7 +373,14 @@ namespace time_schedule
     }
     public class TaskButton
     {
-
+        public Task Task
+        { get; private set; }
+        public void SetTask( Task task)
+        {
+            Task = task;
+        }
+        public List<Button> Buttons
+        { get; private set; } = new List<Button>();
     }
     public class ListPersonButton
     {
