@@ -69,6 +69,7 @@
             this.Controls.Add(this.textBox1);
             this.Name = "fmAddPerson";
             this.Text = "Добавить исполнителя";
+            this.Load += new System.EventHandler(this.fmAddPerson_Load);
             this.ResumeLayout(false);
             this.PerformLayout();
 

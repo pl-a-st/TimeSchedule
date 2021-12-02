@@ -67,7 +67,7 @@ namespace time_schedule
             int nextRowsIndex;
             foreach (PersonButton personButton in Program.ListPersonButton.PersonButtons)
             {
-                if (personButton.Person.Tasks.Count > 0)
+                if (personButton.Person.ListTask.Tasks.Count > 0)
                 {
                     personButton.SetLocation(0, nextLocationY);
 
@@ -92,7 +92,7 @@ namespace time_schedule
             nextRowsIndex = -1;
             foreach (PersonButton personButton in Program.ListPersonButton.PersonButtons)
             {
-                if (personButton.Person.Tasks.Count > 0)
+                if (personButton.Person.ListTask.Tasks.Count > 0)
                 {
                     const int TO_NEXT_ROWS = 1;
                     
@@ -407,7 +407,7 @@ namespace time_schedule
             {
                 if (personButton.Person.PersonFamaly == task.PersonFamaly)
                 {
-                    listTaskThisPerson = personButton.Person.Tasks;
+                    listTaskThisPerson = personButton.Person.ListTask.Tasks;
 
                 }
             }

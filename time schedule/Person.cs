@@ -63,21 +63,21 @@ namespace time_schedule
         {
             PersonFamaly = personFamaly;
         }
-        public List<Task> Tasks
-        { get; private set; } = new List<Task>();
+        public ListTasks ListTask
+        { get; private set; } = new ListTasks();
         /// <summary>
         /// Список задач исполнителя
         /// </summary>
         /// <param name="task">задача</param>
         public void AddTasks(Task task)
         {
-            Tasks.Add(task);
+            ListTask.Tasks.Add(task);
         }
         public string GetStringForSave()
         {
             string stringForSave = string.Empty;
             stringForSave +=  PersonFamaly;
-            foreach (Task task in Tasks)
+            foreach (Task task in ListTask.Tasks)
             {
                 stringForSave = stringForSave + "\t" + task.Number;
             }
@@ -85,7 +85,7 @@ namespace time_schedule
         }
         public void setTasks(ListTasks listTasksAllPerson)
         {
-            Tasks.Clear();
+            ListTask.Tasks.Clear();
             foreach(Task task in listTasksAllPerson.Tasks)
             {
                 if (task.PersonFamaly == PersonFamaly)
@@ -96,11 +96,11 @@ namespace time_schedule
         {
             setTasks(listTasksAllPerson);
             int CountDaysSynchTask1 = 1;
-            foreach (Task task1 in Tasks)
+            foreach (Task task1 in ListTask.Tasks)
             {
                 Task SynchTask = task1;
                 int CountDaysSynchTask2 = 1;
-                foreach (Task task2 in Tasks)
+                foreach (Task task2 in ListTask.Tasks)
                 {
                     if (task1 != task2)
                     {
@@ -219,8 +219,8 @@ namespace time_schedule
             DateTime dateFinishTasks = DateTime.MinValue;
             foreach (Task task in Tasks)
             {
-                if (task.DateStart > dateFinishTasks)
-                    dateFinishTasks = task.DateStart;
+                if (task.DateFinish > dateFinishTasks)
+                    dateFinishTasks = task.DateFinish;
             }
             return dateFinishTasks;
         }
@@ -228,7 +228,20 @@ namespace time_schedule
         {
             for (int i = 0;i<Tasks.Count; i++)
             {
-
+                for (int j=0;j< Tasks.Count; j++)
+                {
+                    if (i!=j)
+                    {
+                        if (Tasks[i].DateStart.Date >= Tasks[j].DateStart.Date && Tasks[i].DateStart.Date < Tasks[j].DateFinish.Date ||
+                        Tasks[i].DateStart.Date <= Tasks[j].DateStart.Date && Tasks[i].DateFinish.Date > Tasks[j].DateStart.Date
+                        )
+                        {
+                            if (Tasks[i].Priority >= Tasks[j].Priority && Tasks[j].PlaceInSynchTask!=0)
+                                Tasks[i].SetPlaceInSynhTask(Tasks[i].PlaceInSynchTask + 1);
+                        }
+                    }
+                    
+                }
             }
         }
     }
@@ -480,7 +493,7 @@ namespace time_schedule
             Priority = newPriority;
         }
         public int PlaceInSynchTask
-        { get; private set; } = 1;
+        { get; private set; } = 0;
         public void SetPlaceInSynhTask(int placeInSynchTask)
         {
             PlaceInSynchTask = placeInSynchTask;

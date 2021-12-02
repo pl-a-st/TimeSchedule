@@ -24,5 +24,10 @@ namespace time_schedule
             Dals.WriteListProjectFileAppend(Constants.PERSONS, Program.listPersons.GetListForSave());
             this.Close();
         }
+
+        private void fmAddPerson_Load(object sender, EventArgs e)
+        {
+
+        }
     }
 }
