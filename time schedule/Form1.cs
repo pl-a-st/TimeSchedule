@@ -128,44 +128,48 @@ namespace time_schedule
             dateTabl.RowHeadersWidth = 4;
             dateTabl.Columns[0].Width = Constants.COLUMN_WITH;
             int numColumn = 1;
-            while (dateToTables.AddDays(1) <= dateMaxToTable)
+            if (dateToTables!=DateTime.MaxValue|| dateMaxToTable!=DateTime.MinValue)
             {
-                calendarTasks.Columns.Add(dateToTables.AddDays(1).ToShortDateString(), dateToTables.AddDays(1).ToShortDateString());
-                calendarTasks.Columns[numColumn].AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
-                calendarTasks.Columns[numColumn].Width = Constants.COLUMN_WITH;
-                dateTabl.Columns.Add(dateToTables.AddDays(1).ToShortDateString(), dateToTables.AddDays(1).ToShortDateString()+ "\n" + dateToTables.AddDays(1).DayOfWeek);
-                dateTabl.Columns[numColumn].AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
-                dateTabl.Columns[numColumn].HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter;
-                dateTabl.Columns[numColumn].Width = Constants.COLUMN_WITH;
-                dateToTables = dateToTables.AddDays(1);
-                if (DateTime.Today.Date == dateToTables.Date)
+                while (dateToTables.AddDays(1) <= dateMaxToTable)
                 {
-                    dateTabl.EnableHeadersVisualStyles = false;
-                    dateTabl.Columns[numColumn].HeaderCell.Style.BackColor = Color.LightBlue;
-                    if (DateTime.Today.DayOfWeek ==DayOfWeek.Saturday)
-                        try {dateTabl.Columns[numColumn - 1].HeaderCell.Style.BackColor = Color.LightBlue; }
-                        catch { }
-                    if (DateTime.Today.DayOfWeek == DayOfWeek.Sunday)
-                        try { dateTabl.Columns[numColumn + 1].HeaderCell.Style.BackColor = Color.LightBlue; }
-                        catch { }
-                }
-                if (dateToTables.DayOfWeek == DayOfWeek.Saturday || dateToTables.DayOfWeek == DayOfWeek.Sunday)
-                {
-                    dateTabl.EnableHeadersVisualStyles = false;
-                    dateTabl.Columns[numColumn].AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
-                    dateTabl.Columns[numColumn].MinimumWidth = 2;
-                    dateTabl.Columns[numColumn].Width = 2;
-                    dateTabl.Columns[numColumn].DefaultCellStyle.BackColor = Color.LightBlue;
-                    dateTabl.Columns[numColumn].HeaderCell.Style.BackColor = Color.LightBlue;
-                    calendarTasks.EnableHeadersVisualStyles = false;
+                    calendarTasks.Columns.Add(dateToTables.AddDays(1).ToShortDateString(), dateToTables.AddDays(1).ToShortDateString());
                     calendarTasks.Columns[numColumn].AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
-                    calendarTasks.Columns[numColumn].MinimumWidth = 2;
-                    calendarTasks.Columns[numColumn].Width = 2;
-                    calendarTasks.Columns[numColumn].DefaultCellStyle.BackColor = Color.LightBlue;
-                    calendarTasks.Columns[numColumn].HeaderCell.Style.BackColor = Color.LightBlue;
+                    calendarTasks.Columns[numColumn].Width = Constants.COLUMN_WITH;
+                    dateTabl.Columns.Add(dateToTables.AddDays(1).ToShortDateString(), dateToTables.AddDays(1).ToShortDateString() + "\n" + dateToTables.AddDays(1).DayOfWeek);
+                    dateTabl.Columns[numColumn].AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
+                    dateTabl.Columns[numColumn].HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter;
+                    dateTabl.Columns[numColumn].Width = Constants.COLUMN_WITH;
+                    dateToTables = dateToTables.AddDays(1);
+                    if (DateTime.Today.Date == dateToTables.Date)
+                    {
+                        dateTabl.EnableHeadersVisualStyles = false;
+                        dateTabl.Columns[numColumn].HeaderCell.Style.BackColor = Color.LightBlue;
+                        if (DateTime.Today.DayOfWeek == DayOfWeek.Saturday)
+                            try { dateTabl.Columns[numColumn - 1].HeaderCell.Style.BackColor = Color.LightBlue; }
+                            catch { }
+                        if (DateTime.Today.DayOfWeek == DayOfWeek.Sunday)
+                            try { dateTabl.Columns[numColumn + 1].HeaderCell.Style.BackColor = Color.LightBlue; }
+                            catch { }
+                    }
+                    if (dateToTables.DayOfWeek == DayOfWeek.Saturday || dateToTables.DayOfWeek == DayOfWeek.Sunday)
+                    {
+                        dateTabl.EnableHeadersVisualStyles = false;
+                        dateTabl.Columns[numColumn].AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
+                        dateTabl.Columns[numColumn].MinimumWidth = 2;
+                        dateTabl.Columns[numColumn].Width = 2;
+                        dateTabl.Columns[numColumn].DefaultCellStyle.BackColor = Color.LightBlue;
+                        dateTabl.Columns[numColumn].HeaderCell.Style.BackColor = Color.LightBlue;
+                        calendarTasks.EnableHeadersVisualStyles = false;
+                        calendarTasks.Columns[numColumn].AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
+                        calendarTasks.Columns[numColumn].MinimumWidth = 2;
+                        calendarTasks.Columns[numColumn].Width = 2;
+                        calendarTasks.Columns[numColumn].DefaultCellStyle.BackColor = Color.LightBlue;
+                        calendarTasks.Columns[numColumn].HeaderCell.Style.BackColor = Color.LightBlue;
+                    }
+                    numColumn++;
                 }
-                numColumn++;
             }
+            
         }
         private void Form1_Load(object sender, EventArgs e)
         {
@@ -205,44 +209,45 @@ namespace time_schedule
             
             
 
-            int height = 0;
-            foreach (DataGridViewRow row in CalendarTasks.Rows)
-            {
-                height += row.Height;
-            }
-            height += CalendarTasks.ColumnHeadersHeight;
+            //int height = 0;
+            //foreach (DataGridViewRow row in CalendarTasks.Rows)
+            //{
+            //    height += row.Height;
+            //}
+            //height += CalendarTasks.ColumnHeadersHeight;
 
-            int width = 0;
-            foreach (DataGridViewColumn col in CalendarTasks.Columns)
-            {
-                width += col.Width;
-            }
-            width += CalendarTasks.RowHeadersWidth;
+            //int width = 0;
+            //foreach (DataGridViewColumn col in CalendarTasks.Columns)
+            //{
+            //    width += col.Width;
+            //}
+            //width += CalendarTasks.RowHeadersWidth;
 
-            CalendarTasks.ClientSize = new Size(width + 2, height + 2);
-            DateTable.ClientSize = new Size(width + 2, DateTable.Height);
+            //CalendarTasks.ClientSize = new Size(width + 2, height + 2);
+            //DateTable.ClientSize = new Size(width + 2, DateTable.Height);
 
-            width = 0;
-            for (int i=0;i<6;i++)
-            {
-                width += CalendarTasks.Columns[i].Width;
-            }
-            width += CalendarTasks.RowHeadersWidth;
+            //width = 0;
 
-            height = 0;
-            for (int i = 0; i < 6; i++)
-            {
-                height += CalendarTasks.Rows[i].Height;
-            }
+            //for (int i=0;i<6;i++)
+            //{
+            //    width += CalendarTasks.Columns[i].Width;
+            //}
+            //width += CalendarTasks.RowHeadersWidth;
+
+            //height = 0;
+            //for (int i = 0; i < 6; i++)
+            //{
+            //    height += CalendarTasks.Rows[i].Height;
+            //}
             
-            height += CalendarTasks.ColumnHeadersHeight;
+            //height += CalendarTasks.ColumnHeadersHeight;
 
-            button1.Location = new Point(width+ CalendarTasks.Left, height + CalendarTasks.Top);
-            button1.BackColor = Color.Azure;
-            button1.FlatStyle = FlatStyle.Flat;
-            button1.FlatAppearance.CheckedBackColor = Color.Azure;
-            button1.FlatAppearance.BorderColor= Color.Black;
-            button1.FlatAppearance.BorderSize = 1;
+            //button1.Location = new Point(width+ CalendarTasks.Left, height + CalendarTasks.Top);
+            //button1.BackColor = Color.Azure;
+            //button1.FlatStyle = FlatStyle.Flat;
+            //button1.FlatAppearance.CheckedBackColor = Color.Azure;
+            //button1.FlatAppearance.BorderColor= Color.Black;
+            //button1.FlatAppearance.BorderSize = 1;
             //panel2.AutoScroll = false;
             
             //plMain.AutoScrollPosition = new Point (0,50) ;
@@ -375,12 +380,43 @@ namespace time_schedule
     {
         public Task Task
         { get; private set; }
-        public void SetTask( Task task)
+        public void SetTask(Task task)
         {
             Task = task;
         }
         public List<Button> Buttons
         { get; private set; } = new List<Button>();
+        public void AddButton(int locationX, int locationY, int with, int height)
+        {
+            Button button = new Button();
+            button.Location = new Point(locationX, locationY);
+            button.Width = with;
+            button.Height = height;
+            button.Click += Button_Click;
+            Buttons.Add(button);
+        }
+        private void Button_Click(object sender, EventArgs e)
+        {
+            throw new NotImplementedException();//прописать
+        }
+        public TaskButton(Task task, ListPersonButton listPersonButton)
+        {
+            Task = task;
+            List<Task> listTaskThisPerson = new List<Task>();
+            foreach (PersonButton personButton in listPersonButton.PersonButtons)
+            {
+                if (personButton.Person.PersonFamaly == task.PersonFamaly)
+                {
+                    listTaskThisPerson = personButton.Person.Tasks;
+
+                }
+            }
+            //вычилить ширину в цикле
+            //вычислить Х
+            // вычислить Y
+            // вычислить У
+
+        }
     }
     public class ListPersonButton
     {
@@ -390,7 +426,7 @@ namespace time_schedule
         {
             PersonButtons.Add(personButton);
         }
-        public void LoadListPersonButtons(List<Person> persons, ListTasksAllPerson listTasksAllPerson, int hightRowForTasks)
+        public void LoadListPersonButtons(List<Person> persons, ListTasks listTasksAllPerson, int hightRowForTasks)
         {
             foreach (Person person in persons)
             {
@@ -401,7 +437,7 @@ namespace time_schedule
     }
     public class PersonButton
     {
-        public PersonButton(Person person, ListTasksAllPerson listTasksAllPerson, int hightRowForTasks)
+        public PersonButton(Person person, ListTasks listTasksAllPerson, int hightRowForTasks)
         {
             Person = person;
             Person.setTasks(listTasksAllPerson);
@@ -443,7 +479,7 @@ namespace time_schedule
         { get; private set; } = new Button();
         public Person Person
         { get; private set; }
-        private int GetHightBooton(ListTasksAllPerson listTasksAllPerson, int hightRowForTasks)
+        private int GetHightBooton(ListTasks listTasksAllPerson, int hightRowForTasks)
         {
             return Person.GetMaxCountSynchTask(listTasksAllPerson) * hightRowForTasks;
         }

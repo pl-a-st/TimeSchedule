@@ -13,7 +13,7 @@ namespace time_schedule
         /// Главная точка входа для приложения.
         /// </summary>
         public static Form fmMain;
-        public static ListTasksAllPerson ListTasksAllPerson = new ListTasksAllPerson();
+        public static ListTasks ListTasksAllPerson = new ListTasks();
         public static ListPersons listPersons = new ListPersons();
         public static Task Task = new Task();
         public static ListNonWorkingDays listNonWorkingDays= new ListNonWorkingDays();

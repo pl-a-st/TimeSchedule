@@ -83,7 +83,7 @@ namespace time_schedule
             }
             return stringForSave;
         }
-        public void setTasks(ListTasksAllPerson listTasksAllPerson)
+        public void setTasks(ListTasks listTasksAllPerson)
         {
             Tasks.Clear();
             foreach(Task task in listTasksAllPerson.Tasks)
@@ -92,7 +92,7 @@ namespace time_schedule
                     AddTasks(task);
             }
         }
-        public int GetMaxCountSynchTask(ListTasksAllPerson listTasksAllPerson)
+        public int GetMaxCountSynchTask(ListTasks listTasksAllPerson)
         {
             setTasks(listTasksAllPerson);
             int CountDaysSynchTask1 = 1;
@@ -104,8 +104,8 @@ namespace time_schedule
                 {
                     if (task1 != task2)
                     {
-                        if (task2.DateStart.Date >= SynchTask.DateStart.Date && task2.DateStart.Date <= SynchTask.DateFinish.Date ||
-                            task2.DateStart.Date <= SynchTask.DateStart.Date && task2.DateFinish.Date >= SynchTask.DateStart.Date
+                        if (task2.DateStart.Date >= SynchTask.DateStart.Date && task2.DateStart.Date < SynchTask.DateFinish.Date ||
+                            task2.DateStart.Date <= SynchTask.DateStart.Date && task2.DateFinish.Date > SynchTask.DateStart.Date
                             )
                         {
                             DateTime dateStart;
@@ -165,7 +165,7 @@ namespace time_schedule
             }
         }
     }
-    public class ListTasksAllPerson
+    public class ListTasks
     {
         public List<Task> Tasks
         { get; private set; } = new List<Task>();
@@ -223,6 +223,13 @@ namespace time_schedule
                     dateFinishTasks = task.DateStart;
             }
             return dateFinishTasks;
+        }
+        public void AssingPlace()
+        {
+            for (int i = 0;i<Tasks.Count; i++)
+            {
+
+            }
         }
     }
 
@@ -358,7 +365,7 @@ namespace time_schedule
         }
         public long Number
         { get; private set; }
-        public void SetTaskNumber(ListTasksAllPerson listTask)
+        public void SetTaskNumber(ListTasks listTask)
         {
             Number = listTask.Tasks.Count;
         }
@@ -471,6 +478,12 @@ namespace time_schedule
         public void SetPriority(int newPriority)
         {
             Priority = newPriority;
+        }
+        public int PlaceInSynchTask
+        { get; private set; } = 1;
+        public void SetPlaceInSynhTask(int placeInSynchTask)
+        {
+            PlaceInSynchTask = placeInSynchTask;
         }
     }
 }
