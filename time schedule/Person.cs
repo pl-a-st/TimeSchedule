@@ -96,45 +96,52 @@ namespace time_schedule
         {
             setTasks(listTasksAllPerson);
             int CountDaysSynchTask1 = 1;
-            foreach (Task task1 in ListTask.Tasks)
+            ListTask.AssingPlace();
+            foreach(Task task in ListTask.Tasks)
             {
-                Task SynchTask = task1;
-                int CountDaysSynchTask2 = 1;
-                foreach (Task task2 in ListTask.Tasks)
-                {
-                    if (task1 != task2)
-                    {
-                        if (task2.DateStart.Date >= SynchTask.DateStart.Date && task2.DateStart.Date < SynchTask.DateFinish.Date ||
-                            task2.DateStart.Date <= SynchTask.DateStart.Date && task2.DateFinish.Date > SynchTask.DateStart.Date
-                            )
-                        {
-                            DateTime dateStart;
-                            DateTime dateFinish;
-                            if(task2.DateStart.Date >= SynchTask.DateStart.Date)
-                            {
-                                dateStart = task2.DateStart.Date;
-                            }
-                            else
-                            {
-                                dateStart = SynchTask.DateStart.Date;
-                            }
-                            if (task2.DateFinish.Date <= SynchTask.DateFinish.Date)
-                            {
-                                dateFinish = task2.DateFinish.Date;
-                            }
-                            else
-                            {
-                                dateFinish = SynchTask.DateFinish.Date;
-                            }
-                            CountDaysSynchTask2++;
-                            SynchTask = new Task(dateStart, dateFinish);
-                        }
-                    }
-                }
-                if (CountDaysSynchTask2 >= CountDaysSynchTask1)
-                    CountDaysSynchTask1 = CountDaysSynchTask2;
+                if (task.PlaceInSynchTask + 1 > CountDaysSynchTask1)
+                    CountDaysSynchTask1 = task.PlaceInSynchTask + 1;
             }
             return CountDaysSynchTask1;
+            //foreach (Task task1 in ListTask.Tasks)
+            //{
+            //    Task SynchTask = task1;
+            //    int CountDaysSynchTask2 = 1;
+            //    foreach (Task task2 in ListTask.Tasks)
+            //    {
+            //        if (task1 != task2)
+            //        {
+            //            if (task2.DateStart.Date >= SynchTask.DateStart.Date && task2.DateStart.Date < SynchTask.DateFinish.Date ||
+            //                task2.DateStart.Date <= SynchTask.DateStart.Date && task2.DateFinish.Date > SynchTask.DateStart.Date
+            //                )
+            //            {
+            //                DateTime dateStart;
+            //                DateTime dateFinish;
+            //                if(task2.DateStart.Date >= SynchTask.DateStart.Date)
+            //                {
+            //                    dateStart = task2.DateStart.Date;
+            //                }
+            //                else
+            //                {
+            //                    dateStart = SynchTask.DateStart.Date;
+            //                }
+            //                if (task2.DateFinish.Date <= SynchTask.DateFinish.Date)
+            //                {
+            //                    dateFinish = task2.DateFinish.Date;
+            //                }
+            //                else
+            //                {
+            //                    dateFinish = SynchTask.DateFinish.Date;
+            //                }
+            //                CountDaysSynchTask2++;
+            //                SynchTask = new Task(dateStart, dateFinish);
+            //            }
+            //        }
+            //    }
+            //    if (CountDaysSynchTask2 >= CountDaysSynchTask1)
+            //        CountDaysSynchTask1 = CountDaysSynchTask2;
+            //}
+            //return CountDaysSynchTask1;
         }
     }
     
@@ -228,19 +235,15 @@ namespace time_schedule
         {
             for (int i = 0;i<Tasks.Count; i++)
             {
-                for (int j=0;j< Tasks.Count; j++)
+                for (int j=i+1;j< Tasks.Count; j++)
                 {
-                    if (i!=j)
+                    if (Tasks[i].DateStart.Date >= Tasks[j].DateStart.Date && Tasks[i].DateStart.Date < Tasks[j].DateFinish.Date ||
+                    Tasks[i].DateStart.Date <= Tasks[j].DateStart.Date && Tasks[i].DateFinish.Date > Tasks[j].DateStart.Date
+                    )
                     {
-                        if (Tasks[i].DateStart.Date >= Tasks[j].DateStart.Date && Tasks[i].DateStart.Date < Tasks[j].DateFinish.Date ||
-                        Tasks[i].DateStart.Date <= Tasks[j].DateStart.Date && Tasks[i].DateFinish.Date > Tasks[j].DateStart.Date
-                        )
-                        {
-                            if (Tasks[i].Priority >= Tasks[j].Priority && Tasks[j].PlaceInSynchTask!=0)
-                                Tasks[i].SetPlaceInSynhTask(Tasks[i].PlaceInSynchTask + 1);
-                        }
+                        if (Tasks[i].Priority >= Tasks[j].Priority && Tasks[i].PlaceInSynchTask <= Tasks[j].PlaceInSynchTask)
+                            Tasks[i].SetPlaceInSynhTask(Tasks[j].PlaceInSynchTask + 1);
                     }
-                    
                 }
             }
         }
