@@ -241,8 +241,15 @@ namespace time_schedule
                     Tasks[i].DateStart.Date <= Tasks[j].DateStart.Date && Tasks[i].DateFinish.Date > Tasks[j].DateStart.Date
                     )
                     {
-                        if (Tasks[i].Priority >= Tasks[j].Priority && Tasks[i].PlaceInSynchTask <= Tasks[j].PlaceInSynchTask)
+                        if (Tasks[i].Priority <= Tasks[j].Priority && Tasks[i].PlaceInSynchTask >= Tasks[j].PlaceInSynchTask)
+
+                        {
+                            Tasks[j].SetPlaceInSynhTask(Tasks[i].PlaceInSynchTask + 1);
+                        }
+                        else
+                        {
                             Tasks[i].SetPlaceInSynhTask(Tasks[j].PlaceInSynchTask + 1);
+                        }
                     }
                 }
             }
