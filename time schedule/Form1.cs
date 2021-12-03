@@ -333,20 +333,19 @@ namespace time_schedule
 
         private void button3_Click(object sender, EventArgs e)
         {
-            int LocationX = 0;
+            int locationX = 0;
             int i = 0;
-            //plMain.VerticalScroll.Visible = true;
            
             while ((DateTable.Columns[i].Name!=DateTime.Today.Date.ToShortDateString())&&(i< DateTable.Columns.Count-1))
             {
-                LocationX += CalendarTasks.Columns[i].Width;
+                locationX += CalendarTasks.Columns[i].Width;
                 i++;
             }
-            LocationX += CalendarTasks.RowHeadersWidth-5*Constants.COLUMN_WITH;
+            locationX += CalendarTasks.RowHeadersWidth-5*Constants.COLUMN_WITH;
             panel2.Focus();
             plMain.Focus();
-            plMain.HorizontalScroll.Value = LocationX;
-            plMain.HorizontalScroll.Value = LocationX;
+            plMain.HorizontalScroll.Value = locationX;
+            plMain.HorizontalScroll.Value = locationX;
             panel2.HorizontalScroll.Value = plMain.HorizontalScroll.Value;
             panel2.HorizontalScroll.Value = plMain.HorizontalScroll.Value;
             //dataGridView2.Select();
@@ -399,7 +398,7 @@ namespace time_schedule
         {
             throw new NotImplementedException();//прописать
         }
-        public TaskButton(Task task, ListPersonButton listPersonButton)
+        public TaskButton(Task task, ListPersonButton listPersonButton,DataGridView dateTable)
         {
             Task = task;
             List<Task> listTaskThisPerson = new List<Task>();
@@ -408,9 +407,17 @@ namespace time_schedule
                 if (personButton.Person.PersonFamaly == task.PersonFamaly)
                 {
                     listTaskThisPerson = personButton.Person.ListTask.Tasks;
-
                 }
             }
+            int locationX = 0;
+            int i = 0;
+
+            while ((dateTable.Columns[i].Name != Task.DateStart.Date.ToShortDateString()) && (i < dateTable.Columns.Count - 1))
+            {
+                locationX += dateTable.Columns[i].Width;
+                i++;
+            }
+            locationX += dateTable.RowHeadersWidth - 5 * Constants.COLUMN_WITH;
             //вычилить ширину в цикле
             //вычислить Х
             // вычислить Y
