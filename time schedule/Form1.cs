@@ -173,7 +173,7 @@ namespace time_schedule
         }
         private void Form1_Load(object sender, EventArgs e)
         {
-           
+            int test = 0;
 
             myScrollBar.Height = plMain.Height;
             myScrollBar.Left = plMain.Width - myScrollBar.Width;
