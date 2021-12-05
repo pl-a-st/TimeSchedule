@@ -58,11 +58,14 @@ namespace time_schedule
             Program.ListTasksAllPerson.SetTasksFromList(Dals.ReadListFromProjectFile(Constants.TASKS));
             Program.listPersons.Persons.Clear();
             Program.listPersons.SetPersonsFromList(Dals.ReadListFromProjectFile(Constants.PERSONS), Program.ListTasksAllPerson.Tasks);
+            Program.ListPersonButton.PersonButtons.Clear();
             Program.ListPersonButton.LoadListPersonButtons(
                 Program.listPersons.Persons,
                 Program.ListTasksAllPerson,
                 Constants.ROW_HIGHT);
-           
+            
+
+
             int nextLocationY = 0;
             int nextRowsIndex;
             foreach (PersonButton personButton in Program.ListPersonButton.PersonButtons)
@@ -108,6 +111,22 @@ namespace time_schedule
                 }
             }
             LoadColumns(ref calendarTasks, ref dateTabl);
+            Program.ListTaskButtons.TaskButtons.Clear();
+            Program.ListTaskButtons.LoadTaskButtons(
+                Program.ListTasksAllPerson.Tasks,
+                Program.ListPersonButton,
+                CalendarTasks
+                );
+            foreach (TaskButton taskButton in Program.ListTaskButtons.TaskButtons)
+            {
+                foreach (Button button in taskButton.Buttons)
+                {
+                    plMain.Controls.Add(button);
+                    button.BringToFront();
+                }
+                    
+
+            }
         }
         public void LoadColumns(ref DataGridView calendarTasks, ref DataGridView dateTabl)
         {
@@ -369,6 +388,24 @@ namespace time_schedule
 
         }
     }
+    public class ListTaskButton
+    {
+        public List<TaskButton> TaskButtons
+        { get; private set; } = new List<TaskButton>();
+        public void LoadTaskButtons(TaskButton taskButton)
+        {
+            TaskButtons.Add(taskButton);
+        }
+        public void LoadTaskButtons(List<Task> listTask,ListPersonButton listPersonButton, DataGridView dateTable)
+        {
+            foreach (Task task in listTask)
+            {
+                TaskButton taskButton = new TaskButton(task, listPersonButton, dateTable);
+                LoadTaskButtons(taskButton);
+            }
+        }
+    }
+
     public class TaskButton
     {
         public Task Task
@@ -385,6 +422,9 @@ namespace time_schedule
             button.Location = new Point(locationX, locationY);
             button.Width = with;
             button.Height = height;
+            button.Text = Task.Name;
+            button.BackColor = Task.Color;
+            button.FlatStyle = FlatStyle.Flat;
             button.Click += Button_Click;
             Buttons.Add(button);
         }
@@ -409,6 +449,7 @@ namespace time_schedule
             }
             locationY += Task.PlaceInSynchTask * Constants.ROW_HIGHT;
             int i = 0;
+            int dateTableLastNumCol = dateTable.Columns.Count-2;
             while ((dateTable.Columns[i].Name != Task.DateStart.Date.ToShortDateString()) && (i < dateTable.Columns.Count - 1))
             {
                 locationX += dateTable.Columns[i].Width;
@@ -424,14 +465,21 @@ namespace time_schedule
                 {
                     width += Constants.COLUMN_WITH;
                     if (DateTime.Parse(dateTable.Columns[i].Name + " 00:00:00").DayOfWeek == DayOfWeek.Friday ||
-                        dateTable.Columns[i].Name != Task.DateFinish.Date.ToShortDateString())
+                        dateTable.Columns[i].Name == Task.DateFinish.Date.ToShortDateString())
                     {
                         AddButton(locationX, locationY, width, Constants.ROW_HIGHT);
+                        locationX += width;
+                        width = 0;
                     }
                 }
-                locationY += dateTable.Columns[i].Width;
+                else
+                {
+                    locationX += dateTable.Columns[i].Width;
+                }
+                i++;
+                
             }
-            while ((dateTable.Columns[i].Name != Task.DateFinish.Date.ToShortDateString()) && (i < dateTable.Columns.Count - 1));
+            while ((dateTable.Columns[i-1].Name != Task.DateFinish.Date.ToShortDateString()) && (i < dateTableLastNumCol));
         }
     }
     public class ListPersonButton

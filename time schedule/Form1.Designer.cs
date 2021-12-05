@@ -28,13 +28,15 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle10 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
             this.plMain = new System.Windows.Forms.Panel();
             this.button1 = new System.Windows.Forms.Button();
             this.CalendarTasks = new System.Windows.Forms.DataGridView();
+            this.Column1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.panel2 = new System.Windows.Forms.Panel();
             this.button2 = new System.Windows.Forms.Button();
             this.DateTable = new System.Windows.Forms.DataGridView();
+            this.Column2 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.btnTask = new System.Windows.Forms.Button();
             this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.сенитьПользователяToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -44,8 +46,6 @@
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.plPeraonButton = new System.Windows.Forms.Panel();
             this.bTnToDay = new System.Windows.Forms.Button();
-            this.Column1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.Column2 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.plMain.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.CalendarTasks)).BeginInit();
             this.panel2.SuspendLayout();
@@ -61,9 +61,9 @@
             this.plMain.AutoScroll = true;
             this.plMain.Controls.Add(this.button1);
             this.plMain.Controls.Add(this.CalendarTasks);
-            this.plMain.Location = new System.Drawing.Point(114, 51);
+            this.plMain.Location = new System.Drawing.Point(114, 46);
             this.plMain.Name = "plMain";
-            this.plMain.Size = new System.Drawing.Size(777, 469);
+            this.plMain.Size = new System.Drawing.Size(777, 474);
             this.plMain.TabIndex = 0;
             this.plMain.Scroll += new System.Windows.Forms.ScrollEventHandler(this.ScrollChange);
             this.plMain.MouseEnter += new System.EventHandler(this.plMain_MouseEnter);
@@ -88,13 +88,20 @@
             this.CalendarTasks.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.Column1});
             this.CalendarTasks.Enabled = false;
-            this.CalendarTasks.Location = new System.Drawing.Point(0, -24);
+            this.CalendarTasks.Location = new System.Drawing.Point(0, -19);
             this.CalendarTasks.MultiSelect = false;
             this.CalendarTasks.Name = "CalendarTasks";
             this.CalendarTasks.ReadOnly = true;
             this.CalendarTasks.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
             this.CalendarTasks.Size = new System.Drawing.Size(536, 220);
             this.CalendarTasks.TabIndex = 0;
+            // 
+            // Column1
+            // 
+            this.Column1.HeaderText = "Column1";
+            this.Column1.Name = "Column1";
+            this.Column1.ReadOnly = true;
+            this.Column1.Width = 73;
             // 
             // panel2
             // 
@@ -132,6 +139,15 @@
             this.DateTable.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
             this.DateTable.Size = new System.Drawing.Size(536, 45);
             this.DateTable.TabIndex = 0;
+            // 
+            // Column2
+            // 
+            dataGridViewCellStyle3.BackColor = System.Drawing.Color.White;
+            dataGridViewCellStyle3.ForeColor = System.Drawing.Color.Transparent;
+            this.Column2.DefaultCellStyle = dataGridViewCellStyle3;
+            this.Column2.HeaderText = "Column2";
+            this.Column2.Name = "Column2";
+            this.Column2.Width = 73;
             // 
             // btnTask
             // 
@@ -212,22 +228,6 @@
             this.bTnToDay.Text = "Сегодня";
             this.bTnToDay.UseVisualStyleBackColor = true;
             this.bTnToDay.Click += new System.EventHandler(this.button3_Click);
-            // 
-            // Column1
-            // 
-            this.Column1.HeaderText = "Column1";
-            this.Column1.Name = "Column1";
-            this.Column1.ReadOnly = true;
-            this.Column1.Width = 73;
-            // 
-            // Column2
-            // 
-            dataGridViewCellStyle10.BackColor = System.Drawing.Color.White;
-            dataGridViewCellStyle10.ForeColor = System.Drawing.Color.Transparent;
-            this.Column2.DefaultCellStyle = dataGridViewCellStyle10;
-            this.Column2.HeaderText = "Column2";
-            this.Column2.Name = "Column2";
-            this.Column2.Width = 73;
             // 
             // Form1
             // 
