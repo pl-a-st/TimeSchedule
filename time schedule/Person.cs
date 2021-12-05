@@ -252,7 +252,7 @@ namespace time_schedule
                         }
                         else
                         {
-                            Tasks[i].SetPlaceInSynhTask(Tasks[j].PlaceInSynchTask + 1);
+                            Tasks[i].SetPlaceInSynhTask(Tasks[i].PlaceInSynchTask + 1);
                         }
                     }
                 }
