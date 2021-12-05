@@ -54,6 +54,21 @@ namespace time_schedule
         }
         public void LoadRefreshForm(ref Panel plPersonButton,ref Panel plMain, ref DataGridView calendarTasks, ref DataGridView dateTabl)
         {
+            foreach(Control button1 in plMain.Controls)
+            {
+                if (button1 is Button)
+                    (button1 as Button).Dispose();
+            }
+            
+            for(int i=1;i< calendarTasks.Columns.Count;i++)
+            {
+                calendarTasks.Columns.RemoveAt(i);
+            }
+            for (int i = 1; i < dateTabl.Columns.Count; i++)
+            {
+                dateTabl.Columns.RemoveAt(i);
+            }
+            
             Program.ListTasksAllPerson.Tasks.Clear();
             Program.ListTasksAllPerson.SetTasksFromList(Dals.ReadListFromProjectFile(Constants.TASKS));
             Program.listPersons.Persons.Clear();
@@ -63,9 +78,6 @@ namespace time_schedule
                 Program.listPersons.Persons,
                 Program.ListTasksAllPerson,
                 Constants.ROW_HIGHT);
-            
-
-
             int nextLocationY = 0;
             int nextRowsIndex;
             foreach (PersonButton personButton in Program.ListPersonButton.PersonButtons)
@@ -73,7 +85,6 @@ namespace time_schedule
                 if (personButton.Person.ListTask.Tasks.Count > 0)
                 {
                     personButton.SetLocation(0, nextLocationY);
-
                     plPersonButton.Controls.Add(personButton.Button);
                     nextLocationY += (personButton.Button.Height + Constants.MIN_ROW_HIGHT+1);
                     const int TO_NEXT_ROWS = 1;
@@ -86,7 +97,6 @@ namespace time_schedule
                 calendarTasks.Rows.RemoveAt(calendarTasks.Rows.Count - 2);
                 calendarTasks.Rows.RemoveAt(calendarTasks.Rows.Count - 2);
             }
-
             int rowIndex = 0;
             while(rowIndex< calendarTasks.Rows.Count)
             {
@@ -98,16 +108,14 @@ namespace time_schedule
             {
                 if (personButton.Person.ListTask.Tasks.Count > 0)
                 {
-                    const int TO_NEXT_ROWS = 1;
-                    
+                    const int TO_NEXT_ROWS = 1; 
                     nextRowsIndex += (personButton.Person.GetMaxCountSynchTask(Program.ListTasksAllPerson) + TO_NEXT_ROWS);
                     if (nextRowsIndex < calendarTasks.Rows.Count - 1)
                     {
                         calendarTasks.Rows[nextRowsIndex].Height = Constants.MIN_ROW_HIGHT;
                         calendarTasks.Rows[nextRowsIndex].DefaultCellStyle.BackColor = Constants.MIN_COLUMN_COLOR;
                         calendarTasks.Rows[nextRowsIndex].HeaderCell.Style.BackColor = Color.Black;
-                    }
-                    
+                    } 
                 }
             }
             LoadColumns(ref calendarTasks, ref dateTabl);
@@ -124,18 +132,36 @@ namespace time_schedule
                     plMain.Controls.Add(button);
                     button.BringToFront();
                 }
-                    
-
             }
+            int height = 0;
+            foreach (DataGridViewRow row in CalendarTasks.Rows)
+            {
+                height += row.Height;
+            }
+            height += CalendarTasks.ColumnHeadersHeight;
+
+            int width = 0;
+            foreach (DataGridViewColumn col in CalendarTasks.Columns)
+            {
+                width += col.Width;
+            }
+            width += CalendarTasks.RowHeadersWidth;
+
+            CalendarTasks.ClientSize = new Size(width + 2, height + 2);
+            DateTable.ClientSize = new Size(width + 2, DateTable.Height);
         }
         public void LoadColumns(ref DataGridView calendarTasks, ref DataGridView dateTabl)
         {
             DateTime dateToTables = Program.ListTasksAllPerson.GetMinDateStartTasks();
             DateTime dateMaxToTable = Program.ListTasksAllPerson.GetMaxDateFinishTasks();
             calendarTasks.Columns[0].HeaderText = dateToTables.ToShortDateString();
+            calendarTasks.Columns[0].Name = dateToTables.ToShortDateString();
+            calendarTasks.Columns[0].Width = Constants.COLUMN_WITH;
             calendarTasks.RowHeadersWidth = 4;
             calendarTasks.Columns[0].Width = Constants.COLUMN_WITH;
-            dateTabl.Columns[0].HeaderText = dateToTables.ToShortDateString();
+            dateTabl.Columns[0].HeaderText = dateToTables.ToShortDateString() + "\n" + dateToTables.DayOfWeek;
+            dateTabl.Columns[0].Name = dateToTables.ToShortDateString();
+            dateTabl.Columns[0].Width = Constants.COLUMN_WITH;
             if (DateTime.Today.Date == dateToTables.Date)
                 dateTabl.Columns[0].HeaderCell.Style.BackColor = Color.DarkBlue;
             dateTabl.RowHeadersWidth = 4;
@@ -186,8 +212,6 @@ namespace time_schedule
         }
         private void Form1_Load(object sender, EventArgs e)
         {
-           
-
             myScrollBar.Height = plMain.Height;
             myScrollBar.Left = plMain.Width - myScrollBar.Width;
             myScrollBar.Top = 0;
@@ -199,76 +223,7 @@ namespace time_schedule
             LoadRefreshForm(ref plPeraonButton,ref plMain,ref CalendarTasks,ref DateTable);
             NonWorkDaysWrite(DateTime.Now.AddYears(-1).Date, DateTime.Now.AddYears(1).Date);
             plMain.VerticalScroll.Visible = true;
-            //for (int i = 0; i < 50; i++)
-            //{
-            //    string nameAndText = Convert.ToString(i);
-            //    CalendarTasks.Columns.Add(nameAndText, nameAndText);
-            //}
-            //DateTable.Columns[0].HeaderText = "01.01.2021";
-            //DateTable.RowHeadersWidth = 100;
-            //for (int i = 0; i < 50; i++)
-            //{
-            //    string nameAndText = Convert.ToString(i);
-            //    DateTable.Columns.Add(nameAndText, nameAndText);
-            //}
-
-
-            //CalendarTasks.Rows.Add(50);
-            //CalendarTasks.Rows[1].HeaderCell.Value = "Верин";
-
-            //CalendarTasks.Rows[5].DefaultCellStyle.BackColor = Color.Black;
-            //CalendarTasks.Rows[5].HeaderCell.Style.BackColor = Color.Black;
-            //CalendarTasks.Rows[5].Height = 1;
-
-
-
-            int height = 0;
-            foreach (DataGridViewRow row in CalendarTasks.Rows)
-            {
-                height += row.Height;
-            }
-            height += CalendarTasks.ColumnHeadersHeight;
-
-            int width = 0;
-            foreach (DataGridViewColumn col in CalendarTasks.Columns)
-            {
-                width += col.Width;
-            }
-            width += CalendarTasks.RowHeadersWidth;
-
-            CalendarTasks.ClientSize = new Size(width + 2, height + 2);
-            DateTable.ClientSize = new Size(width + 2, DateTable.Height);
-
-            //width = 0;
-
-            //for (int i=0;i<6;i++)
-            //{
-            //    width += CalendarTasks.Columns[i].Width;
-            //}
-            //width += CalendarTasks.RowHeadersWidth;
-
-            //height = 0;
-            //for (int i = 0; i < 6; i++)
-            //{
-            //    height += CalendarTasks.Rows[i].Height;
-            //}
-
-            //height += CalendarTasks.ColumnHeadersHeight;
-
-            //button1.Location = new Point(width+ CalendarTasks.Left, height + CalendarTasks.Top);
-            //button1.BackColor = Color.Azure;
-            //button1.FlatStyle = FlatStyle.Flat;
-            //button1.FlatAppearance.CheckedBackColor = Color.Azure;
-            //button1.FlatAppearance.BorderColor= Color.Black;
-            //button1.FlatAppearance.BorderSize = 1;
-            //panel2.AutoScroll = false;
-
-            //plMain.AutoScrollPosition = new Point (0,50) ;
-            //ScrollToBottom(plMain);
-            //plMain.
-            //dataGridView2.Select();
-            //CalendarTasks.Select();
-
+            
         }
 
         private void CalendarTasks_MouseWheel(object sender, MouseEventArgs e)
@@ -340,7 +295,6 @@ namespace time_schedule
 
         private void Form1_Activated(object sender, EventArgs e)
         {
-            // panel2.Select();
             plMain.HorizontalScroll.Value = panel2.HorizontalScroll.Value;
         }
 
@@ -361,10 +315,6 @@ namespace time_schedule
             plMain.HorizontalScroll.Value = locationX;
             panel2.HorizontalScroll.Value = plMain.HorizontalScroll.Value;
             panel2.HorizontalScroll.Value = plMain.HorizontalScroll.Value;
-            //dataGridView2.Select();
-            //CalendarTasks.Select();
-
-            //MessageBox.Show(Convert.ToString(plMain.HorizontalScroll.Value));
         }
 
         private void Form1_Shown(object sender, EventArgs e)
@@ -386,6 +336,11 @@ namespace time_schedule
         private void plMain_MouseMove(object sender, MouseEventArgs e)
         {
 
+        }
+
+        private void button3_Click_1(object sender, EventArgs e)
+        {
+            LoadRefreshForm(ref plPeraonButton, ref plMain, ref CalendarTasks, ref DateTable);
         }
     }
     public class ListTaskButton
@@ -449,7 +404,11 @@ namespace time_schedule
             }
             locationY += Task.PlaceInSynchTask * Constants.ROW_HIGHT;
             int i = 0;
-            int dateTableLastNumCol = dateTable.Columns.Count-2;
+            int dateTableLastNumCol = dateTable.Columns.Count;
+            if (Task.Name == "jkjhg")
+            {
+
+            }
             while ((dateTable.Columns[i].Name != Task.DateStart.Date.ToShortDateString()) && (i < dateTable.Columns.Count - 1))
             {
                 locationX += dateTable.Columns[i].Width;
@@ -463,10 +422,11 @@ namespace time_schedule
                     DateTime.Parse(dateTable.Columns[i].Name + " 00:00:00").DayOfWeek != DayOfWeek.Saturday
                     )
                 {
-                    width += Constants.COLUMN_WITH;
+                    width += dateTable.Columns[i].Width;
                     if (DateTime.Parse(dateTable.Columns[i].Name + " 00:00:00").DayOfWeek == DayOfWeek.Friday ||
                         dateTable.Columns[i].Name == Task.DateFinish.Date.ToShortDateString())
                     {
+                        
                         AddButton(locationX, locationY, width, Constants.ROW_HIGHT);
                         locationX += width;
                         width = 0;

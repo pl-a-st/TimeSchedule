@@ -28,7 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle4 = new System.Windows.Forms.DataGridViewCellStyle();
             this.plMain = new System.Windows.Forms.Panel();
             this.button1 = new System.Windows.Forms.Button();
             this.CalendarTasks = new System.Windows.Forms.DataGridView();
@@ -46,6 +46,7 @@
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.plPeraonButton = new System.Windows.Forms.Panel();
             this.bTnToDay = new System.Windows.Forms.Button();
+            this.button3 = new System.Windows.Forms.Button();
             this.plMain.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.CalendarTasks)).BeginInit();
             this.panel2.SuspendLayout();
@@ -142,9 +143,9 @@
             // 
             // Column2
             // 
-            dataGridViewCellStyle3.BackColor = System.Drawing.Color.White;
-            dataGridViewCellStyle3.ForeColor = System.Drawing.Color.Transparent;
-            this.Column2.DefaultCellStyle = dataGridViewCellStyle3;
+            dataGridViewCellStyle4.BackColor = System.Drawing.Color.White;
+            dataGridViewCellStyle4.ForeColor = System.Drawing.Color.Transparent;
+            this.Column2.DefaultCellStyle = dataGridViewCellStyle4;
             this.Column2.HeaderText = "Column2";
             this.Column2.Name = "Column2";
             this.Column2.Width = 73;
@@ -229,11 +230,22 @@
             this.bTnToDay.UseVisualStyleBackColor = true;
             this.bTnToDay.Click += new System.EventHandler(this.button3_Click);
             // 
+            // button3
+            // 
+            this.button3.Location = new System.Drawing.Point(242, 550);
+            this.button3.Name = "button3";
+            this.button3.Size = new System.Drawing.Size(75, 23);
+            this.button3.TabIndex = 6;
+            this.button3.Text = "button3";
+            this.button3.UseVisualStyleBackColor = true;
+            this.button3.Click += new System.EventHandler(this.button3_Click_1);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(903, 658);
+            this.Controls.Add(this.button3);
             this.Controls.Add(this.bTnToDay);
             this.Controls.Add(this.btnTask);
             this.Controls.Add(this.plMain);
@@ -276,6 +288,7 @@
         private System.Windows.Forms.Button bTnToDay;
         private System.Windows.Forms.DataGridViewTextBoxColumn Column1;
         private System.Windows.Forms.DataGridViewTextBoxColumn Column2;
+        private System.Windows.Forms.Button button3;
     }
 }
 
