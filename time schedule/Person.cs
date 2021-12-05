@@ -233,6 +233,10 @@ namespace time_schedule
         }
         public void AssingPlace()
         {
+            foreach (Task task in Tasks)
+            {
+                task.SetPlaceInSynhTask(0);
+            }
             for (int i = 0;i<Tasks.Count; i++)
             {
                 for (int j=i+1;j< Tasks.Count; j++)

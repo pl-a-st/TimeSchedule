@@ -74,7 +74,8 @@ namespace time_schedule
                     plPersonButton.Controls.Add(personButton.Button);
                     nextLocationY += (personButton.Button.Height + Constants.MIN_ROW_HIGHT+1);
                     const int TO_NEXT_ROWS = 1;
-                    calendarTasks.Rows.Add(personButton.Person.GetMaxCountSynchTask(Program.ListTasksAllPerson)+ TO_NEXT_ROWS);
+                    int maxCountSynchTask = personButton.Person.GetMaxCountSynchTask(Program.ListTasksAllPerson);
+                    calendarTasks.Rows.Add(maxCountSynchTask + TO_NEXT_ROWS);
                 }  
             }
             if (calendarTasks.Rows.Count > 1)
@@ -107,13 +108,6 @@ namespace time_schedule
                 }
             }
             LoadColumns(ref calendarTasks, ref dateTabl);
-            
-            //dataGridView3.Controls.Add(personButton.Button);
-
-            //personButton.Button.BringToFront();
-            //personButton.Button.Region = dataGridView3.Region;
-            //DataGridViewButtonCell dataGridViewButtonCell = new DataGridViewButtonCell();
-            //dataGridView3.dataGridViewButtonCell;
         }
         public void LoadColumns(ref DataGridView calendarTasks, ref DataGridView dateTabl)
         {
@@ -198,33 +192,33 @@ namespace time_schedule
             //    string nameAndText = Convert.ToString(i);
             //    DateTable.Columns.Add(nameAndText, nameAndText);
             //}
-            
+
 
             //CalendarTasks.Rows.Add(50);
             //CalendarTasks.Rows[1].HeaderCell.Value = "Верин";
-            
+
             //CalendarTasks.Rows[5].DefaultCellStyle.BackColor = Color.Black;
             //CalendarTasks.Rows[5].HeaderCell.Style.BackColor = Color.Black;
             //CalendarTasks.Rows[5].Height = 1;
-            
-            
 
-            //int height = 0;
-            //foreach (DataGridViewRow row in CalendarTasks.Rows)
-            //{
-            //    height += row.Height;
-            //}
-            //height += CalendarTasks.ColumnHeadersHeight;
 
-            //int width = 0;
-            //foreach (DataGridViewColumn col in CalendarTasks.Columns)
-            //{
-            //    width += col.Width;
-            //}
-            //width += CalendarTasks.RowHeadersWidth;
 
-            //CalendarTasks.ClientSize = new Size(width + 2, height + 2);
-            //DateTable.ClientSize = new Size(width + 2, DateTable.Height);
+            int height = 0;
+            foreach (DataGridViewRow row in CalendarTasks.Rows)
+            {
+                height += row.Height;
+            }
+            height += CalendarTasks.ColumnHeadersHeight;
+
+            int width = 0;
+            foreach (DataGridViewColumn col in CalendarTasks.Columns)
+            {
+                width += col.Width;
+            }
+            width += CalendarTasks.RowHeadersWidth;
+
+            CalendarTasks.ClientSize = new Size(width + 2, height + 2);
+            DateTable.ClientSize = new Size(width + 2, DateTable.Height);
 
             //width = 0;
 
@@ -239,7 +233,7 @@ namespace time_schedule
             //{
             //    height += CalendarTasks.Rows[i].Height;
             //}
-            
+
             //height += CalendarTasks.ColumnHeadersHeight;
 
             //button1.Location = new Point(width+ CalendarTasks.Left, height + CalendarTasks.Top);
@@ -249,13 +243,13 @@ namespace time_schedule
             //button1.FlatAppearance.BorderColor= Color.Black;
             //button1.FlatAppearance.BorderSize = 1;
             //panel2.AutoScroll = false;
-            
+
             //plMain.AutoScrollPosition = new Point (0,50) ;
             //ScrollToBottom(plMain);
             //plMain.
             //dataGridView2.Select();
             //CalendarTasks.Select();
-            
+
         }
 
         private void CalendarTasks_MouseWheel(object sender, MouseEventArgs e)
@@ -503,7 +497,8 @@ namespace time_schedule
         { get; private set; }
         private int GetHightBooton(ListTasks listTasksAllPerson, int hightRowForTasks)
         {
-            return Person.GetMaxCountSynchTask(listTasksAllPerson) * hightRowForTasks;
+            int maxCountSynchTask = Person.GetMaxCountSynchTask(listTasksAllPerson);
+            return maxCountSynchTask * hightRowForTasks;
         }
 
     }
