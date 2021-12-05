@@ -128,7 +128,7 @@ namespace time_schedule
             dateTabl.RowHeadersWidth = 4;
             dateTabl.Columns[0].Width = Constants.COLUMN_WITH;
             int numColumn = 1;
-            if (dateToTables!=DateTime.MaxValue|| dateMaxToTable!=DateTime.MinValue)
+            if (dateToTables != DateTime.MaxValue || dateMaxToTable != DateTime.MinValue)
             {
                 while (dateToTables.AddDays(1) <= dateMaxToTable)
                 {
@@ -169,7 +169,7 @@ namespace time_schedule
                     numColumn++;
                 }
             }
-            
+
         }
         private void Form1_Load(object sender, EventArgs e)
         {
@@ -401,28 +401,43 @@ namespace time_schedule
         public TaskButton(Task task, ListPersonButton listPersonButton,DataGridView dateTable)
         {
             Task = task;
+            int locationY = 0;
+            int locationX = 0;
+            int width = 0;
             List<Task> listTaskThisPerson = new List<Task>();
             foreach (PersonButton personButton in listPersonButton.PersonButtons)
             {
                 if (personButton.Person.PersonFamaly == task.PersonFamaly)
                 {
                     listTaskThisPerson = personButton.Person.ListTask.Tasks;
+                    locationY = personButton.Button.Location.Y;
                 }
             }
-            int locationX = 0;
+            locationY += Task.PlaceInSynchTask * Constants.ROW_HIGHT;
             int i = 0;
-
             while ((dateTable.Columns[i].Name != Task.DateStart.Date.ToShortDateString()) && (i < dateTable.Columns.Count - 1))
             {
                 locationX += dateTable.Columns[i].Width;
                 i++;
             }
-            locationX += dateTable.RowHeadersWidth - 5 * Constants.COLUMN_WITH;
-            //вычилить ширину в цикле
-            //вычислить Х
-            // вычислить Y
-            // вычислить У
-
+            locationX += dateTable.RowHeadersWidth;
+            do
+            {
+                if(
+                    DateTime.Parse(dateTable.Columns[i].Name + " 00:00:00").DayOfWeek != DayOfWeek.Sunday &&
+                    DateTime.Parse(dateTable.Columns[i].Name + " 00:00:00").DayOfWeek != DayOfWeek.Saturday
+                    )
+                {
+                    width += Constants.COLUMN_WITH;
+                    if (DateTime.Parse(dateTable.Columns[i].Name + " 00:00:00").DayOfWeek == DayOfWeek.Friday ||
+                        dateTable.Columns[i].Name != Task.DateFinish.Date.ToShortDateString())
+                    {
+                        AddButton(locationX, locationY, width, Constants.ROW_HIGHT);
+                    }
+                }
+                locationY += dateTable.Columns[i].Width;
+            }
+            while ((dateTable.Columns[i].Name != Task.DateFinish.Date.ToShortDateString()) && (i < dateTable.Columns.Count - 1));
         }
     }
     public class ListPersonButton
