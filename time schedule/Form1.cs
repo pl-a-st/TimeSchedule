@@ -199,11 +199,11 @@ namespace time_schedule
                     string strDateToTables = dateToTables.AddDays(1).ToShortDateString();
                     calendarTasks.Columns.Add(strDateToTables, strDateToTables);
                     //calendarTasks.Columns[numColumn].AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
-                    calendarTasks.Columns[numColumn].Width = Constants.COLUMN_WITH;
+                    //calendarTasks.Columns[numColumn].Width = Constants.COLUMN_WITH;
                     dateTabl.Columns.Add(strDateToTables, strDateToTables + "\n" + dateToTables.AddDays(1).DayOfWeek);
                     //dateTabl.Columns[numColumn].AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
                     //dateTabl.Columns[numColumn].HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter;
-                    dateTabl.Columns[numColumn].Width = Constants.COLUMN_WITH;
+                    //dateTabl.Columns[numColumn].Width = Constants.COLUMN_WITH;
                     dateToTables = dateToTables.AddDays(1);
                     if (DateTime.Today.Date == dateToTables.Date)
                     {
