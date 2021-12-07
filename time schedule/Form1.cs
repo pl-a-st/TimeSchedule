@@ -54,26 +54,42 @@ namespace time_schedule
         }
         public void LoadRefreshForm(ref Panel plPersonButton,ref Panel plMain, ref DataGridView calendarTasks, ref DataGridView dateTabl)
         {
-            foreach(Control button1 in plMain.Controls)
+            for (int i = 0; i < plMain.Controls.Count; i++)
             {
-                if (button1 is Button)
-                    (button1 as Button).Dispose();
+                if (plMain.Controls[i] is Button)
+                {
+                    plMain.Controls.Remove(plMain.Controls[i]);
+                    i--;
+                }
+
             }
-            
-            for(int i=1;i< calendarTasks.Columns.Count;i++)
+            for (int i = 0; i < plPeraonButton.Controls.Count; i++)
             {
-                calendarTasks.Columns.RemoveAt(i);
+                if (plPeraonButton.Controls[i] is Button)
+                {
+                    plPeraonButton.Controls.Remove(plPeraonButton.Controls[i]);
+                    i--;
+                }
+
             }
-            for (int i = 1; i < dateTabl.Columns.Count; i++)
+            while (CalendarTasks.RowCount > 1)
             {
-                dateTabl.Columns.RemoveAt(i);
+                CalendarTasks.Rows.RemoveAt(0);
             }
-            
+            while (CalendarTasks.ColumnCount > 1)
+            {
+                CalendarTasks.Columns.RemoveAt(0);
+            }
+            while (DateTable.ColumnCount > 1)
+            {
+                DateTable.Columns.RemoveAt(0);
+            }
             Program.ListTasksAllPerson.Tasks.Clear();
             Program.ListTasksAllPerson.SetTasksFromList(Dals.ReadListFromProjectFile(Constants.TASKS));
             Program.listPersons.Persons.Clear();
             Program.listPersons.SetPersonsFromList(Dals.ReadListFromProjectFile(Constants.PERSONS), Program.ListTasksAllPerson.Tasks);
             Program.ListPersonButton.PersonButtons.Clear();
+            Program.ListTaskButtons.TaskButtons.Clear();
             Program.ListPersonButton.LoadListPersonButtons(
                 Program.listPersons.Persons,
                 Program.ListTasksAllPerson,
@@ -169,14 +185,24 @@ namespace time_schedule
             int numColumn = 1;
             if (dateToTables != DateTime.MaxValue || dateMaxToTable != DateTime.MinValue)
             {
+                calendarTasks.Visible = false;
+                calendarTasks.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.None;
+                dateTabl.Visible = false;
+                dateTabl.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.None;
+                calendarTasks.RowHeadersWidthSizeMode = DataGridViewRowHeadersWidthSizeMode.EnableResizing;
+                dateTabl.RowHeadersWidthSizeMode = DataGridViewRowHeadersWidthSizeMode.EnableResizing;
+                dateTabl.ColumnHeadersDefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+                calendarTasks.ColumnHeadersDefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+                
                 while (dateToTables.AddDays(1) <= dateMaxToTable)
                 {
-                    calendarTasks.Columns.Add(dateToTables.AddDays(1).ToShortDateString(), dateToTables.AddDays(1).ToShortDateString());
-                    calendarTasks.Columns[numColumn].AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
+                    string strDateToTables = dateToTables.AddDays(1).ToShortDateString();
+                    calendarTasks.Columns.Add(strDateToTables, strDateToTables);
+                    //calendarTasks.Columns[numColumn].AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
                     calendarTasks.Columns[numColumn].Width = Constants.COLUMN_WITH;
-                    dateTabl.Columns.Add(dateToTables.AddDays(1).ToShortDateString(), dateToTables.AddDays(1).ToShortDateString() + "\n" + dateToTables.AddDays(1).DayOfWeek);
-                    dateTabl.Columns[numColumn].AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
-                    dateTabl.Columns[numColumn].HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter;
+                    dateTabl.Columns.Add(strDateToTables, strDateToTables + "\n" + dateToTables.AddDays(1).DayOfWeek);
+                    //dateTabl.Columns[numColumn].AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
+                    //dateTabl.Columns[numColumn].HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter;
                     dateTabl.Columns[numColumn].Width = Constants.COLUMN_WITH;
                     dateToTables = dateToTables.AddDays(1);
                     if (DateTime.Today.Date == dateToTables.Date)
@@ -193,13 +219,13 @@ namespace time_schedule
                     if (dateToTables.DayOfWeek == DayOfWeek.Saturday || dateToTables.DayOfWeek == DayOfWeek.Sunday)
                     {
                         dateTabl.EnableHeadersVisualStyles = false;
-                        dateTabl.Columns[numColumn].AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
+                        //dateTabl.Columns[numColumn].AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
                         dateTabl.Columns[numColumn].MinimumWidth = 2;
                         dateTabl.Columns[numColumn].Width = 2;
                         dateTabl.Columns[numColumn].DefaultCellStyle.BackColor = Color.LightBlue;
                         dateTabl.Columns[numColumn].HeaderCell.Style.BackColor = Color.LightBlue;
                         calendarTasks.EnableHeadersVisualStyles = false;
-                        calendarTasks.Columns[numColumn].AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
+                        //calendarTasks.Columns[numColumn].AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
                         calendarTasks.Columns[numColumn].MinimumWidth = 2;
                         calendarTasks.Columns[numColumn].Width = 2;
                         calendarTasks.Columns[numColumn].DefaultCellStyle.BackColor = Color.LightBlue;
@@ -207,6 +233,9 @@ namespace time_schedule
                     }
                     numColumn++;
                 }
+                
+                calendarTasks.Visible = true;
+                dateTabl.Visible = true;
             }
 
         }
@@ -341,6 +370,31 @@ namespace time_schedule
         private void button3_Click_1(object sender, EventArgs e)
         {
             LoadRefreshForm(ref plPeraonButton, ref plMain, ref CalendarTasks, ref DateTable);
+        }
+
+        private void button4_Click(object sender, EventArgs e)
+        {
+            for (int i=0; i< plMain.Controls.Count; i++)
+            {
+                if (plMain.Controls[i] is Button)
+                {
+                    plMain.Controls.Remove(plMain.Controls[i]);
+                    i--;
+                }
+                    
+            }
+            while(CalendarTasks.RowCount>1)
+            {
+                CalendarTasks.Rows.RemoveAt(0);
+            }
+            while(CalendarTasks.ColumnCount>1)
+            {
+                CalendarTasks.Columns.RemoveAt(0);
+            }
+            while (DateTable.ColumnCount>1)
+            {
+                DateTable.Columns.RemoveAt(0);
+            }
         }
     }
     public class ListTaskButton
