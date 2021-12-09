@@ -189,49 +189,57 @@ namespace time_schedule
                 calendarTasks.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.None;
                 dateTabl.Visible = false;
                 dateTabl.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.None;
-                calendarTasks.RowHeadersWidthSizeMode = DataGridViewRowHeadersWidthSizeMode.EnableResizing;
-                dateTabl.RowHeadersWidthSizeMode = DataGridViewRowHeadersWidthSizeMode.EnableResizing;
+                dateTabl.ColumnCount = (dateMaxToTable - dateToTables).Days;
+                calendarTasks.ColumnCount = (dateMaxToTable - dateToTables).Days;
                 dateTabl.ColumnHeadersDefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
                 calendarTasks.ColumnHeadersDefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
-                
+                string dateTimeTodayDate = DateTime.Today.Date.ToShortDateString();
                 while (dateToTables.AddDays(1) <= dateMaxToTable)
                 {
-                    string strDateToTables = dateToTables.AddDays(1).ToShortDateString();
-                    calendarTasks.Columns.Add(strDateToTables, strDateToTables);
-                    //calendarTasks.Columns[numColumn].AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
-                    //calendarTasks.Columns[numColumn].Width = Constants.COLUMN_WITH;
-                    dateTabl.Columns.Add(strDateToTables, strDateToTables + "\n" + dateToTables.AddDays(1).DayOfWeek);
-                    //dateTabl.Columns[numColumn].AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
-                    //dateTabl.Columns[numColumn].HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter;
-                    //dateTabl.Columns[numColumn].Width = Constants.COLUMN_WITH;
-                    dateToTables = dateToTables.AddDays(1);
-                    if (DateTime.Today.Date == dateToTables.Date)
+                    if (dateToTables.DayOfWeek != DayOfWeek.Saturday && dateToTables.DayOfWeek != DayOfWeek.Sunday)
                     {
-                        dateTabl.EnableHeadersVisualStyles = false;
-                        dateTabl.Columns[numColumn].HeaderCell.Style.BackColor = Color.LightBlue;
-                        if (DateTime.Today.DayOfWeek == DayOfWeek.Saturday)
-                            try { dateTabl.Columns[numColumn - 1].HeaderCell.Style.BackColor = Color.LightBlue; }
-                            catch { }
-                        if (DateTime.Today.DayOfWeek == DayOfWeek.Sunday)
-                            try { dateTabl.Columns[numColumn + 1].HeaderCell.Style.BackColor = Color.LightBlue; }
-                            catch { }
-                    }
-                    if (dateToTables.DayOfWeek == DayOfWeek.Saturday || dateToTables.DayOfWeek == DayOfWeek.Sunday)
-                    {
-                        dateTabl.EnableHeadersVisualStyles = false;
-                        //dateTabl.Columns[numColumn].AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
-                        dateTabl.Columns[numColumn].MinimumWidth = 2;
-                        dateTabl.Columns[numColumn].Width = 2;
-                        dateTabl.Columns[numColumn].DefaultCellStyle.BackColor = Color.LightBlue;
-                        dateTabl.Columns[numColumn].HeaderCell.Style.BackColor = Color.LightBlue;
-                        calendarTasks.EnableHeadersVisualStyles = false;
+                        string strDateToTables = dateToTables.ToShortDateString();
+                        //calendarTasks.Columns.Add(strDateToTables, strDateToTables);
                         //calendarTasks.Columns[numColumn].AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
-                        calendarTasks.Columns[numColumn].MinimumWidth = 2;
-                        calendarTasks.Columns[numColumn].Width = 2;
-                        calendarTasks.Columns[numColumn].DefaultCellStyle.BackColor = Color.LightBlue;
-                        calendarTasks.Columns[numColumn].HeaderCell.Style.BackColor = Color.LightBlue;
+                        calendarTasks.Columns[numColumn].Width = Constants.COLUMN_WITH;
+                        calendarTasks.Columns[numColumn].HeaderText = strDateToTables;
+                        dateTabl.Columns[numColumn].Width = Constants.COLUMN_WITH;
+                        dateTabl.Columns[numColumn].HeaderText = strDateToTables;
+                        //dateTabl.Columns.Add(strDateToTables, strDateToTables + "\n" + dateToTables.DayOfWeek);
+                        //dateTabl.Columns[numColumn].AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
+                        //dateTabl.Columns[numColumn].HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter;
+                        //dateTabl.Columns[numColumn].Width = Constants.COLUMN_WITH;
+                        if (dateTimeTodayDate == strDateToTables)
+                        {
+                            dateTabl.EnableHeadersVisualStyles = false;
+                            dateTabl.Columns[numColumn].HeaderCell.Style.BackColor = Color.LightBlue;
+                            //if (DateTime.Today.DayOfWeek == DayOfWeek.Saturday)
+                            //    try { dateTabl.Columns[numColumn - 1].HeaderCell.Style.BackColor = Color.LightBlue; }
+                            //    catch { }
+                            //if (DateTime.Today.DayOfWeek == DayOfWeek.Sunday)
+                            //    try { dateTabl.Columns[numColumn + 1].HeaderCell.Style.BackColor = Color.LightBlue; }
+                            //    catch { }
+                        }
+                        numColumn++;
                     }
-                    numColumn++;
+                    dateToTables = dateToTables.AddDays(1);
+                    
+                    //if (dateToTables.DayOfWeek == DayOfWeek.Saturday || dateToTables.DayOfWeek == DayOfWeek.Sunday)
+                    //{
+                    //    dateTabl.EnableHeadersVisualStyles = false;
+                    //    //dateTabl.Columns[numColumn].AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
+                    //    dateTabl.Columns[numColumn].MinimumWidth = 2;
+                    //    dateTabl.Columns[numColumn].Width = 2;
+                    //    dateTabl.Columns[numColumn].DefaultCellStyle.BackColor = Color.LightBlue;
+                    //    dateTabl.Columns[numColumn].HeaderCell.Style.BackColor = Color.LightBlue;
+                    //    calendarTasks.EnableHeadersVisualStyles = false;
+                    //    //calendarTasks.Columns[numColumn].AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
+                    //    calendarTasks.Columns[numColumn].MinimumWidth = 2;
+                    //    calendarTasks.Columns[numColumn].Width = 2;
+                    //    calendarTasks.Columns[numColumn].DefaultCellStyle.BackColor = Color.LightBlue;
+                    //    calendarTasks.Columns[numColumn].HeaderCell.Style.BackColor = Color.LightBlue;
+                    //}
+                   
                 }
                 
                 calendarTasks.Visible = true;
@@ -459,10 +467,6 @@ namespace time_schedule
             locationY += Task.PlaceInSynchTask * Constants.ROW_HIGHT;
             int i = 0;
             int dateTableLastNumCol = dateTable.Columns.Count;
-            if (Task.Name == "jkjhg")
-            {
-
-            }
             while ((dateTable.Columns[i].Name != Task.DateStart.Date.ToShortDateString()) && (i < dateTable.Columns.Count - 1))
             {
                 locationX += dateTable.Columns[i].Width;
@@ -525,7 +529,7 @@ namespace time_schedule
             Button.Click += PersonButton_Click;
             Form1 form1 = new Form1();
             Button.Width = form1.GetPersonButtonWith();
-
+            
         }
         public void SetLocation(int locationХ, int locationY)
         {
