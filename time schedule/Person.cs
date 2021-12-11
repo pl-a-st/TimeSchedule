@@ -522,11 +522,15 @@ namespace time_schedule
         {
             TaskButtons.Add(taskButton);
         }
-        public void LoadTaskButtons(List<Task> listTask, ListPersonButton listPersonButton, DataGridView dateTable)
+        public void LoadTaskButtons(ListTasks listTasks, ListPersonButton listPersonButton)
         {
-            foreach (Task task in listTask)
+            foreach (Task task in listTasks.Tasks)
             {
-                TaskButton taskButton = new TaskButton(task, listPersonButton, dateTable);
+                TaskButton taskButton = new TaskButton(
+                    task,
+                    listPersonButton,
+                    listTasks.GetMinDateStartTasks(),
+                    listTasks.GetMaxDateFinishTasks());
                 LoadTaskButtons(taskButton);
             }
         }
@@ -556,9 +560,9 @@ namespace time_schedule
         }
         private void Button_Click(object sender, EventArgs e)
         {
-            throw new NotImplementedException();//прописать
+            //throw new NotImplementedException();//прописать
         }
-        public TaskButton(Task task, ListPersonButton listPersonButton, DataGridView dateTable)
+        public TaskButton(Task task, ListPersonButton listPersonButton,DateTime minDateStart, DateTime maxDateFinish)
         {
             Task = task;
             int locationY = 0;
@@ -574,24 +578,22 @@ namespace time_schedule
                 }
             }
             locationY += Task.PlaceInSynchTask * Constants.ROW_HIGHT;
-            int i = 0;
-            int dateTableLastNumCol = dateTable.Columns.Count;
-            while ((dateTable.Columns[i].Name != Task.DateStart.Date.ToShortDateString()) && (i < dateTable.Columns.Count - 1))
+            
+            int dateTableLastNumCol = (maxDateFinish- minDateStart).Days;
+            DateTime dateTime = minDateStart;
+            while ((dateTime.Date != Task.DateStart.Date) && (dateTime < maxDateFinish))
             {
-                locationX += dateTable.Columns[i].Width;
-                i++;
+                if (dateTime.DayOfWeek != DayOfWeek.Saturday && dateTime.DayOfWeek != DayOfWeek.Sunday)
+                    locationX += Constants.COLUMN_WITH;
+                dateTime = dateTime.AddDays(1);
             }
-            locationX += dateTable.RowHeadersWidth;
             do
             {
-                if (
-                    DateTime.Parse(dateTable.Columns[i].Name + " 00:00:00").DayOfWeek != DayOfWeek.Sunday &&
-                    DateTime.Parse(dateTable.Columns[i].Name + " 00:00:00").DayOfWeek != DayOfWeek.Saturday
-                    )
+                if(dateTime.DayOfWeek != DayOfWeek.Sunday && dateTime.DayOfWeek != DayOfWeek.Saturday)
                 {
-                    width += dateTable.Columns[i].Width;
-                    if (DateTime.Parse(dateTable.Columns[i].Name + " 00:00:00").DayOfWeek == DayOfWeek.Friday ||
-                        dateTable.Columns[i].Name == Task.DateFinish.Date.ToShortDateString())
+                    width += Constants.COLUMN_WITH;
+                    if (dateTime.DayOfWeek == DayOfWeek.Friday ||
+                        dateTime.Date == Task.DateFinish.Date)
                     {
 
                         AddButton(locationX, locationY, width, Constants.ROW_HIGHT);
@@ -599,14 +601,9 @@ namespace time_schedule
                         width = 0;
                     }
                 }
-                else
-                {
-                    locationX += dateTable.Columns[i].Width;
-                }
-                i++;
-
+                dateTime=dateTime.AddDays(1);
             }
-            while ((dateTable.Columns[i - 1].Name != Task.DateFinish.Date.ToShortDateString()) && (i < dateTableLastNumCol));
+            while ((dateTime.Date <= Task.DateFinish.Date) && (dateTime.Date <= maxDateFinish));
         }
     }
     public class ListPersonButton
