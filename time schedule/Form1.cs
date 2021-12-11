@@ -52,7 +52,7 @@ namespace time_schedule
         {
             return plMain.Location.X - plPeraonButton.Location.X;
         }
-        public void LoadRefreshForm(ref Panel plPersonButton,ref Panel plMain, ref DataGridView calendarTasks, ref DataGridView dateTabl)
+        private void CleanOldExemplar(ref Panel plPersonButton, ref Panel plMain)
         {
             for (int i = 0; i < plMain.Controls.Count; i++)
             {
@@ -63,15 +63,19 @@ namespace time_schedule
                 }
 
             }
-            for (int i = 0; i < plPeraonButton.Controls.Count; i++)
+            for (int i = 0; i < plPersonButton.Controls.Count; i++)
             {
-                if (plPeraonButton.Controls[i] is Button)
+                if (plPersonButton.Controls[i] is Button)
                 {
-                    plPeraonButton.Controls.Remove(plPeraonButton.Controls[i]);
+                    plPersonButton.Controls.Remove(plPeraonButton.Controls[i]);
                     i--;
                 }
 
             }
+        }
+        public void LoadRefreshForm(ref Panel plPersonButton,ref Panel plMain, ref DataGridView calendarTasks, ref DataGridView dateTabl,ref Bitmap bitmap)
+        {
+            CleanOldExemplar(ref plPersonButton, ref plMain);
             while (CalendarTasks.RowCount > 1)
             {
                 CalendarTasks.Rows.RemoveAt(0);
@@ -108,32 +112,33 @@ namespace time_schedule
                     calendarTasks.Rows.Add(maxCountSynchTask + TO_NEXT_ROWS);
                 }  
             }
-            if (calendarTasks.Rows.Count > 1)
-            {
-                calendarTasks.Rows.RemoveAt(calendarTasks.Rows.Count - 2);
-                calendarTasks.Rows.RemoveAt(calendarTasks.Rows.Count - 2);
-            }
-            int rowIndex = 0;
-            while(rowIndex< calendarTasks.Rows.Count)
-            {
-                calendarTasks.Rows[rowIndex].Height = Constants.ROW_HIGHT;
-                rowIndex++;
-            }
-            nextRowsIndex = -1;
-            foreach (PersonButton personButton in Program.ListPersonButton.PersonButtons)
-            {
-                if (personButton.Person.ListTask.Tasks.Count > 0)
-                {
-                    const int TO_NEXT_ROWS = 1; 
-                    nextRowsIndex += (personButton.Person.GetMaxCountSynchTask(Program.ListTasksAllPerson) + TO_NEXT_ROWS);
-                    if (nextRowsIndex < calendarTasks.Rows.Count - 1)
-                    {
-                        calendarTasks.Rows[nextRowsIndex].Height = Constants.MIN_ROW_HIGHT;
-                        calendarTasks.Rows[nextRowsIndex].DefaultCellStyle.BackColor = Constants.MIN_COLUMN_COLOR;
-                        calendarTasks.Rows[nextRowsIndex].HeaderCell.Style.BackColor = Color.Black;
-                    } 
-                }
-            }
+            ResizeImage(new Size(Bmp.Width, nextLocationY));
+            //if (calendarTasks.Rows.Count > 1)
+            //{
+            //    calendarTasks.Rows.RemoveAt(calendarTasks.Rows.Count - 2);
+            //    calendarTasks.Rows.RemoveAt(calendarTasks.Rows.Count - 2);
+            //}
+            //int rowIndex = 0;
+            //while(rowIndex< calendarTasks.Rows.Count)
+            //{
+            //    calendarTasks.Rows[rowIndex].Height = Constants.ROW_HIGHT;
+            //    rowIndex++;
+            //}
+            //nextRowsIndex = -1;
+            //foreach (PersonButton personButton in Program.ListPersonButton.PersonButtons)
+            //{
+            //    if (personButton.Person.ListTask.Tasks.Count > 0)
+            //    {
+            //        const int TO_NEXT_ROWS = 1; 
+            //        nextRowsIndex += (personButton.Person.GetMaxCountSynchTask(Program.ListTasksAllPerson) + TO_NEXT_ROWS);
+            //        if (nextRowsIndex < calendarTasks.Rows.Count - 1)
+            //        {
+            //            calendarTasks.Rows[nextRowsIndex].Height = Constants.MIN_ROW_HIGHT;
+            //            calendarTasks.Rows[nextRowsIndex].DefaultCellStyle.BackColor = Constants.MIN_COLUMN_COLOR;
+            //            calendarTasks.Rows[nextRowsIndex].HeaderCell.Style.BackColor = Color.Black;
+            //        } 
+            //    }
+            //}
             LoadColumns(ref calendarTasks, ref dateTabl);
             Program.ListTaskButtons.TaskButtons.Clear();
             Program.ListTaskButtons.LoadTaskButtons(
@@ -404,168 +409,27 @@ namespace time_schedule
                 DateTable.Columns.RemoveAt(0);
             }
         }
-    }
-    public class ListTaskButton
-    {
-        public List<TaskButton> TaskButtons
-        { get; private set; } = new List<TaskButton>();
-        public void LoadTaskButtons(TaskButton taskButton)
-        {
-            TaskButtons.Add(taskButton);
-        }
-        public void LoadTaskButtons(List<Task> listTask,ListPersonButton listPersonButton, DataGridView dateTable)
-        {
-            foreach (Task task in listTask)
-            {
-                TaskButton taskButton = new TaskButton(task, listPersonButton, dateTable);
-                LoadTaskButtons(taskButton);
-            }
-        }
-    }
+        public Bitmap Bmp
+        { get; private set; } = new Bitmap(0, 0);
 
-    public class TaskButton
-    {
-        public Task Task
-        { get; private set; }
-        public void SetTask(Task task)
+        public void ResizeImage(Size size)
         {
-            Task = task;
-        }
-        public List<Button> Buttons
-        { get; private set; } = new List<Button>();
-        public void AddButton(int locationX, int locationY, int with, int height)
-        {
-            Button button = new Button();
-            button.Location = new Point(locationX, locationY);
-            button.Width = with;
-            button.Height = height;
-            button.Text = Task.Name;
-            button.BackColor = Task.Color;
-            button.FlatStyle = FlatStyle.Flat;
-            button.Click += Button_Click;
-            Buttons.Add(button);
-        }
-        private void Button_Click(object sender, EventArgs e)
-        {
-            throw new NotImplementedException();//прописать
-        }
-        public TaskButton(Task task, ListPersonButton listPersonButton,DataGridView dateTable)
-        {
-            Task = task;
-            int locationY = 0;
-            int locationX = 0;
-            int width = 0;
-            List<Task> listTaskThisPerson = new List<Task>();
-            foreach (PersonButton personButton in listPersonButton.PersonButtons)
+            try
             {
-                if (personButton.Person.PersonFamaly == task.PersonFamaly)
+                Bitmap b = new Bitmap(size.Width, size.Height);
+                using (Graphics g = Graphics.FromImage((Image)b))
                 {
-                    listTaskThisPerson = personButton.Person.ListTask.Tasks;
-                    locationY = personButton.Button.Location.Y;
+                    g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
+                    g.DrawImage(Bmp, 0, 0, size.Width, size.Height);
                 }
+                Bmp = b;
             }
-            locationY += Task.PlaceInSynchTask * Constants.ROW_HIGHT;
-            int i = 0;
-            int dateTableLastNumCol = dateTable.Columns.Count;
-            while ((dateTable.Columns[i].Name != Task.DateStart.Date.ToShortDateString()) && (i < dateTable.Columns.Count - 1))
+            catch
             {
-                locationX += dateTable.Columns[i].Width;
-                i++;
-            }
-            locationX += dateTable.RowHeadersWidth;
-            do
-            {
-                if(
-                    DateTime.Parse(dateTable.Columns[i].Name + " 00:00:00").DayOfWeek != DayOfWeek.Sunday &&
-                    DateTime.Parse(dateTable.Columns[i].Name + " 00:00:00").DayOfWeek != DayOfWeek.Saturday
-                    )
-                {
-                    width += dateTable.Columns[i].Width;
-                    if (DateTime.Parse(dateTable.Columns[i].Name + " 00:00:00").DayOfWeek == DayOfWeek.Friday ||
-                        dateTable.Columns[i].Name == Task.DateFinish.Date.ToShortDateString())
-                    {
-                        
-                        AddButton(locationX, locationY, width, Constants.ROW_HIGHT);
-                        locationX += width;
-                        width = 0;
-                    }
-                }
-                else
-                {
-                    locationX += dateTable.Columns[i].Width;
-                }
-                i++;
-                
-            }
-            while ((dateTable.Columns[i-1].Name != Task.DateFinish.Date.ToShortDateString()) && (i < dateTableLastNumCol));
-        }
-    }
-    public class ListPersonButton
-    {
-        public List<PersonButton> PersonButtons
-        { get; private set; } = new List<PersonButton>();
-        public void ListPersonButtonsAdd(PersonButton personButton)
-        {
-            PersonButtons.Add(personButton);
-        }
-        public void LoadListPersonButtons(List<Person> persons, ListTasks listTasksAllPerson, int hightRowForTasks)
-        {
-            foreach (Person person in persons)
-            {
-                PersonButton personButton = new PersonButton(person, listTasksAllPerson, hightRowForTasks);
-                ListPersonButtonsAdd(personButton);
-            }
-        }
-    }
-    public class PersonButton
-    {
-        public PersonButton(Person person, ListTasks listTasksAllPerson, int hightRowForTasks)
-        {
-            Person = person;
-            Person.setTasks(listTasksAllPerson);
-            Button.Text = person.PersonFamaly;
-            Button.Height = GetHightBooton(listTasksAllPerson, hightRowForTasks);
-            Button.BringToFront();
-            Button.Click += PersonButton_Click;
-            Form1 form1 = new Form1();
-            Button.Width = form1.GetPersonButtonWith();
-            
-        }
-        public void SetLocation(int locationХ, int locationY)
-        {
-            Button.Location = new Point(locationХ, locationY);
-        }
-        private void PersonButton_Click(object sender, EventArgs e)
-        {
-            fmTasks fmTasks = new fmTasks();
-            fmTasks.Load -= fmTasks.fmTasks_Load;
-            fmTasks.Load += FmTasks_Load;
-            void FmTasks_Load(object sender1, EventArgs e1)
-            {
-                fmTasks.Text = "Испольнитель:" + Person.PersonFamaly +"- задачи";
-                foreach (Task task in Program.ListTasksAllPerson.Tasks)
-                {
-                    if (task.PersonFamaly== Person.PersonFamaly)
-                    fmTasks.RetunlBxTasks().Items.Add(task.Number.ToString() + "\t" + task.Name);
-                }
-            }
-            fmTasks.SetTextBox1().TextChanged -= fmTasks.textBox1_TextChanged;
-            fmTasks.SetTextBox1().TextChanged += PersonButton_TextChanged;
-            void PersonButton_TextChanged(object sender2, EventArgs e2)
-            {
-                fmTasks.LoadLBxTasksPerson(fmTasks.SetTextBox1().Text, Person.PersonFamaly);
-            }
-            fmTasks.ShowDialog();
-        }
-        public Button Button
-        { get; private set; } = new Button();
-        public Person Person
-        { get; private set; }
-        private int GetHightBooton(ListTasks listTasksAllPerson, int hightRowForTasks)
-        {
-            int maxCountSynchTask = Person.GetMaxCountSynchTask(listTasksAllPerson);
-            return maxCountSynchTask * hightRowForTasks;
-        }
+                MessageBox.Show("123");
 
+            }
+        }
     }
+   
 }

@@ -4,6 +4,7 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace time_schedule
 {
@@ -512,5 +513,189 @@ namespace time_schedule
         {
             PlaceInSynchTask = placeInSynchTask;
         }
+    }
+    public class ListTaskButton
+    {
+        public List<TaskButton> TaskButtons
+        { get; private set; } = new List<TaskButton>();
+        public void LoadTaskButtons(TaskButton taskButton)
+        {
+            TaskButtons.Add(taskButton);
+        }
+        public void LoadTaskButtons(List<Task> listTask, ListPersonButton listPersonButton, DataGridView dateTable)
+        {
+            foreach (Task task in listTask)
+            {
+                TaskButton taskButton = new TaskButton(task, listPersonButton, dateTable);
+                LoadTaskButtons(taskButton);
+            }
+        }
+    }
+
+    public class TaskButton
+    {
+        public Task Task
+        { get; private set; }
+        public void SetTask(Task task)
+        {
+            Task = task;
+        }
+        public List<Button> Buttons
+        { get; private set; } = new List<Button>();
+        public void AddButton(int locationX, int locationY, int with, int height)
+        {
+            Button button = new Button();
+            button.Location = new Point(locationX, locationY);
+            button.Width = with;
+            button.Height = height;
+            button.Text = Task.Name;
+            button.BackColor = Task.Color;
+            button.FlatStyle = FlatStyle.Flat;
+            button.Click += Button_Click;
+            Buttons.Add(button);
+        }
+        private void Button_Click(object sender, EventArgs e)
+        {
+            throw new NotImplementedException();//прописать
+        }
+        public TaskButton(Task task, ListPersonButton listPersonButton, DataGridView dateTable)
+        {
+            Task = task;
+            int locationY = 0;
+            int locationX = 0;
+            int width = 0;
+            List<Task> listTaskThisPerson = new List<Task>();
+            foreach (PersonButton personButton in listPersonButton.PersonButtons)
+            {
+                if (personButton.Person.PersonFamaly == task.PersonFamaly)
+                {
+                    listTaskThisPerson = personButton.Person.ListTask.Tasks;
+                    locationY = personButton.Button.Location.Y;
+                }
+            }
+            locationY += Task.PlaceInSynchTask * Constants.ROW_HIGHT;
+            int i = 0;
+            int dateTableLastNumCol = dateTable.Columns.Count;
+            while ((dateTable.Columns[i].Name != Task.DateStart.Date.ToShortDateString()) && (i < dateTable.Columns.Count - 1))
+            {
+                locationX += dateTable.Columns[i].Width;
+                i++;
+            }
+            locationX += dateTable.RowHeadersWidth;
+            do
+            {
+                if (
+                    DateTime.Parse(dateTable.Columns[i].Name + " 00:00:00").DayOfWeek != DayOfWeek.Sunday &&
+                    DateTime.Parse(dateTable.Columns[i].Name + " 00:00:00").DayOfWeek != DayOfWeek.Saturday
+                    )
+                {
+                    width += dateTable.Columns[i].Width;
+                    if (DateTime.Parse(dateTable.Columns[i].Name + " 00:00:00").DayOfWeek == DayOfWeek.Friday ||
+                        dateTable.Columns[i].Name == Task.DateFinish.Date.ToShortDateString())
+                    {
+
+                        AddButton(locationX, locationY, width, Constants.ROW_HIGHT);
+                        locationX += width;
+                        width = 0;
+                    }
+                }
+                else
+                {
+                    locationX += dateTable.Columns[i].Width;
+                }
+                i++;
+
+            }
+            while ((dateTable.Columns[i - 1].Name != Task.DateFinish.Date.ToShortDateString()) && (i < dateTableLastNumCol));
+        }
+    }
+    public class ListPersonButton
+    {
+        public List<PersonButton> PersonButtons
+        { get; private set; } = new List<PersonButton>();
+        public void ListPersonButtonsAdd(PersonButton personButton)
+        {
+            PersonButtons.Add(personButton);
+        }
+        public void LoadListPersonButtons(List<Person> persons, ListTasks listTasksAllPerson, int hightRowForTasks)
+        {
+            foreach (Person person in persons)
+            {
+                PersonButton personButton = new PersonButton(person, listTasksAllPerson, hightRowForTasks);
+                ListPersonButtonsAdd(personButton);
+            }
+        }
+    }
+    public class PersonButton
+    {
+        public PersonButton(Person person, ListTasks listTasksAllPerson, int hightRowForTasks)
+        {
+            Person = person;
+            Person.setTasks(listTasksAllPerson);
+            Button.Text = person.PersonFamaly;
+            Button.Height = GetHightBooton(listTasksAllPerson, hightRowForTasks);
+            Button.BringToFront();
+            Button.Click += PersonButton_Click;
+            Form1 form1 = new Form1();
+            Button.Width = form1.GetPersonButtonWith();
+
+        }
+        public void SetLocation(int locationХ, int locationY)
+        {
+            Button.Location = new Point(locationХ, locationY);
+        }
+        private void PersonButton_Click(object sender, EventArgs e)
+        {
+            fmTasks fmTasks = new fmTasks();
+            fmTasks.Load -= fmTasks.fmTasks_Load;
+            fmTasks.Load += FmTasks_Load;
+            void FmTasks_Load(object sender1, EventArgs e1)
+            {
+                fmTasks.Text = "Испольнитель:" + Person.PersonFamaly + "- задачи";
+                foreach (Task task in Program.ListTasksAllPerson.Tasks)
+                {
+                    if (task.PersonFamaly == Person.PersonFamaly)
+                        fmTasks.RetunlBxTasks().Items.Add(task.Number.ToString() + "\t" + task.Name);
+                }
+            }
+            fmTasks.SetTextBox1().TextChanged -= fmTasks.textBox1_TextChanged;
+            fmTasks.SetTextBox1().TextChanged += PersonButton_TextChanged;
+            void PersonButton_TextChanged(object sender2, EventArgs e2)
+            {
+                fmTasks.LoadLBxTasksPerson(fmTasks.SetTextBox1().Text, Person.PersonFamaly);
+            }
+            fmTasks.ShowDialog();
+        }
+        public Button Button
+        { get; private set; } = new Button();
+        public Person Person
+        { get; private set; }
+        public List<Pen> ListMinHorizontLine
+        { get; private set; } = new List<Pen>();
+        public Pen BigHorizontLine
+        { get; private set; } = new Pen(Color.Black, Constants.MIN_ROW_HIGHT);
+        public void LoadLinesPerson(ref Panel panel, ListTasks listTasksAllPerson, PaintEventArgs e)
+        {
+            int height = Button.Height;
+            int locationY = Button.Location.Y;
+            int length = (listTasksAllPerson.GetMaxDateFinishTasks() - listTasksAllPerson.GetMinDateStartTasks()).Days * Constants.ROW_HIGHT;
+            Graphics graphics = panel.CreateGraphics();
+            while (height > 0)
+            {
+                Pen pen = new Pen(Color.LightGray, Constants.LINE_HIGHT);
+                graphics.DrawLine(pen, 0, locationY, length, locationY);
+                height -= Constants.COLUMN_WITH;
+                locationY += Constants.COLUMN_WITH;
+            }
+            Pen bigLine = new Pen(Color.LightGray, Constants.MIN_ROW_HIGHT);
+            graphics.DrawLine(bigLine, 0, locationY, length, locationY);
+            graphics.Dispose();
+        }
+        private int GetHightBooton(ListTasks listTasksAllPerson, int hightRowForTasks)
+        {
+            int maxCountSynchTask = Person.GetMaxCountSynchTask(listTasksAllPerson);
+            return maxCountSynchTask * hightRowForTasks;
+        }
+
     }
 }
