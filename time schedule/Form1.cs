@@ -15,6 +15,18 @@ namespace time_schedule
 
     public partial class Form1 : Form
     {
+        public int PlMainScrollYSaved
+        { get; private set; } = 0;
+        public int PlMainScrollXSaved
+        { get; private set; } = 0;
+        public int PlForDateScrollXSaved
+        { get; private set; } = 0;
+        public int PlPeraonButtonYSaved
+        { get; private set; } = 0;
+        public DateTime MinDateStart
+        { get; private set; } = DateTime.MaxValue;
+        public DateTime MaxDateFinish
+        { get; private set; } = DateTime.MinValue;
         public Form1()
         {
             Program.fmMain = this;
@@ -71,7 +83,9 @@ namespace time_schedule
                 }
 
             }
-            plForDate.Controls.Clear();
+            if (MaxDateFinish != Program.ListTasksAllPerson.GetMaxDateFinishTasks() ||
+                MinDateStart != Program.ListTasksAllPerson.GetMinDateStartTasks()) 
+                plForDate.Controls.Clear();
             pBForLine.CreateGraphics().Clear(Color.White);
             Bmp = new Bitmap(1,1);
 
@@ -136,8 +150,37 @@ namespace time_schedule
                 }
             }
         }
+        public void SaveScrolls()
+        {
+            PlForDateScrollXSaved = plForDate.HorizontalScroll.Value;
+            PlMainScrollXSaved = plMain.HorizontalScroll.Value;
+            PlMainScrollYSaved = plMain.VerticalScroll.Value;
+            PlPeraonButtonYSaved = plPeraonButton.VerticalScroll.Value;
+        }
+        public void LoadScrolls()
+        {
+            plForDate.HorizontalScroll.Value = PlForDateScrollXSaved;
+            plMain.HorizontalScroll.Value = PlMainScrollXSaved;
+            plMain.VerticalScroll.Value = PlMainScrollYSaved;
+            plPeraonButton.VerticalScroll.Value = PlPeraonButtonYSaved;
+        }
+        public void ScrollToZero()
+        {
+            plForDate.HorizontalScroll.Value = 0;
+            plMain.HorizontalScroll.Value = 0;
+            plMain.VerticalScroll.Value = 0;
+            plPeraonButton.VerticalScroll.Value = 0;
+        }
+        public void SaveMinMaxDate()
+        {
+            MaxDateFinish = Program.ListTasksAllPerson.GetMaxDateFinishTasks();
+            MinDateStart = Program.ListTasksAllPerson.GetMinDateStartTasks();
+        }
         public void LoadRefreshForm(ref Panel plPersonButton,ref Panel plMain, Bitmap bitmap)
         {
+            SaveScrolls();
+            ScrollToZero();
+            SaveMinMaxDate();
             CleanOldExemplar(ref plPersonButton, ref plMain);
             Program.ListTasksAllPerson.Tasks.Clear();
             Program.ListTasksAllPerson.SetTasksFromList(Dals.ReadListFromProjectFile(Constants.TASKS));
@@ -167,42 +210,50 @@ namespace time_schedule
                     button.BringToFront();
                 }
             }
+            LoadScrolls();
         }
         public void LoadColumns()
         {
             DateTime dateToTables = Program.ListTasksAllPerson.GetMinDateStartTasks();
             DateTime dateMaxToTable = Program.ListTasksAllPerson.GetMaxDateFinishTasks();
-            int height = plMain.Location.Y - plForDate.Location.Y;
-            int locationX = 0;
-            plForDate.Visible = false;
-            while (dateToTables< dateMaxToTable)
+            
+            if (MaxDateFinish != dateMaxToTable||MinDateStart!= dateToTables)
             {
-               
-                if (dateToTables.DayOfWeek!=DayOfWeek.Saturday&& dateToTables.DayOfWeek != DayOfWeek.Sunday)
+                int height = plMain.Location.Y - plForDate.Location.Y;
+                int locationX = 0;
+                plForDate.Visible = false;
+                while (dateToTables < dateMaxToTable)
                 {
-                    TextBox textBox = new TextBox();
-                    textBox.BorderStyle = BorderStyle.FixedSingle;
-                    textBox.AutoSize = false;
-                    textBox.Size = new Size(Constants.COLUMN_WITH, height);
-                    textBox.Multiline = true;
-                    textBox.Text = dateToTables.ToShortDateString() + "\n" + dateToTables.DayOfWeek;
-                    textBox.BackColor = Color.AliceBlue;
-                    textBox.ForeColor = Color.Black;
-                    textBox.TextAlign = HorizontalAlignment.Center;
-                    
-                   textBox.ReadOnly = true;
-                    if (dateToTables == DateTime.Now)
-                        textBox.BackColor = Color.LightBlue;
-                    textBox.Location = new Point(locationX, 0);
-                    plForDate.Controls.Add(textBox);
-                    locationX += Constants.COLUMN_WITH;
+
+                    if (dateToTables.DayOfWeek != DayOfWeek.Saturday && dateToTables.DayOfWeek != DayOfWeek.Sunday)
+                    {
+                        TextBox textBox = new TextBox();
+                        textBox.BorderStyle = BorderStyle.FixedSingle;
+                        textBox.AutoSize = false;
+                        textBox.Size = new Size(Constants.COLUMN_WITH, height);
+                        textBox.Multiline = true;
+                        textBox.Text = dateToTables.ToShortDateString() + "\n" + dateToTables.DayOfWeek;
+                        textBox.BackColor = Color.AliceBlue;
+                        textBox.ForeColor = Color.Black;
+                        textBox.TextAlign = HorizontalAlignment.Center;
+
+                        textBox.ReadOnly = true;
+                        if (dateToTables == DateTime.Now)
+                            textBox.BackColor = Color.LightBlue;
+                        textBox.Location = new Point(locationX, 0);
+                        plForDate.Controls.Add(textBox);
+                        locationX += Constants.COLUMN_WITH;
+                    }
+                    dateToTables = dateToTables.AddDays(1);
                 }
-                dateToTables= dateToTables.AddDays(1);
+                plForDate.Visible = true;
+                pBForLine.Width = locationX;
+                ResizeImage(new Size(locationX, pBForLine.Height));
             }
-            plForDate.Visible = true;
-            pBForLine.Width = locationX;
-            ResizeImage(new Size(locationX, pBForLine.Height));
-            //pBForLine.Size = Bmp.Size;
+            else
+            {
+                ResizeImage(new Size(pBForLine.Width, pBForLine.Height));
+            }
         }
         private void Form1_Load(object sender, EventArgs e)
         {
@@ -224,8 +275,9 @@ namespace time_schedule
         {
             plMain.Focus();
             plForDate.HorizontalScroll.Value = plMain.HorizontalScroll.Value;
-           
+            plForDate.HorizontalScroll.Value = plMain.HorizontalScroll.Value;
             int test = plMain.VerticalScroll.Value;
+            plPeraonButton.VerticalScroll.Value = test;
             plPeraonButton.VerticalScroll.Value = test;
 
 
@@ -297,31 +349,49 @@ namespace time_schedule
         private void Form1_Activated(object sender, EventArgs e)
         {
             plMain.HorizontalScroll.Value = plForDate.HorizontalScroll.Value;
+            
         }
-
-        private void button3_Click(object sender, EventArgs e)
+        private void ScrollToday()
         {
             int locationX = 0;
-            int i = 0;
-           
-            //while ((DateTable.Columns[i].Name!=DateTime.Today.Date.ToShortDateString())&&(i< DateTable.Columns.Count-1))
-            //{
-            //    locationX += CalendarTasks.Columns[i].Width;
-            //    i++;
-            //}
-            //locationX += CalendarTasks.RowHeadersWidth-5*Constants.COLUMN_WITH;
+            foreach (Control textBox in plForDate.Controls)
+            {
+                if (textBox is TextBox)
+                {
+                    DateTime dateTime = DateTime.Parse(textBox.Text.Split('\n')[0]);
+                    if (dateTime <= DateTime.Now)
+                    {
+                        locationX = textBox.Location.X;
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+            }
             plForDate.Focus();
             plMain.Focus();
             plMain.HorizontalScroll.Value = locationX;
             plMain.HorizontalScroll.Value = locationX;
+            try
+            {
+                plMain.HorizontalScroll.Value = locationX - 4 * Constants.COLUMN_WITH;
+                plMain.HorizontalScroll.Value = locationX - 4 * Constants.COLUMN_WITH;
+            }
+            catch { }
             plForDate.HorizontalScroll.Value = plMain.HorizontalScroll.Value;
             plForDate.HorizontalScroll.Value = plMain.HorizontalScroll.Value;
+        }
+        private void button3_Click(object sender, EventArgs e)
+        {
+            ScrollToday();
         }
 
         private void Form1_Shown(object sender, EventArgs e)
         {
             plMain.HorizontalScroll.Value = 0;
             plForDate.HorizontalScroll.Value = 0;
+            ScrollToday();
         }
         private void LoadDataGridPersonButton(ref DataGridView dataGridView, ListPersonButton listPersonButton)
         {
@@ -346,15 +416,7 @@ namespace time_schedule
 
         private void button4_Click(object sender, EventArgs e)
         {
-            for (int i=0; i< plMain.Controls.Count; i++)
-            {
-                if (plMain.Controls[i] is Button)
-                {
-                    plMain.Controls.Remove(plMain.Controls[i]);
-                    i--;
-                }
-                    
-            }
+           
             
         }
         public Bitmap Bmp
