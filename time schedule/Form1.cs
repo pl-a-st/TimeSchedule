@@ -351,15 +351,17 @@ namespace time_schedule
             plMain.HorizontalScroll.Value = plForDate.HorizontalScroll.Value;
             
         }
-        private void ScrollToday()
+        private void ScrollToDate(DateTime targetDateTime)
         {
             int locationX = 0;
+            plMain.HorizontalScroll.Value = 0;
+            plForDate.HorizontalScroll.Value = 0;
             foreach (Control textBox in plForDate.Controls)
             {
                 if (textBox is TextBox)
                 {
                     DateTime dateTime = DateTime.Parse(textBox.Text.Split('\n')[0]);
-                    if (dateTime <= DateTime.Now)
+                    if (dateTime <= targetDateTime)
                     {
                         locationX = textBox.Location.X;
                     }
@@ -371,12 +373,13 @@ namespace time_schedule
             }
             plForDate.Focus();
             plMain.Focus();
-            plMain.HorizontalScroll.Value = locationX;
-            plMain.HorizontalScroll.Value = locationX;
+            
             try
             {
-                plMain.HorizontalScroll.Value = locationX - 4 * Constants.COLUMN_WITH;
-                plMain.HorizontalScroll.Value = locationX - 4 * Constants.COLUMN_WITH;
+                plMain.HorizontalScroll.Value = Math.Abs(locationX);
+                plMain.HorizontalScroll.Value = Math.Abs(locationX); 
+                plMain.HorizontalScroll.Value = Math.Abs(locationX) - 4 * Constants.COLUMN_WITH;
+                plMain.HorizontalScroll.Value = Math.Abs(locationX) - 4 * Constants.COLUMN_WITH;
             }
             catch { }
             plForDate.HorizontalScroll.Value = plMain.HorizontalScroll.Value;
@@ -384,14 +387,14 @@ namespace time_schedule
         }
         private void button3_Click(object sender, EventArgs e)
         {
-            ScrollToday();
+            ScrollToDate(DateTime.Now.Date);
         }
 
         private void Form1_Shown(object sender, EventArgs e)
         {
             plMain.HorizontalScroll.Value = 0;
             plForDate.HorizontalScroll.Value = 0;
-            ScrollToday();
+            ScrollToDate(DateTime.Now.Date);
         }
         private void LoadDataGridPersonButton(ref DataGridView dataGridView, ListPersonButton listPersonButton)
         {
@@ -439,6 +442,11 @@ namespace time_schedule
                 MessageBox.Show("Что-то с рисованием");
 
             }
+        }
+
+        private void dateTimePicker1_ValueChanged(object sender, EventArgs e)
+        {
+            ScrollToDate(dateTimePicker1.Value.Date);
         }
     }
    
