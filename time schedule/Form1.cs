@@ -348,12 +348,14 @@ namespace time_schedule
 
         private void Form1_Activated(object sender, EventArgs e)
         {
-            plMain.HorizontalScroll.Value = plForDate.HorizontalScroll.Value;
+            //plMain.HorizontalScroll.Value = plForDate.HorizontalScroll.Value;
             
         }
         private void ScrollToDate(DateTime targetDateTime)
         {
             int locationX = 0;
+            plMain.HorizontalScroll.Value = 0;
+            plForDate.HorizontalScroll.Value = 0;
             plMain.HorizontalScroll.Value = 0;
             plForDate.HorizontalScroll.Value = 0;
             foreach (Control textBox in plForDate.Controls)
@@ -373,17 +375,22 @@ namespace time_schedule
             }
             plForDate.Focus();
             plMain.Focus();
-            
-            try
+            int NewLocationX = locationX - 4 * Constants.COLUMN_WITH;
+            if (NewLocationX > 0)
             {
-                plMain.HorizontalScroll.Value = Math.Abs(locationX);
-                plMain.HorizontalScroll.Value = Math.Abs(locationX); 
-                plMain.HorizontalScroll.Value = Math.Abs(locationX) - 4 * Constants.COLUMN_WITH;
-                plMain.HorizontalScroll.Value = Math.Abs(locationX) - 4 * Constants.COLUMN_WITH;
+                plMain.HorizontalScroll.Value = NewLocationX;
+                plMain.HorizontalScroll.Value = NewLocationX;
+                plForDate.HorizontalScroll.Value = NewLocationX;
+                plForDate.HorizontalScroll.Value = NewLocationX;
+
             }
-            catch { }
-            plForDate.HorizontalScroll.Value = plMain.HorizontalScroll.Value;
-            plForDate.HorizontalScroll.Value = plMain.HorizontalScroll.Value;
+            else
+            {
+                plMain.HorizontalScroll.Value = locationX;
+                plMain.HorizontalScroll.Value = locationX;
+                plForDate.HorizontalScroll.Value = locationX;
+                plForDate.HorizontalScroll.Value = locationX;
+            }
         }
         private void button3_Click(object sender, EventArgs e)
         {
@@ -419,8 +426,10 @@ namespace time_schedule
 
         private void button4_Click(object sender, EventArgs e)
         {
-           
-            
+            plMain.HorizontalScroll.Value += 5 * Constants.COLUMN_WITH;
+            plMain.HorizontalScroll.Value += 5 * Constants.COLUMN_WITH;
+            plForDate.HorizontalScroll.Value = plMain.HorizontalScroll.Value;
+            plForDate.HorizontalScroll.Value = plMain.HorizontalScroll.Value;
         }
         public Bitmap Bmp
         { get; set; } = new Bitmap(1, 1);
@@ -447,6 +456,14 @@ namespace time_schedule
         private void dateTimePicker1_ValueChanged(object sender, EventArgs e)
         {
             ScrollToDate(dateTimePicker1.Value.Date);
+        }
+
+        private void minusFiveDay_Click(object sender, EventArgs e)
+        {
+            plMain.HorizontalScroll.Value -= 5 * Constants.COLUMN_WITH;
+            plMain.HorizontalScroll.Value -= 5 * Constants.COLUMN_WITH;
+            plForDate.HorizontalScroll.Value = plMain.HorizontalScroll.Value;
+            plForDate.HorizontalScroll.Value = plMain.HorizontalScroll.Value;
         }
     }
    

@@ -40,9 +40,10 @@
             this.plPeraonButton = new System.Windows.Forms.Panel();
             this.bTnToDay = new System.Windows.Forms.Button();
             this.button3 = new System.Windows.Forms.Button();
-            this.button4 = new System.Windows.Forms.Button();
+            this.addFiveDays = new System.Windows.Forms.Button();
             this.pBForLine = new System.Windows.Forms.PictureBox();
             this.dateTimePicker1 = new System.Windows.Forms.DateTimePicker();
+            this.minusFiveDay = new System.Windows.Forms.Button();
             this.plMain.SuspendLayout();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pBForLine)).BeginInit();
@@ -145,7 +146,7 @@
             // bTnToDay
             // 
             this.bTnToDay.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
-            this.bTnToDay.Location = new System.Drawing.Point(435, 535);
+            this.bTnToDay.Location = new System.Drawing.Point(425, 535);
             this.bTnToDay.Name = "bTnToDay";
             this.bTnToDay.Size = new System.Drawing.Size(75, 23);
             this.bTnToDay.TabIndex = 5;
@@ -163,15 +164,16 @@
             this.button3.UseVisualStyleBackColor = true;
             this.button3.Click += new System.EventHandler(this.button3_Click_1);
             // 
-            // button4
+            // addFiveDays
             // 
-            this.button4.Location = new System.Drawing.Point(591, 549);
-            this.button4.Name = "button4";
-            this.button4.Size = new System.Drawing.Size(75, 23);
-            this.button4.TabIndex = 7;
-            this.button4.Text = "button4";
-            this.button4.UseVisualStyleBackColor = true;
-            this.button4.Click += new System.EventHandler(this.button4_Click);
+            this.addFiveDays.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
+            this.addFiveDays.Location = new System.Drawing.Point(506, 535);
+            this.addFiveDays.Name = "addFiveDays";
+            this.addFiveDays.Size = new System.Drawing.Size(42, 23);
+            this.addFiveDays.TabIndex = 7;
+            this.addFiveDays.Text = "+5";
+            this.addFiveDays.UseVisualStyleBackColor = true;
+            this.addFiveDays.Click += new System.EventHandler(this.button4_Click);
             // 
             // pBForLine
             // 
@@ -184,19 +186,32 @@
             // 
             // dateTimePicker1
             // 
-            this.dateTimePicker1.Location = new System.Drawing.Point(367, 564);
+            this.dateTimePicker1.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
+            this.dateTimePicker1.Location = new System.Drawing.Point(376, 564);
             this.dateTimePicker1.Name = "dateTimePicker1";
-            this.dateTimePicker1.Size = new System.Drawing.Size(200, 20);
+            this.dateTimePicker1.Size = new System.Drawing.Size(172, 20);
             this.dateTimePicker1.TabIndex = 8;
             this.dateTimePicker1.ValueChanged += new System.EventHandler(this.dateTimePicker1_ValueChanged);
+            // 
+            // minusFiveDay
+            // 
+            this.minusFiveDay.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
+            this.minusFiveDay.Location = new System.Drawing.Point(376, 535);
+            this.minusFiveDay.Name = "minusFiveDay";
+            this.minusFiveDay.Size = new System.Drawing.Size(43, 23);
+            this.minusFiveDay.TabIndex = 9;
+            this.minusFiveDay.Text = "-5 ";
+            this.minusFiveDay.UseVisualStyleBackColor = true;
+            this.minusFiveDay.Click += new System.EventHandler(this.minusFiveDay_Click);
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(903, 658);
+            this.Controls.Add(this.minusFiveDay);
             this.Controls.Add(this.dateTimePicker1);
-            this.Controls.Add(this.button4);
+            this.Controls.Add(this.addFiveDays);
             this.Controls.Add(this.button3);
             this.Controls.Add(this.bTnToDay);
             this.Controls.Add(this.btnTask);
@@ -233,9 +248,10 @@
         private System.Windows.Forms.Panel plPeraonButton;
         private System.Windows.Forms.Button bTnToDay;
         private System.Windows.Forms.Button button3;
-        private System.Windows.Forms.Button button4;
+        private System.Windows.Forms.Button addFiveDays;
         private System.Windows.Forms.PictureBox pBForLine;
         private System.Windows.Forms.DateTimePicker dateTimePicker1;
+        private System.Windows.Forms.Button minusFiveDay;
     }
 }
 
