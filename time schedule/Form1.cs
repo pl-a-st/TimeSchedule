@@ -71,6 +71,10 @@ namespace time_schedule
                 }
 
             }
+            plForDate.Controls.Clear();
+            pBForLine.CreateGraphics().Clear(Color.White);
+            Bmp = new Bitmap(1,1);
+
         }
         private int ButtonsPersonLocationAndAdd(ref ListPersonButton listPersonButton, ref Panel plPersonButton)
         {
@@ -87,6 +91,51 @@ namespace time_schedule
             }
             return maxButtonLocationY;
         }
+        public void Drow(Pen pen, int pX0, int pY0, int pX1, int pY1)
+        {
+            
+            Graphics graphics = Graphics.FromImage(Bmp);
+            graphics.DrawLine(pen, pX0, pY0, pX1, pY1);
+            pBForLine.Image = Bmp;
+            graphics.Dispose();
+        }
+        public void LoadHorizontLine()
+        {
+            foreach (PersonButton personButton in Program.ListPersonButton.PersonButtons)
+            {
+                int locationY = personButton.Button.Location.Y;
+                Pen pen = new Pen(Color.LightGray, 1);
+                do
+                {
+                    Drow(pen, 0, locationY, pBForLine.Width, locationY);
+                    locationY += Constants.ROW_HIGHT;
+                }
+                while (locationY < (personButton.Button.Location.Y + personButton.Button.Height));
+                Pen pen1 = new Pen(Color.Black, 5);
+                Drow(pen1, 0, locationY+1, pBForLine.Width, locationY);
+            }
+        }
+        public void LoadVerticalLine()
+        {
+            Pen penGrey = new Pen(Color.LightGray, 1);
+            Pen penForMonday = new Pen(Color.DodgerBlue, 2);
+            foreach (Control textbox in plForDate.Controls)
+            {
+                if (textbox is TextBox)
+                {                    
+                    int locationX = textbox.Location.X;
+                    if (textbox.Text.Contains(""+DayOfWeek.Monday))
+                    {
+                        Drow(penForMonday, locationX, 0, locationX, pBForLine.Height);
+                    }
+                    else
+                    {
+                        Drow(penGrey, locationX, 0, locationX, pBForLine.Height);
+                    }
+                   
+                }
+            }
+        }
         public void LoadRefreshForm(ref Panel plPersonButton,ref Panel plMain, Bitmap bitmap)
         {
             CleanOldExemplar(ref plPersonButton, ref plMain);
@@ -101,13 +150,15 @@ namespace time_schedule
                 Program.ListTasksAllPerson,
                 Constants.ROW_HIGHT);
             int maxButtonLocationY = ButtonsPersonLocationAndAdd(ref Program.ListPersonButton, ref plPersonButton);
-            ResizeImage(new Size(Bmp.Width, maxButtonLocationY));
+            pBForLine.Height = maxButtonLocationY; 
             LoadColumns();
             Program.ListTaskButtons.TaskButtons.Clear();
             Program.ListTaskButtons.LoadTaskButtons(
                 Program.ListTasksAllPerson,
                 Program.ListPersonButton
                 );
+            LoadHorizontLine();
+            LoadVerticalLine();
             foreach (TaskButton taskButton in Program.ListTaskButtons.TaskButtons)
             {
                 foreach (Button button in taskButton.Buttons)
@@ -116,22 +167,6 @@ namespace time_schedule
                     button.BringToFront();
                 }
             }
-            int height = 0;
-            //foreach (DataGridViewRow row in CalendarTasks.Rows)
-            //{
-            //    height += row.Height;
-            //}
-            //height += CalendarTasks.ColumnHeadersHeight;
-
-            //int width = 0;
-            //foreach (DataGridViewColumn col in CalendarTasks.Columns)
-            //{
-            //    width += col.Width;
-            //}
-            //width += CalendarTasks.RowHeadersWidth;
-
-            //CalendarTasks.ClientSize = new Size(width + 2, height + 2);
-            //DateTable.ClientSize = new Size(width + 2, DateTable.Height);
         }
         public void LoadColumns()
         {
@@ -139,8 +174,10 @@ namespace time_schedule
             DateTime dateMaxToTable = Program.ListTasksAllPerson.GetMaxDateFinishTasks();
             int height = plMain.Location.Y - plForDate.Location.Y;
             int locationX = 0;
+            plForDate.Visible = false;
             while (dateToTables< dateMaxToTable)
             {
+               
                 if (dateToTables.DayOfWeek!=DayOfWeek.Saturday&& dateToTables.DayOfWeek != DayOfWeek.Sunday)
                 {
                     TextBox textBox = new TextBox();
@@ -162,7 +199,10 @@ namespace time_schedule
                 }
                 dateToTables= dateToTables.AddDays(1);
             }
-            ResizeImage(new Size(locationX, Bmp.Height));
+            plForDate.Visible = true;
+            pBForLine.Width = locationX;
+            ResizeImage(new Size(locationX, pBForLine.Height));
+            //pBForLine.Size = Bmp.Size;
         }
         private void Form1_Load(object sender, EventArgs e)
         {
@@ -318,7 +358,7 @@ namespace time_schedule
             
         }
         public Bitmap Bmp
-        { get; private set; } = new Bitmap(1, 1);
+        { get; set; } = new Bitmap(1, 1);
 
         public void ResizeImage(Size size)
         {
@@ -334,7 +374,7 @@ namespace time_schedule
             }
             catch
             {
-                MessageBox.Show("123");
+                MessageBox.Show("Что-то с рисованием");
 
             }
         }

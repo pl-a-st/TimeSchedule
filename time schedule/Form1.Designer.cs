@@ -41,7 +41,10 @@
             this.bTnToDay = new System.Windows.Forms.Button();
             this.button3 = new System.Windows.Forms.Button();
             this.button4 = new System.Windows.Forms.Button();
+            this.pBForLine = new System.Windows.Forms.PictureBox();
+            this.plMain.SuspendLayout();
             this.menuStrip1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pBForLine)).BeginInit();
             this.SuspendLayout();
             // 
             // plMain
@@ -50,6 +53,7 @@
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.plMain.AutoScroll = true;
+            this.plMain.Controls.Add(this.pBForLine);
             this.plMain.Location = new System.Drawing.Point(114, 46);
             this.plMain.Name = "plMain";
             this.plMain.Size = new System.Drawing.Size(777, 474);
@@ -168,6 +172,15 @@
             this.button4.UseVisualStyleBackColor = true;
             this.button4.Click += new System.EventHandler(this.button4_Click);
             // 
+            // pBForLine
+            // 
+            this.pBForLine.BackColor = System.Drawing.SystemColors.Window;
+            this.pBForLine.Location = new System.Drawing.Point(0, 0);
+            this.pBForLine.Name = "pBForLine";
+            this.pBForLine.Size = new System.Drawing.Size(100, 50);
+            this.pBForLine.TabIndex = 0;
+            this.pBForLine.TabStop = false;
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -187,8 +200,10 @@
             this.Activated += new System.EventHandler(this.Form1_Activated);
             this.Load += new System.EventHandler(this.Form1_Load);
             this.Shown += new System.EventHandler(this.Form1_Shown);
+            this.plMain.ResumeLayout(false);
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pBForLine)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -209,6 +224,7 @@
         private System.Windows.Forms.Button bTnToDay;
         private System.Windows.Forms.Button button3;
         private System.Windows.Forms.Button button4;
+        private System.Windows.Forms.PictureBox pBForLine;
     }
 }
 

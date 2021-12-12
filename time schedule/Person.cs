@@ -555,6 +555,8 @@ namespace time_schedule
             button.Text = Task.Name;
             button.BackColor = Task.Color;
             button.FlatStyle = FlatStyle.Flat;
+            button.FlatAppearance.BorderSize = 1;
+            button.FlatAppearance.BorderColor = Color.DimGray;
             button.Click += Button_Click;
             Buttons.Add(button);
         }
