@@ -264,5 +264,23 @@ namespace time_schedule
         {
 
         }
+
+        private void addPerson_Click(object sender, EventArgs e)
+        {
+            fmAddPerson fmAddPerson = new fmAddPerson();
+            
+            fmAddPerson.ShowDialog();
+            
+            cmBxPerson.Items.Clear();
+            foreach (Person person in Program.listPersons.Persons)
+            {
+                cmBxPerson.Items.Add(person.PersonFamaly);
+            }
+        }
+
+        private void fmAddTask_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            Program.fmMain.LoadRefreshForm(Program.fmMain.GetPlPeraonButton(),Program.fmMain.GetPlMain(),Program.fmMain.GetBmp());
+        }
     }
 }

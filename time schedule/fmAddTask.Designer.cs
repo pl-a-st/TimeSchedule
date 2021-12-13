@@ -58,6 +58,7 @@
             this.lBlTaskNum = new System.Windows.Forms.Label();
             this.label8 = new System.Windows.Forms.Label();
             this.nUpDnPrioirity = new System.Windows.Forms.NumericUpDown();
+            this.addPerson = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.nUpDnCounWorkDay)).BeginInit();
             this.groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nUpDnPreviousTask)).BeginInit();
@@ -80,7 +81,7 @@
             this.cmBxPerson.FormattingEnabled = true;
             this.cmBxPerson.Location = new System.Drawing.Point(15, 83);
             this.cmBxPerson.Name = "cmBxPerson";
-            this.cmBxPerson.Size = new System.Drawing.Size(269, 21);
+            this.cmBxPerson.Size = new System.Drawing.Size(239, 21);
             this.cmBxPerson.TabIndex = 1;
             this.cmBxPerson.SelectedIndexChanged += new System.EventHandler(this.cmBxPerson_SelectedIndexChanged);
             // 
@@ -257,9 +258,9 @@
             this.label6.AutoSize = true;
             this.label6.Location = new System.Drawing.Point(3, 25);
             this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(43, 13);
+            this.label6.Size = new System.Drawing.Size(80, 13);
             this.label6.TabIndex = 10;
-            this.label6.Text = "Задача";
+            this.label6.Text = "После задачи:";
             // 
             // nUpDnPreviousTask
             // 
@@ -375,11 +376,22 @@
             0,
             0});
             // 
+            // addPerson
+            // 
+            this.addPerson.Location = new System.Drawing.Point(260, 81);
+            this.addPerson.Name = "addPerson";
+            this.addPerson.Size = new System.Drawing.Size(21, 23);
+            this.addPerson.TabIndex = 24;
+            this.addPerson.Text = "+";
+            this.addPerson.UseVisualStyleBackColor = true;
+            this.addPerson.Click += new System.EventHandler(this.addPerson_Click);
+            // 
             // fmAddTask
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(585, 303);
+            this.Controls.Add(this.addPerson);
             this.Controls.Add(this.nUpDnPrioirity);
             this.Controls.Add(this.label8);
             this.Controls.Add(this.lBlTaskNum);
@@ -396,7 +408,9 @@
             this.Controls.Add(this.cmBxPerson);
             this.Controls.Add(this.label1);
             this.Name = "fmAddTask";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Добавление задачи";
+            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.fmAddTask_FormClosed);
             this.Load += new System.EventHandler(this.fmAddTask_Load);
             ((System.ComponentModel.ISupportInitialize)(this.nUpDnCounWorkDay)).EndInit();
             this.groupBox1.ResumeLayout(false);
@@ -447,5 +461,6 @@
         private System.Windows.Forms.Label lBlTaskNum;
         private System.Windows.Forms.Label label8;
         private System.Windows.Forms.NumericUpDown nUpDnPrioirity;
+        private System.Windows.Forms.Button addPerson;
     }
 }

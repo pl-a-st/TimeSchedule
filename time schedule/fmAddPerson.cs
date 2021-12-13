@@ -27,7 +27,7 @@ namespace time_schedule
 
         private void fmAddPerson_Load(object sender, EventArgs e)
         {
-
+            this.TopMost = true;
         }
     }
 }

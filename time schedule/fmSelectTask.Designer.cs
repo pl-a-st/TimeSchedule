@@ -93,6 +93,7 @@
             this.Controls.Add(this.btnSelectTask);
             this.Controls.Add(this.lBxTasks);
             this.Name = "fmSelectTask";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Выбор задачи";
             this.Load += new System.EventHandler(this.fmSelectTask_Load);
             this.ResumeLayout(false);

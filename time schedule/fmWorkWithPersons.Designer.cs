@@ -96,6 +96,7 @@
             this.Controls.Add(this.btnNewPerson);
             this.Controls.Add(this.lBxPersons);
             this.Name = "fmWorkWithPersons";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Список исполнителей";
             this.Load += new System.EventHandler(this.fmWorkWithPersons_Load);
             this.ResumeLayout(false);

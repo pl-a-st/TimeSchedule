@@ -246,15 +246,19 @@ namespace time_schedule
                     Tasks[i].DateStart.Date <= Tasks[j].DateStart.Date && Tasks[i].DateFinish.Date > Tasks[j].DateStart.Date
                     )
                     {
-                        if (Tasks[i].Priority <= Tasks[j].Priority && Tasks[i].PlaceInSynchTask >= Tasks[j].PlaceInSynchTask)
+                        if (Tasks[i].Priority <= Tasks[j].Priority && Tasks[i].PlaceInSynchTask <= Tasks[j].PlaceInSynchTask)
 
                         {
                             Tasks[j].SetPlaceInSynhTask(Tasks[i].PlaceInSynchTask + 1);
                         }
-                        else
-                        {
-                            Tasks[i].SetPlaceInSynhTask(Tasks[i].PlaceInSynchTask + 1);
-                        }
+                        //else
+                        //{
+                            if (Tasks[i].Priority >= Tasks[j].Priority && Tasks[i].PlaceInSynchTask >= Tasks[j].PlaceInSynchTask)
+                            {
+                                Tasks[i].SetPlaceInSynhTask(Tasks[i].PlaceInSynchTask + 1);
+                            }
+
+                        //}
                     }
                 }
             }
@@ -562,7 +566,12 @@ namespace time_schedule
         }
         private void Button_Click(object sender, EventArgs e)
         {
-            //throw new NotImplementedException();//прописать
+            fmAddTask fmAddTask = new fmAddTask();
+            fmAddTask.GhangeNamebtnCreateTask("Изменить");
+            fmAddTask.SetCreateOrChange(CreateOrChange.Change);
+            Program.Task = Task;
+            fmAddTask.ShowDialog();
+            Dals.WriteListProjectFileAppend(Constants.TASKS, Program.ListTasksAllPerson.GetListForSave());
         }
         public TaskButton(Task task, ListPersonButton listPersonButton,DateTime minDateStart, DateTime maxDateFinish)
         {

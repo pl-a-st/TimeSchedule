@@ -105,6 +105,7 @@
             this.Controls.Add(this.btnNewTask);
             this.Controls.Add(this.lBxTasks);
             this.Name = "fmTasks";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "fmTasks";
             this.Load += new System.EventHandler(this.fmTasks_Load);
             this.ResumeLayout(false);

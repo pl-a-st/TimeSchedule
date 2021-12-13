@@ -68,6 +68,7 @@
             this.Controls.Add(this.button1);
             this.Controls.Add(this.textBox1);
             this.Name = "fmAddPerson";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Добавить исполнителя";
             this.Load += new System.EventHandler(this.fmAddPerson_Load);
             this.ResumeLayout(false);

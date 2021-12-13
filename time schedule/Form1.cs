@@ -117,22 +117,25 @@ namespace time_schedule
         {
             foreach (PersonButton personButton in Program.ListPersonButton.PersonButtons)
             {
-                int locationY = personButton.Button.Location.Y;
-                Pen pen = new Pen(Color.LightGray, 1);
-                do
+                if(personButton.Person.ListTask.Tasks.Count>0)
                 {
-                    Drow(pen, 0, locationY, pBForLine.Width, locationY);
-                    locationY += Constants.ROW_HIGHT;
-                }
-                while (locationY < (personButton.Button.Location.Y + personButton.Button.Height));
-                Pen pen1 = new Pen(Color.Black, 5);
-                Drow(pen1, 0, locationY+1, pBForLine.Width, locationY);
+                    int locationY = personButton.Button.Location.Y;
+                    Pen pen = new Pen(Color.LightGray, 1);
+                    do
+                    {
+                        Drow(pen, 0, locationY, pBForLine.Width, locationY);
+                        locationY += Constants.ROW_HIGHT;
+                    }
+                    while (locationY < (personButton.Button.Location.Y + personButton.Button.Height));
+                    Pen pen1 = new Pen(Color.Black, 5);
+                    Drow(pen1, 0, locationY + 1, pBForLine.Width, locationY);
+                }  
             }
         }
         public void LoadVerticalLine()
         {
             Pen penGrey = new Pen(Color.LightGray, 1);
-            Pen penForMonday = new Pen(Color.DodgerBlue, 2);
+            Pen penForMonday = new Pen(Color.CadetBlue, 2);
             foreach (Control textbox in plForDate.Controls)
             {
                 if (textbox is TextBox)
@@ -160,6 +163,8 @@ namespace time_schedule
         public void LoadScrolls()
         {
             plForDate.HorizontalScroll.Value = PlForDateScrollXSaved;
+            plForDate.HorizontalScroll.Value = PlForDateScrollXSaved;
+            plMain.HorizontalScroll.Value = PlMainScrollXSaved;
             plMain.HorizontalScroll.Value = PlMainScrollXSaved;
             plMain.VerticalScroll.Value = PlMainScrollYSaved;
             plPeraonButton.VerticalScroll.Value = PlPeraonButtonYSaved;
@@ -176,7 +181,11 @@ namespace time_schedule
             MaxDateFinish = Program.ListTasksAllPerson.GetMaxDateFinishTasks();
             MinDateStart = Program.ListTasksAllPerson.GetMinDateStartTasks();
         }
-        public void LoadRefreshForm(ref Panel plPersonButton,ref Panel plMain, Bitmap bitmap)
+        public void LoadRefreshForm()
+        {
+            LoadRefreshForm( plPeraonButton, plMain, Bmp);
+        }
+        public void LoadRefreshForm(Panel plPersonButton,Panel plMain, Bitmap bitmap)
         {
             SaveScrolls();
             ScrollToZero();
@@ -234,6 +243,8 @@ namespace time_schedule
                         textBox.Multiline = true;
                         textBox.Text = dateToTables.ToShortDateString() + "\n" + dateToTables.DayOfWeek;
                         textBox.BackColor = Color.AliceBlue;
+                        if (dateToTables.Date == DateTime.Now.Date)
+                            textBox.BackColor = Color.CadetBlue;
                         textBox.ForeColor = Color.Black;
                         textBox.TextAlign = HorizontalAlignment.Center;
 
@@ -255,6 +266,26 @@ namespace time_schedule
                 ResizeImage(new Size(pBForLine.Width, pBForLine.Height));
             }
         }
+        public static Form1 SelfRef
+        {
+            get; set;
+        }
+        public Form1(Form form)
+        {
+            SelfRef = this;
+        }
+        public Panel GetPlPeraonButton()
+        {
+            return plPeraonButton;
+        }
+        public Panel GetPlMain()
+        {
+            return plMain;
+        }
+        public Bitmap GetBmp()
+        {
+            return Bmp;
+        }
         private void Form1_Load(object sender, EventArgs e)
         {
             myScrollBar.Height = plMain.Height;
@@ -265,7 +296,7 @@ namespace time_schedule
 
             Dals.WriteProjectFolder(true);
             this.Activate();
-            LoadRefreshForm(ref plPeraonButton,ref plMain, Bmp);
+            LoadRefreshForm( plPeraonButton, plMain, Bmp);
             NonWorkDaysWrite(DateTime.Now.AddYears(-1).Date, DateTime.Now.AddYears(1).Date);
             plMain.VerticalScroll.Visible = true;
             
@@ -421,7 +452,7 @@ namespace time_schedule
 
         private void button3_Click_1(object sender, EventArgs e)
         {
-            LoadRefreshForm(ref plPeraonButton, ref plMain, Bmp);
+            LoadRefreshForm( plPeraonButton,  plMain, Bmp);
         }
 
         private void button4_Click(object sender, EventArgs e)
