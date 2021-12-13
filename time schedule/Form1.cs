@@ -455,7 +455,8 @@ namespace time_schedule
 
         private void dateTimePicker1_ValueChanged(object sender, EventArgs e)
         {
-            ScrollToDate(dateTimePicker1.Value.Date);
+            
+            
         }
 
         private void minusFiveDay_Click(object sender, EventArgs e)
@@ -464,6 +465,24 @@ namespace time_schedule
             plMain.HorizontalScroll.Value -= 5 * Constants.COLUMN_WITH;
             plForDate.HorizontalScroll.Value = plMain.HorizontalScroll.Value;
             plForDate.HorizontalScroll.Value = plMain.HorizontalScroll.Value;
+        }
+
+        private void dateTimePicker1_CloseUp(object sender, EventArgs e)
+        {
+            ScrollToDate(dateTimePicker1.Value.Date);
+        }
+
+        private void dateTimePicker1_Enter(object sender, EventArgs e)
+        {
+            
+        }
+
+        private void dateTimePicker1_KeyUp(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                ScrollToDate(dateTimePicker1.Value.Date);
+            }
         }
     }
    

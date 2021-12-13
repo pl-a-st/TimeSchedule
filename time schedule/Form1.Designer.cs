@@ -29,6 +29,7 @@
         private void InitializeComponent()
         {
             this.plMain = new System.Windows.Forms.Panel();
+            this.pBForLine = new System.Windows.Forms.PictureBox();
             this.plForDate = new System.Windows.Forms.Panel();
             this.btnTask = new System.Windows.Forms.Button();
             this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
@@ -41,12 +42,11 @@
             this.bTnToDay = new System.Windows.Forms.Button();
             this.button3 = new System.Windows.Forms.Button();
             this.addFiveDays = new System.Windows.Forms.Button();
-            this.pBForLine = new System.Windows.Forms.PictureBox();
             this.dateTimePicker1 = new System.Windows.Forms.DateTimePicker();
             this.minusFiveDay = new System.Windows.Forms.Button();
             this.plMain.SuspendLayout();
-            this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pBForLine)).BeginInit();
+            this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
             // plMain
@@ -63,6 +63,15 @@
             this.plMain.Scroll += new System.Windows.Forms.ScrollEventHandler(this.ScrollChange);
             this.plMain.MouseEnter += new System.EventHandler(this.plMain_MouseEnter);
             this.plMain.MouseMove += new System.Windows.Forms.MouseEventHandler(this.plMain_MouseMove);
+            // 
+            // pBForLine
+            // 
+            this.pBForLine.BackColor = System.Drawing.SystemColors.Window;
+            this.pBForLine.Location = new System.Drawing.Point(0, 0);
+            this.pBForLine.Name = "pBForLine";
+            this.pBForLine.Size = new System.Drawing.Size(100, 50);
+            this.pBForLine.TabIndex = 0;
+            this.pBForLine.TabStop = false;
             // 
             // plForDate
             // 
@@ -175,15 +184,6 @@
             this.addFiveDays.UseVisualStyleBackColor = true;
             this.addFiveDays.Click += new System.EventHandler(this.button4_Click);
             // 
-            // pBForLine
-            // 
-            this.pBForLine.BackColor = System.Drawing.SystemColors.Window;
-            this.pBForLine.Location = new System.Drawing.Point(0, 0);
-            this.pBForLine.Name = "pBForLine";
-            this.pBForLine.Size = new System.Drawing.Size(100, 50);
-            this.pBForLine.TabIndex = 0;
-            this.pBForLine.TabStop = false;
-            // 
             // dateTimePicker1
             // 
             this.dateTimePicker1.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
@@ -191,7 +191,10 @@
             this.dateTimePicker1.Name = "dateTimePicker1";
             this.dateTimePicker1.Size = new System.Drawing.Size(172, 20);
             this.dateTimePicker1.TabIndex = 8;
+            this.dateTimePicker1.CloseUp += new System.EventHandler(this.dateTimePicker1_CloseUp);
             this.dateTimePicker1.ValueChanged += new System.EventHandler(this.dateTimePicker1_ValueChanged);
+            this.dateTimePicker1.Enter += new System.EventHandler(this.dateTimePicker1_Enter);
+            this.dateTimePicker1.KeyUp += new System.Windows.Forms.KeyEventHandler(this.dateTimePicker1_KeyUp);
             // 
             // minusFiveDay
             // 
@@ -226,9 +229,9 @@
             this.Load += new System.EventHandler(this.Form1_Load);
             this.Shown += new System.EventHandler(this.Form1_Shown);
             this.plMain.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.pBForLine)).EndInit();
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.pBForLine)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
