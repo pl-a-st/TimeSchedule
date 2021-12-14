@@ -189,7 +189,7 @@ namespace time_schedule
         {
             SaveScrolls();
             ScrollToZero();
-            SaveMinMaxDate();
+            
             CleanOldExemplar(ref plPersonButton, ref plMain);
             Program.ListTasksAllPerson.Tasks.Clear();
             Program.ListTasksAllPerson.SetTasksFromList(Dals.ReadListFromProjectFile(Constants.TASKS));
@@ -220,18 +220,19 @@ namespace time_schedule
                 }
             }
             LoadScrolls();
+            SaveMinMaxDate();
         }
         public void LoadColumns()
         {
             DateTime dateToTables = Program.ListTasksAllPerson.GetMinDateStartTasks();
             DateTime dateMaxToTable = Program.ListTasksAllPerson.GetMaxDateFinishTasks();
             
-            if (MaxDateFinish != dateMaxToTable||MinDateStart!= dateToTables)
+            if (MaxDateFinish != dateMaxToTable || MinDateStart!= dateToTables)
             {
                 int height = plMain.Location.Y - plForDate.Location.Y;
                 int locationX = 0;
                 plForDate.Visible = false;
-                while (dateToTables < dateMaxToTable)
+                while (dateToTables <= dateMaxToTable)
                 {
 
                     if (dateToTables.DayOfWeek != DayOfWeek.Saturday && dateToTables.DayOfWeek != DayOfWeek.Sunday)

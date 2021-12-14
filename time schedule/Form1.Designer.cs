@@ -251,7 +251,7 @@
         private System.Windows.Forms.MenuStrip menuStrip1;
         private System.Windows.Forms.Panel plPeraonButton;
         private System.Windows.Forms.Button bTnToDay;
-        private System.Windows.Forms.Button button3;
+        public System.Windows.Forms.Button button3;
         private System.Windows.Forms.Button addFiveDays;
         private System.Windows.Forms.PictureBox pBForLine;
         private System.Windows.Forms.DateTimePicker dateTimePicker1;

@@ -280,6 +280,7 @@ namespace time_schedule
 
         private void fmAddTask_FormClosed(object sender, FormClosedEventArgs e)
         {
+            Program.fmMain.button3.Text = "123";
             Program.fmMain.LoadRefreshForm(Program.fmMain.GetPlPeraonButton(),Program.fmMain.GetPlMain(),Program.fmMain.GetBmp());
         }
     }
