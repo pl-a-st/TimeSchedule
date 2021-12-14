@@ -553,9 +553,9 @@ namespace time_schedule
         public void AddButton(int locationX, int locationY, int with, int height)
         {
             Button button = new Button();
-            button.Location = new Point(locationX, locationY);
-            button.Width = with;
-            button.Height = height;
+            button.Location = new Point(locationX+1, locationY+1);
+            button.Width = with-2;
+            button.Height = height-2;
             button.Text = Task.Name;
             button.BackColor = Task.Color;
             button.FlatStyle = FlatStyle.Flat;

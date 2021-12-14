@@ -162,12 +162,18 @@ namespace time_schedule
         }
         public void LoadScrolls()
         {
-            plForDate.HorizontalScroll.Value = PlForDateScrollXSaved;
-            plForDate.HorizontalScroll.Value = PlForDateScrollXSaved;
+            plMain.Select();
             plMain.HorizontalScroll.Value = PlMainScrollXSaved;
-            plMain.HorizontalScroll.Value = PlMainScrollXSaved;
-            plMain.VerticalScroll.Value = PlMainScrollYSaved;
-            plPeraonButton.VerticalScroll.Value = PlPeraonButtonYSaved;
+            plMain.HorizontalScroll.Value = 
+            //plForDate.();
+
+            plForDate.HorizontalScroll.Value = PlMainScrollXSaved;
+            plForDate.HorizontalScroll.Value = PlMainScrollXSaved;
+            plForDate.HorizontalScroll.Value = PlMainScrollXSaved;
+            //plMain.VerticalScroll.Value = PlMainScrollYSaved;
+            //plPeraonButton.VerticalScroll.Value = PlPeraonButtonYSaved;
+            //plMain.VerticalScroll.Value = PlMainScrollYSaved;
+            //plPeraonButton.VerticalScroll.Value = PlPeraonButtonYSaved;
         }
         public void ScrollToZero()
         {
@@ -209,8 +215,9 @@ namespace time_schedule
                 Program.ListTasksAllPerson,
                 Program.ListPersonButton
                 );
-            LoadHorizontLine();
             LoadVerticalLine();
+            LoadHorizontLine();
+            
             foreach (TaskButton taskButton in Program.ListTaskButtons.TaskButtons)
             {
                 foreach (Button button in taskButton.Buttons)
@@ -220,6 +227,7 @@ namespace time_schedule
                 }
             }
             LoadScrolls();
+            
             SaveMinMaxDate();
         }
         public void LoadColumns()
