@@ -12,7 +12,7 @@ using System.Windows.Forms;
 namespace time_schedule
 {
     public delegate void LoadRefreshForm();
-
+    
     public partial class Form1 : Form
     {
         public int PlMainScrollYSaved
@@ -289,9 +289,9 @@ namespace time_schedule
         }
         private void Form1_Load(object sender, EventArgs e)
         {
-            LoadRefreshForm delegatLoadRefreshForm;
             
-            delegatLoadRefreshForm = LoadRefreshForm;
+            
+            Program.delegatLoadRefreshForm = LoadRefreshForm;
             
 
             myScrollBar.Height = plMain.Height;

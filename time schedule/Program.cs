@@ -13,6 +13,7 @@ namespace time_schedule
         /// Главная точка входа для приложения.
         /// </summary>
         public static Form1 fmMain ;
+        public static LoadRefreshForm delegatLoadRefreshForm;
         public static ListTasks ListTasksAllPerson = new ListTasks();
         public static ListPersons listPersons = new ListPersons();
         public static Task Task = new Task();

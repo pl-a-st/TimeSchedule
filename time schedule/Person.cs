@@ -567,7 +567,7 @@ namespace time_schedule
         LoadRefreshForm loadRefreshForm;
         private void Button_Click(object sender, EventArgs e)
         {
-            fmAddTask fmAddTask = new fmAddTask(loadRefreshForm);
+            fmAddTask fmAddTask = new fmAddTask(Program.delegatLoadRefreshForm);
             fmAddTask.GhangeNamebtnCreateTask("Изменить");
             fmAddTask.SetCreateOrChange(CreateOrChange.Change);
             Program.Task = Task;

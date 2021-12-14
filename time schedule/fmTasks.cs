@@ -58,7 +58,7 @@ namespace time_schedule
         LoadRefreshForm loadRefreshForm;
         private void btnNewTask_Click(object sender, EventArgs e)
         {
-            fmAddTask fmAddTask = new fmAddTask(loadRefreshForm);
+            fmAddTask fmAddTask = new fmAddTask(Program.delegatLoadRefreshForm);
             fmAddTask.SetCreateOrChange(CreateOrChange.Create);
             fmAddTask.ShowDialog();
             LoadLBxTasks();
@@ -108,7 +108,7 @@ namespace time_schedule
                 return;
             }
 
-            fmAddTask fmAddTask = new fmAddTask(loadRefreshForm);
+            fmAddTask fmAddTask = new fmAddTask(Program.delegatLoadRefreshForm);
             fmAddTask.GhangeNamebtnCreateTask("Изменить");
             fmAddTask.SetCreateOrChange(CreateOrChange.Change);
             foreach (Task task in Program.ListTasksAllPerson.Tasks)
