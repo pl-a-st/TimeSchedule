@@ -23,11 +23,13 @@ namespace time_schedule
     public partial class fmAddTask : Form
     {
         Task thisTask = new Task();
-        public fmAddTask()
+        public fmAddTask(LoadRefreshForm loadRefreshForm)
         {
             
             InitializeComponent();
+            thisloadRefreshForm = loadRefreshForm;
         }
+        LoadRefreshForm thisloadRefreshForm;
         public CreateOrChange CreateOrChange
         { get; private set; }
         public void SetCreateOrChange (CreateOrChange createOrChange)
@@ -280,8 +282,9 @@ namespace time_schedule
 
         private void fmAddTask_FormClosed(object sender, FormClosedEventArgs e)
         {
+            thisloadRefreshForm?.Invoke();
             Program.fmMain.button3.Text = "123";
-            Program.fmMain.LoadRefreshForm(Program.fmMain.GetPlPeraonButton(),Program.fmMain.GetPlMain(),Program.fmMain.GetBmp());
+            //Program.fmMain.LoadRefreshForm(Program.fmMain.GetPlPeraonButton(),Program.fmMain.GetPlMain(),Program.fmMain.GetBmp());
         }
     }
 }

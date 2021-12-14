@@ -11,7 +11,7 @@ using System.Windows.Forms;
 
 namespace time_schedule
 {
-    
+    public delegate void LoadRefreshForm();
 
     public partial class Form1 : Form
     {
@@ -289,6 +289,11 @@ namespace time_schedule
         }
         private void Form1_Load(object sender, EventArgs e)
         {
+            LoadRefreshForm delegatLoadRefreshForm;
+            
+            delegatLoadRefreshForm = LoadRefreshForm;
+            
+
             myScrollBar.Height = plMain.Height;
             myScrollBar.Left = plMain.Width - myScrollBar.Width;
             myScrollBar.Top = 0;
@@ -408,21 +413,26 @@ namespace time_schedule
             plForDate.Focus();
             plMain.Focus();
             int NewLocationX = locationX - 4 * Constants.COLUMN_WITH;
-            if (NewLocationX > 0)
+            try
             {
-                plMain.HorizontalScroll.Value = NewLocationX;
-                plMain.HorizontalScroll.Value = NewLocationX;
-                plForDate.HorizontalScroll.Value = NewLocationX;
-                plForDate.HorizontalScroll.Value = NewLocationX;
+                if (NewLocationX > 0)
+                {
+                    plMain.HorizontalScroll.Value = NewLocationX;
+                    plMain.HorizontalScroll.Value = NewLocationX;
+                    plForDate.HorizontalScroll.Value = NewLocationX;
+                    plForDate.HorizontalScroll.Value = NewLocationX;
 
+                }
+                else
+                {
+                    plMain.HorizontalScroll.Value = locationX;
+                    plMain.HorizontalScroll.Value = locationX;
+                    plForDate.HorizontalScroll.Value = locationX;
+                    plForDate.HorizontalScroll.Value = locationX;
+                }
             }
-            else
-            {
-                plMain.HorizontalScroll.Value = locationX;
-                plMain.HorizontalScroll.Value = locationX;
-                plForDate.HorizontalScroll.Value = locationX;
-                plForDate.HorizontalScroll.Value = locationX;
-            }
+            catch { }
+            
         }
         private void button3_Click(object sender, EventArgs e)
         {
@@ -453,15 +463,22 @@ namespace time_schedule
 
         private void button3_Click_1(object sender, EventArgs e)
         {
-            LoadRefreshForm( plPeraonButton,  plMain, Bmp);
+            LoadRefreshForm();
         }
 
         private void button4_Click(object sender, EventArgs e)
         {
-            plMain.HorizontalScroll.Value += 5 * Constants.COLUMN_WITH;
-            plMain.HorizontalScroll.Value += 5 * Constants.COLUMN_WITH;
-            plForDate.HorizontalScroll.Value = plMain.HorizontalScroll.Value;
-            plForDate.HorizontalScroll.Value = plMain.HorizontalScroll.Value;
+            try
+            {
+                plMain.HorizontalScroll.Value += 5 * Constants.COLUMN_WITH;
+                plMain.HorizontalScroll.Value += 5 * Constants.COLUMN_WITH;
+                plForDate.HorizontalScroll.Value = plMain.HorizontalScroll.Value;
+                plForDate.HorizontalScroll.Value = plMain.HorizontalScroll.Value;
+            }
+            catch
+            {
+
+            }
         }
         public Bitmap Bmp
         { get; set; } = new Bitmap(1, 1);
@@ -493,10 +510,18 @@ namespace time_schedule
 
         private void minusFiveDay_Click(object sender, EventArgs e)
         {
-            plMain.HorizontalScroll.Value -= 5 * Constants.COLUMN_WITH;
-            plMain.HorizontalScroll.Value -= 5 * Constants.COLUMN_WITH;
-            plForDate.HorizontalScroll.Value = plMain.HorizontalScroll.Value;
-            plForDate.HorizontalScroll.Value = plMain.HorizontalScroll.Value;
+            try
+            {
+                plMain.HorizontalScroll.Value -= 5 * Constants.COLUMN_WITH;
+                plMain.HorizontalScroll.Value -= 5 * Constants.COLUMN_WITH;
+                plForDate.HorizontalScroll.Value = plMain.HorizontalScroll.Value;
+                plForDate.HorizontalScroll.Value = plMain.HorizontalScroll.Value;
+            }
+            catch
+            {
+
+            }
+            
         }
 
         private void dateTimePicker1_CloseUp(object sender, EventArgs e)

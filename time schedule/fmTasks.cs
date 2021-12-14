@@ -55,9 +55,10 @@ namespace time_schedule
                     lBxTasks.Items.Add(task.Number.ToString() + "\t" + task.Name);
             }
         }
+        LoadRefreshForm loadRefreshForm;
         private void btnNewTask_Click(object sender, EventArgs e)
         {
-            fmAddTask fmAddTask = new fmAddTask();
+            fmAddTask fmAddTask = new fmAddTask(loadRefreshForm);
             fmAddTask.SetCreateOrChange(CreateOrChange.Create);
             fmAddTask.ShowDialog();
             LoadLBxTasks();
@@ -98,7 +99,7 @@ namespace time_schedule
             Dals.WriteListProjectFileAppend(Constants.TASKS, Program.ListTasksAllPerson.GetListForSave());
             LoadLBxTasks();
         }
-
+        
         private void btnChangeTask_Click(object sender, EventArgs e)
         {
             if (lBxTasks.SelectedIndex == -1)
@@ -107,7 +108,7 @@ namespace time_schedule
                 return;
             }
 
-            fmAddTask fmAddTask = new fmAddTask();
+            fmAddTask fmAddTask = new fmAddTask(loadRefreshForm);
             fmAddTask.GhangeNamebtnCreateTask("Изменить");
             fmAddTask.SetCreateOrChange(CreateOrChange.Change);
             foreach (Task task in Program.ListTasksAllPerson.Tasks)
