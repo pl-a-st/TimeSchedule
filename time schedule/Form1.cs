@@ -162,14 +162,16 @@ namespace time_schedule
         }
         public void LoadScrolls()
         {
+            plForDate.HorizontalScroll.Value = PlMainScrollXSaved;
+        
+            plForDate.HorizontalScroll.Value = PlMainScrollXSaved;
             plMain.Select();
             plMain.HorizontalScroll.Value = PlMainScrollXSaved;
-            plMain.HorizontalScroll.Value = 
-            //plForDate.();
+            plMain.HorizontalScroll.Value = PlMainScrollXSaved;
 
-            plForDate.HorizontalScroll.Value = PlMainScrollXSaved;
-            plForDate.HorizontalScroll.Value = PlMainScrollXSaved;
-            plForDate.HorizontalScroll.Value = PlMainScrollXSaved;
+            
+            
+
             //plMain.VerticalScroll.Value = PlMainScrollYSaved;
             //plPeraonButton.VerticalScroll.Value = PlPeraonButtonYSaved;
             //plMain.VerticalScroll.Value = PlMainScrollYSaved;
@@ -226,6 +228,7 @@ namespace time_schedule
                     button.BringToFront();
                 }
             }
+            
             LoadScrolls();
             
             SaveMinMaxDate();
@@ -242,7 +245,6 @@ namespace time_schedule
                 plForDate.Visible = false;
                 while (dateToTables <= dateMaxToTable)
                 {
-
                     if (dateToTables.DayOfWeek != DayOfWeek.Saturday && dateToTables.DayOfWeek != DayOfWeek.Sunday)
                     {
                         TextBox textBox = new TextBox();
@@ -256,7 +258,6 @@ namespace time_schedule
                             textBox.BackColor = Color.CadetBlue;
                         textBox.ForeColor = Color.Black;
                         textBox.TextAlign = HorizontalAlignment.Center;
-
                         textBox.ReadOnly = true;
                         if (dateToTables == DateTime.Now)
                             textBox.BackColor = Color.LightBlue;
@@ -548,6 +549,11 @@ namespace time_schedule
             {
                 ScrollToDate(dateTimePicker1.Value.Date);
             }
+        }
+
+        private void button1_Click_1(object sender, EventArgs e)
+        {
+            MessageBox.Show(""+plForDate.HorizontalScroll.Value);
         }
     }
    

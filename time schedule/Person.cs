@@ -232,33 +232,87 @@ namespace time_schedule
             }
             return dateFinishTasks;
         }
-        public void AssingPlace()
+        private List<List<Task>> GetListsSynckTasks()
         {
             foreach (Task task in Tasks)
             {
                 task.SetPlaceInSynhTask(0);
             }
-            for (int i = 0;i<Tasks.Count; i++)
+            List<List<Task>> listSynckTasks = new List<List<Task>>();
+            for (int i = 0; i < Tasks.Count; i++)
             {
-                for (int j=i+1;j< Tasks.Count; j++)
+                List<Task> synckTasks = new List<Task>();
+                synckTasks.Add(Tasks[i]);
+                for (int j = 0; j < Tasks.Count; j++)
                 {
-                    if (Tasks[i].DateStart.Date >= Tasks[j].DateStart.Date && Tasks[i].DateStart.Date < Tasks[j].DateFinish.Date ||
-                    Tasks[i].DateStart.Date <= Tasks[j].DateStart.Date && Tasks[i].DateFinish.Date > Tasks[j].DateStart.Date
-                    )
+                    if (i!=j)
                     {
-                        if (Tasks[i].Priority <= Tasks[j].Priority && Tasks[i].PlaceInSynchTask <= Tasks[j].PlaceInSynchTask)
-
+                        if ((Tasks[i].DateStart.Date >= Tasks[j].DateStart.Date && Tasks[i].DateStart.Date <= Tasks[j].DateFinish.Date) ||
+                    (Tasks[i].DateStart.Date <= Tasks[j].DateStart.Date && Tasks[i].DateFinish.Date >= Tasks[j].DateStart.Date)
+                    )
                         {
-                            Tasks[j].SetPlaceInSynhTask(Tasks[i].PlaceInSynchTask + 1);
+                            synckTasks.Add(Tasks[j]);
                         }
-                        //else
-                        //{
-                            if (Tasks[i].Priority >= Tasks[j].Priority && Tasks[i].PlaceInSynchTask >= Tasks[j].PlaceInSynchTask)
+                    }
+                }
+                listSynckTasks.Add(synckTasks);
+            }
+            return listSynckTasks;
+        }
+        private void SetPlaceAfterChange(List<List<Task>> listSynckTasks,List<Task> synckTasks,Task changedTask)
+        {
+            for(int i = 0; i< listSynckTasks.Count; i++)
+            {
+                if(listSynckTasks[i]!= synckTasks && listSynckTasks[i].Contains(changedTask))
+                {
+                    for (int j=0;j< listSynckTasks[i].Count;j++)
+                    {
+                        if (changedTask != listSynckTasks[i][j])
+                        {
+                            if (changedTask.PlaceInSynchTask == listSynckTasks[i][j].PlaceInSynchTask)
                             {
-                                Tasks[i].SetPlaceInSynhTask(Tasks[i].PlaceInSynchTask + 1);
+                                if (changedTask.Priority >= listSynckTasks[i][j].Priority)
+                                {
+                                    changedTask.SetPlaceInSynhTask(changedTask.PlaceInSynchTask + 1);
+                                    SetPlaceAfterChange(listSynckTasks, listSynckTasks[i], changedTask);
+                                }
+                                    
+                                if (changedTask.Priority < listSynckTasks[i][j].Priority)
+                                {
+                                    listSynckTasks[i][j].SetPlaceInSynhTask(listSynckTasks[i][j].PlaceInSynchTask + 1);
+                                    SetPlaceAfterChange(listSynckTasks, listSynckTasks[i], listSynckTasks[i][j]);
+                                }
+
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        public void AssingPlace()
+        {
+            List<List<Task>> listsSynckTasks = GetListsSynckTasks();
+            foreach (List<Task> synckTasks in listsSynckTasks)
+            {
+                for (int i = 0; i < synckTasks.Count; i++)
+                {
+                    for (int j = i + 1; j < synckTasks.Count; j++)
+                    {
+                        if (synckTasks[i].PlaceInSynchTask== synckTasks[j].PlaceInSynchTask)
+                        {
+                            if (synckTasks[i].Priority >= synckTasks[j].Priority)
+                            {
+                                synckTasks[i].SetPlaceInSynhTask(synckTasks[i].PlaceInSynchTask + 1);
+                                SetPlaceAfterChange(listsSynckTasks, synckTasks, synckTasks[i]);
+                            }
+                            if (synckTasks[i].Priority < synckTasks[j].Priority)
+                            {
+                                synckTasks[j].SetPlaceInSynhTask(synckTasks[j].PlaceInSynchTask + 1);
+                                SetPlaceAfterChange(listsSynckTasks, synckTasks, synckTasks[j]);
+                                /// прописать метод
                             }
 
-                        //}
+                        }
                     }
                 }
             }
