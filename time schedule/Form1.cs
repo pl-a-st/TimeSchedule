@@ -135,7 +135,7 @@ namespace time_schedule
         public void LoadVerticalLine()
         {
             Pen penGrey = new Pen(Color.LightGray, 1);
-            Pen penForMonday = new Pen(Color.CadetBlue, 2);
+            Pen penForMonday = new Pen(Color.FromArgb(32,55,100), 2);
             foreach (Control textbox in plForDate.Controls)
             {
                 if (textbox is TextBox)
@@ -165,8 +165,11 @@ namespace time_schedule
             const int MAGIC_ZEROING_FOR_CORRECT_OPERATION = 0;
             plForDate.HorizontalScroll.Value = MAGIC_ZEROING_FOR_CORRECT_OPERATION;
             plForDate.HorizontalScroll.Value = MAGIC_ZEROING_FOR_CORRECT_OPERATION;
+            
             plForDate.HorizontalScroll.Value = PlMainScrollXSaved;
+           
             plForDate.HorizontalScroll.Value = PlMainScrollXSaved;
+            
             plMain.HorizontalScroll.Value = PlMainScrollXSaved;
             plMain.HorizontalScroll.Value = PlMainScrollXSaved;
             plMain.VerticalScroll.Value = PlMainScrollYSaved;
@@ -367,9 +370,10 @@ namespace time_schedule
 
         private void btnTask_Click(object sender, EventArgs e)
         {
-            fmTasks fmTasks = new fmTasks();
-            fmTasks.ShowDialog();
-           
+            fmAddTask fmAddTask = new fmAddTask(Program.delegatLoadRefreshForm);
+            fmAddTask.SetCreateOrChange(CreateOrChange.Create);
+            fmAddTask.ShowDialog();
+            Dals.WriteListProjectFileAppend(Constants.TASKS, Program.ListTasksAllPerson.GetListForSave());
         }
 
         private void ToolStripMenuItem_Click(object sender, EventArgs e)
@@ -540,6 +544,12 @@ namespace time_schedule
         private void button1_Click_1(object sender, EventArgs e)
         {
             MessageBox.Show(""+plForDate.HorizontalScroll.Value);
+        }
+
+        private void задачиToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            fmTasks fmTasks = new fmTasks();
+            fmTasks.ShowDialog();
         }
     }
    

@@ -283,8 +283,8 @@ namespace time_schedule
         private void fmAddTask_FormClosed(object sender, FormClosedEventArgs e)
         {
             thisloadRefreshForm?.Invoke();
-            Program.fmMain.button3.Text = "123";
-            //Program.fmMain.LoadRefreshForm(Program.fmMain.GetPlPeraonButton(),Program.fmMain.GetPlMain(),Program.fmMain.GetBmp());
+            
+            
         }
     }
 }
