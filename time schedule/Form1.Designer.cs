@@ -38,7 +38,7 @@
             this.menuPersons = new System.Windows.Forms.ToolStripMenuItem();
             this.нерабочиеДниToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
-            this.plPeraonButton = new System.Windows.Forms.Panel();
+            this.plPersonButton = new System.Windows.Forms.Panel();
             this.bTnToDay = new System.Windows.Forms.Button();
             this.button3 = new System.Windows.Forms.Button();
             this.addFiveDays = new System.Windows.Forms.Button();
@@ -143,15 +143,15 @@
             this.menuStrip1.TabIndex = 2;
             this.menuStrip1.Text = "menuStrip1";
             // 
-            // plPeraonButton
+            // plPersonButton
             // 
-            this.plPeraonButton.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            this.plPersonButton.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left)));
-            this.plPeraonButton.AutoScroll = true;
-            this.plPeraonButton.Location = new System.Drawing.Point(12, 46);
-            this.plPeraonButton.Name = "plPeraonButton";
-            this.plPeraonButton.Size = new System.Drawing.Size(200, 454);
-            this.plPeraonButton.TabIndex = 4;
+            this.plPersonButton.AutoScroll = true;
+            this.plPersonButton.Location = new System.Drawing.Point(12, 46);
+            this.plPersonButton.Name = "plPersonButton";
+            this.plPersonButton.Size = new System.Drawing.Size(200, 454);
+            this.plPersonButton.TabIndex = 4;
             // 
             // bTnToDay
             // 
@@ -233,7 +233,7 @@
             this.Controls.Add(this.plMain);
             this.Controls.Add(this.plForDate);
             this.Controls.Add(this.menuStrip1);
-            this.Controls.Add(this.plPeraonButton);
+            this.Controls.Add(this.plPersonButton);
             this.MainMenuStrip = this.menuStrip1;
             this.Name = "Form1";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
@@ -261,7 +261,7 @@
         private System.Windows.Forms.ToolStripMenuItem menuPersons;
         private System.Windows.Forms.ToolStripMenuItem нерабочиеДниToolStripMenuItem;
         private System.Windows.Forms.MenuStrip menuStrip1;
-        private System.Windows.Forms.Panel plPeraonButton;
+        private System.Windows.Forms.Panel plPersonButton;
         private System.Windows.Forms.Button bTnToDay;
         public System.Windows.Forms.Button button3;
         private System.Windows.Forms.Button addFiveDays;

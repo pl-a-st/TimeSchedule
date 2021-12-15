@@ -21,7 +21,7 @@ namespace time_schedule
         { get; private set; } = 0;
         public int PlForDateScrollXSaved
         { get; private set; } = 0;
-        public int PlPeraonButtonYSaved
+        public int PlPersonButtonYSaved
         { get; private set; } = 0;
         public DateTime MinDateStart
         { get; private set; } = DateTime.MaxValue;
@@ -47,7 +47,7 @@ namespace time_schedule
             {
                 plForDate.HorizontalScroll.Value = plMain.HorizontalScroll.Value;
                 int test = plMain.VerticalScroll.Value;
-                plPeraonButton.VerticalScroll.Value = test;
+                plPersonButton.VerticalScroll.Value = test;
             }
             catch
             {
@@ -61,7 +61,7 @@ namespace time_schedule
         }
         public int GetPersonButtonWith()
         {
-            return plMain.Location.X - plPeraonButton.Location.X;
+            return plMain.Location.X - plPersonButton.Location.X;
         }
         private void CleanOldExemplar(ref Panel plPersonButton, ref Panel plMain)
         {
@@ -78,7 +78,7 @@ namespace time_schedule
             {
                 if (plPersonButton.Controls[i] is Button)
                 {
-                    plPersonButton.Controls.Remove(plPeraonButton.Controls[i]);
+                    plPersonButton.Controls.Remove(this.plPersonButton.Controls[i]);
                     i--;
                 }
 
@@ -158,31 +158,28 @@ namespace time_schedule
             PlForDateScrollXSaved = plForDate.HorizontalScroll.Value;
             PlMainScrollXSaved = plMain.HorizontalScroll.Value;
             PlMainScrollYSaved = plMain.VerticalScroll.Value;
-            PlPeraonButtonYSaved = plPeraonButton.VerticalScroll.Value;
+            PlPersonButtonYSaved = plPersonButton.VerticalScroll.Value;
         }
         public void LoadScrolls()
         {
+            const int MAGIC_ZEROING_FOR_CORRECT_OPERATION = 0;
+            plForDate.HorizontalScroll.Value = MAGIC_ZEROING_FOR_CORRECT_OPERATION;
+            plForDate.HorizontalScroll.Value = MAGIC_ZEROING_FOR_CORRECT_OPERATION;
             plForDate.HorizontalScroll.Value = PlMainScrollXSaved;
-        
             plForDate.HorizontalScroll.Value = PlMainScrollXSaved;
-            plMain.Select();
             plMain.HorizontalScroll.Value = PlMainScrollXSaved;
             plMain.HorizontalScroll.Value = PlMainScrollXSaved;
-
-            
-            
-
-            //plMain.VerticalScroll.Value = PlMainScrollYSaved;
-            //plPeraonButton.VerticalScroll.Value = PlPeraonButtonYSaved;
-            //plMain.VerticalScroll.Value = PlMainScrollYSaved;
-            //plPeraonButton.VerticalScroll.Value = PlPeraonButtonYSaved;
+            plMain.VerticalScroll.Value = PlMainScrollYSaved;
+            plPersonButton.VerticalScroll.Value = PlPersonButtonYSaved;
+            plMain.VerticalScroll.Value = PlMainScrollYSaved;
+            plPersonButton.VerticalScroll.Value = PlPersonButtonYSaved;
         }
         public void ScrollToZero()
         {
             plForDate.HorizontalScroll.Value = 0;
             plMain.HorizontalScroll.Value = 0;
             plMain.VerticalScroll.Value = 0;
-            plPeraonButton.VerticalScroll.Value = 0;
+            plPersonButton.VerticalScroll.Value = 0;
         }
         public void SaveMinMaxDate()
         {
@@ -191,7 +188,7 @@ namespace time_schedule
         }
         public void LoadRefreshForm()
         {
-            LoadRefreshForm( plPeraonButton, plMain, Bmp);
+            LoadRefreshForm( plPersonButton, plMain, Bmp);
         }
         public void LoadRefreshForm(Panel plPersonButton,Panel plMain, Bitmap bitmap)
         {
@@ -283,7 +280,7 @@ namespace time_schedule
         }
         public Panel GetPlPeraonButton()
         {
-            return plPeraonButton;
+            return plPersonButton;
         }
         public Panel GetPlMain()
         {
@@ -303,7 +300,7 @@ namespace time_schedule
             plMain.Controls.Add(myScrollBar);
             Dals.WriteProjectFolder(true);
             this.Activate();
-            LoadRefreshForm( plPeraonButton, plMain, Bmp);
+            LoadRefreshForm( plPersonButton, plMain, Bmp);
             NonWorkDaysWrite(DateTime.Now.AddYears(-1).Date, DateTime.Now.AddYears(1).Date);
             plMain.VerticalScroll.Visible = true;  
         }
@@ -314,8 +311,8 @@ namespace time_schedule
             plForDate.HorizontalScroll.Value = plMain.HorizontalScroll.Value;
             plForDate.HorizontalScroll.Value = plMain.HorizontalScroll.Value;
             int test = plMain.VerticalScroll.Value;
-            plPeraonButton.VerticalScroll.Value = test;
-            plPeraonButton.VerticalScroll.Value = test;
+            plPersonButton.VerticalScroll.Value = test;
+            plPersonButton.VerticalScroll.Value = test;
         }
 
         public void ScrollToBottom(Panel p)
@@ -345,7 +342,7 @@ namespace time_schedule
             try
             {
                 plForDate.HorizontalScroll.Value = plMain.HorizontalScroll.Value;
-                plPeraonButton.VerticalScroll.Value = plMain.VerticalScroll.Value;
+                plPersonButton.VerticalScroll.Value = plMain.VerticalScroll.Value;
             }
             catch
             {

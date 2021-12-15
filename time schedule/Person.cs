@@ -250,6 +250,38 @@ namespace time_schedule
                 }
             }
         }
+        private void downPlaceAfterChange(List<List<Task>> listsSynckTasks)
+        {
+            for (int i=0; i<Tasks.Count;i++)
+            {
+                
+               if(DownPlaceAfterChange(listsSynckTasks, Tasks[i]))
+                {
+                    Tasks[i].SetPlaceInSynhTask(Tasks[i].PlaceInSynchTask - 1);
+                    downPlaceAfterChange(listsSynckTasks);
+                }
+                
+            }
+        }
+        private bool DownPlaceAfterChange(List<List<Task>> listsSynckTasks, Task task)
+        {
+            foreach (List<Task> synchTasks in listsSynckTasks)
+            {
+                if (synchTasks.Contains(task))
+                {
+                    foreach (Task targetTask in synchTasks)
+                    {
+                        if(targetTask != task && targetTask.PlaceInSynchTask == (task.PlaceInSynchTask-1))
+                        {
+                            return false;
+                        }
+                    }
+                }
+                
+            }
+            return true;
+
+        }
         public void AssingPlace()
         {
             List<List<Task>> listsSynckTasks = GetListsSynckTasks();
@@ -270,13 +302,15 @@ namespace time_schedule
                             {
                                 synckTasks[j].SetPlaceInSynhTask(synckTasks[j].PlaceInSynchTask + 1);
                                 SetPlaceAfterChange(listsSynckTasks, synckTasks, synckTasks[j]);
-                                /// прописать метод
                             }
 
                         }
                     }
                 }
+                
             }
+            //downPlaceAfterChange(listsSynckTasks);
+            // прописать метод
         }
     }
 
