@@ -104,45 +104,6 @@ namespace time_schedule
                     CountDaysSynchTask1 = task.PlaceInSynchTask + 1;
             }
             return CountDaysSynchTask1;
-            //foreach (Task task1 in ListTask.Tasks)
-            //{
-            //    Task SynchTask = task1;
-            //    int CountDaysSynchTask2 = 1;
-            //    foreach (Task task2 in ListTask.Tasks)
-            //    {
-            //        if (task1 != task2)
-            //        {
-            //            if (task2.DateStart.Date >= SynchTask.DateStart.Date && task2.DateStart.Date < SynchTask.DateFinish.Date ||
-            //                task2.DateStart.Date <= SynchTask.DateStart.Date && task2.DateFinish.Date > SynchTask.DateStart.Date
-            //                )
-            //            {
-            //                DateTime dateStart;
-            //                DateTime dateFinish;
-            //                if(task2.DateStart.Date >= SynchTask.DateStart.Date)
-            //                {
-            //                    dateStart = task2.DateStart.Date;
-            //                }
-            //                else
-            //                {
-            //                    dateStart = SynchTask.DateStart.Date;
-            //                }
-            //                if (task2.DateFinish.Date <= SynchTask.DateFinish.Date)
-            //                {
-            //                    dateFinish = task2.DateFinish.Date;
-            //                }
-            //                else
-            //                {
-            //                    dateFinish = SynchTask.DateFinish.Date;
-            //                }
-            //                CountDaysSynchTask2++;
-            //                SynchTask = new Task(dateStart, dateFinish);
-            //            }
-            //        }
-            //    }
-            //    if (CountDaysSynchTask2 >= CountDaysSynchTask1)
-            //        CountDaysSynchTask1 = CountDaysSynchTask2;
-            //}
-            //return CountDaysSynchTask1;
         }
     }
     

@@ -219,7 +219,6 @@ namespace time_schedule
                 );
             LoadVerticalLine();
             LoadHorizontLine();
-            
             foreach (TaskButton taskButton in Program.ListTaskButtons.TaskButtons)
             {
                 foreach (Button button in taskButton.Buttons)
@@ -228,9 +227,7 @@ namespace time_schedule
                     button.BringToFront();
                 }
             }
-            
             LoadScrolls();
-            
             SaveMinMaxDate();
         }
         public void LoadColumns()
@@ -298,23 +295,17 @@ namespace time_schedule
         }
         private void Form1_Load(object sender, EventArgs e)
         {
-            
-            
             Program.delegatLoadRefreshForm = LoadRefreshForm;
-            
-
             myScrollBar.Height = plMain.Height;
             myScrollBar.Left = plMain.Width - myScrollBar.Width;
             myScrollBar.Top = 0;
             myScrollBar.Enabled = false;
             plMain.Controls.Add(myScrollBar);
-
             Dals.WriteProjectFolder(true);
             this.Activate();
             LoadRefreshForm( plPeraonButton, plMain, Bmp);
             NonWorkDaysWrite(DateTime.Now.AddYears(-1).Date, DateTime.Now.AddYears(1).Date);
-            plMain.VerticalScroll.Visible = true;
-            
+            plMain.VerticalScroll.Visible = true;  
         }
 
         private void CalendarTasks_MouseWheel(object sender, MouseEventArgs e)
@@ -325,8 +316,6 @@ namespace time_schedule
             int test = plMain.VerticalScroll.Value;
             plPeraonButton.VerticalScroll.Value = test;
             plPeraonButton.VerticalScroll.Value = test;
-
-
         }
 
         public void ScrollToBottom(Panel p)
