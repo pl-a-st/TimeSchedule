@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+//using System.Drawing.Color;
 
 namespace time_schedule
 {
@@ -168,14 +169,30 @@ namespace time_schedule
         }
         private void bTnColor_Click(object sender, EventArgs e)
         {
-            colorDialog1.FullOpen = true;
+            ColorDialog colorDialog1 = new ColorDialog();
+            colorDialog1.AllowFullOpen = true;
+            colorDialog1.CustomColors = new int[] { 
+                ToInt(Color.FromArgb(169,208,142)),
+                ToInt(Color.FromArgb(248,203,173)),
+                ToInt(Color.FromArgb(132,151,176)),
+                ToInt(Color.FromArgb(165,165,165)),
+                ToInt(Color.FromArgb(255,230,153)),
+                ToInt(Color.FromArgb(226,239,218)),
+                ToInt(Color.FromArgb(142,169,219)),
+                ToInt(Color.FromArgb(255,217,102)),
+                ToInt(Color.FromArgb(221,235,247)),
+                };
+            colorDialog1.SolidColorOnly = true;
             if (colorDialog1.ShowDialog() != DialogResult.Cancel)
             {
                 bTnColor.BackColor = colorDialog1.Color;
                 Program.TaskColor = colorDialog1.Color;
             }
         }
-
+        static int ToInt(Color c)
+        {
+            return c.R + c.G * 0x100 + c.B * 0x10000;
+        }
         private void btnCreateTask_Click(object sender, EventArgs e)
         {
             Task task = new Task();
@@ -279,6 +296,8 @@ namespace time_schedule
             {
                 cmBxPerson.Items.Add(person.PersonFamaly);
             }
+            if (fmAddPerson.CreatePerson == CreatePerson.yes)
+                cmBxPerson.Text = fmAddPerson.GetPersonName();
         }
 
         private void fmAddTask_FormClosed(object sender, FormClosedEventArgs e)

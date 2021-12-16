@@ -217,8 +217,9 @@ namespace time_schedule
                 Program.ListTasksAllPerson,
                 Program.ListPersonButton
                 );
-            LoadVerticalLine();
             LoadHorizontLine();
+            LoadVerticalLine();
+            
             foreach (TaskButton taskButton in Program.ListTaskButtons.TaskButtons)
             {
                 foreach (Button button in taskButton.Buttons)
@@ -295,6 +296,7 @@ namespace time_schedule
         }
         private void Form1_Load(object sender, EventArgs e)
         {
+            
             Program.delegatLoadRefreshForm = LoadRefreshForm;
             myScrollBar.Height = plMain.Height;
             myScrollBar.Left = plMain.Width - myScrollBar.Width;
@@ -302,6 +304,7 @@ namespace time_schedule
             myScrollBar.Enabled = false;
             plMain.Controls.Add(myScrollBar);
             Dals.WriteProjectFolder(true);
+            this.Text = Dals.ProjectFolderPath;
             this.Activate();
             LoadRefreshForm( plPersonButton, plMain, Bmp);
             NonWorkDaysWrite(DateTime.Now.AddYears(-1).Date, DateTime.Now.AddYears(1).Date);
@@ -371,16 +374,19 @@ namespace time_schedule
         private void btnTask_Click(object sender, EventArgs e)
         {
             fmAddTask fmAddTask = new fmAddTask(Program.delegatLoadRefreshForm);
+            fmAddTask.StartPosition = FormStartPosition.CenterScreen;
             fmAddTask.SetCreateOrChange(CreateOrChange.Create);
             fmAddTask.Show();
             Dals.WriteListProjectFileAppend(Constants.TASKS, Program.ListTasksAllPerson.GetListForSave());
-            
         }
 
         private void ToolStripMenuItem_Click(object sender, EventArgs e)
         {
             Dals.WriteProjectFolder();
-            
+            this.Text = Dals.ProjectFolderPath;
+            this.Activate();
+            LoadRefreshForm(plPersonButton, plMain, Bmp);
+
         }
 
         private void Form1_Activated(object sender, EventArgs e)

@@ -273,12 +273,17 @@ namespace time_schedule
                     {
                         if(targetTask != task)
                         {
-                            if (task.PlaceInSynchTask == 0 || targetTask.PlaceInSynchTask == (task.PlaceInSynchTask - 1))
+                            if ( task.PlaceInSynchTask == 0 || targetTask.PlaceInSynchTask == (task.PlaceInSynchTask - 1))
                             {
                                 return false;
                             }
                         }
-                        
+                        if (synchTasks.Count <= 1)
+                        {
+                            return false;
+                        }
+
+
                     }
                 }
                 

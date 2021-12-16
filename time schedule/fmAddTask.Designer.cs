@@ -50,7 +50,6 @@
             this.btnCreateTask = new System.Windows.Forms.Button();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
             this.button1 = new System.Windows.Forms.Button();
-            this.colorDialog1 = new System.Windows.Forms.ColorDialog();
             this.bTnColor = new System.Windows.Forms.Button();
             this.cmBxTaskStatus = new System.Windows.Forms.ComboBox();
             this.label7 = new System.Windows.Forms.Label();
@@ -453,7 +452,6 @@
         }
         private System.Windows.Forms.GroupBox groupBox2;
         private System.Windows.Forms.Button button1;
-        private System.Windows.Forms.ColorDialog colorDialog1;
         private System.Windows.Forms.Button bTnColor;
         private System.Windows.Forms.ComboBox cmBxTaskStatus;
         private System.Windows.Forms.Label label7;

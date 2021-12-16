@@ -28,17 +28,17 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.textBox1 = new System.Windows.Forms.TextBox();
+            this.personName = new System.Windows.Forms.TextBox();
             this.button1 = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
-            // textBox1
+            // personName
             // 
-            this.textBox1.Location = new System.Drawing.Point(12, 40);
-            this.textBox1.Name = "textBox1";
-            this.textBox1.Size = new System.Drawing.Size(229, 20);
-            this.textBox1.TabIndex = 0;
+            this.personName.Location = new System.Drawing.Point(12, 40);
+            this.personName.Name = "personName";
+            this.personName.Size = new System.Drawing.Size(229, 20);
+            this.personName.TabIndex = 0;
             // 
             // button1
             // 
@@ -66,7 +66,7 @@
             this.ClientSize = new System.Drawing.Size(334, 72);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.button1);
-            this.Controls.Add(this.textBox1);
+            this.Controls.Add(this.personName);
             this.Name = "fmAddPerson";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Добавить исполнителя";
@@ -78,7 +78,7 @@
 
         #endregion
 
-        private System.Windows.Forms.TextBox textBox1;
+        private System.Windows.Forms.TextBox personName;
         private System.Windows.Forms.Button button1;
         private System.Windows.Forms.Label label1;
     }

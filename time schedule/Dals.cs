@@ -22,7 +22,7 @@ namespace time_schedule
         }
         public static void WriteProjectFolder(bool startProgram)
         {
-            if (startProgram&&(!File.Exists(Constants.PROJECT_FILE_NAME)||File.ReadAllLines(Constants.PROJECT_FILE_NAME).Length==0))
+            if (startProgram && (!File.Exists(Constants.PROJECT_FILE_NAME)||File.ReadAllLines(Constants.PROJECT_FILE_NAME).Length==0))
             {
                 WriteProjectFolder("Проект");
             }
@@ -46,6 +46,7 @@ namespace time_schedule
             try
             {
                 FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog();
+                folderBrowserDialog.Description = "Выбирете папку проекта";
                 StreamWriter streamWriter = new StreamWriter(Constants.PROJECT_FILE_NAME, false);
                 string folderName = string.Empty;
                 if (folderBrowserDialog.ShowDialog() == DialogResult.OK)
@@ -101,5 +102,6 @@ namespace time_schedule
             }
             return listFromFile;
         }
+        
     }
 }

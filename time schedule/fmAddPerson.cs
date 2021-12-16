@@ -10,18 +10,33 @@ using System.Windows.Forms;
 
 namespace time_schedule
 {
+    public enum CreatePerson
+    {
+        yes,
+        no
+    }
     public partial class fmAddPerson : Form
     {
         public fmAddPerson()
         {
             InitializeComponent();
         }
-
+        public CreatePerson CreatePerson
+        { get; private set; } = CreatePerson.no;
+        public void SetCreatePerson(CreatePerson createPerson)
+        {
+            CreatePerson = createPerson;
+        }
+        public string GetPersonName()
+        {
+            return personName.Text;
+        }
         private void button1_Click(object sender, EventArgs e)
         {
-            Person person = new Person(textBox1.Text);
+            Person person = new Person(personName.Text);
             Program.listPersons.AddPerson(person);
             Dals.WriteListProjectFileAppend(Constants.PERSONS, Program.listPersons.GetListForSave());
+            CreatePerson = CreatePerson.yes;
             this.Close();
         }
 
