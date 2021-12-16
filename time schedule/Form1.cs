@@ -552,10 +552,12 @@ namespace time_schedule
         {
             MessageBox.Show(""+plForDate.HorizontalScroll.Value);
         }
-
+        LoadRefreshForm ThisloadRefreshForm;
         private void задачиToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            fmTasks fmTasks = new fmTasks();
+            
+            fmTasks fmTasks = new fmTasks(Program.delegatLoadRefreshForm);
+            
             fmTasks.ShowDialog();
         }
     }

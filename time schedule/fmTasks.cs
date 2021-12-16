@@ -12,11 +12,12 @@ namespace time_schedule
 {
     public partial class fmTasks : Form
     {
-        public fmTasks()
+        public fmTasks(LoadRefreshForm loadRefreshForm)
         {
             InitializeComponent();
+            thisloadRefreshForm = loadRefreshForm;
         }
-
+        LoadRefreshForm thisloadRefreshForm;
         public void fmTasks_Load(object sender, EventArgs e)
         {
             LoadLBxTasks();
@@ -98,6 +99,7 @@ namespace time_schedule
             }
             Dals.WriteListProjectFileAppend(Constants.TASKS, Program.ListTasksAllPerson.GetListForSave());
             LoadLBxTasks();
+            thisloadRefreshForm?.Invoke();
         }
         
         private void btnChangeTask_Click(object sender, EventArgs e)
@@ -128,6 +130,11 @@ namespace time_schedule
         public void textBox1_TextChanged(object sender, EventArgs e)
         {
             LoadLBxTasks(tBxTargetTask.Text);
+        }
+
+        private void fmTasks_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            
         }
     }
 }

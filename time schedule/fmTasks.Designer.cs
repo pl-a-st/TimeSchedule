@@ -107,6 +107,7 @@
             this.Name = "fmTasks";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "fmTasks";
+            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.fmTasks_FormClosed);
             this.Load += new System.EventHandler(this.fmTasks_Load);
             this.ResumeLayout(false);
             this.PerformLayout();

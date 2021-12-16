@@ -714,7 +714,7 @@ namespace time_schedule
         }
         private void PersonButton_Click(object sender, EventArgs e)
         {
-            fmTasks fmTasks = new fmTasks();
+            fmTasks fmTasks = new fmTasks(Program.delegatLoadRefreshForm);
             fmTasks.Load -= fmTasks.fmTasks_Load;
             fmTasks.Load += FmTasks_Load;
             void FmTasks_Load(object sender1, EventArgs e1)
