@@ -267,14 +267,18 @@ namespace time_schedule
         {
             foreach (List<Task> synchTasks in listsSynckTasks)
             {
-                if (synchTasks.Contains(task))
+                if (synchTasks[0]== task)
                 {
                     foreach (Task targetTask in synchTasks)
                     {
-                        if(targetTask != task && targetTask.PlaceInSynchTask == (task.PlaceInSynchTask-1))
+                        if(targetTask != task)
                         {
-                            return false;
+                            if (task.PlaceInSynchTask == 0 || targetTask.PlaceInSynchTask == (task.PlaceInSynchTask - 1))
+                            {
+                                return false;
+                            }
                         }
+                        
                     }
                 }
                 
@@ -309,7 +313,7 @@ namespace time_schedule
                 }
                 
             }
-            //downPlaceAfterChange(listsSynckTasks);
+            downPlaceAfterChange(listsSynckTasks);
             // прописать метод
         }
     }
@@ -619,8 +623,9 @@ namespace time_schedule
             fmAddTask fmAddTask = new fmAddTask(Program.delegatLoadRefreshForm);
             fmAddTask.GhangeNamebtnCreateTask("Изменить");
             fmAddTask.SetCreateOrChange(CreateOrChange.Change);
+            fmAddTask.StartPosition = FormStartPosition.CenterScreen;
             Program.Task = Task;
-            fmAddTask.ShowDialog();
+            fmAddTask.Show();
             Dals.WriteListProjectFileAppend(Constants.TASKS, Program.ListTasksAllPerson.GetListForSave());
         }
         public TaskButton(Task task, ListPersonButton listPersonButton,DateTime minDateStart, DateTime maxDateFinish)

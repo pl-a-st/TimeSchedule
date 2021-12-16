@@ -372,8 +372,9 @@ namespace time_schedule
         {
             fmAddTask fmAddTask = new fmAddTask(Program.delegatLoadRefreshForm);
             fmAddTask.SetCreateOrChange(CreateOrChange.Create);
-            fmAddTask.ShowDialog();
+            fmAddTask.Show();
             Dals.WriteListProjectFileAppend(Constants.TASKS, Program.ListTasksAllPerson.GetListForSave());
+            
         }
 
         private void ToolStripMenuItem_Click(object sender, EventArgs e)

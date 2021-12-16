@@ -203,6 +203,7 @@ namespace time_schedule
                 }
             }
             Dals.WriteListProjectFileAppend(Constants.TASKS, Program.ListTasksAllPerson.GetListForSave());
+            thisloadRefreshForm?.Invoke();
             this.Close();
         }
         private void ChekTaskAfter(Task task)
@@ -282,7 +283,7 @@ namespace time_schedule
 
         private void fmAddTask_FormClosed(object sender, FormClosedEventArgs e)
         {
-            thisloadRefreshForm?.Invoke();
+            //thisloadRefreshForm?.Invoke();
             
             
         }
