@@ -630,7 +630,7 @@ namespace time_schedule
             fmAddTask.SetCreateOrChange(CreateOrChange.Change);
             fmAddTask.StartPosition = FormStartPosition.CenterScreen;
             Program.Task = Task;
-            fmAddTask.Show();
+            fmAddTask.ShowDialog();
             Dals.WriteListProjectFileAppend(Constants.TASKS, Program.ListTasksAllPerson.GetListForSave());
         }
         public TaskButton(Task task, ListPersonButton listPersonButton,DateTime minDateStart, DateTime maxDateFinish)

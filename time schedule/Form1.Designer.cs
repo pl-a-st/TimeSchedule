@@ -35,6 +35,7 @@
             this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.сенитьПользователяToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.проектToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.задачиToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuPersons = new System.Windows.Forms.ToolStripMenuItem();
             this.нерабочиеДниToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
@@ -43,7 +44,6 @@
             this.addFiveDays = new System.Windows.Forms.Button();
             this.dateTimePicker1 = new System.Windows.Forms.DateTimePicker();
             this.minusFiveDay = new System.Windows.Forms.Button();
-            this.задачиToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.plMain.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pBForLine)).BeginInit();
             this.menuStrip1.SuspendLayout();
@@ -78,6 +78,7 @@
             this.plForDate.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.plForDate.AutoScroll = true;
+            this.plForDate.Enabled = false;
             this.plForDate.Location = new System.Drawing.Point(114, 12);
             this.plForDate.Name = "plForDate";
             this.plForDate.Size = new System.Drawing.Size(758, 52);
@@ -85,7 +86,7 @@
             // 
             // btnTask
             // 
-            this.btnTask.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.btnTask.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
             this.btnTask.Cursor = System.Windows.Forms.Cursors.AppStarting;
             this.btnTask.Location = new System.Drawing.Point(503, 597);
             this.btnTask.Name = "btnTask";
@@ -119,6 +120,13 @@
             this.проектToolStripMenuItem.Size = new System.Drawing.Size(191, 22);
             this.проектToolStripMenuItem.Text = "Проект";
             this.проектToolStripMenuItem.Click += new System.EventHandler(this.ToolStripMenuItem_Click);
+            // 
+            // задачиToolStripMenuItem
+            // 
+            this.задачиToolStripMenuItem.Name = "задачиToolStripMenuItem";
+            this.задачиToolStripMenuItem.Size = new System.Drawing.Size(191, 22);
+            this.задачиToolStripMenuItem.Text = "Задачи";
+            this.задачиToolStripMenuItem.Click += new System.EventHandler(this.задачиToolStripMenuItem_Click);
             // 
             // menuPersons
             // 
@@ -197,13 +205,6 @@
             this.minusFiveDay.Text = "-5 ";
             this.minusFiveDay.UseVisualStyleBackColor = true;
             this.minusFiveDay.Click += new System.EventHandler(this.minusFiveDay_Click);
-            // 
-            // задачиToolStripMenuItem
-            // 
-            this.задачиToolStripMenuItem.Name = "задачиToolStripMenuItem";
-            this.задачиToolStripMenuItem.Size = new System.Drawing.Size(191, 22);
-            this.задачиToolStripMenuItem.Text = "Задачи";
-            this.задачиToolStripMenuItem.Click += new System.EventHandler(this.задачиToolStripMenuItem_Click);
             // 
             // Form1
             // 

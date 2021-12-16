@@ -37,8 +37,8 @@ namespace time_schedule
         VScrollBar myScrollBar = new VScrollBar();
         private void PlMain_ClientSizeChanged(object sender, EventArgs e)
         {
-            plForDate.HorizontalScroll.Value = plMain.HorizontalScroll.Value;
-            plForDate.HorizontalScroll.Value = plMain.HorizontalScroll.Value;
+            //plForDate.HorizontalScroll.Value = plMain.HorizontalScroll.Value;
+            //plForDate.HorizontalScroll.Value = plMain.HorizontalScroll.Value;
         }
 
         private void CalendarTasks_MouseWheel1(object sender, MouseEventArgs e)
@@ -195,6 +195,7 @@ namespace time_schedule
         }
         public void LoadRefreshForm(Panel plPersonButton,Panel plMain, Bitmap bitmap)
         {
+            plForDate.Enabled = false;
             SaveScrolls();
             ScrollToZero();
             
@@ -308,7 +309,8 @@ namespace time_schedule
             this.Activate();
             LoadRefreshForm( plPersonButton, plMain, Bmp);
             NonWorkDaysWrite(DateTime.Now.AddYears(-1).Date, DateTime.Now.AddYears(1).Date);
-            plMain.VerticalScroll.Visible = true;  
+            plMain.VerticalScroll.Visible = true;
+            plForDate.Enabled = true;
         }
 
         private void CalendarTasks_MouseWheel(object sender, MouseEventArgs e)
@@ -391,7 +393,7 @@ namespace time_schedule
 
         private void Form1_Activated(object sender, EventArgs e)
         {
-            //plMain.HorizontalScroll.Value = plForDate.HorizontalScroll.Value;
+            plForDate.Enabled = true;
             
         }
         private void ScrollToDate(DateTime targetDateTime)
@@ -503,7 +505,7 @@ namespace time_schedule
             }
             catch
             {
-                MessageBox.Show("Что-то с рисованием");
+                
 
             }
         }

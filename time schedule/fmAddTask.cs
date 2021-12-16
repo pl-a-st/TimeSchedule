@@ -221,6 +221,7 @@ namespace time_schedule
             }
             Dals.WriteListProjectFileAppend(Constants.TASKS, Program.ListTasksAllPerson.GetListForSave());
             thisloadRefreshForm?.Invoke();
+            
             this.Close();
         }
         private void ChekTaskAfter(Task task)

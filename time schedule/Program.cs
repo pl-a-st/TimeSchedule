@@ -7,6 +7,11 @@ using System.Windows.Forms;
 
 namespace time_schedule
 {
+    enum UserType
+    {
+        Admin,
+        Reader
+    }
     static class Program
     {
         /// <summary>
