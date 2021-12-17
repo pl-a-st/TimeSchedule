@@ -27,6 +27,7 @@ namespace time_schedule
         public static ListPersonButton ListPersonButton = new ListPersonButton();
         public static ListTaskButton ListTaskButtons = new ListTaskButton();
         public static Person Person = new Person(string.Empty);
+        public static UserType UserType = UserType.Reader;
 
         [STAThread]
         static void Main()
