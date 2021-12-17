@@ -39,7 +39,7 @@ namespace time_schedule
             CreatePerson = CreatePerson.yes;
             this.Close();
         }
-
+        
         private void fmAddPerson_Load(object sender, EventArgs e)
         {
             this.TopMost = true;

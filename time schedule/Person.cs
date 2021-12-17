@@ -133,6 +133,10 @@ namespace time_schedule
                 AddPerson(person);
             }
         }
+        public void SetPersonList(List<Person> ListPerson)
+        {
+            Persons = ListPerson;
+        }
     }
     public class ListTasks
     {

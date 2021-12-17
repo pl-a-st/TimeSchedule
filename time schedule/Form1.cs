@@ -367,7 +367,7 @@ namespace time_schedule
         
         private void toolStripMenuItem2_Click(object sender, EventArgs e)
         {
-            fmWorkWithPersons fmWorkWithPersons = new fmWorkWithPersons();
+            fmWorkWithPersons fmWorkWithPersons = new fmWorkWithPersons(Program.delegatLoadRefreshForm);
             fmWorkWithPersons.ShowDialog();
             
 

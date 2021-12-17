@@ -10,13 +10,19 @@ using System.Windows.Forms;
 
 namespace time_schedule
 {
+    enum PersonPlaceUpDowm
+    {
+        up,
+        down
+    }
     public partial class fmWorkWithPersons : Form
     {
-        public fmWorkWithPersons()
+        public fmWorkWithPersons(LoadRefreshForm loadRefreshForm)
         {
             InitializeComponent();
+            thisloadRefreshForm = loadRefreshForm;
         }
-
+        LoadRefreshForm thisloadRefreshForm;
         private void btnNewPerson_Click(object sender, EventArgs e)
         {
             fmAddPerson fmAddPerson = new fmAddPerson();
@@ -36,6 +42,7 @@ namespace time_schedule
         private void fmWorkWithPersons_Load(object sender, EventArgs e)
         {
             LisBoxRefresh();
+            lblPersonPlace.Text = "Порядок " + "\n" + "исполнителя";
         }
 
         private void btnChangePerson_Click(object sender, EventArgs e)
@@ -63,6 +70,60 @@ namespace time_schedule
                     break;
                 }
             }
+        }
+        private void ReloadListPerson()
+        {
+            List<Person> listPerson = new List<Person>();
+            foreach (object item in lBxPersons.Items)
+            {
+                foreach (Person person in Program.listPersons.Persons)
+                {
+                    if (item.ToString() == person.PersonFamaly)
+                    {
+                        listPerson.Add(person);
+                    }
+                }
+            }
+            Program.listPersons.SetPersonList(listPerson);
+            Dals.WriteListProjectFileAppend(Constants.PERSONS, Program.listPersons.GetListForSave());
+        }
+        private void RemovePersonPlace(PersonPlaceUpDowm personPlaceUpDowm)
+        {
+            if (lBxPersons.SelectedIndex == -1)
+            {
+                MessageBox.Show("Не выбран исполнитель.");
+                return;
+            }
+            object selectedItem = lBxPersons.SelectedItem;
+            int index = lBxPersons.SelectedIndex;
+            if (personPlaceUpDowm == PersonPlaceUpDowm.up && index > 0)
+            {
+                lBxPersons.Items.Insert(index - 1, selectedItem);
+                lBxPersons.SelectedIndex = index - 1;
+                lBxPersons.Items.RemoveAt(index + 1);
+                ReloadListPerson();
+            }
+            if (personPlaceUpDowm == PersonPlaceUpDowm.down && index < lBxPersons.Items.Count-1)
+            {
+                lBxPersons.Items.Insert(index + 2, selectedItem);
+                lBxPersons.Items.RemoveAt(index);
+                lBxPersons.SelectedIndex = index+1;
+                ReloadListPerson();
+            }
+        }
+        private void button1_Click_1(object sender, EventArgs e)
+        {
+            RemovePersonPlace(PersonPlaceUpDowm.up);
+        }
+
+        private void fmWorkWithPersons_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            thisloadRefreshForm?.Invoke();
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            RemovePersonPlace(PersonPlaceUpDowm.down);
         }
     }
 }
