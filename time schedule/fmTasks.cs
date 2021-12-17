@@ -52,7 +52,7 @@ namespace time_schedule
             lBxTasks.Items.Clear();
             foreach (Task task in Program.ListTasksAllPerson.Tasks)
             {
-                if (task.PersonFamaly== personFamaly&&task.Name.ToUpper().Contains(targetTaskName.ToUpper()))
+                if (task.PersonFamaly == personFamaly && task.Name.ToUpper().Contains(targetTaskName.ToUpper()))
                     lBxTasks.Items.Add(task.Number.ToString() + "\t" + task.Name);
             }
         }
@@ -65,7 +65,18 @@ namespace time_schedule
             LoadLBxTasks();
 
         }
-
+        public Button GetBtnChangeTask()
+        {
+            return btnChangeTask;
+        }
+        public Button GetBtnDeleteTask()
+        {
+            return btnDeleteTask;
+        }
+        public Button GetBtnNewTask()
+        {
+            return btnNewTask;
+        }
         private void btnDeleteTask_Click(object sender, EventArgs e)
         {
             if (lBxTasks.SelectedIndex == -1)
@@ -124,6 +135,7 @@ namespace time_schedule
             fmAddTask.ShowDialog();
             Dals.WriteListProjectFileAppend(Constants.TASKS, Program.ListTasksAllPerson.GetListForSave());
             LoadLBxTasks();
+            
         }
         
 

@@ -76,6 +76,8 @@ namespace time_schedule
                 cmBxTaskStatus.Text = cmBxTaskStatus.Items[0].ToString();
             if (cmBxPerson.Items.Count > 0)
                 cmBxPerson.Text = cmBxPerson.Items[0].ToString();
+            if (Program.Person.PersonFamaly != string.Empty)
+                cmBxPerson.Text = Program.Person.PersonFamaly;
             rBnWorksDay.Checked = true;
             rBnDayStart.Checked = true;
             nUpDnPreviousTask.Enabled = false;

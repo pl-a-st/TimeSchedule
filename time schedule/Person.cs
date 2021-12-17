@@ -718,6 +718,7 @@ namespace time_schedule
         }
         private void PersonButton_Click(object sender, EventArgs e)
         {
+            Program.Person = Person;
             fmTasks fmTasks = new fmTasks(Program.delegatLoadRefreshForm);
             fmTasks.Load -= fmTasks.fmTasks_Load;
             fmTasks.Load += FmTasks_Load;
@@ -732,6 +733,9 @@ namespace time_schedule
             }
             fmTasks.SetTextBox1().TextChanged -= fmTasks.textBox1_TextChanged;
             fmTasks.SetTextBox1().TextChanged += PersonButton_TextChanged;
+            fmTasks.GetBtnChangeTask().Click += PersonButton_TextChanged;
+            fmTasks.GetBtnNewTask().Click += PersonButton_TextChanged;
+            fmTasks.GetBtnDeleteTask().Click += PersonButton_TextChanged;
             void PersonButton_TextChanged(object sender2, EventArgs e2)
             {
                 fmTasks.LoadLBxTasksPerson(fmTasks.SetTextBox1().Text, Person.PersonFamaly);
