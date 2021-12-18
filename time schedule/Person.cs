@@ -757,6 +757,8 @@ namespace time_schedule
         }
         public Button Button
         { get; private set; } = new Button();
+        public Panel Panel
+        { get; private set; } = new Panel();
         public Person Person
         { get; private set; }
         public List<Pen> ListMinHorizontLine

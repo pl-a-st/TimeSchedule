@@ -33,7 +33,24 @@ namespace time_schedule
             InitializeComponent();
             plMain.MouseWheel += CalendarTasks_MouseWheel;
             plMain.ClientSizeChanged += PlMain_ClientSizeChanged;
+            plPersonButton.MouseWheel += PlPersonButton_MouseWheel;
         }
+
+        private void PlPersonButton_MouseWheel(object sender, MouseEventArgs e)
+        {
+            try
+            {
+                plMain.VerticalScroll.Value = plPersonButton.VerticalScroll.Value;
+                plMain.VerticalScroll.Value = plPersonButton.VerticalScroll.Value;
+            }
+            catch
+            {
+
+            }
+
+
+        }
+
         VScrollBar myScrollBar = new VScrollBar();
         private void PlMain_ClientSizeChanged(object sender, EventArgs e)
         {
@@ -352,7 +369,6 @@ namespace time_schedule
                 plForDate.HorizontalScroll.Value = plMain.HorizontalScroll.Value;
                 plForDate.HorizontalScroll.Value = plMain.HorizontalScroll.Value;
                 plPersonButton.VerticalScroll.Value = plMain.VerticalScroll.Value;
-
                 plPersonButton.VerticalScroll.Value = plMain.VerticalScroll.Value;
             }
             catch
@@ -574,6 +590,20 @@ namespace time_schedule
         private void adminToolStripMenuItem_Click(object sender, EventArgs e)
         {
             Program.UserType = UserType.Admin;
+        }
+
+        private void plPersonButton_Scroll(object sender, ScrollEventArgs e)
+        {
+            try
+            {
+                plMain.HorizontalScroll.Value = plForDate.HorizontalScroll.Value;
+                plMain.HorizontalScroll.Value = plForDate.HorizontalScroll.Value;
+
+            }
+            catch
+            {
+
+            }
         }
     }
    

@@ -34,6 +34,8 @@
             this.btnTask = new System.Windows.Forms.Button();
             this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.сенитьПользователяToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem2 = new System.Windows.Forms.ToolStripMenuItem();
+            this.adminToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.проектToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.задачиToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuPersons = new System.Windows.Forms.ToolStripMenuItem();
@@ -44,8 +46,6 @@
             this.addFiveDays = new System.Windows.Forms.Button();
             this.dateTimePicker1 = new System.Windows.Forms.DateTimePicker();
             this.minusFiveDay = new System.Windows.Forms.Button();
-            this.toolStripMenuItem2 = new System.Windows.Forms.ToolStripMenuItem();
-            this.adminToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.plMain.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pBForLine)).BeginInit();
             this.menuStrip1.SuspendLayout();
@@ -119,6 +119,20 @@
             this.сенитьПользователяToolStripMenuItem.Size = new System.Drawing.Size(191, 22);
             this.сенитьПользователяToolStripMenuItem.Text = "Сенить пользователя";
             // 
+            // toolStripMenuItem2
+            // 
+            this.toolStripMenuItem2.Name = "toolStripMenuItem2";
+            this.toolStripMenuItem2.Size = new System.Drawing.Size(108, 22);
+            this.toolStripMenuItem2.Text = "reader";
+            this.toolStripMenuItem2.Click += new System.EventHandler(this.toolStripMenuItem2_Click_1);
+            // 
+            // adminToolStripMenuItem
+            // 
+            this.adminToolStripMenuItem.Name = "adminToolStripMenuItem";
+            this.adminToolStripMenuItem.Size = new System.Drawing.Size(108, 22);
+            this.adminToolStripMenuItem.Text = "admin";
+            this.adminToolStripMenuItem.Click += new System.EventHandler(this.adminToolStripMenuItem_Click);
+            // 
             // проектToolStripMenuItem
             // 
             this.проектToolStripMenuItem.Name = "проектToolStripMenuItem";
@@ -165,6 +179,7 @@
             this.plPersonButton.Name = "plPersonButton";
             this.plPersonButton.Size = new System.Drawing.Size(200, 514);
             this.plPersonButton.TabIndex = 4;
+            this.plPersonButton.Scroll += new System.Windows.Forms.ScrollEventHandler(this.plPersonButton_Scroll);
             // 
             // bTnToDay
             // 
@@ -210,20 +225,6 @@
             this.minusFiveDay.Text = "-5 ";
             this.minusFiveDay.UseVisualStyleBackColor = true;
             this.minusFiveDay.Click += new System.EventHandler(this.minusFiveDay_Click);
-            // 
-            // toolStripMenuItem2
-            // 
-            this.toolStripMenuItem2.Name = "toolStripMenuItem2";
-            this.toolStripMenuItem2.Size = new System.Drawing.Size(180, 22);
-            this.toolStripMenuItem2.Text = "reader";
-            this.toolStripMenuItem2.Click += new System.EventHandler(this.toolStripMenuItem2_Click_1);
-            // 
-            // adminToolStripMenuItem
-            // 
-            this.adminToolStripMenuItem.Name = "adminToolStripMenuItem";
-            this.adminToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.adminToolStripMenuItem.Text = "admin";
-            this.adminToolStripMenuItem.Click += new System.EventHandler(this.adminToolStripMenuItem_Click);
             // 
             // Form1
             // 
