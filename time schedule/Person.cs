@@ -597,6 +597,7 @@ namespace time_schedule
                     listPersonButton,
                     listTasks.GetMinDateStartTasks(),
                     listTasks.GetMaxDateFinishTasks());
+
                 LoadTaskButtons(taskButton);
             }
         }
@@ -624,11 +625,18 @@ namespace time_schedule
             button.FlatAppearance.BorderSize = 1;
             button.FlatAppearance.BorderColor = Color.DimGray;
             button.Click += Button_Click;
+
+            if (Task.Status == TaskStatusEnum.Closed)
+            {
+                button.ForeColor = Color.LightGray;
+            }
             Buttons.Add(button);
         }
+        
         LoadRefreshForm loadRefreshForm;
         private void Button_Click(object sender, EventArgs e)
         {
+
             fmAddTask fmAddTask = new fmAddTask(Program.delegatLoadRefreshForm);
             fmAddTask.GhangeNamebtnCreateTask("Изменить");
             fmAddTask.SetCreateOrChange(CreateOrChange.Change);
@@ -729,6 +737,11 @@ namespace time_schedule
                 {
                     if (task.PersonFamaly == Person.PersonFamaly)
                         fmTasks.RetunlBxTasks().Items.Add(task.Number.ToString() + "\t" + task.Name);
+                }
+                if (Program.UserType != UserType.Admin)
+                {
+                    fmTasks.GetBtnDeleteTask().Enabled = false;
+                    fmTasks.GetBtnNewTask().Enabled = false;
                 }
             }
             fmTasks.SetTextBox1().TextChanged -= fmTasks.textBox1_TextChanged;

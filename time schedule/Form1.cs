@@ -350,6 +350,9 @@ namespace time_schedule
             try
             {
                 plForDate.HorizontalScroll.Value = plMain.HorizontalScroll.Value;
+                plForDate.HorizontalScroll.Value = plMain.HorizontalScroll.Value;
+                plPersonButton.VerticalScroll.Value = plMain.VerticalScroll.Value;
+
                 plPersonButton.VerticalScroll.Value = plMain.VerticalScroll.Value;
             }
             catch
@@ -561,6 +564,16 @@ namespace time_schedule
             fmTasks fmTasks = new fmTasks(Program.delegatLoadRefreshForm);
             
             fmTasks.ShowDialog();
+        }
+
+        private void toolStripMenuItem2_Click_1(object sender, EventArgs e)
+        {
+            Program.UserType = UserType.Reader;
+        }
+
+        private void adminToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Program.UserType = UserType.Admin;
         }
     }
    

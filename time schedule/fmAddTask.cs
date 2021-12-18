@@ -56,6 +56,15 @@ namespace time_schedule
         private void fmAddTask_Load(object sender, EventArgs e)
         {
             this.TopMost = true;
+            if (Program.UserType != UserType.Admin)
+            {
+                foreach(Control controol in this.Controls)
+                {
+                    controol.Enabled = false;
+                }
+                cmBxTaskStatus.Enabled = true;
+                btnCreateTask.Enabled = true;
+            }
             foreach (Person person in Program.listPersons.Persons)
             {
                 cmBxPerson.Items.Add(person.PersonFamaly);

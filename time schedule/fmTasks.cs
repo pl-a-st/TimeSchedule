@@ -21,6 +21,11 @@ namespace time_schedule
         public void fmTasks_Load(object sender, EventArgs e)
         {
             LoadLBxTasks();
+            if(Program.UserType != UserType.Admin)
+            {
+                btnDeleteTask.Enabled = false;
+                btnNewTask.Enabled = false;
+            }
         }
         public ListBox RetunlBxTasks()
         {
@@ -98,7 +103,7 @@ namespace time_schedule
 
                 return;
             }
-                
+            this.Activate(); 
             foreach (Task task in Program.ListTasksAllPerson.Tasks)
             {
                 if (task.Number == Convert.ToInt32(lBxTasks.SelectedItem.ToString().Split('\t')[0]))
@@ -111,6 +116,7 @@ namespace time_schedule
             Dals.WriteListProjectFileAppend(Constants.TASKS, Program.ListTasksAllPerson.GetListForSave());
             LoadLBxTasks();
             thisloadRefreshForm?.Invoke();
+            
         }
         
         private void btnChangeTask_Click(object sender, EventArgs e)
