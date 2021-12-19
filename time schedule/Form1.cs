@@ -180,19 +180,22 @@ namespace time_schedule
         public void LoadScrolls()
         {
             const int MAGIC_ZEROING_FOR_CORRECT_OPERATION = 0;
-            plForDate.HorizontalScroll.Value = MAGIC_ZEROING_FOR_CORRECT_OPERATION;
-            plForDate.HorizontalScroll.Value = MAGIC_ZEROING_FOR_CORRECT_OPERATION;
             
-            plForDate.HorizontalScroll.Value = PlMainScrollXSaved;
-           
-            plForDate.HorizontalScroll.Value = PlMainScrollXSaved;
-            
-            plMain.HorizontalScroll.Value = PlMainScrollXSaved;
-            plMain.HorizontalScroll.Value = PlMainScrollXSaved;
-            plMain.VerticalScroll.Value = PlMainScrollYSaved;
-            plPersonButton.VerticalScroll.Value = PlPersonButtonYSaved;
-            plMain.VerticalScroll.Value = PlMainScrollYSaved;
-            plPersonButton.VerticalScroll.Value = PlPersonButtonYSaved;
+            try
+            {
+                plForDate.HorizontalScroll.Value = MAGIC_ZEROING_FOR_CORRECT_OPERATION;
+                plForDate.HorizontalScroll.Value = MAGIC_ZEROING_FOR_CORRECT_OPERATION;
+                plForDate.HorizontalScroll.Value = PlMainScrollXSaved;
+                plForDate.HorizontalScroll.Value = PlMainScrollXSaved;
+
+                plMain.HorizontalScroll.Value = PlMainScrollXSaved;
+                plMain.HorizontalScroll.Value = PlMainScrollXSaved;
+                plMain.VerticalScroll.Value = PlMainScrollYSaved;
+                plPersonButton.VerticalScroll.Value = PlPersonButtonYSaved;
+                plMain.VerticalScroll.Value = PlMainScrollYSaved;
+                plPersonButton.VerticalScroll.Value = PlPersonButtonYSaved;
+            }
+            catch { }            
         }
         public void ScrollToZero()
         {
@@ -335,12 +338,17 @@ namespace time_schedule
 
         private void CalendarTasks_MouseWheel(object sender, MouseEventArgs e)
         {
-            plMain.Focus();
-            plForDate.HorizontalScroll.Value = plMain.HorizontalScroll.Value;
-            plForDate.HorizontalScroll.Value = plMain.HorizontalScroll.Value;
-            int test = plMain.VerticalScroll.Value;
-            plPersonButton.VerticalScroll.Value = test;
-            plPersonButton.VerticalScroll.Value = test;
+            try
+            {
+                plMain.Focus();
+                plForDate.HorizontalScroll.Value = plMain.HorizontalScroll.Value;
+                plForDate.HorizontalScroll.Value = plMain.HorizontalScroll.Value;
+                int test = plMain.VerticalScroll.Value;
+                plPersonButton.VerticalScroll.Value = test;
+                plPersonButton.VerticalScroll.Value = test;
+            }
+            catch
+            { }
         }
 
         public void ScrollToBottom(Panel p)
