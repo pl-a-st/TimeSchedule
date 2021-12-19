@@ -31,7 +31,7 @@
             this.plMain = new System.Windows.Forms.Panel();
             this.pBForLine = new System.Windows.Forms.PictureBox();
             this.plForDate = new System.Windows.Forms.Panel();
-            this.btnTask = new System.Windows.Forms.Button();
+            this.btnNewTask = new System.Windows.Forms.Button();
             this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.сенитьПользователяToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem2 = new System.Windows.Forms.ToolStripMenuItem();
@@ -86,17 +86,17 @@
             this.plForDate.Size = new System.Drawing.Size(758, 52);
             this.plForDate.TabIndex = 1;
             // 
-            // btnTask
+            // btnNewTask
             // 
-            this.btnTask.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
-            this.btnTask.Cursor = System.Windows.Forms.Cursors.AppStarting;
-            this.btnTask.Location = new System.Drawing.Point(503, 597);
-            this.btnTask.Name = "btnTask";
-            this.btnTask.Size = new System.Drawing.Size(110, 49);
-            this.btnTask.TabIndex = 3;
-            this.btnTask.Text = "Новая задача";
-            this.btnTask.UseVisualStyleBackColor = true;
-            this.btnTask.Click += new System.EventHandler(this.btnTask_Click);
+            this.btnNewTask.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
+            this.btnNewTask.Cursor = System.Windows.Forms.Cursors.AppStarting;
+            this.btnNewTask.Location = new System.Drawing.Point(503, 597);
+            this.btnNewTask.Name = "btnNewTask";
+            this.btnNewTask.Size = new System.Drawing.Size(110, 49);
+            this.btnNewTask.TabIndex = 3;
+            this.btnNewTask.Text = "Новая задача";
+            this.btnNewTask.UseVisualStyleBackColor = true;
+            this.btnNewTask.Click += new System.EventHandler(this.btnTask_Click);
             // 
             // toolStripMenuItem1
             // 
@@ -235,7 +235,7 @@
             this.Controls.Add(this.dateTimePicker1);
             this.Controls.Add(this.addFiveDays);
             this.Controls.Add(this.bTnToDay);
-            this.Controls.Add(this.btnTask);
+            this.Controls.Add(this.btnNewTask);
             this.Controls.Add(this.plMain);
             this.Controls.Add(this.plForDate);
             this.Controls.Add(this.menuStrip1);
@@ -260,7 +260,7 @@
 
         private System.Windows.Forms.Panel plMain;
         private System.Windows.Forms.Panel plForDate;
-        private System.Windows.Forms.Button btnTask;
+        private System.Windows.Forms.Button btnNewTask;
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem1;
         private System.Windows.Forms.ToolStripMenuItem сенитьПользователяToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem проектToolStripMenuItem;

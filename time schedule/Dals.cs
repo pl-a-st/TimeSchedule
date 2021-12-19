@@ -36,7 +36,7 @@ namespace time_schedule
                 }
                 else
                 {
-                    MessageBox.Show("Не удалось зачитать файл " + Constants.PROJECT_FILE_NAME);
+                    MessageBox.Show("Не удалось зачитать файл " + Constants.PROJECT_FILE_NAME+ "Создайте или выбирите проект.");
                 }
                 
             }
@@ -47,17 +47,19 @@ namespace time_schedule
             {
                 FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog();
                 folderBrowserDialog.Description = "Выбирете папку проекта";
-                StreamWriter streamWriter = new StreamWriter(Constants.PROJECT_FILE_NAME, false);
-                string folderName = string.Empty;
+                
                 if (folderBrowserDialog.ShowDialog() == DialogResult.OK)
                 {
+                    StreamWriter streamWriter = new StreamWriter(Constants.PROJECT_FILE_NAME, false);
+                    string folderName = string.Empty;
                     folderName = folderBrowserDialog.SelectedPath + "\\" + targetFolderName;
                     if (!Directory.Exists(folderName))
                         Directory.CreateDirectory(folderName);
                     streamWriter.WriteLine(folderName);
                     SetProjectFolderPath(folderName);
+                    streamWriter.Close();
                 }
-                streamWriter.Close();
+                
             }
             catch
             {

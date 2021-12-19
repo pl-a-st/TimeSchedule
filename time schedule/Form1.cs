@@ -312,6 +312,7 @@ namespace time_schedule
         {
             return Bmp;
         }
+        
         private void Form1_Load(object sender, EventArgs e)
         {
             
@@ -323,11 +324,13 @@ namespace time_schedule
             plMain.Controls.Add(myScrollBar);
             Dals.WriteProjectFolder(true);
             this.Text = Dals.ProjectFolderPath;
+            this.Text = this.Text.Replace("\\Проект",string.Empty);
             this.Activate();
             LoadRefreshForm( plPersonButton, plMain, Bmp);
             NonWorkDaysWrite(DateTime.Now.AddYears(-1).Date, DateTime.Now.AddYears(1).Date);
             plMain.VerticalScroll.Visible = true;
             plForDate.Enabled = true;
+            btnNewTask.Visible = false;
         }
 
         private void CalendarTasks_MouseWheel(object sender, MouseEventArgs e)
@@ -405,6 +408,7 @@ namespace time_schedule
         {
             Dals.WriteProjectFolder();
             this.Text = Dals.ProjectFolderPath;
+            this.Text = this.Text.Replace("\\Проект", string.Empty);
             this.Activate();
             LoadRefreshForm(plPersonButton, plMain, Bmp);
 
@@ -585,11 +589,13 @@ namespace time_schedule
         private void toolStripMenuItem2_Click_1(object sender, EventArgs e)
         {
             Program.UserType = UserType.Reader;
+            btnNewTask.Visible = false;
         }
 
         private void adminToolStripMenuItem_Click(object sender, EventArgs e)
         {
             Program.UserType = UserType.Admin;
+            btnNewTask.Visible = true;
         }
 
         private void plPersonButton_Scroll(object sender, ScrollEventArgs e)

@@ -52,19 +52,49 @@ namespace time_schedule
             }
             WorkDaysDatesCalculate();
         }
+        private void ControlToReadOnly(Control control)
+        {
+            if (control is Button || control is RadioButton)
+                control.Enabled = false;
+            if (control is TextBox)
+                (control as TextBox).ReadOnly = true;
+            if (control is NumericUpDown)
+            {
+                (control as NumericUpDown).ReadOnly = true;
+                (control as NumericUpDown).Increment = 0;
+            }
+            if (control is DateTimePicker)
+            {
+                (control as DateTimePicker).Enabled = false;
+            }
+                
 
+             
+            if (control is ComboBox && control != cmBxTaskStatus)
+            {
+                (control as ComboBox).DropDownStyle = ComboBoxStyle.DropDownList;
+                for (int i=0; i< (control as ComboBox).Items.Count;i++)
+                {
+                    if ((control as ComboBox).Items[i].ToString() != (control as ComboBox).Text)
+                    {
+                        (control as ComboBox).Items.RemoveAt(i);
+                        i--;
+                    }
+                }   
+            }
+            if (control is GroupBox)
+            {
+                foreach (Control controlInGbx in (control as GroupBox).Controls)
+                {
+                    ControlToReadOnly(controlInGbx);
+                }
+            }
+                
+        }
         private void fmAddTask_Load(object sender, EventArgs e)
         {
             this.TopMost = true;
-            if (Program.UserType != UserType.Admin)
-            {
-                foreach(Control controol in this.Controls)
-                {
-                    controol.Enabled = false;
-                }
-                cmBxTaskStatus.Enabled = true;
-                btnCreateTask.Enabled = true;
-            }
+            
             foreach (Person person in Program.listPersons.Persons)
             {
                 cmBxPerson.Items.Add(person.PersonFamaly);
@@ -78,6 +108,15 @@ namespace time_schedule
                 LoadFmAddTaskToCangeTask();
             if (CreateOrChange == CreateOrChange.Create)
                 LoadFmAddTaskToCreateTask();
+            if (Program.UserType != UserType.Admin)
+            {
+                foreach (Control control in this.Controls)
+                {
+                    ControlToReadOnly(control);
+                }
+                cmBxTaskStatus.Enabled = true;
+                btnCreateTask.Enabled = true;
+            }
         }
         private void LoadFmAddTaskToCreateTask()
         {
