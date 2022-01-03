@@ -105,7 +105,10 @@ namespace time_schedule
             }
             bTnColor.FlatStyle = FlatStyle.Flat;
             if (CreateOrChange == CreateOrChange.Change)
+            {
+                thisloadRefreshForm?.Invoke();
                 LoadFmAddTaskToCangeTask();
+            }
             if (CreateOrChange == CreateOrChange.Create)
                 LoadFmAddTaskToCreateTask();
             if (Program.UserType != UserType.Admin)
@@ -356,6 +359,39 @@ namespace time_schedule
             //thisloadRefreshForm?.Invoke();
             
             
+        }
+
+        private void btnCopyAnotherProject_Click(object sender, EventArgs e)
+        {
+            //string folderName = string.Empty;
+            //string targetFolderName = "Проект";
+            //try
+            //{
+            //    FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog();
+            //    folderBrowserDialog.Description = "Выбирете папку проекта для копирования задачи";
+                
+            //    if (folderBrowserDialog.ShowDialog() == DialogResult.OK)
+            //    {
+            //        folderName = folderBrowserDialog.SelectedPath + "\\" + targetFolderName;
+            //        //StreamWriter streamWriter = new StreamWriter(Constants.PROJECT_FILE_NAME, false);
+            //        Task task = new Task();
+            //        if (CreateOrChange == CreateOrChange.Create)
+            //        {
+            //            task = GetTaskForCreateChange(Program.ListTasksAllPerson.GetNextNumForTask());
+            //            Program.ListTasksAllPerson.AddTask(task);
+            //        }
+            //        if (!Directory.Exists(folderName))
+            //            Directory.CreateDirectory(folderName);
+            //        streamWriter.WriteLine(folderName);
+            //        SetProjectFolderPath(folderName);
+            //        streamWriter.Close();
+            //    }
+
+            //}
+            //catch
+            //{
+            //    MessageBox.Show("Не удалось произвести запись в файл: " + folderName + "\\"+ Constants.TASKS);
+            //}
         }
     }
 }

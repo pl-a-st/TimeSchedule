@@ -58,6 +58,7 @@
             this.label8 = new System.Windows.Forms.Label();
             this.nUpDnPrioirity = new System.Windows.Forms.NumericUpDown();
             this.addPerson = new System.Windows.Forms.Button();
+            this.btnCopyAnotherProject = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.nUpDnCounWorkDay)).BeginInit();
             this.groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nUpDnPreviousTask)).BeginInit();
@@ -385,11 +386,22 @@
             this.addPerson.UseVisualStyleBackColor = true;
             this.addPerson.Click += new System.EventHandler(this.addPerson_Click);
             // 
+            // btnCopyAnotherProject
+            // 
+            this.btnCopyAnotherProject.Location = new System.Drawing.Point(206, 272);
+            this.btnCopyAnotherProject.Name = "btnCopyAnotherProject";
+            this.btnCopyAnotherProject.Size = new System.Drawing.Size(171, 23);
+            this.btnCopyAnotherProject.TabIndex = 25;
+            this.btnCopyAnotherProject.Text = " Копировать в другой проект";
+            this.btnCopyAnotherProject.UseVisualStyleBackColor = true;
+            this.btnCopyAnotherProject.Click += new System.EventHandler(this.btnCopyAnotherProject_Click);
+            // 
             // fmAddTask
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(585, 303);
+            this.Controls.Add(this.btnCopyAnotherProject);
             this.Controls.Add(this.addPerson);
             this.Controls.Add(this.nUpDnPrioirity);
             this.Controls.Add(this.label8);
@@ -460,5 +472,6 @@
         private System.Windows.Forms.Label label8;
         private System.Windows.Forms.NumericUpDown nUpDnPrioirity;
         private System.Windows.Forms.Button addPerson;
+        private System.Windows.Forms.Button btnCopyAnotherProject;
     }
 }
