@@ -248,6 +248,8 @@ namespace time_schedule
         }
         private void btnCreateTask_Click(object sender, EventArgs e)
         {
+            Program.ListTasksAllPerson.Tasks.Clear();
+            Program.ListTasksAllPerson.SetTasksFromList(Dals.ReadListFromProjectFile(Constants.TASKS));
             Task task = new Task();
             if (CreateOrChange == CreateOrChange.Create)
             {
@@ -372,14 +374,17 @@ namespace time_schedule
 
                 if (folderBrowserDialog.ShowDialog() == DialogResult.OK)
                 {
+                    Program.ListTasksAllPerson.Tasks.Clear();
+                    Program.ListTasksAllPerson.SetTasksFromList(Dals.ReadListFromProjectFile(Constants.TASKS));
                     folderName = folderBrowserDialog.SelectedPath + "\\" + targetFolderName;
                     //StreamWriter streamWriter = new StreamWriter(Constants.PROJECT_FILE_NAME, false);
                     Task task = new Task();
                     ListTasks listTasks = new ListTasks();
                     
-                    listTasks.SetTasksFromList(Dals.ReadListFromProjectFile(folderName + "\\" + Constants.TASKS));
-                    List<string> listStringPersons = Dals.ReadListFromProjectFile(folderName + "\\" + Constants.PERSONS);
+                    listTasks.SetTasksFromList(Dals.ReadListFromFile(folderName + "\\" + Constants.TASKS));
+                    List<string> listStringPersons = Dals.ReadListFromFile(folderName + "\\" + Constants.PERSONS);
                     task = GetTaskForCreateChange(listTasks.GetNextNumForTask());
+
                     string personFamaly = "Нераспределено";
                     foreach (string stirngPersones in listStringPersons)
                     {
@@ -390,7 +395,11 @@ namespace time_schedule
                         }
                     }
 
-                    
+                    listTasks.AddTask(task);
+                    Dals.WriteListtFileAppend(folderName + "\\" + Constants.TASKS, listTasks.GetListForSave());
+                    thisloadRefreshForm?.Invoke();
+                    this.Close();
+
                     //if (!Directory.Exists(folderName))
                     //    Directory.CreateDirectory(folderName);
                     //streamWriter.WriteLine(folderName);

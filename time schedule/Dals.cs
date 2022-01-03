@@ -67,9 +67,8 @@ namespace time_schedule
             }
            
         }
-        public static void WriteListProjectFileAppend(string fileName, List<string> listForWrite)
+        public static void WriteListtFileAppend(string fileName, List<string> listForWrite)
         {
-            fileName = ProjectFolderPath + "\\" + fileName;
             try
             {
                 StreamWriter streamWriter = new StreamWriter(fileName, false);
@@ -83,11 +82,28 @@ namespace time_schedule
             {
                 MessageBox.Show("Не удалось произвести запись в файл: " + fileName);
             }
-           
         }
-        public static List <string> ReadListFromProjectFile(string fileName)
+        public static void WriteListProjectFileAppend(string fileName, List<string> listForWrite)
         {
             fileName = ProjectFolderPath + "\\" + fileName;
+            WriteListtFileAppend(fileName, listForWrite);
+            //try
+            //{
+            //    StreamWriter streamWriter = new StreamWriter(fileName, false);
+            //    foreach (string stringForWrite in listForWrite)
+            //    {
+            //        streamWriter.WriteLine(stringForWrite);
+            //    }
+            //    streamWriter.Close();
+            //}
+            //catch
+            //{
+            //    MessageBox.Show("Не удалось произвести запись в файл: " + fileName);
+            //}
+           
+        }
+        public static List<string> ReadListFromFile(string fileName)
+        {
             List<string> listFromFile = new List<string>();
             if (File.Exists(fileName))
             {
@@ -103,6 +119,25 @@ namespace time_schedule
                 MessageBox.Show("Не удалось зачитать файл " + fileName);
             }
             return listFromFile;
+        }
+        public static List <string> ReadListFromProjectFile(string fileName)
+        {
+            fileName = ProjectFolderPath + "\\" + fileName;
+            //List<string> listFromFile = new List<string>();
+            //if (File.Exists(fileName))
+            //{
+            //    StreamReader streamReader = new StreamReader(fileName);
+            //    while (!streamReader.EndOfStream)
+            //    {
+            //        listFromFile.Add(streamReader.ReadLine());
+            //    }
+            //    streamReader.Close();
+            //}
+            //else
+            //{
+            //    MessageBox.Show("Не удалось зачитать файл " + fileName);
+            //}
+            return ReadListFromFile(fileName);
         }
         
     }
