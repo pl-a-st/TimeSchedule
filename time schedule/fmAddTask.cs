@@ -363,35 +363,46 @@ namespace time_schedule
 
         private void btnCopyAnotherProject_Click(object sender, EventArgs e)
         {
-            //string folderName = string.Empty;
-            //string targetFolderName = "Проект";
-            //try
-            //{
-            //    FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog();
-            //    folderBrowserDialog.Description = "Выбирете папку проекта для копирования задачи";
-                
-            //    if (folderBrowserDialog.ShowDialog() == DialogResult.OK)
-            //    {
-            //        folderName = folderBrowserDialog.SelectedPath + "\\" + targetFolderName;
-            //        //StreamWriter streamWriter = new StreamWriter(Constants.PROJECT_FILE_NAME, false);
-            //        Task task = new Task();
-            //        if (CreateOrChange == CreateOrChange.Create)
-            //        {
-            //            task = GetTaskForCreateChange(Program.ListTasksAllPerson.GetNextNumForTask());
-            //            Program.ListTasksAllPerson.AddTask(task);
-            //        }
-            //        if (!Directory.Exists(folderName))
-            //            Directory.CreateDirectory(folderName);
-            //        streamWriter.WriteLine(folderName);
-            //        SetProjectFolderPath(folderName);
-            //        streamWriter.Close();
-            //    }
+            string folderName = string.Empty;
+            string targetFolderName = "Проект";
+            try
+            {
+                FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog();
+                folderBrowserDialog.Description = "Выбирете папку проекта для копирования задачи";
 
-            //}
-            //catch
-            //{
-            //    MessageBox.Show("Не удалось произвести запись в файл: " + folderName + "\\"+ Constants.TASKS);
-            //}
+                if (folderBrowserDialog.ShowDialog() == DialogResult.OK)
+                {
+                    folderName = folderBrowserDialog.SelectedPath + "\\" + targetFolderName;
+                    //StreamWriter streamWriter = new StreamWriter(Constants.PROJECT_FILE_NAME, false);
+                    Task task = new Task();
+                    ListTasks listTasks = new ListTasks();
+                    
+                    listTasks.SetTasksFromList(Dals.ReadListFromProjectFile(folderName + "\\" + Constants.TASKS));
+                    List<string> listStringPersons = Dals.ReadListFromProjectFile(folderName + "\\" + Constants.PERSONS);
+                    task = GetTaskForCreateChange(listTasks.GetNextNumForTask());
+                    string personFamaly = "Нераспределено";
+                    foreach (string stirngPersones in listStringPersons)
+                    {
+                        if (stirngPersones.Split('\t')[0]==task.PersonFamaly)
+                        {
+                            personFamaly = task.PersonFamaly;
+                            break;
+                        }
+                    }
+
+                    
+                    //if (!Directory.Exists(folderName))
+                    //    Directory.CreateDirectory(folderName);
+                    //streamWriter.WriteLine(folderName);
+                    //SetProjectFolderPath(folderName);
+                    //streamWriter.Close();
+                }
+
+            }
+            catch
+            {
+                MessageBox.Show("Не удалось произвести запись в файл: " + folderName + "\\" + Constants.TASKS);
+            }
         }
     }
 }
