@@ -29,13 +29,13 @@
         private void InitializeComponent()
         {
             this.listBox1 = new System.Windows.Forms.ListBox();
-            this.textBox1 = new System.Windows.Forms.TextBox();
-            this.groupBox1 = new System.Windows.Forms.GroupBox();
-            this.radioButton1 = new System.Windows.Forms.RadioButton();
-            this.radioButton2 = new System.Windows.Forms.RadioButton();
-            this.dateTimePicker1 = new System.Windows.Forms.DateTimePicker();
             this.button1 = new System.Windows.Forms.Button();
-            this.groupBox1.SuspendLayout();
+            this.dateTimePicker1 = new System.Windows.Forms.DateTimePicker();
+            this.textBox1 = new System.Windows.Forms.TextBox();
+            this.button2 = new System.Windows.Forms.Button();
+            this.dateTimePicker2 = new System.Windows.Forms.DateTimePicker();
+            this.textBox2 = new System.Windows.Forms.TextBox();
+            this.dateTimePicker3 = new System.Windows.Forms.DateTimePicker();
             this.SuspendLayout();
             // 
             // listBox1
@@ -46,88 +46,88 @@
             this.listBox1.Size = new System.Drawing.Size(95, 251);
             this.listBox1.TabIndex = 0;
             // 
-            // textBox1
+            // button1
             // 
-            this.textBox1.Location = new System.Drawing.Point(6, 19);
-            this.textBox1.Name = "textBox1";
-            this.textBox1.Size = new System.Drawing.Size(350, 20);
-            this.textBox1.TabIndex = 1;
-            // 
-            // groupBox1
-            // 
-            this.groupBox1.Controls.Add(this.button1);
-            this.groupBox1.Controls.Add(this.dateTimePicker1);
-            this.groupBox1.Controls.Add(this.radioButton2);
-            this.groupBox1.Controls.Add(this.textBox1);
-            this.groupBox1.Controls.Add(this.radioButton1);
-            this.groupBox1.Location = new System.Drawing.Point(129, 16);
-            this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(362, 156);
-            this.groupBox1.TabIndex = 2;
-            this.groupBox1.TabStop = false;
-            this.groupBox1.Text = "groupBox1";
-            // 
-            // radioButton1
-            // 
-            this.radioButton1.AutoSize = true;
-            this.radioButton1.Location = new System.Drawing.Point(6, 45);
-            this.radioButton1.Name = "radioButton1";
-            this.radioButton1.Size = new System.Drawing.Size(85, 17);
-            this.radioButton1.TabIndex = 0;
-            this.radioButton1.TabStop = true;
-            this.radioButton1.Text = "radioButton1";
-            this.radioButton1.UseVisualStyleBackColor = true;
-            // 
-            // radioButton2
-            // 
-            this.radioButton2.AutoSize = true;
-            this.radioButton2.Location = new System.Drawing.Point(6, 68);
-            this.radioButton2.Name = "radioButton2";
-            this.radioButton2.Size = new System.Drawing.Size(85, 17);
-            this.radioButton2.TabIndex = 0;
-            this.radioButton2.TabStop = true;
-            this.radioButton2.Text = "radioButton1";
-            this.radioButton2.UseVisualStyleBackColor = true;
+            this.button1.Location = new System.Drawing.Point(250, 67);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(266, 23);
+            this.button1.TabIndex = 6;
+            this.button1.Text = "button1";
+            this.button1.UseVisualStyleBackColor = true;
             // 
             // dateTimePicker1
             // 
-            this.dateTimePicker1.Location = new System.Drawing.Point(97, 104);
+            this.dateTimePicker1.Location = new System.Drawing.Point(114, 67);
             this.dateTimePicker1.Name = "dateTimePicker1";
-            this.dateTimePicker1.Size = new System.Drawing.Size(146, 20);
-            this.dateTimePicker1.TabIndex = 2;
+            this.dateTimePicker1.Size = new System.Drawing.Size(130, 20);
+            this.dateTimePicker1.TabIndex = 5;
             // 
-            // button1
+            // textBox1
             // 
-            this.button1.Location = new System.Drawing.Point(249, 105);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(75, 23);
-            this.button1.TabIndex = 3;
-            this.button1.Text = "button1";
-            this.button1.UseVisualStyleBackColor = true;
+            this.textBox1.Location = new System.Drawing.Point(114, 37);
+            this.textBox1.Name = "textBox1";
+            this.textBox1.Size = new System.Drawing.Size(402, 20);
+            this.textBox1.TabIndex = 4;
+            // 
+            // button2
+            // 
+            this.button2.Location = new System.Drawing.Point(386, 116);
+            this.button2.Name = "button2";
+            this.button2.Size = new System.Drawing.Size(130, 54);
+            this.button2.TabIndex = 9;
+            this.button2.Text = "button2";
+            this.button2.UseVisualStyleBackColor = true;
+            // 
+            // dateTimePicker2
+            // 
+            this.dateTimePicker2.Location = new System.Drawing.Point(114, 146);
+            this.dateTimePicker2.Name = "dateTimePicker2";
+            this.dateTimePicker2.Size = new System.Drawing.Size(130, 20);
+            this.dateTimePicker2.TabIndex = 8;
+            // 
+            // textBox2
+            // 
+            this.textBox2.Location = new System.Drawing.Point(114, 116);
+            this.textBox2.Name = "textBox2";
+            this.textBox2.Size = new System.Drawing.Size(266, 20);
+            this.textBox2.TabIndex = 7;
+            // 
+            // dateTimePicker3
+            // 
+            this.dateTimePicker3.Location = new System.Drawing.Point(250, 146);
+            this.dateTimePicker3.Name = "dateTimePicker3";
+            this.dateTimePicker3.Size = new System.Drawing.Size(130, 20);
+            this.dateTimePicker3.TabIndex = 10;
             // 
             // Holidays
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(503, 279);
-            this.Controls.Add(this.groupBox1);
+            this.ClientSize = new System.Drawing.Size(538, 279);
+            this.Controls.Add(this.dateTimePicker3);
+            this.Controls.Add(this.button2);
+            this.Controls.Add(this.dateTimePicker2);
+            this.Controls.Add(this.textBox2);
+            this.Controls.Add(this.button1);
+            this.Controls.Add(this.dateTimePicker1);
+            this.Controls.Add(this.textBox1);
             this.Controls.Add(this.listBox1);
             this.Name = "Holidays";
             this.Text = "Holidays";
-            this.groupBox1.ResumeLayout(false);
-            this.groupBox1.PerformLayout();
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
         #endregion
 
         private System.Windows.Forms.ListBox listBox1;
-        private System.Windows.Forms.TextBox textBox1;
-        private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.Button button1;
         private System.Windows.Forms.DateTimePicker dateTimePicker1;
-        private System.Windows.Forms.RadioButton radioButton2;
-        private System.Windows.Forms.RadioButton radioButton1;
+        private System.Windows.Forms.TextBox textBox1;
+        private System.Windows.Forms.Button button2;
+        private System.Windows.Forms.DateTimePicker dateTimePicker2;
+        private System.Windows.Forms.TextBox textBox2;
+        private System.Windows.Forms.DateTimePicker dateTimePicker3;
     }
 }
