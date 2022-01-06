@@ -321,9 +321,8 @@ namespace time_schedule
             tBxPreviousTask.Text = Program.Task.Name;
             if (nUpDnPreviousTask.Value != 0)
             {
-                dTmTaskDateStart.Value = Task.GetDateFinish(Program.Task.DateFinish.Date,2);
+                dTmTaskDateStart.Value = Task.GetDateFinish(Program.Task.DateFinish.Date, 2);
             }
-            
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -358,9 +357,7 @@ namespace time_schedule
 
         private void fmAddTask_FormClosed(object sender, FormClosedEventArgs e)
         {
-            //thisloadRefreshForm?.Invoke();
-            
-            
+          
         }
 
         private void btnCopyAnotherProject_Click(object sender, EventArgs e)
@@ -377,7 +374,6 @@ namespace time_schedule
                     Program.ListTasksAllPerson.Tasks.Clear();
                     Program.ListTasksAllPerson.SetTasksFromList(Dals.ReadListFromProjectFile(Constants.TASKS));
                     folderName = folderBrowserDialog.SelectedPath + "\\" + targetFolderName;
-                    //StreamWriter streamWriter = new StreamWriter(Constants.PROJECT_FILE_NAME, false);
                     Task task = new Task();
                     ListTasks listTasks = new ListTasks();
                     
@@ -399,14 +395,7 @@ namespace time_schedule
                     Dals.WriteListtFileAppend(folderName + "\\" + Constants.TASKS, listTasks.GetListForSave());
                     thisloadRefreshForm?.Invoke();
                     this.Close();
-
-                    //if (!Directory.Exists(folderName))
-                    //    Directory.CreateDirectory(folderName);
-                    //streamWriter.WriteLine(folderName);
-                    //SetProjectFolderPath(folderName);
-                    //streamWriter.Close();
                 }
-
             }
             catch
             {
