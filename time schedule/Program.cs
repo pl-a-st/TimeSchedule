@@ -23,6 +23,7 @@ namespace time_schedule
         public static ListPersons listPersons = new ListPersons();
         public static Task Task = new Task();
         public static ListNonWorkingDays listNonWorkingDays= new ListNonWorkingDays();
+        public static ListHolidays ListHolidays = new ListHolidays();
         public static Color TaskColor = Color.FromArgb(132, 151, 176);
         public static ListPersonButton ListPersonButton = new ListPersonButton();
         public static ListTaskButton ListTaskButtons = new ListTaskButton();

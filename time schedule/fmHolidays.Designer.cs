@@ -1,6 +1,6 @@
 ﻿namespace time_schedule
 {
-    partial class Holidays
+    partial class fmHolidays
     {
         /// <summary>
         /// Required designer variable.
@@ -38,13 +38,13 @@
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.dTPOnceDay = new System.Windows.Forms.DateTimePicker();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
-            this.groupBox3 = new System.Windows.Forms.GroupBox();
+            this.button2 = new System.Windows.Forms.Button();
+            this.button1 = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
+            this.groupBox3 = new System.Windows.Forms.GroupBox();
+            this.label3 = new System.Windows.Forms.Label();
             this.RemoveDay = new System.Windows.Forms.Button();
             this.label2 = new System.Windows.Forms.Label();
-            this.label3 = new System.Windows.Forms.Label();
-            this.button1 = new System.Windows.Forms.Button();
-            this.button2 = new System.Windows.Forms.Button();
             this.btnApply = new System.Windows.Forms.Button();
             this.groupBox4 = new System.Windows.Forms.GroupBox();
             this.btnCancel = new System.Windows.Forms.Button();
@@ -77,6 +77,7 @@
             this.dTPListDays.Name = "dTPListDays";
             this.dTPListDays.Size = new System.Drawing.Size(130, 20);
             this.dTPListDays.TabIndex = 5;
+            this.dTPListDays.CloseUp += new System.EventHandler(this.dTPListDays_CloseUp);
             // 
             // tXBListDays
             // 
@@ -124,7 +125,9 @@
             this.dTPOnceDay.Name = "dTPOnceDay";
             this.dTPOnceDay.Size = new System.Drawing.Size(130, 20);
             this.dTPOnceDay.TabIndex = 12;
+            this.dTPOnceDay.CloseUp += new System.EventHandler(this.dTPOnceDay_CloseUp);
             this.dTPOnceDay.ValueChanged += new System.EventHandler(this.dTPOnceDay_ValueChanged);
+            this.dTPOnceDay.KeyUp += new System.Windows.Forms.KeyEventHandler(this.dTPOnceDay_KeyUp);
             // 
             // groupBox2
             // 
@@ -141,6 +144,33 @@
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Отправить список дат";
             // 
+            // button2
+            // 
+            this.button2.Location = new System.Drawing.Point(398, 35);
+            this.button2.Name = "button2";
+            this.button2.Size = new System.Drawing.Size(26, 23);
+            this.button2.TabIndex = 9;
+            this.button2.Text = "X";
+            this.button2.UseVisualStyleBackColor = true;
+            // 
+            // button1
+            // 
+            this.button1.Location = new System.Drawing.Point(366, 35);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(26, 23);
+            this.button1.TabIndex = 8;
+            this.button1.Text = "<-";
+            this.button1.UseVisualStyleBackColor = true;
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(6, 22);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(86, 13);
+            this.label1.TabIndex = 7;
+            this.label1.Text = "Даты через \", \"";
+            // 
             // groupBox3
             // 
             this.groupBox3.Controls.Add(this.label3);
@@ -154,14 +184,14 @@
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "Отправить интервал дат";
             // 
-            // label1
+            // label3
             // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(6, 22);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(86, 13);
-            this.label1.TabIndex = 7;
-            this.label1.Text = "Даты через \", \"";
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(142, 25);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(10, 13);
+            this.label3.TabIndex = 11;
+            this.label3.Text = "-";
             // 
             // RemoveDay
             // 
@@ -180,33 +210,6 @@
             this.label2.Size = new System.Drawing.Size(83, 13);
             this.label2.TabIndex = 15;
             this.label2.Text = "Нерабочие дни";
-            // 
-            // label3
-            // 
-            this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(142, 25);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(10, 13);
-            this.label3.TabIndex = 11;
-            this.label3.Text = "-";
-            // 
-            // button1
-            // 
-            this.button1.Location = new System.Drawing.Point(366, 35);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(26, 23);
-            this.button1.TabIndex = 8;
-            this.button1.Text = "<-";
-            this.button1.UseVisualStyleBackColor = true;
-            // 
-            // button2
-            // 
-            this.button2.Location = new System.Drawing.Point(398, 35);
-            this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(26, 23);
-            this.button2.TabIndex = 9;
-            this.button2.Text = "X";
-            this.button2.UseVisualStyleBackColor = true;
             // 
             // btnApply
             // 
@@ -236,7 +239,7 @@
             this.btnCancel.Text = "Отмена";
             this.btnCancel.UseVisualStyleBackColor = true;
             // 
-            // Holidays
+            // fmHolidays
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -248,7 +251,7 @@
             this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.LBxHolidays);
-            this.Name = "Holidays";
+            this.Name = "fmHolidays";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Нерабочие дни";
             this.groupBox1.ResumeLayout(false);

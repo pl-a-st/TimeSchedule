@@ -326,7 +326,15 @@ namespace time_schedule
             // прописать метод
         }
     }
-
+    public class ListHolidays
+    {
+        public List<DateTime> Holidays
+        { get; private set; } = new List<DateTime>();
+        public List<DateTime> GetHolidays()
+        {
+            return Holidays;
+        }
+    }
     public class ListNonWorkingDays
     {
         public List<DateTime> NonWorkingDays

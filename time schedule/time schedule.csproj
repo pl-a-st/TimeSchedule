@@ -78,11 +78,11 @@
     <Compile Include="Form1.Designer.cs">
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
-    <Compile Include="Holidays.cs">
+    <Compile Include="fmHolidays.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Holidays.Designer.cs">
-      <DependentUpon>Holidays.cs</DependentUpon>
+    <Compile Include="fmHolidays.Designer.cs">
+      <DependentUpon>fmHolidays.cs</DependentUpon>
     </Compile>
     <Compile Include="Person.cs" />
     <Compile Include="Program.cs" />
@@ -108,8 +108,8 @@
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Holidays.resx">
-      <DependentUpon>Holidays.cs</DependentUpon>
+    <EmbeddedResource Include="fmHolidays.resx">
+      <DependentUpon>fmHolidays.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
