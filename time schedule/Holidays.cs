@@ -16,9 +16,11 @@ namespace time_schedule
         {
             InitializeComponent();
         }
-
+        public ListHolidays ListHolidays
+        { get; private set; } = new ListHolidays();
         private void dTPOnceDay_ValueChanged(object sender, EventArgs e)
         {
+
             string daeForList = string.Empty;
             daeForList += dTPOnceDay.Value.Date;
             LBxHolidays.Items.Add(daeForList.Split(' ')[0]);
@@ -26,6 +28,16 @@ namespace time_schedule
             //{
             //    ScrollToDate(dateTimePicker1.Value.Date);
             //}
+        }
+       
+    }
+    public class ListHolidays
+    {
+        public List<DateTime> Holidays
+        { get; private set; } = new List<DateTime>();
+        public List<DateTime> GetHolidays()
+        {
+            return Holidays;
         }
     }
 }
