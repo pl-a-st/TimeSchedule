@@ -28,7 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.listBox1 = new System.Windows.Forms.ListBox();
+            this.LBxHolidays = new System.Windows.Forms.ListBox();
             this.btnSetListDays = new System.Windows.Forms.Button();
             this.dTPListDays = new System.Windows.Forms.DateTimePicker();
             this.tXBListDays = new System.Windows.Forms.TextBox();
@@ -45,22 +45,22 @@
             this.label3 = new System.Windows.Forms.Label();
             this.button1 = new System.Windows.Forms.Button();
             this.button2 = new System.Windows.Forms.Button();
-            this.button3 = new System.Windows.Forms.Button();
+            this.btnApply = new System.Windows.Forms.Button();
             this.groupBox4 = new System.Windows.Forms.GroupBox();
-            this.button4 = new System.Windows.Forms.Button();
+            this.btnCancel = new System.Windows.Forms.Button();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox3.SuspendLayout();
             this.groupBox4.SuspendLayout();
             this.SuspendLayout();
             // 
-            // listBox1
+            // LBxHolidays
             // 
-            this.listBox1.FormattingEnabled = true;
-            this.listBox1.Location = new System.Drawing.Point(13, 29);
-            this.listBox1.Name = "listBox1";
-            this.listBox1.Size = new System.Drawing.Size(95, 238);
-            this.listBox1.TabIndex = 0;
+            this.LBxHolidays.FormattingEnabled = true;
+            this.LBxHolidays.Location = new System.Drawing.Point(13, 29);
+            this.LBxHolidays.Name = "LBxHolidays";
+            this.LBxHolidays.Size = new System.Drawing.Size(95, 238);
+            this.LBxHolidays.TabIndex = 0;
             // 
             // btnSetListDays
             // 
@@ -124,6 +124,7 @@
             this.dTPOnceDay.Name = "dTPOnceDay";
             this.dTPOnceDay.Size = new System.Drawing.Size(130, 20);
             this.dTPOnceDay.TabIndex = 12;
+            this.dTPOnceDay.ValueChanged += new System.EventHandler(this.dTPOnceDay_ValueChanged);
             // 
             // groupBox2
             // 
@@ -207,33 +208,33 @@
             this.button2.Text = "X";
             this.button2.UseVisualStyleBackColor = true;
             // 
-            // button3
+            // btnApply
             // 
-            this.button3.Location = new System.Drawing.Point(183, 11);
-            this.button3.Name = "button3";
-            this.button3.Size = new System.Drawing.Size(92, 27);
-            this.button3.TabIndex = 16;
-            this.button3.Text = "Применить";
-            this.button3.UseVisualStyleBackColor = true;
+            this.btnApply.Location = new System.Drawing.Point(183, 11);
+            this.btnApply.Name = "btnApply";
+            this.btnApply.Size = new System.Drawing.Size(92, 27);
+            this.btnApply.TabIndex = 16;
+            this.btnApply.Text = "Применить";
+            this.btnApply.UseVisualStyleBackColor = true;
             // 
             // groupBox4
             // 
-            this.groupBox4.Controls.Add(this.button4);
-            this.groupBox4.Controls.Add(this.button3);
+            this.groupBox4.Controls.Add(this.btnCancel);
+            this.groupBox4.Controls.Add(this.btnApply);
             this.groupBox4.Location = new System.Drawing.Point(13, 273);
             this.groupBox4.Name = "groupBox4";
             this.groupBox4.Size = new System.Drawing.Size(532, 44);
             this.groupBox4.TabIndex = 18;
             this.groupBox4.TabStop = false;
             // 
-            // button4
+            // btnCancel
             // 
-            this.button4.Location = new System.Drawing.Point(281, 11);
-            this.button4.Name = "button4";
-            this.button4.Size = new System.Drawing.Size(92, 27);
-            this.button4.TabIndex = 17;
-            this.button4.Text = "Отмена";
-            this.button4.UseVisualStyleBackColor = true;
+            this.btnCancel.Location = new System.Drawing.Point(281, 11);
+            this.btnCancel.Name = "btnCancel";
+            this.btnCancel.Size = new System.Drawing.Size(92, 27);
+            this.btnCancel.TabIndex = 17;
+            this.btnCancel.Text = "Отмена";
+            this.btnCancel.UseVisualStyleBackColor = true;
             // 
             // Holidays
             // 
@@ -246,9 +247,10 @@
             this.Controls.Add(this.groupBox3);
             this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.groupBox1);
-            this.Controls.Add(this.listBox1);
+            this.Controls.Add(this.LBxHolidays);
             this.Name = "Holidays";
-            this.Text = "Holidays";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
+            this.Text = "Нерабочие дни";
             this.groupBox1.ResumeLayout(false);
             this.groupBox2.ResumeLayout(false);
             this.groupBox2.PerformLayout();
@@ -262,7 +264,7 @@
 
         #endregion
 
-        private System.Windows.Forms.ListBox listBox1;
+        private System.Windows.Forms.ListBox LBxHolidays;
         private System.Windows.Forms.Button btnSetListDays;
         private System.Windows.Forms.DateTimePicker dTPListDays;
         private System.Windows.Forms.TextBox tXBListDays;
@@ -279,8 +281,8 @@
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Button button2;
         private System.Windows.Forms.Button button1;
-        private System.Windows.Forms.Button button3;
+        private System.Windows.Forms.Button btnApply;
         private System.Windows.Forms.GroupBox groupBox4;
-        private System.Windows.Forms.Button button4;
+        private System.Windows.Forms.Button btnCancel;
     }
 }

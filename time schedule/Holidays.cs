@@ -16,5 +16,16 @@ namespace time_schedule
         {
             InitializeComponent();
         }
+
+        private void dTPOnceDay_ValueChanged(object sender, EventArgs e)
+        {
+            string daeForList = string.Empty;
+            daeForList += dTPOnceDay.Value.Date;
+            LBxHolidays.Items.Add(daeForList.Split(' ')[0]);
+            //if (e.KeyCode == Keys.Enter)
+            //{
+            //    ScrollToDate(dateTimePicker1.Value.Date);
+            //}
+        }
     }
 }

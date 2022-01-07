@@ -159,6 +159,7 @@
             this.нерабочиеДниToolStripMenuItem.Name = "нерабочиеДниToolStripMenuItem";
             this.нерабочиеДниToolStripMenuItem.Size = new System.Drawing.Size(191, 22);
             this.нерабочиеДниToolStripMenuItem.Text = "Нерабочие дни";
+            this.нерабочиеДниToolStripMenuItem.Click += new System.EventHandler(this.нерабочиеДниToolStripMenuItem_Click);
             // 
             // menuStrip1
             // 

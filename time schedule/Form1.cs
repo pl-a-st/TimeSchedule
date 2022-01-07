@@ -619,6 +619,12 @@ namespace time_schedule
 
             }
         }
+
+        private void нерабочиеДниToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Holidays holidays = new Holidays();
+            holidays.ShowDialog();
+        }
     }
    
 }
