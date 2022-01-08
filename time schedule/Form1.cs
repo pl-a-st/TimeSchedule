@@ -238,6 +238,7 @@ namespace time_schedule
                 Program.ListTasksAllPerson,
                 Program.ListPersonButton
                 );
+            Program.ListHolidays.SetHolidaysFromList(Dals.ReadListFromProjectFile(Constants.HOLYDAYS));
             LoadHorizontLine();
             LoadVerticalLine();
             

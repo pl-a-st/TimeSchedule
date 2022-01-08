@@ -159,9 +159,9 @@ namespace time_schedule
             }
             return listForSave;
         }
-        public void SetTasksFromList(List<string> listString)
+        public void SetTasksFromList(List<string> listStrings)
         {
-            foreach (string stringAllParamTab in listString)
+            foreach (string stringAllParamTab in listStrings)
             {
                 Task task = new Task(stringAllParamTab);
                 AddTask(task);
@@ -333,6 +333,26 @@ namespace time_schedule
         public List<DateTime> GetHolidays()
         {
             return Holidays;
+        }
+        public List<string> GetListForSave()
+        {
+            List<string> listForSave = new List<string>();
+            foreach (DateTime dateTime in Holidays)
+            {
+                string strForSave =string.Empty;
+                strForSave += dateTime;
+                listForSave.Add(strForSave);
+            }
+            return listForSave;
+        }
+        public void SetHolidaysFromList(List<string> listStrings)
+        {
+            List<DateTime> holidaysFromList = new List<DateTime>();
+            foreach (string str in listStrings)
+            {
+                holidaysFromList.Add(Convert.ToDateTime(str));
+            }
+            Holidays.AddRange(holidaysFromList);
         }
     }
     public class ListNonWorkingDays

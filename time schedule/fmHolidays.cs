@@ -17,7 +17,7 @@ namespace time_schedule
             InitializeComponent();
         }
         public ListHolidays CurrentListHolidays
-        { get; private set; } = Program.ListHolidays;
+        { get; private set; } = new ListHolidays();
         private void dTPOnceDay_ValueChanged(object sender, EventArgs e)
         {
             
@@ -110,12 +110,12 @@ namespace time_schedule
                 MessageBox.Show("Дата окончания интервала должна быть больше даты начала");
             if (dTPFirstInTheInterval.Value.Date <= dTPSecondInTheInterval.Value.Date)
             {
-                DateTime firstInTheInterval = dTPFirstInTheInterval.Value.Date;
+                DateTime CurentDateTime = dTPFirstInTheInterval.Value.Date;
                 DateTime secondInTheInterval = dTPSecondInTheInterval.Value.Date;
-                while (firstInTheInterval <= secondInTheInterval)
+                while (CurentDateTime <= secondInTheInterval)
                 {
-                    AddHolidays(firstInTheInterval);
-                    firstInTheInterval = firstInTheInterval.Date.AddDays(1);
+                    AddHolidays(CurentDateTime);
+                    CurentDateTime = CurentDateTime.Date.AddDays(1);
                 }
             }
         }
@@ -130,6 +130,33 @@ namespace time_schedule
             int selectedIndex = LBxHolidays.SelectedIndex;
             LBxHolidays.Items.RemoveAt(selectedIndex);
             CurrentListHolidays.Holidays.RemoveAt(selectedIndex);
+        }
+
+        private void btnCancel_Click(object sender, EventArgs e)
+        {
+            this.Close();
+        }
+
+        private void btnApply_Click(object sender, EventArgs e)
+        {
+            Program.ListHolidays.Holidays.Clear();
+            Program.ListHolidays.Holidays.AddRange(CurrentListHolidays.Holidays);
+            Dals.WriteListProjectFileAppend(
+                Constants.HOLYDAYS, 
+                Program.ListHolidays.GetListForSave()
+                );
+            this.Close();
+        }
+
+        private void fmHolidays_Load(object sender, EventArgs e)
+        {
+            CurrentListHolidays.Holidays.AddRange(Program.ListHolidays.Holidays);
+            foreach(DateTime dateTime in CurrentListHolidays.Holidays)
+            {
+                string strForLbx = string.Empty;
+                strForLbx += dateTime;
+                LBxHolidays.Items.Add(strForLbx.Split(' ')[0]);
+            }
         }
     }
    

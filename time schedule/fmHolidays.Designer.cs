@@ -225,6 +225,7 @@
             this.btnApply.TabIndex = 16;
             this.btnApply.Text = "Применить";
             this.btnApply.UseVisualStyleBackColor = true;
+            this.btnApply.Click += new System.EventHandler(this.btnApply_Click);
             // 
             // groupBox4
             // 
@@ -244,6 +245,7 @@
             this.btnCancel.TabIndex = 17;
             this.btnCancel.Text = "Отмена";
             this.btnCancel.UseVisualStyleBackColor = true;
+            this.btnCancel.Click += new System.EventHandler(this.btnCancel_Click);
             // 
             // fmHolidays
             // 
@@ -260,6 +262,7 @@
             this.Name = "fmHolidays";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Нерабочие дни";
+            this.Load += new System.EventHandler(this.fmHolidays_Load);
             this.groupBox1.ResumeLayout(false);
             this.groupBox2.ResumeLayout(false);
             this.groupBox2.PerformLayout();
