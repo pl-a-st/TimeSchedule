@@ -285,7 +285,8 @@ namespace time_schedule
             {
                 if (Program.ListTasksAllPerson.Tasks[i].TaskNumberAfter==task.Number)
                 {
-                    Program.ListTasksAllPerson.Tasks[i].ChangeDatesCountDays(Task.GetDateFinish(task.DateFinish,2), Program.ListTasksAllPerson.Tasks[i].CountWorkingDays);
+                    Program.ListTasksAllPerson.Tasks[i].ChangeDatesCountDays(Task.GetDateFinish(task.DateFinish,2),
+                        Program.ListTasksAllPerson.Tasks[i].CountWorkingDays);
                     ChekTaskAfter(Program.ListTasksAllPerson.Tasks[i]);
                 }
             }

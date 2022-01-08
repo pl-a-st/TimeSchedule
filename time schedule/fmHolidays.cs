@@ -168,6 +168,7 @@ namespace time_schedule
             CurrentListHolidays.Holidays.Sort();
             LBxHolidays.Items.Clear();
             LbxLoad();
+        
         }
     }
    
