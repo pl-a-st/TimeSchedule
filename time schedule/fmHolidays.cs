@@ -151,12 +151,23 @@ namespace time_schedule
         private void fmHolidays_Load(object sender, EventArgs e)
         {
             CurrentListHolidays.Holidays.AddRange(Program.ListHolidays.Holidays);
-            foreach(DateTime dateTime in CurrentListHolidays.Holidays)
+            LbxLoad();
+        }
+        private void LbxLoad()
+        {
+            foreach (DateTime dateTime in CurrentListHolidays.Holidays)
             {
                 string strForLbx = string.Empty;
                 strForLbx += dateTime;
                 LBxHolidays.Items.Add(strForLbx.Split(' ')[0]);
             }
+        }
+
+        private void btnSort_Click(object sender, EventArgs e)
+        {
+            CurrentListHolidays.Holidays.Sort();
+            LBxHolidays.Items.Clear();
+            LbxLoad();
         }
     }
    

@@ -48,6 +48,7 @@
             this.btnApply = new System.Windows.Forms.Button();
             this.groupBox4 = new System.Windows.Forms.GroupBox();
             this.btnCancel = new System.Windows.Forms.Button();
+            this.btnSort = new System.Windows.Forms.Button();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox3.SuspendLayout();
@@ -57,16 +58,16 @@
             // LBxHolidays
             // 
             this.LBxHolidays.FormattingEnabled = true;
-            this.LBxHolidays.Location = new System.Drawing.Point(13, 29);
+            this.LBxHolidays.Location = new System.Drawing.Point(13, 55);
             this.LBxHolidays.Name = "LBxHolidays";
-            this.LBxHolidays.Size = new System.Drawing.Size(95, 238);
+            this.LBxHolidays.Size = new System.Drawing.Size(80, 212);
             this.LBxHolidays.TabIndex = 0;
             // 
             // btnSetListDays
             // 
-            this.btnSetListDays.Location = new System.Drawing.Point(142, 64);
+            this.btnSetListDays.Location = new System.Drawing.Point(294, 64);
             this.btnSetListDays.Name = "btnSetListDays";
-            this.btnSetListDays.Size = new System.Drawing.Size(282, 27);
+            this.btnSetListDays.Size = new System.Drawing.Size(130, 27);
             this.btnSetListDays.TabIndex = 6;
             this.btnSetListDays.Text = "Отправить";
             this.btnSetListDays.UseVisualStyleBackColor = true;
@@ -74,7 +75,7 @@
             // 
             // dTPListDays
             // 
-            this.dTPListDays.Location = new System.Drawing.Point(6, 68);
+            this.dTPListDays.Location = new System.Drawing.Point(82, 71);
             this.dTPListDays.Name = "dTPListDays";
             this.dTPListDays.Size = new System.Drawing.Size(130, 20);
             this.dTPListDays.TabIndex = 5;
@@ -115,7 +116,7 @@
             // groupBox1
             // 
             this.groupBox1.Controls.Add(this.dTPOnceDay);
-            this.groupBox1.Location = new System.Drawing.Point(114, 16);
+            this.groupBox1.Location = new System.Drawing.Point(99, 12);
             this.groupBox1.Name = "groupBox1";
             this.groupBox1.Size = new System.Drawing.Size(431, 50);
             this.groupBox1.TabIndex = 11;
@@ -140,7 +141,7 @@
             this.groupBox2.Controls.Add(this.tXBListDays);
             this.groupBox2.Controls.Add(this.dTPListDays);
             this.groupBox2.Controls.Add(this.btnSetListDays);
-            this.groupBox2.Location = new System.Drawing.Point(114, 72);
+            this.groupBox2.Location = new System.Drawing.Point(99, 68);
             this.groupBox2.Name = "groupBox2";
             this.groupBox2.Size = new System.Drawing.Size(431, 100);
             this.groupBox2.TabIndex = 12;
@@ -182,7 +183,7 @@
             this.groupBox3.Controls.Add(this.dTPFirstInTheInterval);
             this.groupBox3.Controls.Add(this.btnSetIntervalDays);
             this.groupBox3.Controls.Add(this.dTPSecondInTheInterval);
-            this.groupBox3.Location = new System.Drawing.Point(114, 178);
+            this.groupBox3.Location = new System.Drawing.Point(99, 174);
             this.groupBox3.Name = "groupBox3";
             this.groupBox3.Size = new System.Drawing.Size(431, 51);
             this.groupBox3.TabIndex = 13;
@@ -200,7 +201,7 @@
             // 
             // RemoveDay
             // 
-            this.RemoveDay.Location = new System.Drawing.Point(114, 235);
+            this.RemoveDay.Location = new System.Drawing.Point(99, 235);
             this.RemoveDay.Name = "RemoveDay";
             this.RemoveDay.Size = new System.Drawing.Size(92, 29);
             this.RemoveDay.TabIndex = 14;
@@ -231,9 +232,9 @@
             // 
             this.groupBox4.Controls.Add(this.btnCancel);
             this.groupBox4.Controls.Add(this.btnApply);
-            this.groupBox4.Location = new System.Drawing.Point(13, 273);
+            this.groupBox4.Location = new System.Drawing.Point(13, 269);
             this.groupBox4.Name = "groupBox4";
-            this.groupBox4.Size = new System.Drawing.Size(532, 44);
+            this.groupBox4.Size = new System.Drawing.Size(517, 44);
             this.groupBox4.TabIndex = 18;
             this.groupBox4.TabStop = false;
             // 
@@ -247,11 +248,22 @@
             this.btnCancel.UseVisualStyleBackColor = true;
             this.btnCancel.Click += new System.EventHandler(this.btnCancel_Click);
             // 
+            // btnSort
+            // 
+            this.btnSort.Location = new System.Drawing.Point(12, 28);
+            this.btnSort.Name = "btnSort";
+            this.btnSort.Size = new System.Drawing.Size(81, 23);
+            this.btnSort.TabIndex = 19;
+            this.btnSort.Text = "≡↓";
+            this.btnSort.UseVisualStyleBackColor = true;
+            this.btnSort.Click += new System.EventHandler(this.btnSort_Click);
+            // 
             // fmHolidays
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(562, 335);
+            this.ClientSize = new System.Drawing.Size(544, 322);
+            this.Controls.Add(this.btnSort);
             this.Controls.Add(this.groupBox4);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.RemoveDay);
@@ -296,5 +308,6 @@
         private System.Windows.Forms.Button btnApply;
         private System.Windows.Forms.GroupBox groupBox4;
         private System.Windows.Forms.Button btnCancel;
+        private System.Windows.Forms.Button btnSort;
     }
 }
