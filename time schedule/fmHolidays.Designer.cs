@@ -70,6 +70,7 @@
             this.btnSetListDays.TabIndex = 6;
             this.btnSetListDays.Text = "Отправить";
             this.btnSetListDays.UseVisualStyleBackColor = true;
+            this.btnSetListDays.Click += new System.EventHandler(this.btnSetListDays_Click);
             // 
             // dTPListDays
             // 
@@ -78,6 +79,7 @@
             this.dTPListDays.Size = new System.Drawing.Size(130, 20);
             this.dTPListDays.TabIndex = 5;
             this.dTPListDays.CloseUp += new System.EventHandler(this.dTPListDays_CloseUp);
+            this.dTPListDays.KeyUp += new System.Windows.Forms.KeyEventHandler(this.dTPListDays_KeyUp);
             // 
             // tXBListDays
             // 
@@ -94,6 +96,7 @@
             this.btnSetIntervalDays.TabIndex = 9;
             this.btnSetIntervalDays.Text = "Отправить";
             this.btnSetIntervalDays.UseVisualStyleBackColor = true;
+            this.btnSetIntervalDays.Click += new System.EventHandler(this.btnSetIntervalDays_Click);
             // 
             // dTPFirstInTheInterval
             // 
@@ -152,6 +155,7 @@
             this.button2.TabIndex = 9;
             this.button2.Text = "X";
             this.button2.UseVisualStyleBackColor = true;
+            this.button2.Click += new System.EventHandler(this.button2_Click);
             // 
             // button1
             // 
@@ -161,6 +165,7 @@
             this.button1.TabIndex = 8;
             this.button1.Text = "<-";
             this.button1.UseVisualStyleBackColor = true;
+            this.button1.Click += new System.EventHandler(this.button1_Click);
             // 
             // label1
             // 
@@ -169,7 +174,7 @@
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(86, 13);
             this.label1.TabIndex = 7;
-            this.label1.Text = "Даты через \", \"";
+            this.label1.Text = "Даты через \"; \"";
             // 
             // groupBox3
             // 
@@ -201,6 +206,7 @@
             this.RemoveDay.TabIndex = 14;
             this.RemoveDay.Text = "Удалить дату";
             this.RemoveDay.UseVisualStyleBackColor = true;
+            this.RemoveDay.Click += new System.EventHandler(this.RemoveDay_Click);
             // 
             // label2
             // 
