@@ -231,16 +231,17 @@ namespace time_schedule
                 Program.ListTasksAllPerson,
                 Constants.ROW_HIGHT);
             int maxButtonLocationY = ButtonsPersonLocationAndAdd(ref Program.ListPersonButton, ref plPersonButton);
-            pBForLine.Height = maxButtonLocationY; 
-            LoadColumns();
+            pBForLine.Height = maxButtonLocationY;
+            Program.ListHolidays.SetHolidaysFromList(Dals.ReadListFromProjectFile(Constants.HOLYDAYS));
+            NonWorkDaysWrite(Program.ListTasksAllPerson.GetMinDateStartTasks(), Program.ListTasksAllPerson.GetMaxDateFinishTasks());
+            Program.listNonWorkingDays.NonWorkingDays.AddRange(Program.ListHolidays.Holidays);
             Program.ListTaskButtons.TaskButtons.Clear();
             Program.ListTaskButtons.LoadTaskButtons(
                 Program.ListTasksAllPerson,
                 Program.ListPersonButton
                 );
-            Program.ListHolidays.SetHolidaysFromList(Dals.ReadListFromProjectFile(Constants.HOLYDAYS));
-            NonWorkDaysWrite(Program.ListTasksAllPerson.GetMinDateStartTasks(), Program.ListTasksAllPerson.GetMaxDateFinishTasks());
-            Program.listNonWorkingDays.NonWorkingDays.AddRange(Program.ListHolidays.Holidays);
+            
+            LoadColumns();
             LoadHorizontLine();
             LoadVerticalLine();
             
@@ -267,7 +268,9 @@ namespace time_schedule
                 plForDate.Visible = false;
                 while (dateToTables <= dateMaxToTable)
                 {
-                    if (dateToTables.DayOfWeek != DayOfWeek.Saturday && dateToTables.DayOfWeek != DayOfWeek.Sunday)
+                    if (dateToTables.DayOfWeek != DayOfWeek.Saturday &&
+                        dateToTables.DayOfWeek != DayOfWeek.Sunday &&
+                        !Program.listNonWorkingDays.NonWorkingDays.Contains(dateToTables))
                     {
                         TextBox textBox = new TextBox();
                         textBox.BorderStyle = BorderStyle.FixedSingle;

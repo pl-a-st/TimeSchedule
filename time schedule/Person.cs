@@ -711,11 +711,16 @@ namespace time_schedule
             }
             do
             {
-                if(dateTime.DayOfWeek != DayOfWeek.Sunday && dateTime.DayOfWeek != DayOfWeek.Saturday)
+                if(
+                    dateTime.DayOfWeek != DayOfWeek.Sunday &&
+                    dateTime.DayOfWeek != DayOfWeek.Saturday &&
+                    !Program.listNonWorkingDays.NonWorkingDays.Contains(dateTime.Date))
                 {
                     width += Constants.COLUMN_WITH;
                     if (dateTime.DayOfWeek == DayOfWeek.Friday ||
                         dateTime.Date == Task.DateFinish.Date)
+                        //||
+                        //Program.listNonWorkingDays.NonWorkingDays.Contains(dateTime.AddDays(1).Date))
                     {
 
                         AddButton(locationX, locationY, width, Constants.ROW_HIGHT);
