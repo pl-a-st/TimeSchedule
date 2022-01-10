@@ -628,7 +628,7 @@ namespace time_schedule
 
         private void нерабочиеДниToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            fmHolidays holidays = new fmHolidays();
+            fmHolidays holidays = new fmHolidays(LoadRefreshForm);
             holidays.ShowDialog();
         }
     }

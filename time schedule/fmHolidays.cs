@@ -12,10 +12,12 @@ namespace time_schedule
 {
     public partial class fmHolidays : Form
     {
-        public fmHolidays()
+        public fmHolidays(LoadRefreshForm loadRefreshForm)
         {
             InitializeComponent();
+            thisloadRefreshForm = loadRefreshForm;
         }
+        LoadRefreshForm thisloadRefreshForm;
         public ListHolidays CurrentListHolidays
         { get; private set; } = new ListHolidays();
         private void dTPOnceDay_ValueChanged(object sender, EventArgs e)
@@ -145,6 +147,13 @@ namespace time_schedule
                 Constants.HOLYDAYS, 
                 Program.ListHolidays.GetListForSave()
                 );
+            Program.listNonWorkingDays.NonWorkingDays.AddRange(Program.ListHolidays.Holidays);
+            foreach (Task task in Program.ListTasksAllPerson.Tasks)
+            {
+                task.SetCountDays(Program.listNonWorkingDays);
+                task.SetDateFinish();
+            }
+            thisloadRefreshForm?.Invoke();
             this.Close();
         }
 
@@ -152,7 +161,9 @@ namespace time_schedule
         {
             CurrentListHolidays.Holidays.AddRange(Program.ListHolidays.Holidays);
             LbxLoad();
+            
         }
+        
         private void LbxLoad()
         {
             foreach (DateTime dateTime in CurrentListHolidays.Holidays)
@@ -169,6 +180,11 @@ namespace time_schedule
             LBxHolidays.Items.Clear();
             LbxLoad();
         
+        }
+
+        private void groupBox4_Enter(object sender, EventArgs e)
+        {
+
         }
     }
    

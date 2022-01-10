@@ -237,6 +237,7 @@
             this.groupBox4.Size = new System.Drawing.Size(517, 44);
             this.groupBox4.TabIndex = 18;
             this.groupBox4.TabStop = false;
+            this.groupBox4.Enter += new System.EventHandler(this.groupBox4_Enter);
             // 
             // btnCancel
             // 

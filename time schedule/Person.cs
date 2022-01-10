@@ -520,7 +520,7 @@ namespace time_schedule
         {
             DateFinish = dateFinish;
         }
-        private void SetDateFinish()
+        public void SetDateFinish()
         {
             DateTime dateTime = DateStart;
             DateFinish = dateTime.AddDays(CountDays-1);
@@ -535,7 +535,7 @@ namespace time_schedule
         {
             CountDays = countDays;
         }
-        private void SetCountDays(ListNonWorkingDays listNonWorkingDays)
+        public void SetCountDays(ListNonWorkingDays listNonWorkingDays)
         {
             DateTime dateTime = DateStart;
             CountDays = CountWorkingDays;
@@ -719,8 +719,6 @@ namespace time_schedule
                     width += Constants.COLUMN_WITH;
                     if (dateTime.DayOfWeek == DayOfWeek.Friday ||
                         dateTime.Date == Task.DateFinish.Date)
-                        //||
-                        //Program.listNonWorkingDays.NonWorkingDays.Contains(dateTime.AddDays(1).Date))
                     {
 
                         AddButton(locationX, locationY, width, Constants.ROW_HIGHT);
