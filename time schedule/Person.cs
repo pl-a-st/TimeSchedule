@@ -372,6 +372,17 @@ namespace time_schedule
                     NonWorkingDays.Add(dateTime);
             }
         }
+        public void NonWorkDaysWrite(DateTime вeginningPeriod, DateTime endPeriod)
+        {
+            int i = 0;
+            while (вeginningPeriod.AddDays(i) < endPeriod)
+            {
+                if (вeginningPeriod.AddDays(i).DayOfWeek == DayOfWeek.Sunday ||
+                    вeginningPeriod.AddDays(i).DayOfWeek == DayOfWeek.Saturday)
+                    Program.listNonWorkingDays.NonWorkingDays.Add(вeginningPeriod.AddDays(i));
+                i++;
+            }
+        }
 
     }
    

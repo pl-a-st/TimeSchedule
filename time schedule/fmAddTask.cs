@@ -176,6 +176,13 @@ namespace time_schedule
         }
         private void dTTaskDateStart_ValueChanged(object sender, EventArgs e)
         {
+            if(dTmTaskDateStart.Value.Date < Program.ListTasksAllPerson.GetMinDateStartTasks())
+            {
+                Program.listNonWorkingDays.NonWorkDaysWrite(
+                    dTmTaskDateStart.Value.Date,
+                    Program.ListTasksAllPerson.GetMinDateStartTasks()
+                    );
+            }
             WorkDaysDatesCalculate();
         }
         private void taskDateFinishCalculate()
@@ -190,6 +197,13 @@ namespace time_schedule
 
         private void dTmTaskDateFinish_ValueChanged(object sender, EventArgs e)
         {
+            if (dTmTaskDateFinish.Value.Date > Program.ListTasksAllPerson.GetMaxDateFinishTasks())
+            {
+                Program.listNonWorkingDays.NonWorkDaysWrite(
+                    Program.ListTasksAllPerson.GetMaxDateFinishTasks(),
+                    dTmTaskDateStart.Value.Date
+                    );
+            }
             WorkDaysDatesCalculate();
         }
 

@@ -239,6 +239,8 @@ namespace time_schedule
                 Program.ListPersonButton
                 );
             Program.ListHolidays.SetHolidaysFromList(Dals.ReadListFromProjectFile(Constants.HOLYDAYS));
+            NonWorkDaysWrite(Program.ListTasksAllPerson.GetMinDateStartTasks(), Program.ListTasksAllPerson.GetMaxDateFinishTasks());
+            Program.listNonWorkingDays.NonWorkingDays.AddRange(Program.ListHolidays.Holidays);
             LoadHorizontLine();
             LoadVerticalLine();
             
@@ -331,7 +333,7 @@ namespace time_schedule
             this.Text = this.Text.Replace("\\Проект",string.Empty);
             this.Activate();
             LoadRefreshForm( plPersonButton, plMain, Bmp);
-            NonWorkDaysWrite(DateTime.Now.AddYears(-1).Date, DateTime.Now.AddYears(1).Date);
+            
             plMain.VerticalScroll.Visible = true;
             plForDate.Enabled = true;
             btnNewTask.Visible = false;
