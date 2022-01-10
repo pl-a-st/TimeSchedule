@@ -232,7 +232,9 @@ namespace time_schedule
                 Constants.ROW_HIGHT);
             int maxButtonLocationY = ButtonsPersonLocationAndAdd(ref Program.ListPersonButton, ref plPersonButton);
             pBForLine.Height = maxButtonLocationY;
+            Program.ListHolidays.Holidays.Clear();
             Program.ListHolidays.SetHolidaysFromList(Dals.ReadListFromProjectFile(Constants.HOLYDAYS));
+            Program.listNonWorkingDays.NonWorkingDays.Clear();
             NonWorkDaysWrite(Program.ListTasksAllPerson.GetMinDateStartTasks(), Program.ListTasksAllPerson.GetMaxDateFinishTasks());
             Program.listNonWorkingDays.NonWorkingDays.AddRange(Program.ListHolidays.Holidays);
             Program.ListTaskButtons.TaskButtons.Clear();
