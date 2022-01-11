@@ -89,7 +89,7 @@
             // btnNewTask
             // 
             this.btnNewTask.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
-            this.btnNewTask.Cursor = System.Windows.Forms.Cursors.AppStarting;
+            this.btnNewTask.Cursor = System.Windows.Forms.Cursors.Default;
             this.btnNewTask.Location = new System.Drawing.Point(503, 597);
             this.btnNewTask.Name = "btnNewTask";
             this.btnNewTask.Size = new System.Drawing.Size(110, 49);

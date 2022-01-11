@@ -61,7 +61,7 @@ namespace time_schedule
                     lBxTasks.Items.Add(task.Number.ToString() + "\t" + task.Name);
             }
         }
-        LoadRefreshForm loadRefreshForm;
+        //LoadRefreshForm loadRefreshForm;
         private void btnNewTask_Click(object sender, EventArgs e)
         {
             fmAddTask fmAddTask = new fmAddTask(Program.delegatLoadRefreshForm);

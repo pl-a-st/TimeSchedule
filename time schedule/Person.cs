@@ -672,7 +672,7 @@ namespace time_schedule
             Buttons.Add(button);
         }
         
-        LoadRefreshForm loadRefreshForm;
+        //LoadRefreshForm loadRefreshForm;
         private void Button_Click(object sender, EventArgs e)
         {
 

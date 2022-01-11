@@ -494,7 +494,7 @@ namespace time_schedule
         }
         private void LoadDataGridPersonButton(ref DataGridView dataGridView, ListPersonButton listPersonButton)
         {
-            Point startPositionPersonButton;
+            //Point startPositionPersonButton;
 
         }
 
@@ -593,7 +593,7 @@ namespace time_schedule
         {
             MessageBox.Show(""+plForDate.HorizontalScroll.Value);
         }
-        LoadRefreshForm ThisloadRefreshForm;
+        //LoadRefreshForm ThisloadRefreshForm;
         private void задачиToolStripMenuItem_Click(object sender, EventArgs e)
         {
             
