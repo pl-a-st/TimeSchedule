@@ -179,7 +179,7 @@ namespace time_schedule
         }
         public DateTime GetMinDateStartTasks()
         {
-            DateTime dateStartTasks = DateTime.MaxValue;
+            DateTime dateStartTasks = DateTime.MaxValue.AddDays(-1);
             foreach(Task task in Tasks)
             {
                 if (task.DateStart < dateStartTasks)
