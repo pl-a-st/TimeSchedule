@@ -153,6 +153,7 @@ namespace time_schedule
                 task.SetCountDays(Program.listNonWorkingDays);
                 task.SetDateFinish();
             }
+            Dals.WriteListProjectFileAppend(Constants.TASKS, Program.ListTasksAllPerson.GetListForSave());
             thisloadRefreshForm?.Invoke();
             this.Close();
         }

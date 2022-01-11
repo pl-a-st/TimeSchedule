@@ -705,7 +705,11 @@ namespace time_schedule
             DateTime dateTime = minDateStart;
             while ((dateTime.Date != Task.DateStart.Date) && (dateTime < maxDateFinish))
             {
-                if (dateTime.DayOfWeek != DayOfWeek.Saturday && dateTime.DayOfWeek != DayOfWeek.Sunday)
+                if (
+                    dateTime.DayOfWeek != DayOfWeek.Saturday &&
+                    dateTime.DayOfWeek != DayOfWeek.Sunday &&
+                    !Program.listNonWorkingDays.NonWorkingDays.Contains(dateTime.Date)
+                    )
                     locationX += Constants.COLUMN_WITH;
                 dateTime = dateTime.AddDays(1);
             }
