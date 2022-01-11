@@ -42,12 +42,12 @@
             this.lBxTasks.FormattingEnabled = true;
             this.lBxTasks.Location = new System.Drawing.Point(16, 60);
             this.lBxTasks.Name = "lBxTasks";
-            this.lBxTasks.Size = new System.Drawing.Size(250, 446);
+            this.lBxTasks.Size = new System.Drawing.Size(452, 446);
             this.lBxTasks.TabIndex = 0;
             // 
             // btnSelectTask
             // 
-            this.btnSelectTask.Location = new System.Drawing.Point(272, 60);
+            this.btnSelectTask.Location = new System.Drawing.Point(474, 60);
             this.btnSelectTask.Name = "btnSelectTask";
             this.btnSelectTask.Size = new System.Drawing.Size(75, 23);
             this.btnSelectTask.TabIndex = 1;
@@ -59,7 +59,7 @@
             // 
             this.tBxTargetTask.Location = new System.Drawing.Point(16, 34);
             this.tBxTargetTask.Name = "tBxTargetTask";
-            this.tBxTargetTask.Size = new System.Drawing.Size(250, 20);
+            this.tBxTargetTask.Size = new System.Drawing.Size(452, 20);
             this.tBxTargetTask.TabIndex = 2;
             this.tBxTargetTask.TextChanged += new System.EventHandler(this.tBxTargetTask_TextChanged);
             // 
@@ -74,7 +74,7 @@
             // 
             // bTnCacel
             // 
-            this.bTnCacel.Location = new System.Drawing.Point(272, 89);
+            this.bTnCacel.Location = new System.Drawing.Point(474, 89);
             this.bTnCacel.Name = "bTnCacel";
             this.bTnCacel.Size = new System.Drawing.Size(75, 23);
             this.bTnCacel.TabIndex = 1;
@@ -86,7 +86,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(358, 519);
+            this.ClientSize = new System.Drawing.Size(561, 519);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.tBxTargetTask);
             this.Controls.Add(this.bTnCacel);

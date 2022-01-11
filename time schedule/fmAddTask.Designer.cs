@@ -418,6 +418,8 @@
             this.Controls.Add(this.label2);
             this.Controls.Add(this.cmBxPerson);
             this.Controls.Add(this.label1);
+            this.MaximumSize = new System.Drawing.Size(601, 342);
+            this.MinimumSize = new System.Drawing.Size(601, 342);
             this.Name = "fmAddTask";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Добавление задачи";
