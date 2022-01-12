@@ -94,7 +94,7 @@ namespace time_schedule
         private void fmAddTask_Load(object sender, EventArgs e)
         {
             this.TopMost = true;
-            
+            DateForFixChange = dTmTaskDateFinish.Value.Date;
             foreach (Person person in Program.listPersons.Persons)
             {
                 cmBxPerson.Items.Add(person.PersonFamaly);
@@ -255,6 +255,7 @@ namespace time_schedule
         {
             return c.R + c.G * 0x100 + c.B * 0x10000;
         }
+        private DateTime DateForFixChange;
         private void btnCreateTask_Click(object sender, EventArgs e)
         {
             Program.ListTasksAllPerson.Tasks.Clear();
@@ -267,6 +268,12 @@ namespace time_schedule
             }  
             if (CreateOrChange == CreateOrChange.Change)
             {
+
+                Program.listNonWorkingDays.NonWorkingDays.Sort();
+                int ForFixt = (dTmTaskDateFinish.Value.Date - DateForFixChange).Days;
+                Program.listNonWorkingDays.NonWorkDaysWrite(
+                    dTmTaskDateStart.Value.Date,
+                    Program.listNonWorkingDays.NonWorkingDays[Program.listNonWorkingDays.NonWorkingDays.Count-1].AddDays(ForFixt)); // навести порядок в этом говнокоде to do
                 task = GetTaskForCreateChange(Convert.ToInt32(nUpDnTaskNumber.Value));
                 for(int i=0; i<Program.ListTasksAllPerson.Tasks.Count; i++)
                 {
@@ -294,8 +301,10 @@ namespace time_schedule
             {
                 if (Program.ListTasksAllPerson.Tasks[i].TaskNumberAfter==task.Number)
                 {
-                    Program.ListTasksAllPerson.Tasks[i].ChangeDatesCountDays(Task.GetDateFinish(task.DateFinish,2),
-                        Program.ListTasksAllPerson.Tasks[i].CountWorkingDays);
+                    Program.ListTasksAllPerson.Tasks[i].ChangeDatesCountDays(
+                        Task.GetDateFinish(task.DateFinish,2),
+                        Program.ListTasksAllPerson.Tasks[i].CountWorkingDays
+                        ); // Magic number 2 to do
                     ChekTaskAfter(Program.ListTasksAllPerson.Tasks[i]);
                 }
             }

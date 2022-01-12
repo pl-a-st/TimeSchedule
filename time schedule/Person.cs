@@ -545,10 +545,11 @@ namespace time_schedule
                 {
                     CountDays++;
                 }
-                if (i == CountDays - 1 && listNonWorkingDays.NonWorkingDays.Contains(dateTime.AddDays(i)))
+                if (i == CountDays - 1 && (listNonWorkingDays.NonWorkingDays.Contains(dateTime.AddDays(i))))
                 {
                     int k = 1;
-                    while(listNonWorkingDays.NonWorkingDays.Contains(dateTime.AddDays(i+k)))
+                    while(
+                        listNonWorkingDays.NonWorkingDays.Contains(dateTime.AddDays(i+k)))
                     {
                         CountDays++;
                         k++;

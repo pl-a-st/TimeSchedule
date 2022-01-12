@@ -372,7 +372,11 @@ namespace time_schedule
         public void NonWorkDaysWrite(DateTime вeginningPeriod, DateTime endPeriod)
         {
             int i = 0;
-            while(вeginningPeriod.AddDays(i) < endPeriod)
+            while(вeginningPeriod.AddDays(i) < endPeriod ||
+                вeginningPeriod.AddDays(i).DayOfWeek == DayOfWeek.Sunday ||
+                вeginningPeriod.AddDays(i).DayOfWeek == DayOfWeek.Saturday ||
+                Program.ListHolidays.Holidays.Contains(вeginningPeriod.AddDays(i))
+                )
             {
                 if (вeginningPeriod.AddDays(i).DayOfWeek == DayOfWeek.Sunday ||
                     вeginningPeriod.AddDays(i).DayOfWeek == DayOfWeek.Saturday)
