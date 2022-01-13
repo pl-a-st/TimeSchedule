@@ -60,6 +60,12 @@
     <Compile Include="fmAddPerson.Designer.cs">
       <DependentUpon>fmAddPerson.cs</DependentUpon>
     </Compile>
+    <Compile Include="fmProjectCopy.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="fmProjectCopy.Designer.cs">
+      <DependentUpon>fmProjectCopy.cs</DependentUpon>
+    </Compile>
     <Compile Include="fmTasks.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -98,6 +104,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="fmAddPerson.resx">
       <DependentUpon>fmAddPerson.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="fmProjectCopy.resx">
+      <DependentUpon>fmProjectCopy.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="fmTasks.resx">
       <DependentUpon>fmTasks.cs</DependentUpon>

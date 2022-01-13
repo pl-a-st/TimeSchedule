@@ -154,5 +154,10 @@ namespace time_schedule
         {
             
         }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            Program.fmMain.ScrollToDate(DateTime.Now.Date);
+        }
     }
 }

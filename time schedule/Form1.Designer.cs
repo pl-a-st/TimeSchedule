@@ -1,6 +1,6 @@
 ﻿namespace time_schedule
 {
-    partial class Form1
+    public partial class Form1
     {
         /// <summary>
         /// Обязательная переменная конструктора.
@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             this.plMain = new System.Windows.Forms.Panel();
             this.pBForLine = new System.Windows.Forms.PictureBox();
             this.plForDate = new System.Windows.Forms.Panel();
@@ -46,6 +47,7 @@
             this.addFiveDays = new System.Windows.Forms.Button();
             this.dateTimePicker1 = new System.Windows.Forms.DateTimePicker();
             this.minusFiveDay = new System.Windows.Forms.Button();
+            this.timer1 = new System.Windows.Forms.Timer(this.components);
             this.plMain.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pBForLine)).BeginInit();
             this.menuStrip1.SuspendLayout();
@@ -212,7 +214,7 @@
             this.dateTimePicker1.Size = new System.Drawing.Size(172, 20);
             this.dateTimePicker1.TabIndex = 8;
             this.dateTimePicker1.CloseUp += new System.EventHandler(this.dateTimePicker1_CloseUp);
-            this.dateTimePicker1.ValueChanged += new System.EventHandler(this.dateTimePicker1_ValueChanged);
+            this.dateTimePicker1.ValueChanged += new System.EventHandler(this.dateTimePicker1_CloseUp);
             this.dateTimePicker1.Enter += new System.EventHandler(this.dateTimePicker1_Enter);
             this.dateTimePicker1.KeyUp += new System.Windows.Forms.KeyEventHandler(this.dateTimePicker1_KeyUp);
             // 
@@ -277,6 +279,7 @@
         private System.Windows.Forms.ToolStripMenuItem задачиToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem2;
         private System.Windows.Forms.ToolStripMenuItem adminToolStripMenuItem;
+        private System.Windows.Forms.Timer timer1;
     }
 }
 

@@ -31,6 +31,7 @@ namespace time_schedule
         {
             Program.fmMain = this;
             InitializeComponent();
+            
             plMain.MouseWheel += CalendarTasks_MouseWheel;
             plMain.ClientSizeChanged += PlMain_ClientSizeChanged;
             plPersonButton.MouseWheel += PlPersonButton_MouseWheel;
@@ -439,7 +440,7 @@ namespace time_schedule
             plForDate.Enabled = true;
             
         }
-        private void ScrollToDate(DateTime targetDateTime)
+        public void ScrollToDate(DateTime targetDateTime)
         {
             int locationX = 0;
             plMain.HorizontalScroll.Value = 0;
@@ -551,12 +552,6 @@ namespace time_schedule
                 
 
             }
-        }
-
-        private void dateTimePicker1_ValueChanged(object sender, EventArgs e)
-        {
-            
-            
         }
 
         private void minusFiveDay_Click(object sender, EventArgs e)
