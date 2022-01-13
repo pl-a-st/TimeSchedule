@@ -28,7 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.listBox1 = new System.Windows.Forms.ListBox();
+            this.lBxProject = new System.Windows.Forms.ListBox();
             this.btnSelect = new System.Windows.Forms.Button();
             this.tBxAddress = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
@@ -37,13 +37,13 @@
             this.btnAdd = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
-            // listBox1
+            // lBxProject
             // 
-            this.listBox1.FormattingEnabled = true;
-            this.listBox1.Location = new System.Drawing.Point(12, 12);
-            this.listBox1.Name = "listBox1";
-            this.listBox1.Size = new System.Drawing.Size(361, 134);
-            this.listBox1.TabIndex = 0;
+            this.lBxProject.FormattingEnabled = true;
+            this.lBxProject.Location = new System.Drawing.Point(12, 12);
+            this.lBxProject.Name = "lBxProject";
+            this.lBxProject.Size = new System.Drawing.Size(361, 134);
+            this.lBxProject.TabIndex = 0;
             // 
             // btnSelect
             // 
@@ -53,6 +53,7 @@
             this.btnSelect.TabIndex = 1;
             this.btnSelect.Text = "Выбрать";
             this.btnSelect.UseVisualStyleBackColor = true;
+            this.btnSelect.Click += new System.EventHandler(this.btnSelect_Click);
             // 
             // tBxAddress
             // 
@@ -88,6 +89,7 @@
             this.btnDelete.TabIndex = 5;
             this.btnDelete.Text = "Удалить";
             this.btnDelete.UseVisualStyleBackColor = true;
+            this.btnDelete.Click += new System.EventHandler(this.btnDelete_Click);
             // 
             // btnAdd
             // 
@@ -109,9 +111,10 @@
             this.Controls.Add(this.label1);
             this.Controls.Add(this.tBxAddress);
             this.Controls.Add(this.btnSelect);
-            this.Controls.Add(this.listBox1);
+            this.Controls.Add(this.lBxProject);
             this.Name = "fmProjectCopy";
-            this.Text = "fmProjectCopy";
+            this.Text = "Выберите проект для копирования";
+            this.Load += new System.EventHandler(this.fmProjectCopy_Load);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -119,7 +122,7 @@
 
         #endregion
 
-        private System.Windows.Forms.ListBox listBox1;
+        private System.Windows.Forms.ListBox lBxProject;
         private System.Windows.Forms.Button btnSelect;
         private System.Windows.Forms.TextBox tBxAddress;
         private System.Windows.Forms.Label label1;
