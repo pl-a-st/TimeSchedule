@@ -394,20 +394,40 @@ namespace time_schedule
                 folderName += "\\" + targetFolderName;
                 Task task = new Task();
                 ListTasks listTasks = new ListTasks();
-
                 listTasks.SetTasksFromList(Dals.ReadListFromFile(folderName + "\\" + Constants.TASKS));
                 List<string> listStringPersons = Dals.ReadListFromFile(folderName + "\\" + Constants.PERSONS);
                 task = GetTaskForCreateChange(listTasks.GetNextNumForTask());
-
+                ListPersons listPersons = new ListPersons();
+                listPersons.SetPersonsFromList(
+                    Dals.ReadListFromFile(folderName + "\\" + Constants.PERSONS),
+                    listTasks.Tasks);
                 string personFamaly = "Нераспределено";
-                foreach (string stirngPersones in listStringPersons)
+                bool isPersonHas = false;
+                foreach (Person person in listPersons.Persons)
                 {
-                    if (stirngPersones.Split('\t')[0] == task.PersonFamaly)
+                    if (person.PersonFamaly== personFamaly)
+                    {
+                        isPersonHas = true;
+                        break;
+                    }
+                }
+                if(!isPersonHas)
+                {
+                    Person person = new Person(personFamaly);
+                    listPersons.Persons.Add(person);
+                }
+                
+                foreach (Person person in listPersons.Persons)
+                {
+                    if (person.PersonFamaly == task.PersonFamaly)
                     {
                         personFamaly = task.PersonFamaly;
                         break;
                     }
                 }
+                Dals.WriteListtFileAppend(
+                    folderName + "\\" + Constants.PERSONS, 
+                    listPersons.GetListForSave());
                 task.SetPersonFamaly(personFamaly);
                 const int NUBER_AFTER_FOR_COPY = 0;
                 task.SetTaskNumberAfter(NUBER_AFTER_FOR_COPY);
