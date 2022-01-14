@@ -16,7 +16,10 @@ namespace time_schedule
         {
             InitializeComponent();
         }
-
+        public TextBox SetTBxAddress()
+        {
+            return tBxAddress;
+        }
         private void btnSelect_Click(object sender, EventArgs e)
         {
             if (lBxProject.SelectedIndex == -1)
@@ -24,14 +27,15 @@ namespace time_schedule
                 MessageBox.Show("Не выбрана задача.");
                 return;
             }
-            string folderName = string.Empty;
-            string targetFolderName = "Проект";
+            this.Close();
+            //string folderName = string.Empty;
+            //string targetFolderName = "Проект";
             //try
             //{
             //    FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog();
             //    folderBrowserDialog.Description = "Выбирете папку проекта для копирования задачи";
 
-            //    if (folderBrowserDialog.ShowDialog() == DialogResult.OK)
+            //    if (tBxAddress.Text!="")
             //    {
             //        Program.ListTasksAllPerson.Tasks.Clear();
             //        Program.ListTasksAllPerson.SetTasksFromList(Dals.ReadListFromProjectFile(Constants.TASKS));
@@ -55,7 +59,7 @@ namespace time_schedule
             //        task.SetPersonFamaly(personFamaly);
             //        listTasks.AddTask(task);
             //        Dals.WriteListtFileAppend(folderName + "\\" + Constants.TASKS, listTasks.GetListForSave());
-                    
+
             //        this.Close();
             //    }
             //}

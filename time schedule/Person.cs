@@ -513,6 +513,10 @@ namespace time_schedule
         {
             TaskNumberAfter = task.Number;
         }
+        public void SetTaskNumberAfter(int number)
+        {
+            TaskNumberAfter = number;
+        }
         public DateTime DateStart
         { get; private set; }
         public void SetDateStart(DateTime dateStart)
