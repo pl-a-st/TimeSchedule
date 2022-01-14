@@ -86,6 +86,8 @@ namespace time_schedule
         public static void WriteListProjectFileAppend(string fileName, List<string> listForWrite)
         {
             fileName = ProjectFolderPath + "\\" + fileName;
+            if (!Directory.Exists(ProjectFolderPath))
+                Directory.CreateDirectory(ProjectFolderPath);
             WriteListtFileAppend(fileName, listForWrite);
             //try
             //{

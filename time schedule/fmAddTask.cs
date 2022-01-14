@@ -409,7 +409,7 @@ namespace time_schedule
                             break;
                         }
                     }
-
+                    task.SetPersonFamaly(personFamaly);
                     listTasks.AddTask(task);
                     Dals.WriteListtFileAppend(folderName + "\\" + Constants.TASKS, listTasks.GetListForSave());
                     thisloadRefreshForm?.Invoke();

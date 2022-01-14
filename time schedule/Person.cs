@@ -408,27 +408,27 @@ namespace time_schedule
             const int COUNT_WORKING_DAYS = 8;
             const int TASK_COLOR = 9;
             const int PRIORITY = 10;
-            if (allParam[TASK_NAME] != null)
+            if (allParam[TASK_NAME] != "")
                 Name = allParam[TASK_NAME];
-            if (allParam[PERSON_FAMALY] != null)
+            if (allParam[PERSON_FAMALY] != "")
                 PersonFamaly = allParam[PERSON_FAMALY];
-            if (allParam[TASK_STATUS] != null)
+            if (allParam[TASK_STATUS] != "")
                 Status = (TaskStatusEnum)Enum.Parse(typeof(TaskStatusEnum), allParam[TASK_STATUS], true);
-            if (allParam[TASK_NUMBER] != null)
+            if (allParam[TASK_NUMBER] != "")
                 Number = Convert.ToInt32(allParam[TASK_NUMBER]);
-            if (allParam[TASK_NUMBER_AFTER] != null)
+            if (allParam[TASK_NUMBER_AFTER] != "")
                 TaskNumberAfter = Convert.ToInt32(allParam[TASK_NUMBER_AFTER]);
-            if (allParam[DATE_START] != null)
+            if (allParam[DATE_START] != "")
                 DateStart = Convert.ToDateTime(allParam[DATE_START]);
-            if (allParam[DATE_FINISH] != null)
+            if (allParam[DATE_FINISH] != "")
                 DateFinish = Convert.ToDateTime(allParam[DATE_FINISH]);
-            if (allParam[COUNT_DAYS] != null)
+            if (allParam[COUNT_DAYS] != "")
                 CountDays = Convert.ToInt32(allParam[COUNT_DAYS]);
-                if (allParam[COUNT_WORKING_DAYS] != null)
+                if (allParam[COUNT_WORKING_DAYS] != "")
                     CountWorkingDays = Convert.ToInt32(allParam[COUNT_WORKING_DAYS]);
-            if (allParam[TASK_COLOR] != null)
+            if (allParam[TASK_COLOR] != "")
                 Color = Color.FromArgb(Convert.ToInt32(allParam[TASK_COLOR]));
-            if (allParam.Length>10&& allParam[PRIORITY] != null)
+            if (allParam.Length>10&& allParam[PRIORITY] != "")
                 Priority = Convert.ToInt32(allParam[PRIORITY]);
         }
         public Task(DateTime dateStart, long countWorksDays)
@@ -495,6 +495,10 @@ namespace time_schedule
         public void SetPersonName(Person person)
         {
             PersonFamaly = person.PersonFamaly;
+        }
+        public void SetPersonFamaly(string personFamaly)
+        {
+            PersonFamaly = personFamaly;
         }
         public long Number
         { get; private set; }
