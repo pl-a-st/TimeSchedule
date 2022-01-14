@@ -47,7 +47,38 @@ namespace time_schedule
 
         private void btnChangePerson_Click(object sender, EventArgs e)
         {
-
+            fmInpootText fmInpootText = new fmInpootText();
+            if (lBxPersons.SelectedIndex == -1)
+            {
+                MessageBox.Show("Не выбран исполнитель.");
+                return;
+            }
+            fmInpootText.SetTextBox().Text = lBxPersons.Items[lBxPersons.SelectedIndex].ToString();
+            fmInpootText.Text = "Введите новое имя исполнителя";
+            fmInpootText.SetBtnYes().Text = "Изменить";
+            fmInpootText.SetLabel().Text = "Введите новое имя исполнителя";
+            fmInpootText.ShowDialog();
+            if (fmInpootText.ChoiceIsMade == ChoiceIsMade.no)
+                return;
+            foreach (Person person in Program.listPersons.Persons)
+            {
+                if (person.PersonFamaly == lBxPersons.Items[lBxPersons.SelectedIndex].ToString())
+                    person.SetPersonFamaly(fmInpootText.SetTextBox().Text);
+            }
+            foreach (Task task in Program.ListTasksAllPerson.Tasks)
+            {
+                if (task.PersonFamaly == lBxPersons.Items[lBxPersons.SelectedIndex].ToString())
+                    task.SetPersonFamaly(fmInpootText.SetTextBox().Text);
+            }
+            
+            Dals.WriteListProjectFileAppend(
+                Constants.PERSONS, 
+                Program.listPersons.GetListForSave());
+            Dals.WriteListProjectFileAppend(
+                Constants.TASKS,
+                Program.ListTasksAllPerson.GetListForSave());
+            LisBoxRefresh();
+            thisloadRefreshForm?.Invoke();
         }
 
         private void btnDelete_Click(object sender, EventArgs e)
