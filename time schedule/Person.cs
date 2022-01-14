@@ -842,4 +842,63 @@ namespace time_schedule
         }
 
     }
+    public class Project
+    {
+        public string Name
+        { get; private set; }
+        public void SetName(string name)
+        {
+            Name = name;
+        }
+        public string Address
+        { get; private set; }
+        public void SetAddress(string address)
+        {
+            Address = address;
+        }
+        public Project(string name, string address)
+        {
+            Name = name;
+            Address = Address;
+        }
+        public string GetStringForSave()
+        {
+            string stringForSave = string.Empty;
+            stringForSave += Name + "\t" + Address;
+            return stringForSave;
+        }
+        public Project(string stringFromFile)
+        {
+            const int NAME = 0;
+            const int ADDRESS = 1;
+            string[] arrPfarmetersForProject = stringFromFile.Split('\t');
+            Name = arrPfarmetersForProject[NAME];
+            Address = arrPfarmetersForProject[ADDRESS];
+        }
+    }
+    public class ListProjects
+    {
+        public List<Project> Projects
+        { get; private set; } = new List<Project>();
+        public List<string> GetListForSave()
+        {
+            List<string> listForSave = new List<string>();
+            foreach (Project project in Projects)
+            {
+                listForSave.Add(project.GetStringForSave());
+            }
+            return listForSave;
+        }
+        public void Add(Project project)
+        {
+            Projects.Add(project);
+        }
+        public ListProjects (List<string> listStringFromFile)
+        {
+            foreach (string stringFromFile in listStringFromFile)
+            {
+                Projects.Add(new Project(stringFromFile));
+            }
+        }
+    }
 }

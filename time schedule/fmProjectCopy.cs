@@ -34,32 +34,7 @@ namespace time_schedule
                 return;
             }
         }
-        public class Project
-        {
-            public string Name
-            { get; private set;}
-            public void SetName (string name)
-            {
-                Name = name;
-            }
-            public string Address
-            { get; private set; }
-            public void SetAddress(string address)
-            {
-                Address = address;
-            }
-            public Project (string name, string address)
-            {
-                Name = name;
-                Address = Address;
-            }
-        }
-        public class ListProjects
-        {
-            public List<Project> projects
-            { get; private set; } = new List<Project>();
-
-        }
+        
         private void fmProjectCopy_Load(object sender, EventArgs e)
         {
             //Project project = new Project();
