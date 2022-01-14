@@ -52,7 +52,31 @@ namespace time_schedule
 
         private void btnDelete_Click(object sender, EventArgs e)
         {
-
+            if (lBxPersons.SelectedIndex == -1)
+            {
+                MessageBox.Show("Не выбран исполнитель.");
+                return;
+            }
+            DialogResult result = MessageBox.Show(
+                "Вы уверены что хотите удалить исполнителя?",
+                "Сообщение",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Warning,
+                MessageBoxDefaultButton.Button1,
+                MessageBoxOptions.DefaultDesktopOnly);
+            if (result == DialogResult.No)
+            {
+                Program.fmMain.TopMost = true;
+                this.TopMost = true;
+                return;
+            }
+            this.Activate();
+            
+            Program.listPersons.Persons.RemoveAt(lBxPersons.SelectedIndex);
+             
+            Dals.WriteListProjectFileAppend(Constants.PERSONS, Program.listPersons.GetListForSave());
+            LisBoxRefresh();
+            thisloadRefreshForm?.Invoke();
         }
 
         private void button1_Click(object sender, EventArgs e)
