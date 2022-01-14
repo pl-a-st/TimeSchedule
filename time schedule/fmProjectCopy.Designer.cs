@@ -116,6 +116,7 @@
             this.Controls.Add(this.btnSelect);
             this.Controls.Add(this.lBxProject);
             this.Name = "fmProjectCopy";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Выберите проект для копирования";
             this.Load += new System.EventHandler(this.fmProjectCopy_Load);
             this.ResumeLayout(false);

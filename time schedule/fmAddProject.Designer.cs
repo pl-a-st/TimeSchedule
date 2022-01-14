@@ -68,6 +68,7 @@
             this.Controls.Add(this.button1);
             this.Controls.Add(this.tBxNameProject);
             this.Name = "fmAddProject";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Добавте проект";
             this.Load += new System.EventHandler(this.fmAddProject_Load);
             this.ResumeLayout(false);

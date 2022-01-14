@@ -19,13 +19,14 @@ namespace time_schedule
         public Project Project = new Project();
         private void fmAddProject_Load(object sender, EventArgs e)
         {
-
+            this.TopMost = true;
         }
 
         private void button1_Click(object sender, EventArgs e)
         {
             if (tBxNameProject.Text=="")
             {
+                
                 MessageBox.Show("Не назанчено условное обозначение проекта");
                 return;
             }
