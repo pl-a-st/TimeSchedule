@@ -24,6 +24,45 @@ namespace time_schedule
                 MessageBox.Show("Не выбрана задача.");
                 return;
             }
+            string folderName = string.Empty;
+            string targetFolderName = "Проект";
+            try
+            {
+                FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog();
+                folderBrowserDialog.Description = "Выбирете папку проекта для копирования задачи";
+
+                if (folderBrowserDialog.ShowDialog() == DialogResult.OK)
+                {
+                    Program.ListTasksAllPerson.Tasks.Clear();
+                    Program.ListTasksAllPerson.SetTasksFromList(Dals.ReadListFromProjectFile(Constants.TASKS));
+                    folderName = folderBrowserDialog.SelectedPath + "\\" + targetFolderName;
+                    Task task = new Task();
+                    ListTasks listTasks = new ListTasks();
+
+                    listTasks.SetTasksFromList(Dals.ReadListFromFile(folderName + "\\" + Constants.TASKS));
+                    List<string> listStringPersons = Dals.ReadListFromFile(folderName + "\\" + Constants.PERSONS);
+                    task = GetTaskForCreateChange(listTasks.GetNextNumForTask());
+
+                    string personFamaly = "Нераспределено";
+                    foreach (string stirngPersones in listStringPersons)
+                    {
+                        if (stirngPersones.Split('\t')[0] == task.PersonFamaly)
+                        {
+                            personFamaly = task.PersonFamaly;
+                            break;
+                        }
+                    }
+                    task.SetPersonFamaly(personFamaly);
+                    listTasks.AddTask(task);
+                    Dals.WriteListtFileAppend(folderName + "\\" + Constants.TASKS, listTasks.GetListForSave());
+                    
+                    this.Close();
+                }
+            }
+            catch
+            {
+                MessageBox.Show("Не удалось произвести запись в файл: " + folderName + "\\" + Constants.TASKS);
+            }
         }
 
         private void btnDelete_Click(object sender, EventArgs e)
