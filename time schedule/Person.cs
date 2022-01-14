@@ -77,6 +77,7 @@ namespace time_schedule
         public string GetStringForSave()
         {
             string stringForSave = string.Empty;
+            PersonFamaly= PersonFamaly.Replace("\t", " ");
             stringForSave +=  PersonFamaly;
             foreach (Task task in ListTask.Tasks)
             {
@@ -587,15 +588,16 @@ namespace time_schedule
         public string GetStringForSave()
         {
             string stringForSave = string.Empty;
-
+            Name = Name.Replace("\t", " ");
             stringForSave += Name;
+            PersonFamaly = PersonFamaly.Replace("\t", " "); ;
             stringForSave += "\t";
             stringForSave += PersonFamaly;
             stringForSave += "\t";
             stringForSave += Status;
             stringForSave += "\t";
             stringForSave += Number;
-            stringForSave += "\t";
+            stringForSave += "\t";            
             stringForSave += TaskNumberAfter;
             stringForSave += "\t";
             stringForSave += DateStart;
