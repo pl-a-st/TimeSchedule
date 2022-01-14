@@ -29,8 +29,9 @@
         private void InitializeComponent()
         {
             this.tBxNameProject = new System.Windows.Forms.TextBox();
-            this.button1 = new System.Windows.Forms.Button();
+            this.btnChosePath = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
+            this.Cancel = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // tBxNameProject
@@ -40,15 +41,15 @@
             this.tBxNameProject.Size = new System.Drawing.Size(283, 20);
             this.tBxNameProject.TabIndex = 0;
             // 
-            // button1
+            // btnChosePath
             // 
-            this.button1.Location = new System.Drawing.Point(96, 56);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(107, 23);
-            this.button1.TabIndex = 1;
-            this.button1.Text = "Выбрать проект";
-            this.button1.UseVisualStyleBackColor = true;
-            this.button1.Click += new System.EventHandler(this.button1_Click);
+            this.btnChosePath.Location = new System.Drawing.Point(12, 56);
+            this.btnChosePath.Name = "btnChosePath";
+            this.btnChosePath.Size = new System.Drawing.Size(130, 23);
+            this.btnChosePath.TabIndex = 1;
+            this.btnChosePath.Text = "Выбрать проект";
+            this.btnChosePath.UseVisualStyleBackColor = true;
+            this.btnChosePath.Click += new System.EventHandler(this.button1_Click);
             // 
             // label1
             // 
@@ -59,13 +60,24 @@
             this.label1.TabIndex = 2;
             this.label1.Text = "Назначте условное обозначение проекта:";
             // 
+            // Cancel
+            // 
+            this.Cancel.Location = new System.Drawing.Point(148, 56);
+            this.Cancel.Name = "Cancel";
+            this.Cancel.Size = new System.Drawing.Size(147, 23);
+            this.Cancel.TabIndex = 3;
+            this.Cancel.Text = "Отмена";
+            this.Cancel.UseVisualStyleBackColor = true;
+            this.Cancel.Click += new System.EventHandler(this.Cancel_Click);
+            // 
             // fmAddProject
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(307, 87);
+            this.Controls.Add(this.Cancel);
             this.Controls.Add(this.label1);
-            this.Controls.Add(this.button1);
+            this.Controls.Add(this.btnChosePath);
             this.Controls.Add(this.tBxNameProject);
             this.Name = "fmAddProject";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
@@ -79,7 +91,8 @@
         #endregion
 
         private System.Windows.Forms.TextBox tBxNameProject;
-        private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.Button btnChosePath;
         private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Button Cancel;
     }
 }

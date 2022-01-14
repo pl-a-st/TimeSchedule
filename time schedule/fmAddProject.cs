@@ -10,6 +10,11 @@ using System.Windows.Forms;
 
 namespace time_schedule
 {
+    public enum ChoiceIsMade
+    {
+        yes,
+        no
+    }
     public partial class fmAddProject : Form
     {
         public fmAddProject()
@@ -21,7 +26,8 @@ namespace time_schedule
         {
             this.TopMost = true;
         }
-
+        public ChoiceIsMade ChoiceIsMade
+        { get; private set; } = ChoiceIsMade.no;
         private void button1_Click(object sender, EventArgs e)
         {
             if (tBxNameProject.Text=="")
@@ -37,12 +43,17 @@ namespace time_schedule
 
             if (folderBrowserDialog.ShowDialog() == DialogResult.OK)
             {
-                    
+                ChoiceIsMade = ChoiceIsMade.yes;
                 folderName = folderBrowserDialog.SelectedPath;
                 Project = new Project(tBxNameProject.Text, folderName);
                 this.Close();
             }
             
+        }
+
+        private void Cancel_Click(object sender, EventArgs e)
+        {
+            this.Close();
         }
     }
 }

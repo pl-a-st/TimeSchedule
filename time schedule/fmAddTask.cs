@@ -383,8 +383,12 @@ namespace time_schedule
         {
             fmProjectCopy fmProjectCopy = new fmProjectCopy();
             fmProjectCopy.ShowDialog();
-            if (fmProjectCopy.SetTBxAddress().Text == "" && fmProjectCopy.SetTBxAddress().Text == null)
+            if (fmProjectCopy.SetTBxAddress().Text == "" ||
+                fmProjectCopy.SetTBxAddress().Text == null ||
+                fmProjectCopy.ChoiceIsMade == ChoiceIsMade.no)
+            {
                 return;
+            }
             string folderName = fmProjectCopy.SetTBxAddress().Text;
             string targetFolderName = "Проект";
             try

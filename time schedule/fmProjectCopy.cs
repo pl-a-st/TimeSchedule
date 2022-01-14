@@ -20,6 +20,8 @@ namespace time_schedule
         {
             return tBxAddress;
         }
+        public ChoiceIsMade ChoiceIsMade
+        { get; private set; } = ChoiceIsMade.no;
         private void btnSelect_Click(object sender, EventArgs e)
         {
             if (lBxProject.SelectedIndex == -1)
@@ -27,6 +29,7 @@ namespace time_schedule
                 MessageBox.Show("Не выбрана задача.");
                 return;
             }
+            ChoiceIsMade = ChoiceIsMade.yes;
             this.Close();
             //string folderName = string.Empty;
             //string targetFolderName = "Проект";
@@ -76,6 +79,17 @@ namespace time_schedule
                 MessageBox.Show("Не выбрана задача.");
                 return;
             }
+            ListProjects.Projects.RemoveAt(lBxProject.SelectedIndex);
+            lBxProject.Items.Clear();
+            foreach (Project project in ListProjects.Projects)
+            {
+                lBxProject.Items.Add(project.Name);
+            }
+            if (lBxProject.Items.Count > 0)
+                lBxProject.SelectedIndex = lBxProject.Items.Count - 1;
+            Dals.WriteListProjectFileAppend(
+                Constants.PROFECT_TO_COPY,
+                ListProjects.GetListForSave());
         }
         public ListProjects ListProjects
         { get; private set; } = new ListProjects();
@@ -100,10 +114,13 @@ namespace time_schedule
         {
             fmAddProject fmAddProject = new fmAddProject();
             fmAddProject.ShowDialog();
+            if (fmAddProject.ChoiceIsMade == ChoiceIsMade.no)
+                return;
             ListProjects.Add(fmAddProject.Project);
             lBxProject.Items.Clear();
             foreach (Project project in ListProjects.Projects)
             {
+                if (project.Name!=null)
                 lBxProject.Items.Add(project.Name);
             }
             if (lBxProject.Items.Count>0)
@@ -115,7 +132,7 @@ namespace time_schedule
 
         private void Cancel_Click(object sender, EventArgs e)
         {
-
+            this.Close();
         }
     }
 }
