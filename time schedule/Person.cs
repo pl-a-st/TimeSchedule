@@ -859,8 +859,10 @@ namespace time_schedule
         public Project(string name, string address)
         {
             Name = name;
-            Address = Address;
+            Address = address;
         }
+        public Project()
+        { }
         public string GetStringForSave()
         {
             string stringForSave = string.Empty;
@@ -899,6 +901,9 @@ namespace time_schedule
             {
                 Projects.Add(new Project(stringFromFile));
             }
+        }
+        public ListProjects()
+        {
         }
     }
 }

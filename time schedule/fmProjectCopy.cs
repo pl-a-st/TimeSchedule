@@ -34,11 +34,41 @@ namespace time_schedule
                 return;
             }
         }
-        
+        public ListProjects ListProjects
+        { get; private set; } = new ListProjects();
         private void fmProjectCopy_Load(object sender, EventArgs e)
         {
-            //Project project = new Project();
-            //project.SetName("sd");
+            ListProjects = new ListProjects(
+                Dals.ReadListFromProjectFile(Constants.PROFECT_TO_COPY));
+            foreach(Project project in ListProjects.Projects)
+            {
+                lBxProject.Items.Add(project.Name);
+            }
+        }
+
+        private void lBxProject_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (lBxProject.SelectedIndex != -1)
+                tBxAddress.Text = ListProjects.Projects[lBxProject.SelectedIndex].Address;
+        }
+
+        private void btnAdd_Click(object sender, EventArgs e)
+        {
+            fmAddProject fmAddProject = new fmAddProject();
+            fmAddProject.ShowDialog();
+            ListProjects.Add(fmAddProject.Project);
+            lBxProject.Items.Clear();
+            foreach (Project project in ListProjects.Projects)
+            {
+                lBxProject.Items.Add(project.Name);
+            }
+            if (lBxProject.Items.Count>0)
+                lBxProject.SelectedIndex = lBxProject.Items.Count-1;
+        }
+
+        private void Cancel_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }

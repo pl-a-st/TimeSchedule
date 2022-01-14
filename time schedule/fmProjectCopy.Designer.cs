@@ -44,6 +44,7 @@
             this.lBxProject.Name = "lBxProject";
             this.lBxProject.Size = new System.Drawing.Size(361, 134);
             this.lBxProject.TabIndex = 0;
+            this.lBxProject.SelectedIndexChanged += new System.EventHandler(this.lBxProject_SelectedIndexChanged);
             // 
             // btnSelect
             // 
@@ -80,6 +81,7 @@
             this.Cancel.TabIndex = 4;
             this.Cancel.Text = "Отмена";
             this.Cancel.UseVisualStyleBackColor = true;
+            this.Cancel.Click += new System.EventHandler(this.Cancel_Click);
             // 
             // btnDelete
             // 
@@ -99,6 +101,7 @@
             this.btnAdd.TabIndex = 6;
             this.btnAdd.Text = "Добавить";
             this.btnAdd.UseVisualStyleBackColor = true;
+            this.btnAdd.Click += new System.EventHandler(this.btnAdd_Click);
             // 
             // fmProjectCopy
             // 

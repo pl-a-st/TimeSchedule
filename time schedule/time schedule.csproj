@@ -48,6 +48,12 @@
   <ItemGroup>
     <Compile Include="Constants.cs" />
     <Compile Include="Dals.cs" />
+    <Compile Include="fmAddProject.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="fmAddProject.Designer.cs">
+      <DependentUpon>fmAddProject.cs</DependentUpon>
+    </Compile>
     <Compile Include="fmAddTask.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -99,6 +105,9 @@
     <Compile Include="fmSelectTask.Designer.cs">
       <DependentUpon>fmSelectTask.cs</DependentUpon>
     </Compile>
+    <EmbeddedResource Include="fmAddProject.resx">
+      <DependentUpon>fmAddProject.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="fmAddTask.resx">
       <DependentUpon>fmAddTask.cs</DependentUpon>
     </EmbeddedResource>
