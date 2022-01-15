@@ -118,7 +118,7 @@ namespace time_schedule
                 {
                     personButton.SetLocation(0, maxButtonLocationY);
                     plPersonButton.Controls.Add(personButton.Button);
-                    maxButtonLocationY += (personButton.Button.Height + Constants.MIN_ROW_HIGHT + 1);
+                    maxButtonLocationY += (personButton.Button.Height + Constants.MIN_ROW_HIGHT +1);
                 }
             }
             return maxButtonLocationY;
@@ -259,6 +259,7 @@ namespace time_schedule
             }
             LoadScrolls();
             SaveMinMaxDate();
+            
         }
         public void LoadColumns()
         {
@@ -331,13 +332,13 @@ namespace time_schedule
         }
         private void Form1_Load(object sender, EventArgs e)
         {
-            //this.DoubleBuffered = true;
+            this.DoubleBuffered = true;
             Program.delegatLoadRefreshForm = LoadRefreshForm;
             myScrollBar.Height = plMain.Height;
             myScrollBar.Left = plMain.Width - myScrollBar.Width;
             myScrollBar.Top = 0;
             myScrollBar.Enabled = false;
-            plMain.Controls.Add(myScrollBar);
+            //plMain.Controls.Add(myScrollBar);
             Dals.WriteProjectFolder(true);
             this.Text = Dals.ProjectFolderPath;
             this.Text = this.Text.Replace("\\Проект",string.Empty);
