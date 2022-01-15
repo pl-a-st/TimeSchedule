@@ -230,7 +230,8 @@ namespace time_schedule
             Program.ListPersonButton.LoadListPersonButtons(
                 Program.listPersons.Persons,
                 Program.ListTasksAllPerson,
-                Constants.ROW_HIGHT);
+                Constants.ROW_HIGHT,
+                this);
             int maxButtonLocationY = ButtonsPersonLocationAndAdd(ref Program.ListPersonButton, ref plPersonButton);
             pBForLine.Height = maxButtonLocationY;
             Program.ListHolidays.Holidays.Clear();
@@ -324,7 +325,10 @@ namespace time_schedule
         {
             return Bmp;
         }
-        
+        public Form1 SetForm1()
+        {
+            return this;
+        }
         private void Form1_Load(object sender, EventArgs e)
         {
             
@@ -596,7 +600,7 @@ namespace time_schedule
         private void задачиToolStripMenuItem_Click(object sender, EventArgs e)
         {
             
-            fmTasks fmTasks = new fmTasks(Program.delegatLoadRefreshForm);
+            fmTasks fmTasks = new fmTasks(this);
             
             fmTasks.ShowDialog();
         }
@@ -631,6 +635,11 @@ namespace time_schedule
         {
             fmHolidays holidays = new fmHolidays(LoadRefreshForm);
             holidays.ShowDialog();
+        }
+
+        private void menuStrip1_ItemClicked(object sender, ToolStripItemClickedEventArgs e)
+        {
+
         }
     }
    

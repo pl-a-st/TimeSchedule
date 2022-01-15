@@ -754,18 +754,19 @@ namespace time_schedule
         {
             PersonButtons.Add(personButton);
         }
-        public void LoadListPersonButtons(List<Person> persons, ListTasks listTasksAllPerson, int hightRowForTasks)
+        public void LoadListPersonButtons(List<Person> persons, ListTasks listTasksAllPerson, int hightRowForTasks,  Form1 form1)
         {
             foreach (Person person in persons)
             {
-                PersonButton personButton = new PersonButton(person, listTasksAllPerson, hightRowForTasks);
+                PersonButton personButton = new PersonButton(person, listTasksAllPerson, hightRowForTasks, form1);
                 ListPersonButtonsAdd(personButton);
             }
         }
     }
     public class PersonButton
     {
-        public PersonButton(Person person, ListTasks listTasksAllPerson, int hightRowForTasks)
+
+        public PersonButton(Person person, ListTasks listTasksAllPerson, int hightRowForTasks, Form1 form1)
         {
             Person = person;
             Person.setTasks(listTasksAllPerson);
@@ -773,10 +774,11 @@ namespace time_schedule
             Button.Height = GetHightBooton(listTasksAllPerson, hightRowForTasks);
             Button.BringToFront();
             Button.Click += PersonButton_Click;
-            Form1 form1 = new Form1();
-            Button.Width = form1.GetPersonButtonWith();
-
+            Form1 form = new Form1();
+            Button.Width = form.GetPersonButtonWith();
+            Form1 = form1;
         }
+        private Form1 Form1;
         public void SetLocation(int locationХ, int locationY)
         {
             Button.Location = new Point(locationХ, locationY);
@@ -784,7 +786,7 @@ namespace time_schedule
         private void PersonButton_Click(object sender, EventArgs e)
         {
             Program.Person = Person;
-            fmTasks fmTasks = new fmTasks(Program.delegatLoadRefreshForm);
+            fmTasks fmTasks = new fmTasks(Form1);
             fmTasks.Load -= fmTasks.fmTasks_Load;
             fmTasks.Load += FmTasks_Load;
             void FmTasks_Load(object sender1, EventArgs e1)

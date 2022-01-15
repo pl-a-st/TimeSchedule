@@ -12,12 +12,14 @@ namespace time_schedule
 {
     public partial class fmTasks : Form
     {
-        public fmTasks(LoadRefreshForm loadRefreshForm)
+        private Form1 Form1Delegat;
+        public fmTasks(Form1 form1Delegat)
         {
+            Form1Delegat = form1Delegat;
             InitializeComponent();
-            thisloadRefreshForm = loadRefreshForm;
+            
         }
-        LoadRefreshForm thisloadRefreshForm;
+        //LoadRefreshForm thisloadRefreshForm;
         public void fmTasks_Load(object sender, EventArgs e)
         {
             LoadLBxTasks();
@@ -115,7 +117,9 @@ namespace time_schedule
             }
             Dals.WriteListProjectFileAppend(Constants.TASKS, Program.ListTasksAllPerson.GetListForSave());
             LoadLBxTasks();
-            thisloadRefreshForm?.Invoke();
+            Form1 form1 = this.Form1Delegat.SetForm1();
+            form1.LoadRefreshForm();
+            //thisloadRefreshForm?.Invoke();
             
         }
         
@@ -157,7 +161,23 @@ namespace time_schedule
 
         private void button1_Click(object sender, EventArgs e)
         {
-            Program.fmMain.ScrollToDate(DateTime.Now.Date);
+            
+            Form1 form1 = this.Form1Delegat.SetForm1();
+            if (lBxTasks.SelectedIndex == -1)
+            {
+                MessageBox.Show("Не выбрана задача.");
+                return;
+            }
+
+            foreach (Task task in Program.ListTasksAllPerson.Tasks)
+            {
+                if (task.Number == Convert.ToInt32(lBxTasks.SelectedItem.ToString().Split('\t')[0]))
+                {
+                    Program.Task = task;
+                    break;
+                }
+            }
+            form1.ScrollToDate(Program.Task.DateStart.Date);
         }
     }
 }
