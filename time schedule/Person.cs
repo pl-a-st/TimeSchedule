@@ -675,22 +675,20 @@ namespace time_schedule
             button.FlatAppearance.BorderSize = 1;
             button.FlatAppearance.BorderColor = Color.DimGray;
             button.Click += Button_Click;
-            
-            //ToolTip t = new ToolTip();
-            //t.SetToolTip(button, Task.Name + " до "+Task.DateFinish);
-            
+            button.MouseHover += Button_MouseHover;
+            void Button_MouseHover(object sender, EventArgs e)
+            {
+                ToolTip t = new ToolTip();
+                t.SetToolTip(button, Task.Name + " до "+Task.DateFinish.ToString().Split(' ')[0]);
+            }
+
+
             if (Task.Status == TaskStatusEnum.Closed)
             {
                 button.ForeColor = Color.LightGray;
             }
             Buttons.Add(button);
         }
-
-       
-
-        private fmAddTask fmAddTask;
-        
-
         //LoadRefreshForm loadRefreshForm;
         private void Button_Click(object sender, EventArgs e)
         {
