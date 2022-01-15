@@ -774,8 +774,8 @@ namespace time_schedule
             Button.Height = GetHightBooton(listTasksAllPerson, hightRowForTasks);
             Button.BringToFront();
             Button.Click += PersonButton_Click;
-            Form1 form = new Form1();
-            Button.Width = form.GetPersonButtonWith();
+            //Form1 form = new Form1();
+            Button.Width = form1.GetPersonButtonWith();
             Form1 = form1;
         }
         private Form1 Form1;

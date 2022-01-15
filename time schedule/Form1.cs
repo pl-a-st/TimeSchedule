@@ -331,7 +331,7 @@ namespace time_schedule
         }
         private void Form1_Load(object sender, EventArgs e)
         {
-            
+            //this.DoubleBuffered = true;
             Program.delegatLoadRefreshForm = LoadRefreshForm;
             myScrollBar.Height = plMain.Height;
             myScrollBar.Left = plMain.Width - myScrollBar.Width;
