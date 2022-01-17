@@ -679,7 +679,11 @@ namespace time_schedule
             void Button_MouseHover(object sender, EventArgs e)
             {
                 ToolTip t = new ToolTip();
-                t.SetToolTip(button, Task.Name + " до "+Task.DateFinish.ToString().Split(' ')[0]);
+                t.SetToolTip(button, Task.Name + "\n" +
+                    "до "+Task.DateFinish.ToString().Split(' ')[0] + "\n"+
+                    "Статус: " + 
+                    ((TaskStatusRusEnum)Enum.Parse(typeof(TaskStatusEnum),
+                    Task.Status.ToString(),true)).ToString().Replace("_"," "));
             }
 
 

@@ -29,6 +29,7 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             this.plMain = new System.Windows.Forms.Panel();
             this.pBForLine = new System.Windows.Forms.PictureBox();
             this.plForDate = new System.Windows.Forms.Panel();
@@ -230,6 +231,12 @@
             this.minusFiveDay.UseVisualStyleBackColor = true;
             this.minusFiveDay.Click += new System.EventHandler(this.minusFiveDay_Click);
             // 
+            // timer1
+            // 
+            this.timer1.Enabled = true;
+            this.timer1.Interval = 900000;
+            this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -244,6 +251,7 @@
             this.Controls.Add(this.plForDate);
             this.Controls.Add(this.menuStrip1);
             this.Controls.Add(this.plPersonButton);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MainMenuStrip = this.menuStrip1;
             this.Name = "Form1";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
