@@ -33,6 +33,11 @@ namespace time_schedule
         }
         private void button1_Click(object sender, EventArgs e)
         {
+            if (personName.Text == "")
+            {
+                MessageBox.Show("Не указанно имя испонителя");
+                return;
+            }
             Person person = new Person(personName.Text);
             Program.listPersons.AddPerson(person);
             Dals.WriteListProjectFileAppend(Constants.PERSONS, Program.listPersons.GetListForSave());

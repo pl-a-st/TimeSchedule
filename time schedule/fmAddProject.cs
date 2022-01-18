@@ -33,7 +33,7 @@ namespace time_schedule
             if (tBxNameProject.Text=="")
             {
                 
-                MessageBox.Show("Не назанчено условное обозначение проекта");
+                MessageBox.Show("Не назанно условное обозначение проекта");
                 return;
             }
             string folderName = string.Empty;

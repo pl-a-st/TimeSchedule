@@ -78,6 +78,7 @@
             // 
             // cmBxPerson
             // 
+            this.cmBxPerson.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmBxPerson.FormattingEnabled = true;
             this.cmBxPerson.Location = new System.Drawing.Point(15, 83);
             this.cmBxPerson.Name = "cmBxPerson";
