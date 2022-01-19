@@ -688,9 +688,9 @@ namespace time_schedule
 
 
             if (Task.Status == TaskStatusEnum.Closed)
-            {
-                button.ForeColor = Color.LightGray;
-            }
+                button.Font = new Font(button.Font.FontFamily, button.Font.Size, FontStyle.Strikeout);
+            if (Task.Status == TaskStatusEnum.Active)
+                button.Font = new Font(button.Font.FontFamily, button.Font.Size, FontStyle.Underline);
             Buttons.Add(button);
         }
         //LoadRefreshForm loadRefreshForm;
