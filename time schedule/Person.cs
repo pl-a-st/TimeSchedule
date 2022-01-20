@@ -20,6 +20,7 @@ namespace time_schedule
         В_работе= TaskStatusEnum.Active,
         Закрыто=TaskStatusEnum.Closed
     }
+    
    
     /// <summary>
     /// Исполнители
@@ -691,6 +692,12 @@ namespace time_schedule
                 button.Font = new Font(button.Font.FontFamily, button.Font.Size, FontStyle.Strikeout);
             if (Task.Status == TaskStatusEnum.Active)
                 button.Font = new Font(button.Font.FontFamily, button.Font.Size, FontStyle.Underline);
+            if (Task.Status == TaskStatusEnum.New && Task.DateStart.Date<DateTime.Now.Date)
+            {
+                button.Font = new Font(button.Font.FontFamily, button.Font.Size, FontStyle.Bold);
+                button.ForeColor = System.Drawing.Color.DarkRed;
+            }
+               
             Buttons.Add(button);
         }
         //LoadRefreshForm loadRefreshForm;

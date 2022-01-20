@@ -12,9 +12,15 @@ using System.Windows.Forms;
 namespace time_schedule
 {
     public delegate void LoadRefreshForm();
-    
+    public enum RefreshType
+    {
+        All,
+        Minimum
+    }
     public partial class Form1 : Form
     {
+        public RefreshType RefreshType
+        { get; private set; } = RefreshType.Minimum;
         public int PlMainScrollYSaved
         { get; private set; } = 0;
         public int PlMainScrollXSaved
@@ -210,6 +216,16 @@ namespace time_schedule
             MaxDateFinish = Program.ListTasksAllPerson.GetMaxDateFinishTasks();
             MinDateStart = Program.ListTasksAllPerson.GetMinDateStartTasks();
         }
+        public void LoadRefreshForm(RefreshType refreshType)
+        {
+            if (refreshType == RefreshType.All)
+            {
+                RefreshType refreshTypeToSave = RefreshType;
+                RefreshType = RefreshType.All;
+                LoadRefreshForm();
+                RefreshType = refreshTypeToSave;
+            }
+        }
         public void LoadRefreshForm()
         {
             LoadRefreshForm( plPersonButton, plMain, Bmp);
@@ -266,7 +282,9 @@ namespace time_schedule
             DateTime dateToTables = Program.ListTasksAllPerson.GetMinDateStartTasks();
             DateTime dateMaxToTable = Program.ListTasksAllPerson.GetMaxDateFinishTasks();
             
-            if (MaxDateFinish != dateMaxToTable || MinDateStart!= dateToTables)
+            if (MaxDateFinish != dateMaxToTable ||
+                MinDateStart!= dateToTables ||
+                RefreshType == RefreshType.All)
             {
                 int height = plMain.Location.Y - plForDate.Location.Y;
                 int locationX = 0;
@@ -645,7 +663,7 @@ namespace time_schedule
 
         private void timer1_Tick(object sender, EventArgs e)
         {
-            LoadRefreshForm();
+            LoadRefreshForm(RefreshType.All);
         }
     }
    
