@@ -286,9 +286,11 @@ namespace time_schedule
                 MinDateStart!= dateToTables ||
                 RefreshType == RefreshType.All)
             {
+
                 int height = plMain.Location.Y - plForDate.Location.Y;
                 int locationX = 0;
                 plForDate.Visible = false;
+                plForDate.Controls.Clear();
                 while (dateToTables <= dateMaxToTable)
                 {
                     if (dateToTables.DayOfWeek != DayOfWeek.Saturday &&
