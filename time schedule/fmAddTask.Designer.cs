@@ -267,6 +267,11 @@
             // 
             this.nUpDnPreviousTask.Enabled = false;
             this.nUpDnPreviousTask.Location = new System.Drawing.Point(6, 39);
+            this.nUpDnPreviousTask.Maximum = new decimal(new int[] {
+            10000000,
+            0,
+            0,
+            0});
             this.nUpDnPreviousTask.Name = "nUpDnPreviousTask";
             this.nUpDnPreviousTask.ReadOnly = true;
             this.nUpDnPreviousTask.Size = new System.Drawing.Size(143, 20);
@@ -339,6 +344,11 @@
             // 
             this.nUpDnTaskNumber.Enabled = false;
             this.nUpDnTaskNumber.Location = new System.Drawing.Point(75, 3);
+            this.nUpDnTaskNumber.Maximum = new decimal(new int[] {
+            10000000,
+            0,
+            0,
+            0});
             this.nUpDnTaskNumber.Name = "nUpDnTaskNumber";
             this.nUpDnTaskNumber.ReadOnly = true;
             this.nUpDnTaskNumber.Size = new System.Drawing.Size(89, 20);
@@ -368,6 +378,11 @@
             // nUpDnPrioirity
             // 
             this.nUpDnPrioirity.Location = new System.Drawing.Point(290, 43);
+            this.nUpDnPrioirity.Maximum = new decimal(new int[] {
+            10000000,
+            0,
+            0,
+            0});
             this.nUpDnPrioirity.Name = "nUpDnPrioirity";
             this.nUpDnPrioirity.Size = new System.Drawing.Size(125, 20);
             this.nUpDnPrioirity.TabIndex = 23;

@@ -236,7 +236,7 @@ namespace time_schedule
             SaveScrolls();
             ScrollToZero();
             
-            CleanOldExemplar(ref plPersonButton, ref plMain);
+            CleanOldExemplar(ref plPersonButton, ref plMain); // 346 мс
             Program.ListTasksAllPerson.Tasks.Clear();
             Program.ListTasksAllPerson.SetTasksFromList(Dals.ReadListFromProjectFile(Constants.TASKS));
             Program.listPersons.Persons.Clear();
@@ -261,11 +261,11 @@ namespace time_schedule
                 Program.ListPersonButton
                 );
             
-            LoadColumns();
+            LoadColumns(); //735 мс
             LoadHorizontLine();
             LoadVerticalLine();
-            
-            foreach (TaskButton taskButton in Program.ListTaskButtons.TaskButtons)
+            plMain.Visible = false;
+            foreach (TaskButton taskButton in Program.ListTaskButtons.TaskButtons) // 351 мс, 645 мс
             {
                 foreach (Button button in taskButton.Buttons)
                 {
@@ -273,6 +273,7 @@ namespace time_schedule
                     button.BringToFront();
                 }
             }
+            plMain.Visible = true;
             LoadScrolls();
             SaveMinMaxDate();
             
