@@ -453,6 +453,7 @@ namespace time_schedule
 
         private void ToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            
             Dals.WriteProjectFolder();
             this.Text = Dals.ProjectFolderPath;
             this.Text = this.Text.Replace("\\Проект", string.Empty);
