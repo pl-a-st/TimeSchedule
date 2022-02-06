@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.Runtime.InteropServices;
+using System.IO;
+using Excel = Microsoft.Office.Interop.Excel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -272,6 +275,26 @@ namespace time_schedule
         private void dTPFilterDateFinish_ValueChanged(object sender, EventArgs e)
         {
             LoadLBxTasks();
+        }
+
+        private void button1_Click_1(object sender, EventArgs e)
+        {
+            string fileName = Dals.ProjectFolderPath + "шаблон.xlsxm";
+            Excel.Application excelApp = new Excel.Application();
+            Excel.Workbook workbook;
+            if (!File.Exists(fileName))
+            {
+                workbook = excelApp.Workbooks.Add();
+            }
+            else
+            {
+                workbook = excelApp.Workbooks.Open(fileName);
+            }
+            
+            workbook.SaveAs("C:\\Users\\ВеринСГ\\Desktop\\тест.xlsx");
+            Excel.Worksheet worksheet = workbook.Sheets[1];
+            worksheet.Cells[1, 1].Value = "1";
+            excelApp.Visible = true;
         }
     }
 }

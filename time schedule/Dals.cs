@@ -20,7 +20,7 @@ namespace time_schedule
         {
             WriteProjectFolder("Проект");
         }
-        public static void WriteProjectFolder(bool startProgram)
+        public static void  WriteProjectFolder(bool startProgram)
         {
             if (startProgram && (!File.Exists(Constants.PROJECT_FILE_NAME)||File.ReadAllLines(Constants.PROJECT_FILE_NAME).Length==0))
             {
