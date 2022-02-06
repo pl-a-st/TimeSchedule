@@ -8,17 +8,17 @@ using System.Windows.Forms;
 
 namespace time_schedule
 {
-    public enum TaskStatusEnum
+    public enum TaskStatus
     {
         New,
         Active,
         Closed
     }
-    public enum TaskStatusRusEnum
+    public enum TaskStatusRus
     {
-        Новое=TaskStatusEnum.New,
-        В_работе= TaskStatusEnum.Active,
-        Закрыто=TaskStatusEnum.Closed
+        Новое=TaskStatus.New,
+        В_работе= TaskStatus.Active,
+        Закрыто=TaskStatus.Closed
     }
     
    
@@ -415,7 +415,7 @@ namespace time_schedule
             if (allParam[PERSON_FAMALY] != "")
                 PersonFamaly = allParam[PERSON_FAMALY];
             if (allParam[TASK_STATUS] != "")
-                Status = (TaskStatusEnum)Enum.Parse(typeof(TaskStatusEnum), allParam[TASK_STATUS], true);
+                Status = (TaskStatus)Enum.Parse(typeof(TaskStatus), allParam[TASK_STATUS], true);
             if (allParam[TASK_NUMBER] != "")
                 Number = Convert.ToInt32(allParam[TASK_NUMBER]);
             if (allParam[TASK_NUMBER_AFTER] != "")
@@ -463,7 +463,7 @@ namespace time_schedule
             SetCountDays();
             SetCountWorkingDays(Program.listNonWorkingDays);
         }
-        public Task(TaskStatusEnum taskStatus, string taskName, string personFamaly, long taskNumber, long taskNumberAfter,
+        public Task(TaskStatus taskStatus, string taskName, string personFamaly, long taskNumber, long taskNumberAfter,
             DateTime dateStart, DateTime dateFinish, long countDays, long countWorkingDays, Color taskColor, long priority)
         {
             Status = taskStatus;
@@ -479,10 +479,10 @@ namespace time_schedule
             Priority = priority;
         }
 
-        public TaskStatusEnum Status
+        public TaskStatus Status
         { get; private set; }
         
-        public void SetTaskStatus(TaskStatusEnum taskStatus)
+        public void SetTaskStatus(TaskStatus taskStatus)
         {
             Status = taskStatus; 
         }
@@ -683,16 +683,16 @@ namespace time_schedule
                 t.SetToolTip(button, Task.Name + "\n" +
                     "до "+Task.DateFinish.ToString().Split(' ')[0] + "\n"+
                     "Статус: " + 
-                    ((TaskStatusRusEnum)Enum.Parse(typeof(TaskStatusEnum),
+                    ((TaskStatusRus)Enum.Parse(typeof(TaskStatus),
                     Task.Status.ToString(),true)).ToString().Replace("_"," "));
             }
 
 
-            if (Task.Status == TaskStatusEnum.Closed)
+            if (Task.Status == TaskStatus.Closed)
                 button.Font = new Font(button.Font.FontFamily, button.Font.Size, FontStyle.Strikeout);
-            if (Task.Status == TaskStatusEnum.Active)
+            if (Task.Status == TaskStatus.Active)
                 button.Font = new Font(button.Font.FontFamily, button.Font.Size, FontStyle.Underline);
-            if (Task.Status == TaskStatusEnum.New && Task.DateStart.Date<DateTime.Now.Date)
+            if (Task.Status == TaskStatus.New && Task.DateStart.Date<DateTime.Now.Date)
             {
                 button.Font = new Font(button.Font.FontFamily, button.Font.Size, FontStyle.Bold);
                 button.ForeColor = System.Drawing.Color.DarkRed;
@@ -808,6 +808,7 @@ namespace time_schedule
             fmTasks.Load += FmTasks_Load;
             void FmTasks_Load(object sender1, EventArgs e1)
             {
+                fmTasks.SetFmTasksStatusLoad(FmTasksStatusLoad.loadForPerson);
                 fmTasks.Text = "Испольнитель:" + Person.PersonFamaly + "- задачи";
                 foreach (Task task in Program.ListTasksAllPerson.Tasks)
                 {
@@ -820,11 +821,11 @@ namespace time_schedule
                     fmTasks.GetBtnNewTask().Enabled = false;
                 }
             }
-            fmTasks.SetTextBox1().TextChanged -= fmTasks.textBox1_TextChanged;
-            fmTasks.SetTextBox1().TextChanged += PersonButton_TextChanged;
-            fmTasks.GetBtnChangeTask().Click += PersonButton_TextChanged;
-            fmTasks.GetBtnNewTask().Click += PersonButton_TextChanged;
-            fmTasks.GetBtnDeleteTask().Click += PersonButton_TextChanged;
+            //fmTasks.SetTextBox1().TextChanged -= fmTasks.textBox1_TextChanged;
+            //fmTasks.SetTextBox1().TextChanged += PersonButton_TextChanged;
+            //fmTasks.GetBtnChangeTask().Click += PersonButton_TextChanged;
+            //fmTasks.GetBtnNewTask().Click += PersonButton_TextChanged;
+            //fmTasks.GetBtnDeleteTask().Click += PersonButton_TextChanged;
             void PersonButton_TextChanged(object sender2, EventArgs e2)
             {
                 fmTasks.LoadLBxTasksPerson(fmTasks.SetTextBox1().Text, Person.PersonFamaly);

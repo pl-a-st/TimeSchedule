@@ -99,9 +99,9 @@ namespace time_schedule
             {
                 cmBxPerson.Items.Add(person.PersonFamaly);
             }
-            foreach (int element in Enum.GetValues(typeof(TaskStatusRusEnum)))
+            foreach (int element in Enum.GetValues(typeof(TaskStatusRus)))
             {
-                cmBxTaskStatus.Items.Add((TaskStatusRusEnum)element);
+                cmBxTaskStatus.Items.Add((TaskStatusRus)element);
             }
             bTnColor.FlatStyle = FlatStyle.Flat;
             if (CreateOrChange == CreateOrChange.Change)
@@ -143,7 +143,7 @@ namespace time_schedule
             tBxTaskName.Text = Program.Task.Name;
             bTnColor.BackColor = Program.Task.Color;
             cmBxPerson.Text = Program.Task.PersonFamaly;
-            cmBxTaskStatus.Text = ((TaskStatusRusEnum)Enum.Parse(typeof(TaskStatusEnum), Program.Task.Status.ToString(), true)).ToString();
+            cmBxTaskStatus.Text = ((TaskStatusRus)Enum.Parse(typeof(TaskStatus), Program.Task.Status.ToString(), true)).ToString();
             nUpDnPreviousTask.Value = Program.Task.TaskNumberAfter;
             rBnDayStart.Checked = true;
             nUpDnPrioirity.Value= Program.Task.Priority;
@@ -311,7 +311,7 @@ namespace time_schedule
         }
         private Task GetTaskForCreateChange(long numTask)
         {
-            TaskStatusEnum taskStatus = (TaskStatusEnum)Enum.Parse(typeof(TaskStatusRusEnum), cmBxTaskStatus.Text, true);
+            TaskStatus taskStatus = (TaskStatus)Enum.Parse(typeof(TaskStatusRus), cmBxTaskStatus.Text, true);
             return  new Task
                 (
                 taskStatus,

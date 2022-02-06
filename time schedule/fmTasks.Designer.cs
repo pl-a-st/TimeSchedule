@@ -35,18 +35,18 @@
             this.tBxTargetTask = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
             this.btnGoToDateStartTask = new System.Windows.Forms.Button();
-            this.dateTimePicker1 = new System.Windows.Forms.DateTimePicker();
+            this.dTPFilterDateStart = new System.Windows.Forms.DateTimePicker();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
-            this.checkBox1 = new System.Windows.Forms.CheckBox();
-            this.dateTimePicker2 = new System.Windows.Forms.DateTimePicker();
-            this.textBox1 = new System.Windows.Forms.TextBox();
+            this.cBxFilterByDate = new System.Windows.Forms.CheckBox();
+            this.dTPFilterDateFinish = new System.Windows.Forms.DateTimePicker();
+            this.tBxPerson = new System.Windows.Forms.TextBox();
             this.label2 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
             this.label4 = new System.Windows.Forms.Label();
-            this.dateTimePicker3 = new System.Windows.Forms.DateTimePicker();
-            this.dateTimePicker4 = new System.Windows.Forms.DateTimePicker();
-            this.textBox2 = new System.Windows.Forms.TextBox();
+            this.tBxStatus = new System.Windows.Forms.TextBox();
             this.label5 = new System.Windows.Forms.Label();
+            this.tBxDateStart = new System.Windows.Forms.TextBox();
+            this.tBxDateFinish = new System.Windows.Forms.TextBox();
             this.groupBox1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -89,6 +89,7 @@
             this.lBxTasks.Name = "lBxTasks";
             this.lBxTasks.Size = new System.Drawing.Size(445, 329);
             this.lBxTasks.TabIndex = 4;
+            this.lBxTasks.SelectedIndexChanged += new System.EventHandler(this.lBxTasks_SelectedIndexChanged);
             // 
             // tBxTargetTask
             // 
@@ -117,47 +118,52 @@
             this.btnGoToDateStartTask.UseVisualStyleBackColor = true;
             this.btnGoToDateStartTask.Click += new System.EventHandler(this.button1_Click);
             // 
-            // dateTimePicker1
+            // dTPFilterDateStart
             // 
-            this.dateTimePicker1.Location = new System.Drawing.Point(54, 19);
-            this.dateTimePicker1.Name = "dateTimePicker1";
-            this.dateTimePicker1.Size = new System.Drawing.Size(171, 20);
-            this.dateTimePicker1.TabIndex = 11;
+            this.dTPFilterDateStart.Enabled = false;
+            this.dTPFilterDateStart.Location = new System.Drawing.Point(6, 19);
+            this.dTPFilterDateStart.Name = "dTPFilterDateStart";
+            this.dTPFilterDateStart.Size = new System.Drawing.Size(171, 20);
+            this.dTPFilterDateStart.TabIndex = 11;
+            this.dTPFilterDateStart.ValueChanged += new System.EventHandler(this.dTPFilterDateStart_ValueChanged);
             // 
             // groupBox1
             // 
-            this.groupBox1.Controls.Add(this.checkBox1);
-            this.groupBox1.Controls.Add(this.dateTimePicker2);
-            this.groupBox1.Controls.Add(this.dateTimePicker1);
-            this.groupBox1.Location = new System.Drawing.Point(12, 52);
+            this.groupBox1.Controls.Add(this.dTPFilterDateFinish);
+            this.groupBox1.Controls.Add(this.dTPFilterDateStart);
+            this.groupBox1.Location = new System.Drawing.Point(47, 52);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(444, 53);
+            this.groupBox1.Size = new System.Drawing.Size(409, 53);
             this.groupBox1.TabIndex = 12;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Отфильтровать по датам";
             // 
-            // checkBox1
+            // cBxFilterByDate
             // 
-            this.checkBox1.AutoSize = true;
-            this.checkBox1.Location = new System.Drawing.Point(21, 25);
-            this.checkBox1.Name = "checkBox1";
-            this.checkBox1.Size = new System.Drawing.Size(15, 14);
-            this.checkBox1.TabIndex = 12;
-            this.checkBox1.UseVisualStyleBackColor = true;
+            this.cBxFilterByDate.AutoSize = true;
+            this.cBxFilterByDate.Location = new System.Drawing.Point(26, 76);
+            this.cBxFilterByDate.Name = "cBxFilterByDate";
+            this.cBxFilterByDate.Size = new System.Drawing.Size(15, 14);
+            this.cBxFilterByDate.TabIndex = 12;
+            this.cBxFilterByDate.UseVisualStyleBackColor = true;
+            this.cBxFilterByDate.CheckedChanged += new System.EventHandler(this.cBxFilterByDate_CheckedChanged);
             // 
-            // dateTimePicker2
+            // dTPFilterDateFinish
             // 
-            this.dateTimePicker2.Location = new System.Drawing.Point(243, 18);
-            this.dateTimePicker2.Name = "dateTimePicker2";
-            this.dateTimePicker2.Size = new System.Drawing.Size(195, 20);
-            this.dateTimePicker2.TabIndex = 11;
+            this.dTPFilterDateFinish.Enabled = false;
+            this.dTPFilterDateFinish.Location = new System.Drawing.Point(221, 18);
+            this.dTPFilterDateFinish.Name = "dTPFilterDateFinish";
+            this.dTPFilterDateFinish.Size = new System.Drawing.Size(182, 20);
+            this.dTPFilterDateFinish.TabIndex = 11;
+            this.dTPFilterDateFinish.ValueChanged += new System.EventHandler(this.dTPFilterDateFinish_ValueChanged);
             // 
-            // textBox1
+            // tBxPerson
             // 
-            this.textBox1.Location = new System.Drawing.Point(12, 467);
-            this.textBox1.Name = "textBox1";
-            this.textBox1.Size = new System.Drawing.Size(186, 20);
-            this.textBox1.TabIndex = 13;
+            this.tBxPerson.Location = new System.Drawing.Point(12, 467);
+            this.tBxPerson.Name = "tBxPerson";
+            this.tBxPerson.ReadOnly = true;
+            this.tBxPerson.Size = new System.Drawing.Size(186, 20);
+            this.tBxPerson.TabIndex = 13;
             // 
             // label2
             // 
@@ -186,26 +192,13 @@
             this.label4.TabIndex = 17;
             this.label4.Text = "Дата окончания";
             // 
-            // dateTimePicker3
+            // tBxStatus
             // 
-            this.dateTimePicker3.Location = new System.Drawing.Point(12, 512);
-            this.dateTimePicker3.Name = "dateTimePicker3";
-            this.dateTimePicker3.Size = new System.Drawing.Size(186, 20);
-            this.dateTimePicker3.TabIndex = 13;
-            // 
-            // dateTimePicker4
-            // 
-            this.dateTimePicker4.Location = new System.Drawing.Point(252, 512);
-            this.dateTimePicker4.Name = "dateTimePicker4";
-            this.dateTimePicker4.Size = new System.Drawing.Size(204, 20);
-            this.dateTimePicker4.TabIndex = 13;
-            // 
-            // textBox2
-            // 
-            this.textBox2.Location = new System.Drawing.Point(252, 467);
-            this.textBox2.Name = "textBox2";
-            this.textBox2.Size = new System.Drawing.Size(205, 20);
-            this.textBox2.TabIndex = 13;
+            this.tBxStatus.Location = new System.Drawing.Point(252, 467);
+            this.tBxStatus.Name = "tBxStatus";
+            this.tBxStatus.ReadOnly = true;
+            this.tBxStatus.Size = new System.Drawing.Size(205, 20);
+            this.tBxStatus.TabIndex = 13;
             // 
             // label5
             // 
@@ -216,19 +209,36 @@
             this.label5.TabIndex = 16;
             this.label5.Text = "Статус";
             // 
+            // tBxDateStart
+            // 
+            this.tBxDateStart.Location = new System.Drawing.Point(12, 512);
+            this.tBxDateStart.Name = "tBxDateStart";
+            this.tBxDateStart.ReadOnly = true;
+            this.tBxDateStart.Size = new System.Drawing.Size(186, 20);
+            this.tBxDateStart.TabIndex = 18;
+            // 
+            // tBxDateFinish
+            // 
+            this.tBxDateFinish.Location = new System.Drawing.Point(252, 512);
+            this.tBxDateFinish.Name = "tBxDateFinish";
+            this.tBxDateFinish.ReadOnly = true;
+            this.tBxDateFinish.Size = new System.Drawing.Size(204, 20);
+            this.tBxDateFinish.TabIndex = 18;
+            // 
             // fmTasks
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(625, 554);
-            this.Controls.Add(this.dateTimePicker4);
-            this.Controls.Add(this.dateTimePicker3);
+            this.Controls.Add(this.cBxFilterByDate);
+            this.Controls.Add(this.tBxDateFinish);
+            this.Controls.Add(this.tBxDateStart);
             this.Controls.Add(this.label4);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.label5);
             this.Controls.Add(this.label2);
-            this.Controls.Add(this.textBox2);
-            this.Controls.Add(this.textBox1);
+            this.Controls.Add(this.tBxStatus);
+            this.Controls.Add(this.tBxPerson);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.btnGoToDateStartTask);
             this.Controls.Add(this.label1);
@@ -243,7 +253,6 @@
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.fmTasks_FormClosed);
             this.Load += new System.EventHandler(this.fmTasks_Load);
             this.groupBox1.ResumeLayout(false);
-            this.groupBox1.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -258,17 +267,17 @@
         private System.Windows.Forms.TextBox tBxTargetTask;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Button btnGoToDateStartTask;
-        private System.Windows.Forms.DateTimePicker dateTimePicker1;
+        private System.Windows.Forms.DateTimePicker dTPFilterDateStart;
         private System.Windows.Forms.GroupBox groupBox1;
-        private System.Windows.Forms.CheckBox checkBox1;
-        private System.Windows.Forms.DateTimePicker dateTimePicker2;
-        private System.Windows.Forms.TextBox textBox1;
+        private System.Windows.Forms.CheckBox cBxFilterByDate;
+        private System.Windows.Forms.DateTimePicker dTPFilterDateFinish;
+        private System.Windows.Forms.TextBox tBxPerson;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Label label4;
-        private System.Windows.Forms.DateTimePicker dateTimePicker3;
-        private System.Windows.Forms.DateTimePicker dateTimePicker4;
-        private System.Windows.Forms.TextBox textBox2;
+        private System.Windows.Forms.TextBox tBxStatus;
         private System.Windows.Forms.Label label5;
+        private System.Windows.Forms.TextBox tBxDateStart;
+        private System.Windows.Forms.TextBox tBxDateFinish;
     }
 }

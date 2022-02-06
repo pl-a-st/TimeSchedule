@@ -10,6 +10,11 @@ using System.Windows.Forms;
 
 namespace time_schedule
 {
+    public enum FmTasksStatusLoad
+    {
+        loadForAll,
+        loadForPerson
+    }
     public partial class fmTasks : Form
     {
         private Form1 Form1Delegat;
@@ -19,34 +24,77 @@ namespace time_schedule
             InitializeComponent();
             
         }
+        public FmTasksStatusLoad FmTasksStatusLoad
+        { get; private set; } = FmTasksStatusLoad.loadForAll;
+        public void SetFmTasksStatusLoad(FmTasksStatusLoad fmTasksStatusLoad)
+        {
+            FmTasksStatusLoad = fmTasksStatusLoad;
+        }
         //LoadRefreshForm thisloadRefreshForm;
         public void fmTasks_Load(object sender, EventArgs e)
         {
             LoadLBxTasks();
+            dTPFilterDateStart.Value = DateTime.Now.Date;
+            dTPFilterDateFinish.Value = Program.ListTasksAllPerson.GetMaxDateFinishTasks().Date;
             if(Program.UserType != UserType.Admin)
             {
                 btnDeleteTask.Enabled = false;
                 btnNewTask.Enabled = false;
             }
         }
+
         public ListBox RetunlBxTasks()
         {
             return lBxTasks;
+        }
+        //private void LoadLBxTasks()
+        //{
+        //    lBxTasks.Items.Clear();
+        //    foreach (Task task in Program.ListTasksAllPerson.Tasks)
+        //    {
+        //        lBxTasks.Items.Add(task.Number.ToString() + "\t" + task.Name);
+        //    }
+        //}
+        private Boolean IsMatchDateConditions(Task task)
+        {
+            if (!cBxFilterByDate.Checked)
+                return true;
+            if (task.DateFinish>= dTPFilterDateStart.Value.Date &&
+                task.DateStart <= dTPFilterDateFinish.Value.Date)
+            {
+                return true;
+            }
+            return false;
+        }
+        private Boolean IsMatchPersonConditions(Task task)
+        {
+            if (FmTasksStatusLoad == FmTasksStatusLoad.loadForAll)
+                return true;
+            if (FmTasksStatusLoad==FmTasksStatusLoad.loadForPerson &&
+                Program.Person.PersonFamaly == task.PersonFamaly)
+            {
+                return true;
+            }
+            return false;
+        }
+        private Boolean IsPersonTextAndDateMatchConditions(Task task)
+        {
+            if (IsMatchPersonConditions(task) &&
+                task.Name.ToUpper().Contains(tBxTargetTask.Text.ToUpper())
+                )
+            {
+                if (!IsMatchDateConditions(task))
+                    return false;
+                return true;
+            }
+            return false;
         }
         private void LoadLBxTasks()
         {
             lBxTasks.Items.Clear();
             foreach (Task task in Program.ListTasksAllPerson.Tasks)
             {
-                lBxTasks.Items.Add(task.Number.ToString() + "\t" + task.Name);
-            }
-        }
-        private void LoadLBxTasks(string targetTaskName)
-        {
-            lBxTasks.Items.Clear();
-            foreach (Task task in Program.ListTasksAllPerson.Tasks)
-            {
-                if (task.Name.ToUpper().Contains(targetTaskName.ToUpper()))
+                if (IsPersonTextAndDateMatchConditions(task))
                     lBxTasks.Items.Add(task.Number.ToString() + "\t" + task.Name);
             }
         }
@@ -151,7 +199,7 @@ namespace time_schedule
 
         public void textBox1_TextChanged(object sender, EventArgs e)
         {
-            LoadLBxTasks(tBxTargetTask.Text);
+            LoadLBxTasks();
         }
 
         private void fmTasks_FormClosed(object sender, FormClosedEventArgs e)
@@ -178,6 +226,52 @@ namespace time_schedule
                 }
             }
             form1.ScrollToDate(Program.Task.DateStart.Date);
+        }
+
+        private void lBxTasks_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            foreach (Task task in Program.ListTasksAllPerson.Tasks)
+            {
+                if (task.Number == Convert.ToInt32(lBxTasks.SelectedItem.ToString().Split('\t')[0]))
+                {
+                    tBxPerson.Text = task.PersonFamaly;
+                    tBxStatus.Text = GetStatusInRus(task.Status.ToString()).Replace('_',' ');
+                    tBxDateStart.Text = task.DateStart.ToString("dd  MMMM yyyy");
+                    tBxDateFinish.Text = task.DateFinish.ToString("dd  MMMM yyyy");
+                    break;
+                }
+            }
+        }
+        private string GetStatusInRus(string statusInEng)
+        {
+            return((TaskStatusRus)Enum.Parse(typeof(TaskStatus), statusInEng, true)).ToString();
+        }
+
+        private void cBxFilterByDate_CheckedChanged(object sender, EventArgs e)
+        {
+            if (cBxFilterByDate.Checked)
+            {
+                dTPFilterDateStart.Enabled = true;
+                dTPFilterDateFinish.Enabled = true;
+                LoadLBxTasks();
+            }
+            if (!cBxFilterByDate.Checked)
+            {
+                dTPFilterDateStart.Enabled = false;
+                dTPFilterDateFinish.Enabled = false;
+                LoadLBxTasks();
+            }
+
+        }
+
+        private void dTPFilterDateStart_ValueChanged(object sender, EventArgs e)
+        {
+            LoadLBxTasks();
+        }
+
+        private void dTPFilterDateFinish_ValueChanged(object sender, EventArgs e)
+        {
+            LoadLBxTasks();
         }
     }
 }
