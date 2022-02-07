@@ -824,15 +824,6 @@ namespace time_schedule
                     fmTasks.GetBtnNewTask().Enabled = false;
                 }
             }
-            //fmTasks.SetTextBox1().TextChanged -= fmTasks.textBox1_TextChanged;
-            //fmTasks.SetTextBox1().TextChanged += PersonButton_TextChanged;
-            //fmTasks.GetBtnChangeTask().Click += PersonButton_TextChanged;
-            //fmTasks.GetBtnNewTask().Click += PersonButton_TextChanged;
-            //fmTasks.GetBtnDeleteTask().Click += PersonButton_TextChanged;
-            void PersonButton_TextChanged(object sender2, EventArgs e2)
-            {
-                fmTasks.LoadLBxTasksPerson(fmTasks.SetTextBox1().Text, Person.PersonFamaly);
-            }
             fmTasks.ShowDialog();
         }
         public Button Button
