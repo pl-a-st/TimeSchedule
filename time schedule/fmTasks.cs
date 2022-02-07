@@ -45,7 +45,14 @@ namespace time_schedule
                 btnNewTask.Enabled = false;
             }
         }
-
+        public void SetFilterDateStart(DateTime dateTime)
+        {
+            dTPFilterDateStart.Value = dateTime;
+        }
+        public void SetFilterDateFinish(DateTime dateTime)
+        {
+            dTPFilterDateFinish.Value = dateTime;
+        }
         public ListBox RetunlBxTasks()
         {
             return lBxTasks;
