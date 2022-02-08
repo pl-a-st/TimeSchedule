@@ -808,21 +808,20 @@ namespace time_schedule
             fmTasks.Load += FmTasks_Load;
             void FmTasks_Load(object sender1, EventArgs e1)
             {
-
                 fmTasks.SetFmTasksStatusLoad(FmTasksStatusLoad.loadForPerson);
                 fmTasks.SetFilterDateStart(DateTime.Now.Date);
                 fmTasks.SetFilterDateFinish(Program.ListTasksAllPerson.GetMaxDateFinishTasks().Date);
                 fmTasks.Text = "Испольнитель:" + Person.PersonFamaly + "- задачи";
-                foreach (Task task in Program.ListTasksAllPerson.Tasks)
-                {
-                    if (task.PersonFamaly == Person.PersonFamaly)
-                        fmTasks.RetunlBxTasks().Items.Add(task.Number.ToString() + "\t" + task.Name);
-                }
-                if (Program.UserType != UserType.Admin)
-                {
-                    fmTasks.GetBtnDeleteTask().Enabled = false;
-                    fmTasks.GetBtnNewTask().Enabled = false;
-                }
+                //foreach (Task task in Program.ListTasksAllPerson.Tasks)
+                //{
+                //    if (task.PersonFamaly == Person.PersonFamaly)
+                //        fmTasks.RetunlBxTasks().Items.Add(task.Number.ToString() + "\t" + task.Name);
+                //}
+                //if (Program.UserType != UserType.Admin)
+                //{
+                //    fmTasks.GetBtnDeleteTask().Enabled = false;
+                //    fmTasks.GetBtnNewTask().Enabled = false;
+                //}
             }
             fmTasks.ShowDialog();
         }

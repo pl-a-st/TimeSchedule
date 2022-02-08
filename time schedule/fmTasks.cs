@@ -11,141 +11,114 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace time_schedule
-{
-    public enum FmTasksStatusLoad
-    {
+namespace time_schedule {
+    public enum FmTasksStatusLoad {
         loadForAll,
         loadForPerson
     }
-    public partial class fmTasks : Form
-    {
+    public partial class fmTasks : Form {
         private Form1 Form1Delegat;
-        public fmTasks(Form1 form1Delegat)
-        {
+        public fmTasks(Form1 form1Delegat) {
             Form1Delegat = form1Delegat;
             InitializeComponent();
-            
+
         }
-        public FmTasksStatusLoad FmTasksStatusLoad
-        { get; private set; } = FmTasksStatusLoad.loadForAll;
-        public void SetFmTasksStatusLoad(FmTasksStatusLoad fmTasksStatusLoad)
-        {
+
+
+        public FmTasksStatusLoad FmTasksStatusLoad { get; private set; } = FmTasksStatusLoad.loadForAll;
+        public void SetFmTasksStatusLoad(FmTasksStatusLoad fmTasksStatusLoad) {
             FmTasksStatusLoad = fmTasksStatusLoad;
         }
-        //LoadRefreshForm thisloadRefreshForm;
-        public void fmTasks_Load(object sender, EventArgs e)
-        {
+        public void fmTasks_Load(object sender, EventArgs e) {
             LoadLBxTasks();
             dTPFilterDateStart.Value = DateTime.Now.Date;
             dTPFilterDateFinish.Value = Program.ListTasksAllPerson.GetMaxDateFinishTasks().Date;
-            if(Program.UserType != UserType.Admin)
-            {
+            if (Program.UserType != UserType.Admin) {
                 btnDeleteTask.Enabled = false;
                 btnNewTask.Enabled = false;
             }
         }
-        public void SetFilterDateStart(DateTime dateTime)
-        {
+        public void SetFilterDateStart(DateTime dateTime) {
             dTPFilterDateStart.Value = dateTime;
         }
-        public void SetFilterDateFinish(DateTime dateTime)
-        {
+        public void SetFilterDateFinish(DateTime dateTime) {
             dTPFilterDateFinish.Value = dateTime;
         }
-        public ListBox RetunlBxTasks()
-        {
+        public ListBox RetunlBxTasks() {
             return lBxTasks;
         }
-        //private void LoadLBxTasks()
-        //{
-        //    lBxTasks.Items.Clear();
-        //    foreach (Task task in Program.ListTasksAllPerson.Tasks)
-        //    {
-        //        lBxTasks.Items.Add(task.Number.ToString() + "\t" + task.Name);
-        //    }
-        //}
-        private Boolean IsMatchDateConditions(Task task)
-        {
+        private Boolean IsMatchDateConditions(Task task) {
             if (!cBxFilterByDate.Checked)
                 return true;
-            if (task.DateFinish>= dTPFilterDateStart.Value.Date &&
-                task.DateStart <= dTPFilterDateFinish.Value.Date)
-            {
+            if (task.DateFinish >= dTPFilterDateStart.Value.Date &&
+                task.DateStart <= dTPFilterDateFinish.Value.Date) {
                 return true;
             }
             return false;
         }
-        private Boolean IsMatchPersonConditions(Task task)
-        {
+        private Boolean IsMatchPersonConditions(Task task) {
             if (FmTasksStatusLoad == FmTasksStatusLoad.loadForAll)
                 return true;
-            if (FmTasksStatusLoad==FmTasksStatusLoad.loadForPerson &&
-                Program.Person.PersonFamaly == task.PersonFamaly)
-            {
+            if (FmTasksStatusLoad == FmTasksStatusLoad.loadForPerson &&
+                Program.Person.PersonFamaly == task.PersonFamaly) {
                 return true;
             }
             return false;
         }
-        private Boolean IsPersonTextAndDateMatchConditions(Task task)
-        {
+        private Boolean IsPersonTextAndDateMatchConditions(Task task) {
             if (IsMatchPersonConditions(task) &&
                 task.Name.ToUpper().Contains(tBxTargetTask.Text.ToUpper())
-                )
-            {
+                ) {
                 if (!IsMatchDateConditions(task))
                     return false;
                 return true;
             }
             return false;
         }
-        private void LoadLBxTasks()
-        {
+        private void LoadLBxTasks() {
             lBxTasks.Items.Clear();
-            foreach (Task task in Program.ListTasksAllPerson.Tasks)
-            {
+            foreach (Task task in Program.ListTasksAllPerson.Tasks) {
                 if (IsPersonTextAndDateMatchConditions(task))
                     lBxTasks.Items.Add(task.Number.ToString() + "\t" + task.Name);
             }
+            ClearTextBoxesIfListBoxOut();
         }
-        public TextBox SetTextBox1()
-        {
+        private void ClearTextBoxesIfListBoxOut() {
+            if (lBxTasks.SelectedIndex == -1) {
+                tBxPerson.Text = string.Empty;
+                tBxStatus.Text = string.Empty;
+                tBxDateStart.Text = string.Empty;
+                tBxDateFinish.Text = string.Empty;
+            }
+        }
+        public TextBox SetTextBox1() {
             return tBxTargetTask;
         }
-        public void LoadLBxTasksPerson(string targetTaskName, string personFamaly)
-        {
+        public void LoadLBxTasksPerson(string targetTaskName, string personFamaly) {
             lBxTasks.Items.Clear();
-            foreach (Task task in Program.ListTasksAllPerson.Tasks)
-            {
+            foreach (Task task in Program.ListTasksAllPerson.Tasks) {
                 if (task.PersonFamaly == personFamaly && task.Name.ToUpper().Contains(targetTaskName.ToUpper()))
                     lBxTasks.Items.Add(task.Number.ToString() + "\t" + task.Name);
             }
         }
-        //LoadRefreshForm loadRefreshForm;
-        private void btnNewTask_Click(object sender, EventArgs e)
-        {
+        private void btnNewTask_Click(object sender, EventArgs e) {
             fmAddTask fmAddTask = new fmAddTask(Program.delegatLoadRefreshForm);
             fmAddTask.SetCreateOrChange(CreateOrChange.Create);
             fmAddTask.ShowDialog();
             LoadLBxTasks();
 
         }
-        public Button GetBtnChangeTask()
-        {
+        public Button GetBtnChangeTask() {
             return btnChangeTask;
         }
-        public Button GetBtnDeleteTask()
-        {
+        public Button GetBtnDeleteTask() {
             return btnDeleteTask;
         }
-        public Button GetBtnNewTask()
-        {
+        public Button GetBtnNewTask() {
             return btnNewTask;
         }
-        private void btnDeleteTask_Click(object sender, EventArgs e)
-        {
-            if (lBxTasks.SelectedIndex == -1)
-            {
+        private void btnDeleteTask_Click(object sender, EventArgs e) {
+            if (lBxTasks.SelectedIndex == -1) {
                 MessageBox.Show("Не выбрана задача.");
                 return;
             }
@@ -156,46 +129,36 @@ namespace time_schedule
                 MessageBoxIcon.Warning,
                 MessageBoxDefaultButton.Button1,
                 MessageBoxOptions.DefaultDesktopOnly);
-            if (result == DialogResult.No)
-            {
+            if (result == DialogResult.No) {
                 Program.fmMain.TopMost = true;
                 this.TopMost = true;
 
                 return;
             }
-            this.Activate(); 
-            foreach (Task task in Program.ListTasksAllPerson.Tasks)
-            {
-                if (task.Number == Convert.ToInt32(lBxTasks.SelectedItem.ToString().Split('\t')[0]))
-                {
+            this.Activate();
+            foreach (Task task in Program.ListTasksAllPerson.Tasks) {
+                if (task.Number == Convert.ToInt32(lBxTasks.SelectedItem.ToString().Split('\t')[0])) {
                     Program.ListTasksAllPerson.Tasks.Remove(task);
                     break;
                 }
-                    
+
             }
             Dals.WriteListProjectFileAppend(Constants.TASKS, Program.ListTasksAllPerson.GetListForSave());
             LoadLBxTasks();
             Form1 form1 = this.Form1Delegat.SetForm1();
             form1.LoadRefreshForm();
-            //thisloadRefreshForm?.Invoke();
-            
         }
-        
-        private void btnChangeTask_Click(object sender, EventArgs e)
-        {
-            if (lBxTasks.SelectedIndex == -1)
-            {
+
+        private void btnChangeTask_Click(object sender, EventArgs e) {
+            if (lBxTasks.SelectedIndex == -1) {
                 MessageBox.Show("Не выбрана задача.");
                 return;
             }
-
             fmAddTask fmAddTask = new fmAddTask(Program.delegatLoadRefreshForm);
             fmAddTask.GhangeNamebtnCreateTask("Изменить");
             fmAddTask.SetCreateOrChange(CreateOrChange.Change);
-            foreach (Task task in Program.ListTasksAllPerson.Tasks)
-            {
-                if (task.Number == Convert.ToInt32(lBxTasks.SelectedItem.ToString().Split('\t')[0]))
-                {
+            foreach (Task task in Program.ListTasksAllPerson.Tasks) {
+                if (task.Number == Convert.ToInt32(lBxTasks.SelectedItem.ToString().Split('\t')[0])) {
                     Program.Task = task;
                     break;
                 }
@@ -203,34 +166,28 @@ namespace time_schedule
             fmAddTask.ShowDialog();
             Dals.WriteListProjectFileAppend(Constants.TASKS, Program.ListTasksAllPerson.GetListForSave());
             LoadLBxTasks();
-            
-        }
-        
 
-        public void textBox1_TextChanged(object sender, EventArgs e)
-        {
+        }
+
+
+        public void textBox1_TextChanged(object sender, EventArgs e) {
             LoadLBxTasks();
         }
 
-        private void fmTasks_FormClosed(object sender, FormClosedEventArgs e)
-        {
-            
+        private void fmTasks_FormClosed(object sender, FormClosedEventArgs e) {
+
         }
 
-        private void button1_Click(object sender, EventArgs e)
-        {
-            
+        private void button1_Click(object sender, EventArgs e) {
+
             Form1 form1 = this.Form1Delegat.SetForm1();
-            if (lBxTasks.SelectedIndex == -1)
-            {
+            if (lBxTasks.SelectedIndex == -1) {
                 MessageBox.Show("Не выбрана задача.");
                 return;
             }
 
-            foreach (Task task in Program.ListTasksAllPerson.Tasks)
-            {
-                if (task.Number == Convert.ToInt32(lBxTasks.SelectedItem.ToString().Split('\t')[0]))
-                {
+            foreach (Task task in Program.ListTasksAllPerson.Tasks) {
+                if (task.Number == Convert.ToInt32(lBxTasks.SelectedItem.ToString().Split('\t')[0])) {
                     Program.Task = task;
                     break;
                 }
@@ -238,70 +195,58 @@ namespace time_schedule
             form1.ScrollToDate(Program.Task.DateStart.Date);
         }
 
-        private void lBxTasks_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            foreach (Task task in Program.ListTasksAllPerson.Tasks)
-            {
-                if (task.Number == Convert.ToInt32(lBxTasks.SelectedItem.ToString().Split('\t')[0]))
-                {
+        private void lBxTasks_SelectedIndexChanged(object sender, EventArgs e) {
+
+            foreach (Task task in Program.ListTasksAllPerson.Tasks) {
+                if (task.Number == Convert.ToInt32(lBxTasks.SelectedItem.ToString().Split('\t')[0])) {
                     tBxPerson.Text = task.PersonFamaly;
-                    tBxStatus.Text = GetStatusInRus(task.Status.ToString()).Replace('_',' ');
+                    tBxStatus.Text = GetStatusInRus(task.Status.ToString()).Replace('_', ' ');
                     tBxDateStart.Text = task.DateStart.ToString("dd  MMMM yyyy");
                     tBxDateFinish.Text = task.DateFinish.ToString("dd  MMMM yyyy");
-                    break;
+                    return;
                 }
             }
         }
-        private string GetStatusInRus(string statusInEng)
-        {
-            return((TaskStatusRus)Enum.Parse(typeof(TaskStatus), statusInEng, true)).ToString();
+        private string GetStatusInRus(string statusInEng) {
+            return ((TaskStatusRus)Enum.Parse(typeof(TaskStatus), statusInEng, true)).ToString();
         }
 
-        private void cBxFilterByDate_CheckedChanged(object sender, EventArgs e)
-        {
-            if (cBxFilterByDate.Checked)
-            {
+        private void cBxFilterByDate_CheckedChanged(object sender, EventArgs e) {
+            if (cBxFilterByDate.Checked) {
                 dTPFilterDateStart.Enabled = true;
                 dTPFilterDateFinish.Enabled = true;
                 LoadLBxTasks();
             }
-            if (!cBxFilterByDate.Checked)
-            {
+            if (!cBxFilterByDate.Checked) {
                 dTPFilterDateStart.Enabled = false;
                 dTPFilterDateFinish.Enabled = false;
                 LoadLBxTasks();
             }
 
         }
-
-        private void dTPFilterDateStart_ValueChanged(object sender, EventArgs e)
-        {
+        private void dTPFilterDateStart_ValueChanged(object sender, EventArgs e) {
             LoadLBxTasks();
         }
-
-        private void dTPFilterDateFinish_ValueChanged(object sender, EventArgs e)
-        {
+        private void dTPFilterDateFinish_ValueChanged(object sender, EventArgs e) {
             LoadLBxTasks();
         }
-
-        private void button1_Click_1(object sender, EventArgs e)
-        {
-            string fileName = Dals.ProjectFolderPath + "шаблон.xlsxm";
+        private void button1_Click_1(object sender, EventArgs e) {
+            string fileName = Dals.ProjectFolderPath + "\\шаблон.xlsm";
             Excel.Application excelApp = new Excel.Application();
             Excel.Workbook workbook;
-            if (!File.Exists(fileName))
-            {
+            if (!File.Exists(fileName)) {
                 workbook = excelApp.Workbooks.Add();
             }
-            else
-            {
+            else {
                 workbook = excelApp.Workbooks.Open(fileName);
             }
-            
-            workbook.SaveAs("C:\\Users\\ВеринСГ\\Desktop\\тест.xlsx");
+
+            workbook.SaveAs("C:\\Users\\ВеринСГ\\Desktop\\тест.xlsm");
             Excel.Worksheet worksheet = workbook.Sheets[1];
-            worksheet.Cells[1, 1].Value = "1";
+            worksheet.Cells[2, 1].Value = "Тест";
             excelApp.Visible = true;
+
         }
+
     }
 }

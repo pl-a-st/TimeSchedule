@@ -37,8 +37,8 @@
             this.btnGoToDateStartTask = new System.Windows.Forms.Button();
             this.dTPFilterDateStart = new System.Windows.Forms.DateTimePicker();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
-            this.cBxFilterByDate = new System.Windows.Forms.CheckBox();
             this.dTPFilterDateFinish = new System.Windows.Forms.DateTimePicker();
+            this.cBxFilterByDate = new System.Windows.Forms.CheckBox();
             this.tBxPerson = new System.Windows.Forms.TextBox();
             this.label2 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
@@ -139,6 +139,15 @@
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Отфильтровать по датам";
             // 
+            // dTPFilterDateFinish
+            // 
+            this.dTPFilterDateFinish.Enabled = false;
+            this.dTPFilterDateFinish.Location = new System.Drawing.Point(221, 18);
+            this.dTPFilterDateFinish.Name = "dTPFilterDateFinish";
+            this.dTPFilterDateFinish.Size = new System.Drawing.Size(182, 20);
+            this.dTPFilterDateFinish.TabIndex = 11;
+            this.dTPFilterDateFinish.ValueChanged += new System.EventHandler(this.dTPFilterDateFinish_ValueChanged);
+            // 
             // cBxFilterByDate
             // 
             this.cBxFilterByDate.AutoSize = true;
@@ -148,15 +157,6 @@
             this.cBxFilterByDate.TabIndex = 12;
             this.cBxFilterByDate.UseVisualStyleBackColor = true;
             this.cBxFilterByDate.CheckedChanged += new System.EventHandler(this.cBxFilterByDate_CheckedChanged);
-            // 
-            // dTPFilterDateFinish
-            // 
-            this.dTPFilterDateFinish.Enabled = false;
-            this.dTPFilterDateFinish.Location = new System.Drawing.Point(221, 18);
-            this.dTPFilterDateFinish.Name = "dTPFilterDateFinish";
-            this.dTPFilterDateFinish.Size = new System.Drawing.Size(182, 20);
-            this.dTPFilterDateFinish.TabIndex = 11;
-            this.dTPFilterDateFinish.ValueChanged += new System.EventHandler(this.dTPFilterDateFinish_ValueChanged);
             // 
             // tBxPerson
             // 
