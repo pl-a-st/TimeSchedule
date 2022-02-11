@@ -1,6 +1,6 @@
 ﻿namespace time_schedule
 {
-    partial class fmAddTask
+    partial class fmAddChangeTask
     {
         /// <summary>
         /// Required designer variable.
@@ -412,7 +412,7 @@
             this.btnCopyAnotherProject.UseVisualStyleBackColor = true;
             this.btnCopyAnotherProject.Click += new System.EventHandler(this.btnCopyAnotherProject_Click);
             // 
-            // fmAddTask
+            // fmAddChangeTask
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -436,7 +436,7 @@
             this.Controls.Add(this.label1);
             this.MaximumSize = new System.Drawing.Size(601, 342);
             this.MinimumSize = new System.Drawing.Size(601, 342);
-            this.Name = "fmAddTask";
+            this.Name = "fmAddChangeTask";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Добавление задачи";
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.fmAddTask_FormClosed);

@@ -19,6 +19,7 @@ namespace time_schedule
         /// </summary>
         public static Form1 fmMain;
         public static LoadRefreshForm delegatLoadRefreshForm;
+        public static ForControl delegatForControl;
         public static ListTasks ListTasksAllPerson = new ListTasks();
         public static ListPersons listPersons = new ListPersons();
         public static Task Task = new Task();

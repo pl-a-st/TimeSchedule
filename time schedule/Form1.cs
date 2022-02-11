@@ -444,7 +444,7 @@ namespace time_schedule
 
         private void btnTask_Click(object sender, EventArgs e)
         {
-            fmAddTask fmAddTask = new fmAddTask(Program.delegatLoadRefreshForm);
+            fmAddChangeTask fmAddTask = new fmAddChangeTask(Program.delegatLoadRefreshForm);
             fmAddTask.StartPosition = FormStartPosition.CenterScreen;
             fmAddTask.SetCreateOrChange(CreateOrChange.Create);
             fmAddTask.Show();

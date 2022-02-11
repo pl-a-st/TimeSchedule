@@ -228,11 +228,11 @@
             // 
             // button1
             // 
-            this.button1.Location = new System.Drawing.Point(471, 275);
+            this.button1.Location = new System.Drawing.Point(471, 203);
             this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(142, 28);
+            this.button1.Size = new System.Drawing.Size(142, 48);
             this.button1.TabIndex = 10;
-            this.button1.Text = "Открыть в экселе";
+            this.button1.Text = "Открыть задачи в экселе";
             this.button1.UseVisualStyleBackColor = true;
             this.button1.Click += new System.EventHandler(this.button1_Click_1);
             // 

@@ -21,10 +21,10 @@ namespace time_schedule
         Create,
         Change
     }
-    public partial class fmAddTask : Form
+    public partial class fmAddChangeTask : Form
     {
         Task thisTask = new Task();
-        public fmAddTask(LoadRefreshForm loadRefreshForm)
+        public fmAddChangeTask(LoadRefreshForm loadRefreshForm)
         {
             
             InitializeComponent();

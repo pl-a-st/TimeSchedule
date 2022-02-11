@@ -78,6 +78,12 @@
     <Compile Include="fmInpootText.Designer.cs">
       <DependentUpon>fmInpootText.cs</DependentUpon>
     </Compile>
+    <Compile Include="fmProgressBar.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="fmProgressBar.Designer.cs">
+      <DependentUpon>fmProgressBar.cs</DependentUpon>
+    </Compile>
     <Compile Include="fmProjectCopy.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -128,6 +134,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="fmInpootText.resx">
       <DependentUpon>fmInpootText.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="fmProgressBar.resx">
+      <DependentUpon>fmProgressBar.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="fmProjectCopy.resx">
       <DependentUpon>fmProjectCopy.cs</DependentUpon>
@@ -201,6 +210,9 @@
       <Isolated>False</Isolated>
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </COMReference>
+  </ItemGroup>
+  <ItemGroup>
+    <WCFMetadata Include="Connected Services\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -704,7 +704,7 @@ namespace time_schedule
         private void Button_Click(object sender, EventArgs e)
         {
 
-            fmAddTask fmAddTask = new fmAddTask(Program.delegatLoadRefreshForm);
+            fmAddChangeTask fmAddTask = new fmAddChangeTask(Program.delegatLoadRefreshForm);
             fmAddTask.GhangeNamebtnCreateTask("Изменить");
             fmAddTask.SetCreateOrChange(CreateOrChange.Change);
             fmAddTask.StartPosition = FormStartPosition.CenterScreen;

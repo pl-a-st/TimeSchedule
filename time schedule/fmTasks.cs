@@ -8,8 +8,10 @@ using System.IO;
 using Excel = Microsoft.Office.Interop.Excel;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+
 
 namespace time_schedule {
     public enum FmTasksStatusLoad {
@@ -102,7 +104,7 @@ namespace time_schedule {
             }
         }
         private void btnNewTask_Click(object sender, EventArgs e) {
-            fmAddTask fmAddTask = new fmAddTask(Program.delegatLoadRefreshForm);
+            fmAddChangeTask fmAddTask = new fmAddChangeTask(Program.delegatLoadRefreshForm);
             fmAddTask.SetCreateOrChange(CreateOrChange.Create);
             fmAddTask.ShowDialog();
             LoadLBxTasks();
@@ -154,7 +156,7 @@ namespace time_schedule {
                 MessageBox.Show("Не выбрана задача.");
                 return;
             }
-            fmAddTask fmAddTask = new fmAddTask(Program.delegatLoadRefreshForm);
+            fmAddChangeTask fmAddTask = new fmAddChangeTask(Program.delegatLoadRefreshForm);
             fmAddTask.GhangeNamebtnCreateTask("Изменить");
             fmAddTask.SetCreateOrChange(CreateOrChange.Change);
             foreach (Task task in Program.ListTasksAllPerson.Tasks) {
@@ -231,22 +233,31 @@ namespace time_schedule {
             LoadLBxTasks();
         }
         private void button1_Click_1(object sender, EventArgs e) {
-            string fileName = Dals.ProjectFolderPath + "\\шаблон.xlsm";
-            Excel.Application excelApp = new Excel.Application();
-            Excel.Workbook workbook;
-            if (!File.Exists(fileName)) {
-                workbook = excelApp.Workbooks.Add();
-            }
-            else {
-                workbook = excelApp.Workbooks.Open(fileName);
-            }
-
-            workbook.SaveAs("C:\\Users\\ВеринСГ\\Desktop\\тест.xlsm");
-            Excel.Worksheet worksheet = workbook.Sheets[1];
-            worksheet.Cells[2, 1].Value = "Тест";
-            excelApp.Visible = true;
-
+            
+            fmProgressBar fmProgressBar = new fmProgressBar();
+            fmProgressBar.SetTextMessege("Идет формирование файла Excell");
+            Thread myThread = new Thread(ExelWriteWithProgresBar);
+            myThread.Start(fmProgressBar); 
+            fmProgressBar.ShowDialog();
         }
-
+        private void ExelWriteWithProgresBar(object fmProgressBar) {
+            var listTaskNumber = new List<long>();
+            foreach (string item in lBxTasks.Items) {
+                listTaskNumber.Add(Convert.ToInt32(item.ToString().Split('\t')[0]));
+            }
+            var listTaskForWrite = new ListTasks();
+            foreach (long taskNumber in listTaskNumber) {
+                foreach (Task task in Program.ListTasksAllPerson.Tasks) {
+                    if (task.Number == taskNumber) {
+                        listTaskForWrite.AddTask(task);
+                        break;
+                    }
+                }
+            }
+            string excelFileNameToSave = DateTime.Now.Date.ToString("dd MMMM yyyy") + ".xlsm";
+            Dals.ExelWriteListTasks(Dals.ProjectFolderPath + "\\" + excelFileNameToSave, listTaskForWrite);
+            fmProgressBar fmProgressBarNew = (fmProgressBar as fmProgressBar);
+            fmProgressBarNew.BeginInvoke(new Action(delegate() { fmProgressBarNew.Close(); }));
+        }
     }
 }
