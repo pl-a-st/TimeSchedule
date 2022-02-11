@@ -168,7 +168,6 @@ namespace time_schedule {
             fmAddTask.ShowDialog();
             Dals.WriteListProjectFileAppend(Constants.TASKS, Program.ListTasksAllPerson.GetListForSave());
             LoadLBxTasks();
-
         }
 
 
@@ -236,8 +235,8 @@ namespace time_schedule {
             
             fmProgressBar fmProgressBar = new fmProgressBar();
             fmProgressBar.SetTextMessege("Идет формирование файла Excell");
-            Thread myThread = new Thread(ExelWriteWithProgresBar);
-            myThread.Start(fmProgressBar); 
+            Thread thread = new Thread(ExelWriteWithProgresBar);
+            thread.Start(fmProgressBar); 
             fmProgressBar.ShowDialog();
         }
         private void ExelWriteWithProgresBar(object fmProgressBar) {

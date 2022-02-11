@@ -60,11 +60,11 @@
     <Compile Include="fmAddProject.Designer.cs">
       <DependentUpon>fmAddProject.cs</DependentUpon>
     </Compile>
-    <Compile Include="fmAddTask.cs">
+    <Compile Include="fmAddChangeTask.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="fmAddTask.Designer.cs">
-      <DependentUpon>fmAddTask.cs</DependentUpon>
+    <Compile Include="fmAddChangeTask.Designer.cs">
+      <DependentUpon>fmAddChangeTask.cs</DependentUpon>
     </Compile>
     <Compile Include="fmAddPerson.cs">
       <SubType>Form</SubType>
@@ -126,8 +126,8 @@
     <EmbeddedResource Include="fmAddProject.resx">
       <DependentUpon>fmAddProject.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="fmAddTask.resx">
-      <DependentUpon>fmAddTask.cs</DependentUpon>
+    <EmbeddedResource Include="fmAddChangeTask.resx">
+      <DependentUpon>fmAddChangeTask.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="fmAddPerson.resx">
       <DependentUpon>fmAddPerson.cs</DependentUpon>

@@ -5,6 +5,7 @@ using System.Data;
 using System.Drawing;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 //using System.Drawing.Color;
@@ -24,15 +25,16 @@ namespace time_schedule
     public partial class fmAddChangeTask : Form
     {
         Task thisTask = new Task();
+        private DateTime FinishDateBeforeChange;
+        LoadRefreshForm thisloadRefreshForm;
+        public CreateOrChange CreateOrChange 
+        { get; private set; }
         public fmAddChangeTask(LoadRefreshForm loadRefreshForm)
         {
             
             InitializeComponent();
             thisloadRefreshForm = loadRefreshForm;
         }
-        LoadRefreshForm thisloadRefreshForm;
-        public CreateOrChange CreateOrChange
-        { get; private set; }
         public void SetCreateOrChange (CreateOrChange createOrChange)
         {
             CreateOrChange = createOrChange;
@@ -67,9 +69,6 @@ namespace time_schedule
             {
                 (control as DateTimePicker).Enabled = false;
             }
-                
-
-             
             if (control is ComboBox && control != cmBxTaskStatus)
             {
                 (control as ComboBox).DropDownStyle = ComboBoxStyle.DropDownList;
@@ -94,7 +93,7 @@ namespace time_schedule
         private void fmAddTask_Load(object sender, EventArgs e)
         {
             this.TopMost = true;
-            DateForFixChange = dTmTaskDateFinish.Value.Date;
+            FinishDateBeforeChange = dTmTaskDateFinish.Value.Date;
             foreach (Person person in Program.listPersons.Persons)
             {
                 cmBxPerson.Items.Add(person.PersonFamaly);
@@ -255,9 +254,19 @@ namespace time_schedule
         {
             return c.R + c.G * 0x100 + c.B * 0x10000;
         }
-        private DateTime DateForFixChange;
+        private void WriteNewNonWorkigDays() {
+            Program.listNonWorkingDays.NonWorkingDays.Sort();
+            int daysToCheckForNonWorking = (dTmTaskDateFinish.Value.Date - FinishDateBeforeChange).Days;
+            const int DIFFRENCE_QUANTITY_LAST_INDEX = 1;
+            int lastIndex = Program.listNonWorkingDays.NonWorkingDays.Count - DIFFRENCE_QUANTITY_LAST_INDEX;
+            //DateTime 
+            Program.listNonWorkingDays.NonWorkDaysWrite(
+                dTmTaskDateStart.Value.Date,
+                Program.listNonWorkingDays.NonWorkingDays[lastIndex].AddDays(daysToCheckForNonWorking)); // навести порядок в этом говнокоде to do
+        }
         private void btnCreateTask_Click(object sender, EventArgs e)
         {
+            CheckTBxTaskNameToEmpty();
             Program.ListTasksAllPerson.Tasks.Clear();
             Program.ListTasksAllPerson.SetTasksFromList(Dals.ReadListFromProjectFile(Constants.TASKS));
             Task task = new Task();
@@ -268,12 +277,7 @@ namespace time_schedule
             }  
             if (CreateOrChange == CreateOrChange.Change)
             {
-
-                Program.listNonWorkingDays.NonWorkingDays.Sort();
-                int ForFixt = (dTmTaskDateFinish.Value.Date - DateForFixChange).Days;
-                Program.listNonWorkingDays.NonWorkDaysWrite(
-                    dTmTaskDateStart.Value.Date,
-                    Program.listNonWorkingDays.NonWorkingDays[Program.listNonWorkingDays.NonWorkingDays.Count-1].AddDays(ForFixt)); // навести порядок в этом говнокоде to do
+                WriteNewNonWorkigDays();
                 task = GetTaskForCreateChange(Convert.ToInt32(nUpDnTaskNumber.Value));
                 for(int i=0; i<Program.ListTasksAllPerson.Tasks.Count; i++)
                 {
@@ -294,6 +298,16 @@ namespace time_schedule
             thisloadRefreshForm?.Invoke();
             
             this.Close();
+        }
+        private void CheckTBxTaskNameToEmpty() {
+            if (tBxTaskName.Text == "") {
+                MessageBox.Show(
+                    "Использвание пустых наименований задач недопустимо!",
+                    "Предупреждение",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning);
+                return;
+            }
         }
         private void ChekTaskAfter(Task task)
         {
