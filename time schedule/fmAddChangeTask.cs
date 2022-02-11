@@ -93,7 +93,7 @@ namespace time_schedule
         private void fmAddTask_Load(object sender, EventArgs e)
         {
             this.TopMost = true;
-            FinishDateBeforeChange = dTmTaskDateFinish.Value.Date;
+            FinishDateBeforeChange = Program.ListTasksAllPerson.GetMaxDateFinishTasks();
             foreach (Person person in Program.listPersons.Persons)
             {
                 cmBxPerson.Items.Add(person.PersonFamaly);
@@ -256,13 +256,14 @@ namespace time_schedule
         }
         private void WriteNewNonWorkigDays() {
             Program.listNonWorkingDays.NonWorkingDays.Sort();
-            int daysToCheckForNonWorking = (dTmTaskDateFinish.Value.Date - FinishDateBeforeChange).Days;
+            int newCountDaysAfterChange = (dTmTaskDateFinish.Value.Date - FinishDateBeforeChange).Days;
+            if (newCountDaysAfterChange < 0)
+                return;
             const int DIFFRENCE_QUANTITY_LAST_INDEX = 1;
             int lastIndex = Program.listNonWorkingDays.NonWorkingDays.Count - DIFFRENCE_QUANTITY_LAST_INDEX;
-            //DateTime 
-            Program.listNonWorkingDays.NonWorkDaysWrite(
-                dTmTaskDateStart.Value.Date,
-                Program.listNonWorkingDays.NonWorkingDays[lastIndex].AddDays(daysToCheckForNonWorking)); // навести порядок в этом говнокоде to do
+            DateTime newMaxDateFinish = 
+                Program.listNonWorkingDays.NonWorkingDays[lastIndex].AddDays(newCountDaysAfterChange);
+            Program.listNonWorkingDays.NonWorkDaysWrite(FinishDateBeforeChange, newMaxDateFinish);
         }
         private void btnCreateTask_Click(object sender, EventArgs e)
         {
