@@ -391,11 +391,23 @@ namespace time_schedule
     /// <summary>
     /// Задачи
     /// </summary>
-    public class Task
-    {
+    public class Task {
+        public TaskStatus Status { get; private set; }
+
+       
+        public string Name { get; private set; }
+        public long Number { get; private set; }
+        public string PersonFamaly { get; private set; }
+        public long TaskNumberAfter { get; private set; }
+        public DateTime DateStart { get; private set; }
+        public DateTime DateFinish { get; private set; }
+        public long CountDays { get; private set; }
+        public long CountWorkingDays { get; private set; }
+        public Color Color { get; private set; }
+        public long Priority { get; private set; }
+        public int PlaceInSynchTask { get; private set; } = 0;
         public Task ()
         { }
-
         public Task(string allParamTab)
         {
             string[] allParam = allParamTab.Split('\t');
@@ -410,8 +422,7 @@ namespace time_schedule
             const int COUNT_WORKING_DAYS = 8;
             const int TASK_COLOR = 9;
             const int PRIORITY = 10;
-            if (allParam[TASK_NAME] != "")
-                Name = allParam[TASK_NAME];
+            Name = allParam[TASK_NAME];
             if (allParam[PERSON_FAMALY] != "")
                 PersonFamaly = allParam[PERSON_FAMALY];
             if (allParam[TASK_STATUS] != "")
@@ -441,21 +452,7 @@ namespace time_schedule
             SetCountDays(Program.listNonWorkingDays);
             SetDateFinish();
         }
-        static public DateTime GetDateFinish(DateTime dateStart, int workDayCount)
-        {
-            Task task = new Task(dateStart, workDayCount);
-            return task.DateFinish;
-        }
-        public void ChangeDatesCountDays(DateTime dateStart, long countWorksDays)
-        {
-            dateStart = dateStart.Date;
-            SetDateStart(dateStart);
-            SetCountWorkingDays(countWorksDays);
-            SetCountDays(Program.listNonWorkingDays);
-            SetDateFinish();
-        }
-        public Task(DateTime dateStart, DateTime dateFinish)
-        {
+        public Task(DateTime dateStart, DateTime dateFinish) {
             dateStart = dateStart.Date;
             dateFinish = dateFinish.Date;
             SetDateStart(dateStart);
@@ -464,8 +461,7 @@ namespace time_schedule
             SetCountWorkingDays(Program.listNonWorkingDays);
         }
         public Task(TaskStatus taskStatus, string taskName, string personFamaly, long taskNumber, long taskNumberAfter,
-            DateTime dateStart, DateTime dateFinish, long countDays, long countWorkingDays, Color taskColor, long priority)
-        {
+           DateTime dateStart, DateTime dateFinish, long countDays, long countWorkingDays, Color taskColor, long priority) {
             Status = taskStatus;
             Name = taskName;
             PersonFamaly = personFamaly;
@@ -479,21 +475,27 @@ namespace time_schedule
             Priority = priority;
         }
 
-        public TaskStatus Status
-        { get; private set; }
-        
-        public void SetTaskStatus(TaskStatus taskStatus)
-        {
-            Status = taskStatus; 
-        }
-        public string Name
-        { get; private set; }
-        public void SetTaskName(string taskName)
-        {
+        public void SetTaskName(string taskName) {
             Name = taskName;
         }
-        public string PersonFamaly
-        { get; private set; }
+        public void SetTaskStatus(TaskStatus taskStatus) {
+            Status = taskStatus;
+        }
+        static public DateTime GetDateFinish(DateTime dateStart, int workDayCount)
+        {
+            Task task = new Task(dateStart, workDayCount);
+            return task.DateFinish;
+        }
+        public void ChangeDatesCountDays(DateTime dateStart, long countWorksDays)
+        {
+            dateStart = dateStart.Date;
+            SetDateStart(dateStart);
+            SetCountWorkingDays(countWorksDays);
+            SetCountDays(Program.listNonWorkingDays);
+            SetDateFinish();
+        }
+       
+       
         public void SetPersonName(Person person)
         {
             PersonFamaly = person.PersonFamaly;
@@ -502,14 +504,12 @@ namespace time_schedule
         {
             PersonFamaly = personFamaly;
         }
-        public long Number
-        { get; private set; }
+        
         public void SetTaskNumber(ListTasks listTask)
         {
             Number = listTask.Tasks.Count;
         }
-        public long TaskNumberAfter
-        { get; private set; }
+        
         public void SetTaskNumberAfter(Task task)
         {
             TaskNumberAfter = task.Number;
@@ -518,14 +518,12 @@ namespace time_schedule
         {
             TaskNumberAfter = number;
         }
-        public DateTime DateStart
-        { get; private set; }
+       
         public void SetDateStart(DateTime dateStart)
         {
             DateStart = dateStart;
         }
-        public DateTime DateFinish
-        { get; private set; }
+       
         private void SetDateFinish(DateTime dateFinish)
         {
             DateFinish = dateFinish;
@@ -535,8 +533,7 @@ namespace time_schedule
             DateTime dateTime = DateStart;
             DateFinish = dateTime.AddDays(CountDays-1);
         }
-        public long CountDays
-        { get; private set; }
+       
         private void SetCountDays()
         {
             CountDays = (DateFinish - DateStart).Days+1;
@@ -567,8 +564,7 @@ namespace time_schedule
                 }
             }
         }
-        public long CountWorkingDays
-        { get; private set; }
+       
         private void SetCountWorkingDays(long countWorkingDays)
         {
             CountWorkingDays = countWorkingDays;
@@ -584,8 +580,6 @@ namespace time_schedule
                 date=date.AddDays(1);
             }
         }
-        public Color Color
-        { get; private set; }
         public void SetTaskColor(Color taskColor)
         {
             Color = taskColor;
@@ -618,14 +612,10 @@ namespace time_schedule
             stringForSave += Priority;
             return stringForSave;
         }
-        public long Priority
-        { get; private set;}
         public void SetPriority(int newPriority)
         {
             Priority = newPriority;
         }
-        public int PlaceInSynchTask
-        { get; private set; } = 0;
         public void SetPlaceInSynhTask(int placeInSynchTask)
         {
             PlaceInSynchTask = placeInSynchTask;
@@ -812,16 +802,10 @@ namespace time_schedule
                 fmTasks.SetFilterDateStart(DateTime.Now.Date);
                 fmTasks.SetFilterDateFinish(Program.ListTasksAllPerson.GetMaxDateFinishTasks().Date);
                 fmTasks.Text = "Испольнитель:" + Person.PersonFamaly + "- задачи";
-                //foreach (Task task in Program.ListTasksAllPerson.Tasks)
-                //{
-                //    if (task.PersonFamaly == Person.PersonFamaly)
-                //        fmTasks.RetunlBxTasks().Items.Add(task.Number.ToString() + "\t" + task.Name);
-                //}
-                //if (Program.UserType != UserType.Admin)
-                //{
-                //    fmTasks.GetBtnDeleteTask().Enabled = false;
-                //    fmTasks.GetBtnNewTask().Enabled = false;
-                //}
+                if (Program.UserType != UserType.Admin) {
+                    fmTasks.GetBtnDeleteTask().Enabled = false;
+                    fmTasks.GetBtnNewTask().Enabled = false;
+                }
             }
             fmTasks.ShowDialog();
         }

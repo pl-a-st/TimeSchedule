@@ -267,7 +267,8 @@ namespace time_schedule
         }
         private void btnCreateTask_Click(object sender, EventArgs e)
         {
-            CheckTBxTaskNameToEmpty();
+            if (IsTBxTaskNameEmpty())
+                return;
             Program.ListTasksAllPerson.Tasks.Clear();
             Program.ListTasksAllPerson.SetTasksFromList(Dals.ReadListFromProjectFile(Constants.TASKS));
             Task task = new Task();
@@ -300,15 +301,16 @@ namespace time_schedule
             
             this.Close();
         }
-        private void CheckTBxTaskNameToEmpty() {
+        private Boolean IsTBxTaskNameEmpty() {
             if (tBxTaskName.Text == "") {
                 MessageBox.Show(
                     "Использвание пустых наименований задач недопустимо!",
                     "Предупреждение",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Warning);
-                return;
+                return true;
             }
+            return false;
         }
         private void ChekTaskAfter(Task task)
         {

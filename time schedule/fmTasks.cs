@@ -25,8 +25,6 @@ namespace time_schedule {
             InitializeComponent();
 
         }
-
-
         public FmTasksStatusLoad FmTasksStatusLoad { get; private set; } = FmTasksStatusLoad.loadForAll;
         public void SetFmTasksStatusLoad(FmTasksStatusLoad fmTasksStatusLoad) {
             FmTasksStatusLoad = fmTasksStatusLoad;
@@ -197,7 +195,8 @@ namespace time_schedule {
         }
 
         private void lBxTasks_SelectedIndexChanged(object sender, EventArgs e) {
-
+            if (lBxTasks.SelectedIndex == -1)
+                return;
             foreach (Task task in Program.ListTasksAllPerson.Tasks) {
                 if (task.Number == Convert.ToInt32(lBxTasks.SelectedItem.ToString().Split('\t')[0])) {
                     tBxPerson.Text = task.PersonFamaly;
