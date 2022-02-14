@@ -276,7 +276,7 @@ namespace time_schedule
             plMain.Visible = true;
             LoadScrolls();
             SaveMinMaxDate();
-            
+            plForDate.Enabled = true;
         }
         public void LoadColumns()
         {
@@ -451,7 +451,7 @@ namespace time_schedule
             Dals.WriteListProjectFileAppend(Constants.TASKS, Program.ListTasksAllPerson.GetListForSave());
         }
 
-        private void ToolStripMenuItem_Click(object sender, EventArgs e)
+        private void ToolStripMenuProject_Click(object sender, EventArgs e)
         {
             
             Dals.WriteProjectFolder();
@@ -667,6 +667,10 @@ namespace time_schedule
 
         private void timer1_Tick(object sender, EventArgs e)
         {
+            LoadRefreshForm(RefreshType.All);
+        }
+
+        private void btnRefresh_Click(object sender, EventArgs e) {
             LoadRefreshForm(RefreshType.All);
         }
     }
