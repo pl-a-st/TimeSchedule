@@ -13,7 +13,7 @@ namespace time_schedule
         public const string PERSONS = "Persons.txt";
         public const string TASKS = "Tasks.txt";
         public const string HOLYDAYS = "Holydays.txt";
-        public const string PROFECT_TO_COPY = "Project to copy";
+        public const string PROGECT_TO_CHOOSE = "Project to copy";
         public const int COLUMN_WITH = 75;
         public static Color MIN_COLUMN_COLOR = Color.Black;
         public const int ROW_HIGHT = 30;

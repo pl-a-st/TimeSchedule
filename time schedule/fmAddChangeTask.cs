@@ -398,7 +398,7 @@ namespace time_schedule
 
         private void btnCopyAnotherProject_Click(object sender, EventArgs e)
         {
-            fmProjectCopy fmProjectCopy = new fmProjectCopy();
+            fmProjectChoise fmProjectCopy = new fmProjectChoise();
             fmProjectCopy.ShowDialog();
             if (fmProjectCopy.SetTBxAddress().Text == "" ||
                 fmProjectCopy.SetTBxAddress().Text == null ||

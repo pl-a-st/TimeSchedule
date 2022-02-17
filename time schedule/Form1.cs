@@ -360,7 +360,7 @@ namespace time_schedule
             myScrollBar.Top = 0;
             myScrollBar.Enabled = false;
             //plMain.Controls.Add(myScrollBar);
-            Dals.WriteProjectFolder(true);
+            Dals.WriteProjectFolder(Statuses.WorkWithProject.ProgramStarted);
             this.Text = Dals.ProjectFolderPath;
             this.Text = this.Text.Replace("\\Проект",string.Empty);
             this.Activate();
@@ -453,13 +453,7 @@ namespace time_schedule
 
         private void ToolStripMenuProject_Click(object sender, EventArgs e)
         {
-            
-            Dals.WriteProjectFolder();
-            this.Text = Dals.ProjectFolderPath;
-            this.Text = this.Text.Replace("\\Проект", string.Empty);
-            this.Activate();
-            LoadRefreshForm(plPersonButton, plMain, Bmp);
-
+           
         }
 
         private void Form1_Activated(object sender, EventArgs e)
@@ -609,7 +603,7 @@ namespace time_schedule
 
         private void dateTimePicker1_KeyUp(object sender, KeyEventArgs e)
         {
-            if (e.KeyCode == Keys.Enter)
+            if (e.KeyCode == System.Windows.Forms.Keys.Enter)
             {
                 ScrollToDate(dateTimePicker1.Value.Date);
             }
@@ -672,6 +666,22 @@ namespace time_schedule
 
         private void btnRefresh_Click(object sender, EventArgs e) {
             LoadRefreshForm(RefreshType.All);
+        }
+
+        private void создатьToolStripMenuItem_Click(object sender, EventArgs e) {
+            Dals.WriteProjectFolder("Проект", Statuses.WorkWithProject.NewProject);
+            SetNewTextForForm();
+            LoadRefreshForm(plPersonButton, plMain, Bmp);
+        }
+        private void выбратьToolStripMenuItem_Click(object sender, EventArgs e) {
+            Dals.WriteProjectFolder("", Statuses.WorkWithProject.LoadProject);
+            SetNewTextForForm();
+            LoadRefreshForm(plPersonButton, plMain, Bmp);
+        }
+        private void SetNewTextForForm() {
+            this.Text = Dals.ProjectFolderPath;
+            this.Text = this.Text.Replace("\\Проект", string.Empty);
+            this.Activate();
         }
     }
    

@@ -10,9 +10,9 @@ using System.Windows.Forms;
 
 namespace time_schedule
 {
-    public partial class fmProjectCopy : Form
+    public partial class fmProjectChoise : Form
     {
-        public fmProjectCopy()
+        public fmProjectChoise()
         {
             InitializeComponent();
         }
@@ -88,7 +88,7 @@ namespace time_schedule
             if (lBxProject.Items.Count > 0)
                 lBxProject.SelectedIndex = lBxProject.Items.Count - 1;
             Dals.WriteListProjectFileAppend(
-                Constants.PROFECT_TO_COPY,
+                Constants.PROGECT_TO_CHOOSE,
                 ListProjects.GetListForSave());
         }
         public ListProjects ListProjects
@@ -97,7 +97,7 @@ namespace time_schedule
         {
             this.TopMost = true;
             ListProjects = new ListProjects(
-                Dals.ReadListFromProjectFile(Constants.PROFECT_TO_COPY));
+                Dals.ReadListFromFile(Constants.PROGECT_TO_CHOOSE));
             foreach(Project project in ListProjects.Projects)
             {
                 lBxProject.Items.Add(project.Name);
@@ -125,8 +125,8 @@ namespace time_schedule
             }
             if (lBxProject.Items.Count>0)
                 lBxProject.SelectedIndex = lBxProject.Items.Count-1;
-            Dals.WriteListProjectFileAppend(
-                Constants.PROFECT_TO_COPY,
+            Dals.WriteListtFileAppend(
+                Constants.PROGECT_TO_CHOOSE,
                 ListProjects.GetListForSave());
         }
 

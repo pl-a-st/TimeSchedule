@@ -8,18 +8,20 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace time_schedule {
+   
     public class Dals {
         public static string ProjectFolderPath { get; private set; }
         public static void SetProjectFolderPath(string projectFolder) {
             ProjectFolderPath = projectFolder;
         }
-        public static void WriteProjectFolder() {
-            WriteProjectFolder("Проект");
-        }
-        public static void WriteProjectFolder(bool startProgram) {
-            if (startProgram && (!File.Exists(Constants.PROJECT_FILE_NAME) || 
+        //public static void WriteProjectFolder() {
+        //    WriteProjectFolder("Проект",);
+        //}
+        public static void WriteProjectFolder(Statuses.WorkWithProject statusWorkWithProject) {
+            if (statusWorkWithProject == Statuses.WorkWithProject.ProgramStarted &&
+                (!File.Exists(Constants.PROJECT_FILE_NAME) ||
                 File.ReadAllLines(Constants.PROJECT_FILE_NAME).Length == 0)) {
-                WriteProjectFolder("Проект");
+                WriteProjectFolder("Проект", statusWorkWithProject);
             }
             else {
                 if (File.Exists(Constants.PROJECT_FILE_NAME)) {
@@ -33,22 +35,27 @@ namespace time_schedule {
 
             }
         }
-        public static void WriteProjectFolder(string targetFolderName) {
+        public static void WriteProjectFolder(string targetFolderName, Statuses.WorkWithProject workWithProject) {
             try {
                 FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog();
-                folderBrowserDialog.Description = "Выбирете папку проекта";
-
-                if (folderBrowserDialog.ShowDialog() == DialogResult.OK) {
-                    StreamWriter streamWriter = new StreamWriter(Constants.PROJECT_FILE_NAME, false);
-                    string folderName = string.Empty;
-                    folderName = folderBrowserDialog.SelectedPath + "\\" + targetFolderName;
-                    if (!Directory.Exists(folderName))
-                        Directory.CreateDirectory(folderName);
-                    streamWriter.WriteLine(folderName);
-                    SetProjectFolderPath(folderName);
-                    streamWriter.Close();
+                if (workWithProject == Statuses.WorkWithProject.NewProject) {
+                    folderBrowserDialog.Description = "Выбирете папку для проекта";
+                    ChooseFolderWritePath(targetFolderName, folderBrowserDialog);
                 }
-
+                    
+                if (workWithProject == Statuses.WorkWithProject.LoadProject) {
+                    
+                    fmProjectChoise fmProjectChoise = new fmProjectChoise();
+                    fmProjectChoise.ShowDialog();
+                    if (fmProjectChoise.SetTBxAddress().Text == "" ||
+                        fmProjectChoise.SetTBxAddress().Text == null ||
+                        fmProjectChoise.ChoiceIsMade == ChoiceIsMade.no) {
+                        return;
+                    }
+                    string folderPath = fmProjectChoise.SetTBxAddress().Text;
+                    WritePaht(folderPath);
+                }
+                    
             }
             catch {
                 MessageBox.Show("Не удалось произвести запись в файл: " + Constants.PROJECT_FILE_NAME);
@@ -105,7 +112,22 @@ namespace time_schedule {
             excelApp.Visible = true;
             workbook.Save();
         }
+        private static void ChooseFolderWritePath(string targetFolderName, FolderBrowserDialog folderBrowserDialog) {
+            if (folderBrowserDialog.ShowDialog() == DialogResult.OK) {
+                string folderName = string.Empty;
+                folderName = folderBrowserDialog.SelectedPath + "\\" + targetFolderName;
+                WritePaht(folderName);
+            }
+        }
 
+        private static void WritePaht(string folderName) {
+            StreamWriter streamWriter = new StreamWriter(Constants.PROJECT_FILE_NAME, false);
+            if (!Directory.Exists(folderName))
+                Directory.CreateDirectory(folderName);
+            streamWriter.WriteLine(folderName);
+            SetProjectFolderPath(folderName);
+            streamWriter.Close();
+        }
 
         private static void SaveWorkBook (ref Excel.Workbook workbook, string pathFileToSave) {
             try {

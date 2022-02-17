@@ -39,6 +39,8 @@
             this.toolStripMenuItem2 = new System.Windows.Forms.ToolStripMenuItem();
             this.adminToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.проектToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.выбратьToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.создатьToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.задачиToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuPersons = new System.Windows.Forms.ToolStripMenuItem();
             this.нерабочиеДниToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -139,10 +141,27 @@
             // 
             // проектToolStripMenuItem
             // 
+            this.проектToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.выбратьToolStripMenuItem,
+            this.создатьToolStripMenuItem});
             this.проектToolStripMenuItem.Name = "проектToolStripMenuItem";
             this.проектToolStripMenuItem.Size = new System.Drawing.Size(191, 22);
             this.проектToolStripMenuItem.Text = "Проект";
             this.проектToolStripMenuItem.Click += new System.EventHandler(this.ToolStripMenuProject_Click);
+            // 
+            // выбратьToolStripMenuItem
+            // 
+            this.выбратьToolStripMenuItem.Name = "выбратьToolStripMenuItem";
+            this.выбратьToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.выбратьToolStripMenuItem.Text = "Выбрать";
+            this.выбратьToolStripMenuItem.Click += new System.EventHandler(this.выбратьToolStripMenuItem_Click);
+            // 
+            // создатьToolStripMenuItem
+            // 
+            this.создатьToolStripMenuItem.Name = "создатьToolStripMenuItem";
+            this.создатьToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.создатьToolStripMenuItem.Text = "Создать";
+            this.создатьToolStripMenuItem.Click += new System.EventHandler(this.создатьToolStripMenuItem_Click);
             // 
             // задачиToolStripMenuItem
             // 
@@ -304,6 +323,8 @@
         private System.Windows.Forms.ToolStripMenuItem adminToolStripMenuItem;
         private System.Windows.Forms.Timer timer1;
         private System.Windows.Forms.Button btnRefresh;
+        private System.Windows.Forms.ToolStripMenuItem выбратьToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem создатьToolStripMenuItem;
     }
 }
 
