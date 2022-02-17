@@ -39,7 +39,7 @@ namespace time_schedule
             string folderName = string.Empty;
             
             FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog();
-            folderBrowserDialog.Description = "Выбирете папку проекта";
+            folderBrowserDialog.Description = "Выбирете папку \"Проект\" !!! ";
 
             if (folderBrowserDialog.ShowDialog() == DialogResult.OK)
             {

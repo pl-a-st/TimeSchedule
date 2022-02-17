@@ -407,12 +407,12 @@ namespace time_schedule
                 return;
             }
             string folderName = fmProjectCopy.SetTBxAddress().Text;
-            string targetFolderName = "Проект";
+            //string targetFolderName = "Проект";
             try
             {
                 Program.ListTasksAllPerson.Tasks.Clear();
                 Program.ListTasksAllPerson.SetTasksFromList(Dals.ReadListFromProjectFile(Constants.TASKS));
-                folderName += "\\" + targetFolderName;
+                //folderName += "\\" + targetFolderName;
                 Task task = new Task();
                 ListTasks listTasks = new ListTasks();
                 listTasks.SetTasksFromList(Dals.ReadListFromFile(folderName + "\\" + Constants.TASKS));
