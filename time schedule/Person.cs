@@ -423,8 +423,7 @@ namespace time_schedule
             const int TASK_COLOR = 9;
             const int PRIORITY = 10;
             Name = allParam[TASK_NAME];
-            if (allParam[PERSON_FAMALY] != "")
-                PersonFamaly = allParam[PERSON_FAMALY];
+            PersonFamaly = allParam[PERSON_FAMALY];
             if (allParam[TASK_STATUS] != "")
                 Status = (TaskStatus)Enum.Parse(typeof(TaskStatus), allParam[TASK_STATUS], true);
             if (allParam[TASK_NUMBER] != "")
