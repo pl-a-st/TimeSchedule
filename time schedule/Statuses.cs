@@ -11,5 +11,14 @@ namespace time_schedule {
             LoadProject,
             NewProject
         }
+        public enum LoadingStatus {
+            Loaded,
+            ReadyToLoad,
+            NotReady
+        }
+        public enum FormReadyToBeAddedControl {
+            Ready,
+            NotReady
+        }
     }
 }

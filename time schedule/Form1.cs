@@ -19,6 +19,8 @@ namespace time_schedule
     }
     public partial class Form1 : Form
     {
+        public Statuses.FormReadyToBeAddedControl FormReadyToBeAddedControl
+            { get; private set; } = Statuses.FormReadyToBeAddedControl.NotReady;
         public RefreshType RefreshType
         { get; private set; } = RefreshType.Minimum;
         public int PlMainScrollYSaved
@@ -160,20 +162,16 @@ namespace time_schedule
         {
             Pen penGrey = new Pen(Color.LightGray, 1);
             Pen penForMonday = new Pen(Color.FromArgb(32,55,100), 2);
-            foreach (Control textbox in plForDate.Controls)
-            {
-                if (textbox is TextBox)
-                {                    
-                    int locationX = textbox.Location.X;
-                    if (textbox.Text.Contains(""+DayOfWeek.Monday))
-                    {
-                        Drow(penForMonday, locationX, 0, locationX, pBForLine.Height);
-                    }
-                    else
-                    {
-                        Drow(penGrey, locationX, 0, locationX, pBForLine.Height);
-                    }
-                   
+            foreach (DateTextBox dateTextBox in Program.PoolTextBox.ListTextBoxes)
+            {             
+                int locationX = dateTextBox.TextBox.Location.X;
+                if (dateTextBox.Date.DayOfWeek == DayOfWeek.Monday)
+                {
+                    Drow(penForMonday, locationX, 0, locationX, pBForLine.Height);
+                }
+                else
+                {
+                    Drow(penGrey, locationX, 0, locationX, pBForLine.Height);
                 }
             }
         }
@@ -232,11 +230,14 @@ namespace time_schedule
         }
         public void LoadRefreshForm(Panel plPersonButton,Panel plMain, Bitmap bitmap)
         {
+            FormReadyToBeAddedControl = Statuses.FormReadyToBeAddedControl.NotReady;
             plForDate.Enabled = false;
             SaveScrolls();
-            ScrollToZero();
+            //ScrollToZero();
             
             CleanOldExemplar(ref plPersonButton, ref plMain); // 346 мс
+            Program.PoolTextBox.ListTextBoxes.Clear();
+            Program.ListTaskButtons.TaskButtons.Clear();
             Program.ListTasksAllPerson.Tasks.Clear();
             Program.ListTasksAllPerson.SetTasksFromList(Dals.ReadListFromProjectFile(Constants.TASKS));
             Program.listPersons.Persons.Clear();
@@ -256,7 +257,7 @@ namespace time_schedule
             NonWorkDaysWrite(Program.ListTasksAllPerson.GetMinDateStartTasks(), Program.ListTasksAllPerson.GetMaxDateFinishTasks());
             Program.listNonWorkingDays.NonWorkingDays.AddRange(Program.ListHolidays.Holidays);
             Program.ListTaskButtons.TaskButtons.Clear();
-            Program.ListTaskButtons.LoadTaskButtons(
+            Program.ListTaskButtons.AddTaskButtons(
                 Program.ListTasksAllPerson,
                 Program.ListPersonButton
                 );
@@ -264,33 +265,35 @@ namespace time_schedule
             LoadColumns(); //735 мс
             LoadHorizontLine();
             LoadVerticalLine();
-            plMain.Visible = false;
-            foreach (TaskButton taskButton in Program.ListTaskButtons.TaskButtons) // 351 мс, 645 мс
-            {
-                foreach (Button button in taskButton.Buttons)
-                {
-                    plMain.Controls.Add(button);
-                    button.BringToFront();
-                }
-            }
-            plMain.Visible = true;
+            //plMain.Visible = false;
+            //foreach (TaskButton taskButton in Program.ListTaskButtons.TaskButtons) // 351 мс, 645 мс
+            //{
+            //    foreach (Button button in taskButton.Buttons)
+            //    {
+            //        plMain.Controls.Add(button);
+            //        button.BringToFront();
+            //    }
+            //}
+            //plMain.Visible = true;
             LoadScrolls();
             SaveMinMaxDate();
             plForDate.Enabled = true;
+            FormReadyToBeAddedControl = Statuses.FormReadyToBeAddedControl.Ready;
+            LoadTaskButtons();
+            LoadDateTextBox();
         }
         public void LoadColumns()
         {
             DateTime dateToTables = Program.ListTasksAllPerson.GetMinDateStartTasks();
             DateTime dateMaxToTable = Program.ListTasksAllPerson.GetMaxDateFinishTasks();
-            
-            if (MaxDateFinish != dateMaxToTable ||
-                MinDateStart!= dateToTables ||
-                RefreshType == RefreshType.All)
-            {
+
+            //if (MaxDateFinish != dateMaxToTable ||
+            //    MinDateStart != dateToTables ||
+            //    RefreshType == RefreshType.All) {
 
                 int height = plMain.Location.Y - plForDate.Location.Y;
                 int locationX = 0;
-                plForDate.Visible = false;
+                //plForDate.Visible = false;
                 plForDate.Controls.Clear();
                 while (dateToTables <= dateMaxToTable)
                 {
@@ -298,34 +301,42 @@ namespace time_schedule
                         dateToTables.DayOfWeek != DayOfWeek.Sunday &&
                         !Program.listNonWorkingDays.NonWorkingDays.Contains(dateToTables))
                     {
-                        TextBox textBox = new TextBox();
-                        textBox.BorderStyle = BorderStyle.FixedSingle;
-                        textBox.AutoSize = false;
-                        textBox.Size = new Size(Constants.COLUMN_WITH, height);
-                        textBox.Multiline = true;
-                        textBox.Text = dateToTables.ToShortDateString() + "\n" + dateToTables.DayOfWeek;
-                        textBox.BackColor = Color.AliceBlue;
-                        if (dateToTables.Date == DateTime.Now.Date)
-                            textBox.BackColor = Color.CadetBlue;
-                        textBox.ForeColor = Color.Black;
-                        textBox.TextAlign = HorizontalAlignment.Center;
-                        textBox.ReadOnly = true;
-                        if (dateToTables == DateTime.Now)
-                            textBox.BackColor = Color.LightBlue;
-                        textBox.Location = new Point(locationX, 0);
-                        plForDate.Controls.Add(textBox);
+                        //TextBox textBox = new TextBox();
+                        //textBox.BorderStyle = BorderStyle.FixedSingle;
+                        //textBox.AutoSize = false;
+                        //textBox.Size = new Size(Constants.COLUMN_WITH, height);
+                        //textBox.Multiline = true;
+                        //textBox.Text = dateToTables.ToShortDateString() + "\n" + dateToTables.DayOfWeek;
+                        //textBox.BackColor = Color.AliceBlue;
+                        ////if (dateToTables.Date == DateTime.Now.Date)
+                        ////    textBox.BackColor = Color.CadetBlue;
+                        //textBox.ForeColor = Color.Black;
+                        //textBox.TextAlign = HorizontalAlignment.Center;
+                        //textBox.ReadOnly = true;
+                        //if (dateToTables == DateTime.Now.Date)
+                        //    textBox.BackColor = Color.LightBlue;
+                        //textBox.Location = new Point(locationX, 0);
+                        //plForDate.Controls.Add(textBox);
+                        DateTextBox dateTextBox = new DateTextBox(dateToTables, height, locationX);
+                        //Program.ListTextBoxes.Add(textBox);
+                        Program.PoolTextBox.ListTextBoxes.Add(dateTextBox);
+                        if (dateToTables == Program.ListTasksAllPerson.GetMinDateStartTasks())
+                            plForDate.Controls.Add(dateTextBox.TextBox);
+                        if (dateToTables == dateMaxToTable)
+                            plForDate.Controls.Add(dateTextBox.TextBox);
                         locationX += Constants.COLUMN_WITH;
                     }
                     dateToTables = dateToTables.AddDays(1);
                 }
-                plForDate.Visible = true;
+
+                //plForDate.Visible = true;
                 pBForLine.Width = locationX;
                 ResizeImage(new Size(locationX, pBForLine.Height));
-            }
-            else
-            {
-                ResizeImage(new Size(pBForLine.Width, pBForLine.Height));
-            }
+            //}
+            //else
+            //{
+            //    ResizeImage(new Size(pBForLine.Width, pBForLine.Height));
+            //}
         }
         public static Form1 SelfRef
         {
@@ -366,7 +377,7 @@ namespace time_schedule
             this.Activate();
             LoadRefreshForm( plPersonButton, plMain, Bmp);
             
-            plMain.VerticalScroll.Visible = true;
+            //plMain.VerticalScroll.Visible = true;
             plForDate.Enabled = true;
             btnNewTask.Visible = false;
         }
@@ -425,6 +436,8 @@ namespace time_schedule
             {
 
             }
+            LoadTaskButtons();
+            LoadDateTextBox();
         }
        
 
@@ -468,24 +481,32 @@ namespace time_schedule
             plForDate.HorizontalScroll.Value = 0;
             plMain.HorizontalScroll.Value = 0;
             plForDate.HorizontalScroll.Value = 0;
-            foreach (Control textBox in plForDate.Controls)
-            {
-                if (textBox is TextBox)
-                {
-                    DateTime dateTime = DateTime.Parse(textBox.Text.Split('\n')[0]);
-                    if (dateTime <= targetDateTime)
-                    {
-                        locationX = textBox.Location.X;
-                    }
-                    else
-                    {
-                        break;
-                    }
+            //foreach (Control textBox in plForDate.Controls)
+            //{
+            //    if (textBox is TextBox)
+            //    {
+            //        DateTime dateTime = DateTime.Parse(textBox.Text.Split('\n')[0]);
+            //        if (dateTime <= targetDateTime)
+            //        {
+            //            locationX = textBox.Location.X;
+            //        }
+            //        else
+            //        {
+            //            break;
+            //        }
+            //    }
+            //}
+            foreach (DateTextBox DateTextBox in Program.PoolTextBox.ListTextBoxes) {
+                if (DateTextBox.Date.Date <= targetDateTime) {
+                    locationX += Constants.COLUMN_WITH;
+                }
+                else {
+                    break;
                 }
             }
             plForDate.Focus();
             plMain.Focus();
-            int NewLocationX = locationX - 4 * Constants.COLUMN_WITH;
+            int NewLocationX = locationX - 5 * Constants.COLUMN_WITH;
             try
             {
                 if (NewLocationX > 0)
@@ -505,7 +526,8 @@ namespace time_schedule
                 }
             }
             catch { }
-            
+            LoadTaskButtons();
+            LoadDateTextBox();
         }
         private void button3_Click(object sender, EventArgs e)
         {
@@ -552,6 +574,8 @@ namespace time_schedule
             {
 
             }
+            LoadTaskButtons();
+            LoadDateTextBox();
         }
         public Bitmap Bmp
         { get; set; } = new Bitmap(1, 1);
@@ -588,7 +612,9 @@ namespace time_schedule
             {
 
             }
-            
+            LoadTaskButtons();
+            LoadDateTextBox();
+
         }
 
         private void dateTimePicker1_CloseUp(object sender, EventArgs e)
@@ -683,6 +709,50 @@ namespace time_schedule
             this.Text = this.Text.Replace("\\Проект", string.Empty);
             this.Activate();
         }
+
+        private void button1_Click_2(object sender, EventArgs e) {
+            LoadTaskButtons();
+        }
+        private void LoadTaskButtons() {
+            if (FormReadyToBeAddedControl == Statuses.FormReadyToBeAddedControl.NotReady)
+                return;
+            Program.ListTaskButtons.CalculateLoadingStatus(
+                plMain.HorizontalScroll.Value,
+                this.Width, 
+                Program.ListTasksAllPerson.GetMinDateStartTasks());
+            Program.ListTaskButtons.SetNewLocationToButtons(
+                plMain.VerticalScroll.Value,
+                plMain.HorizontalScroll.Value);
+            foreach (TaskButton taskButton in Program.ListTaskButtons.TaskButtons) {
+                if (taskButton.LoadingStatus == Statuses.LoadingStatus.ReadyToLoad) {
+                    foreach(Button button in taskButton.Buttons) {
+                        plMain.Controls.Add(button);
+                        button.BringToFront();
+                    }
+                    taskButton.SetLoadingStatus(Statuses.LoadingStatus.Loaded);
+                }
+            }
+        }
+        private void LoadDateTextBox() {
+            if (FormReadyToBeAddedControl == Statuses.FormReadyToBeAddedControl.NotReady)
+                return;
+            Program.PoolTextBox.CalculateLoadingStatus(
+                plMain.HorizontalScroll.Value,
+                this.Width,
+                Program.ListTasksAllPerson.GetMinDateStartTasks());
+            Program.PoolTextBox.SetNewLocationToButtons(
+                plMain.HorizontalScroll.Value);
+            foreach (DateTextBox dateTextBox in Program.PoolTextBox.ListTextBoxes) {
+                if (dateTextBox.LoadingStatus == Statuses.LoadingStatus.ReadyToLoad) {
+                    
+                        plForDate.Controls.Add(dateTextBox.TextBox);
+                        //button.BringToFront();
+                    
+                    dateTextBox.SetLoadingStatus(Statuses.LoadingStatus.Loaded);
+                }
+            }
+        }
+        
     }
    
 }

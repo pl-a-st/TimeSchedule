@@ -20,8 +20,111 @@ namespace time_schedule
         В_работе= TaskStatus.Active,
         Закрыто=TaskStatus.Closed
     }
-    
+    public enum DayOfWeekRus {
+        Воскресенье = DayOfWeek.Sunday,
+        Понедельник = DayOfWeek.Monday,
+        Вторник = DayOfWeek.Tuesday,
+        Среда = DayOfWeek.Wednesday,
+        Четверг = DayOfWeek.Thursday,
+        Пятница = DayOfWeek.Friday,
+        Суббота = DayOfWeek.Saturday
+    }
+    public class DateTextBox {
+        public DateTime Date { get; private set; }
+        public TextBox TextBox { get; private set; } = new TextBox();
+        public Statuses.LoadingStatus LoadingStatus { get; private set; } = Statuses.LoadingStatus.NotReady;
+        public DateTextBox (DateTime dateTime, int TextBoxHight, int locationX) {
+            Date = dateTime.Date;
+            TextBox.BorderStyle = BorderStyle.FixedSingle;
+            TextBox.AutoSize = false;
+            TextBox.Size = new Size(Constants.COLUMN_WITH, TextBoxHight);
+            TextBox.Multiline = true;
+            TextBox.Text = dateTime.ToShortDateString() + "\n" + GetDayOfWeekRus(dateTime.DayOfWeek);
+            TextBox.BackColor = Color.AliceBlue;
+            TextBox.ForeColor = Color.Black;
+            TextBox.TextAlign = HorizontalAlignment.Center;
+            TextBox.ReadOnly = true;
+            if (dateTime == DateTime.Now.Date)
+                TextBox.BackColor = Color.LightBlue;
+            TextBox.Location = new Point(locationX, 0);            
+        }
+        public void SetLoadingStatus (Statuses.LoadingStatus loadingStatus) {
+            LoadingStatus = loadingStatus;
+        }
+        private static DayOfWeekRus GetDayOfWeekRus(DayOfWeek dayOfWeek) {
+            DayOfWeekRus dayOfWeekRus = (DayOfWeekRus)Enum.Parse(typeof(DayOfWeek), dayOfWeek.ToString(), true);
+            return dayOfWeekRus;
+        }
+    }
    
+    public class PoolTextBox {
+        public List<DateTextBox> ListTextBoxes 
+            { get; private set; } = new List<DateTextBox>();
+        public void SetNewLocationToButtons(int horizontalScroll) {
+            foreach (DateTextBox dateTextBox in ListTextBoxes) {
+                if (dateTextBox.LoadingStatus == Statuses.LoadingStatus.ReadyToLoad) {
+                    dateTextBox.TextBox.Location = new Point(
+                        dateTextBox.TextBox.Location.X - horizontalScroll, dateTextBox.TextBox.Location.Y );                   
+                }
+            }   
+        }
+        public void CalculateLoadingStatus(int horizontalScroll, int formWith, DateTime minDateStart) {
+            DateTime minLoadDate = CalculateMinLoadDate(horizontalScroll, formWith, minDateStart);
+            DateTime maxLoadDate = CalculateMaxLoadDate(formWith, minLoadDate);
+            foreach (DateTextBox dateTextBox in ListTextBoxes) {
+                if (IsReadyToLoad(minLoadDate, maxLoadDate, dateTextBox))
+                    dateTextBox.SetLoadingStatus(Statuses.LoadingStatus.ReadyToLoad);
+            }
+        }
+        private static Boolean IsReadyToLoad(DateTime minLoadDate, DateTime maxLoadDate, DateTextBox dateTextBox) {
+            if (dateTextBox.LoadingStatus != Statuses.LoadingStatus.NotReady) {
+                return false;
+            }
+            if (IsDateExsistInTargetRange(minLoadDate, maxLoadDate, dateTextBox)) {
+                return true;
+            }
+            return false;
+        }
+        private static Boolean IsDateExsistInTargetRange(DateTime minLoadDate, DateTime maxLoadDate, DateTextBox dateTextBox) {
+            if (dateTextBox.Date >= minLoadDate && dateTextBox.Date <= maxLoadDate)
+                return true;
+            return false;
+        }
+        private DateTime CalculateMinLoadDate(int horizontalScroll, int formWith, DateTime minDateStart) {
+            int countDaysBeforScroll = horizontalScroll / Constants.COLUMN_WITH-2;
+            int reserve = formWith / 2 / Constants.COLUMN_WITH;
+            DateTime minLoadDate = minDateStart;
+            for (int i = 0; i < countDaysBeforScroll; i++) {
+                minLoadDate = minLoadDate.AddDays(1);
+                if (IsHolydays(minLoadDate)) {
+                    i--;
+                }
+            }
+            return minLoadDate;
+        }
+
+        private static bool IsHolydays(DateTime minLoadDate) {
+            if (Program.ListHolidays.Holidays.Contains(minLoadDate))
+                return true;
+            if (minLoadDate.DayOfWeek == DayOfWeek.Sunday)
+                return true;
+            if (minLoadDate.DayOfWeek == DayOfWeek.Wednesday)
+                return true;
+            return false;
+        }
+        private DateTime CalculateMaxLoadDate(int formWith, DateTime minLoadDate) {
+            int reserve = formWith / 2 / Constants.COLUMN_WITH;
+            int countDaysAfterScroll = formWith / Constants.COLUMN_WITH;
+            DateTime MaxLoadDate = minLoadDate;
+            for (int i = 0; i < countDaysAfterScroll; i++) {
+                MaxLoadDate = MaxLoadDate.AddDays(1);
+                if (IsHolydays(MaxLoadDate)) {
+                    i--;
+                }
+            }
+            return MaxLoadDate;
+        }
+    }
     /// <summary>
     /// Исполнители
     /// </summary>
@@ -624,11 +727,11 @@ namespace time_schedule
     {
         public List<TaskButton> TaskButtons
         { get; private set; } = new List<TaskButton>();
-        public void LoadTaskButtons(TaskButton taskButton)
+        public void AddTaskButtons(TaskButton taskButton)
         {
             TaskButtons.Add(taskButton);
         }
-        public void LoadTaskButtons(ListTasks listTasks, ListPersonButton listPersonButton)
+        public void AddTaskButtons(ListTasks listTasks, ListPersonButton listPersonButton)
         {
             foreach (Task task in listTasks.Tasks)
             {
@@ -637,9 +740,76 @@ namespace time_schedule
                     listPersonButton,
                     listTasks.GetMinDateStartTasks(),
                     listTasks.GetMaxDateFinishTasks());
-
-                LoadTaskButtons(taskButton);
+                AddTaskButtons(taskButton);
             }
+        }
+        public void SetNewLocationToButtons (int verticalScroll, int horizontalScroll) {
+            foreach (TaskButton taskButton in TaskButtons) {
+                if (taskButton.LoadingStatus == Statuses.LoadingStatus.ReadyToLoad)
+                foreach(Button button in taskButton.Buttons) {
+                    button.Location = new Point(button.Location.X - horizontalScroll, button.Location.Y - verticalScroll);
+                }
+            }
+        }
+        public void CalculateLoadingStatus(int horizontalScroll, int formWith, DateTime minDateStart) {
+            DateTime minLoadDate = CalculateMinLoadDate(horizontalScroll, formWith, minDateStart);
+            DateTime maxLoadDate = CalculateMaxLoadDate(formWith, minLoadDate);
+            foreach (TaskButton taskButton in TaskButtons) {
+               if (IsReadyToLoad(minLoadDate, maxLoadDate, taskButton))
+                    taskButton.SetLoadingStatus(Statuses.LoadingStatus.ReadyToLoad);
+            }
+        }
+        private static Boolean IsReadyToLoad(DateTime minLoadDate, DateTime maxLoadDate, TaskButton taskButton) {
+            if (taskButton.LoadingStatus != Statuses.LoadingStatus.NotReady) {
+                return false;
+            }
+            if (IsDateExsistInTargetRange(minLoadDate, maxLoadDate, taskButton)) {
+                return true;
+            }
+            return false;
+        }
+        private static Boolean IsDateExsistInTargetRange (DateTime minLoadDate, DateTime maxLoadDate, TaskButton taskButton) {
+            if (taskButton.Task.DateStart >= minLoadDate && taskButton.Task.DateStart <= maxLoadDate)
+                return true;
+            if (taskButton.Task.DateFinish >= minLoadDate && taskButton.Task.DateFinish <= maxLoadDate)
+                return true;
+            if (taskButton.Task.DateStart <= minLoadDate && taskButton.Task.DateFinish >= maxLoadDate)
+                return true;
+            return false;
+        }
+        private DateTime CalculateMinLoadDate(int horizontalScroll, int formWith, DateTime minDateStart) {
+            int countDaysBeforScroll = horizontalScroll / Constants.COLUMN_WITH;
+            int reserve = formWith / 2/ Constants.COLUMN_WITH;
+            DateTime minLoadDate = minDateStart;
+            for (int i=0;i< countDaysBeforScroll;i++) {
+                minLoadDate = minLoadDate.AddDays(1);
+                if (IsHolydays(minLoadDate)) {
+                    i--;
+                }
+            }
+            return minLoadDate;
+        }
+
+        private static bool IsHolydays(DateTime minLoadDate) {
+            if (Program.ListHolidays.Holidays.Contains(minLoadDate))
+                return true;
+            if (minLoadDate.DayOfWeek == DayOfWeek.Sunday)
+                return true;
+            if (minLoadDate.DayOfWeek == DayOfWeek.Wednesday)
+                return true;
+            return false;
+        }
+        private DateTime CalculateMaxLoadDate (int formWith, DateTime minLoadDate) {
+            int reserve = formWith / 2 / Constants.COLUMN_WITH;
+            int countDaysAfterScroll = formWith / Constants.COLUMN_WITH;
+            DateTime MaxLoadDate = minLoadDate;
+            for (int i = 0; i < countDaysAfterScroll; i++) {
+                MaxLoadDate = MaxLoadDate.AddDays(1);
+                if (IsHolydays(MaxLoadDate)) {
+                    i--;
+                }
+            }
+            return MaxLoadDate;
         }
     }
 
@@ -653,6 +823,12 @@ namespace time_schedule
         }
         public List<Button> Buttons
         { get; private set; } = new List<Button>();
+        public Statuses.LoadingStatus LoadingStatus {
+            get; private set;
+        } = Statuses.LoadingStatus.NotReady;
+        public void SetLoadingStatus (Statuses.LoadingStatus loadingStatus) {
+            LoadingStatus = loadingStatus;
+        }
         public void AddButton(int locationX, int locationY, int with, int height)
         {
             Button button = new Button();
