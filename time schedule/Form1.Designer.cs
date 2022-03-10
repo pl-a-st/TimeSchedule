@@ -288,9 +288,10 @@
             this.Name = "Form1";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Form1";
-            this.Activated += new System.EventHandler(this.Form1_Activated);
+            
             this.Load += new System.EventHandler(this.Form1_Load);
             this.Shown += new System.EventHandler(this.Form1_Shown);
+            this.SizeChanged += new System.EventHandler(this.Form1_SizeChanged);
             this.plMain.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.pBForLine)).EndInit();
             this.menuStrip1.ResumeLayout(false);

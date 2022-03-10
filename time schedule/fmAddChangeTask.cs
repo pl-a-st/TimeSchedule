@@ -92,7 +92,7 @@ namespace time_schedule
         }
         private void fmAddTask_Load(object sender, EventArgs e)
         {
-            this.TopMost = true;
+            this.TopLevel = true;
             FinishDateBeforeChange = Program.ListTasksAllPerson.GetMaxDateFinishTasks();
             foreach (Person person in Program.listPersons.Persons)
             {

@@ -20,5 +20,17 @@ namespace time_schedule {
             Ready,
             NotReady
         }
+        public enum Visibility {
+            Visible,
+            Invisible
+        }
+        public enum ProgressBar {
+            Use,
+            DoNotUse
+        }
+        public enum FormLoad {
+            Load,
+            UnLoad
+        }
     }
 }

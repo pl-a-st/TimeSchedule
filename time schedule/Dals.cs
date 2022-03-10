@@ -62,6 +62,16 @@ namespace time_schedule {
             }
 
         }
+        public static void WriteStringToFile(string fileName, string stringForWrite) {
+            try {
+                StreamWriter streamWriter = new StreamWriter(fileName, true);
+                streamWriter.WriteLine(stringForWrite);
+                streamWriter.Close();
+            }
+            catch {
+                
+            }
+        }
         public static void WriteListtFileAppend(string fileName, List<string> listForWrite) {
             try {
                 StreamWriter streamWriter = new StreamWriter(fileName, false);

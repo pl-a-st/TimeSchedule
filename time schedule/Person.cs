@@ -114,7 +114,7 @@ namespace time_schedule
         }
         private DateTime CalculateMaxLoadDate(int formWith, DateTime minLoadDate) {
             int reserve = formWith / 2 / Constants.COLUMN_WITH;
-            int countDaysAfterScroll = formWith / Constants.COLUMN_WITH;
+            int countDaysAfterScroll = formWith / Constants.COLUMN_WITH+2;
             DateTime MaxLoadDate = minLoadDate;
             for (int i = 0; i < countDaysAfterScroll; i++) {
                 MaxLoadDate = MaxLoadDate.AddDays(1);
@@ -778,7 +778,7 @@ namespace time_schedule
             return false;
         }
         private DateTime CalculateMinLoadDate(int horizontalScroll, int formWith, DateTime minDateStart) {
-            int countDaysBeforScroll = horizontalScroll / Constants.COLUMN_WITH;
+            int countDaysBeforScroll = horizontalScroll / Constants.COLUMN_WITH - 1;
             int reserve = formWith / 2/ Constants.COLUMN_WITH;
             DateTime minLoadDate = minDateStart;
             for (int i=0;i< countDaysBeforScroll;i++) {

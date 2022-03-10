@@ -20,8 +20,10 @@ namespace time_schedule {
         public Form GetForm () {
             return this;
         }
+        public Statuses.FormLoad StatusLoad {get;private set;} = Statuses.FormLoad.UnLoad;
         //ForControl ForControl = new ForControl(GetForm);
         private void fmProgressBar_Load(object sender, EventArgs e) {
+            StatusLoad = Statuses.FormLoad.Load;
             progressBar.MarqueeAnimationSpeed = 30;
             progressBar.Style = ProgressBarStyle.Marquee;
             //Program.delegatForControl = GetForm;
