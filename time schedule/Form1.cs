@@ -30,20 +30,62 @@ namespace time_schedule {
         { get; private set; } = DateTime.MaxValue;
         public DateTime MaxDateFinish
         { get; private set; } = DateTime.MinValue;
+        public int VerticalScrollValue {
+            get;
+            private set;
+        }
+        public int HorizontalScrollValue {
+            get;
+            private set;
+        }
+        public int OpenFormsCount {
+            get;
+            private set;
+        }
+        public Bitmap Bmp { 
+            get;
+            set;
+        } = new Bitmap(1, 1);
+        public Statuses.ProgramWindowState ProgramWindowState {
+            get;
+            private set;
+        } = Statuses.ProgramWindowState.Normal;
         public Form1()
         {
             Program.fmMain = this;
             InitializeComponent();
-            
             plMain.MouseWheel += CalendarTasks_MouseWheel;
             plMain.ClientSizeChanged += PlMain_ClientSizeChanged;
             plPersonButton.MouseWheel += PlPersonButton_MouseWheel;
         }
         public static Form1 SelfRef {
-            get; set;
+            get; 
+            set;
         }
         public Form1(Form form) {
             SelfRef = this;
+        }
+        public void LoadRefreshForm() {
+            ChangePanelVisibility(Statuses.Visibility.Invisible);
+            SaveScrolls();
+            FormReadyToBeAddedControl = Statuses.FormReadyToBeAddedControl.NotReady;
+            plForDate.Enabled = false;
+            CleanOldExemplars(); // 245 мс
+            ClearAllPools();
+            LoadAllPools();
+            LoadTextBoxWithDate(); //281 мс
+            LoadHorizontLine();
+            LoadVerticalLine();
+            LoadScrolls();
+            SaveMinMaxDate();
+            plForDate.Enabled = true;
+            FormReadyToBeAddedControl = Statuses.FormReadyToBeAddedControl.Ready;
+            LoadPersonButtons();
+            LoadTaskButtons();//285 мс
+            LoadDateTextBoxes();
+            ChangePanelVisibility(Statuses.Visibility.Visible);
+            plPersonButton.VerticalScroll.Value = VerticalScrollValue;
+            plPersonButton.VerticalScroll.Value = VerticalScrollValue;
         }
         private void PlPersonButton_MouseWheel(object sender, MouseEventArgs e)
         {
@@ -86,7 +128,7 @@ namespace time_schedule {
         {
             return plMain.Location.X - plPersonButton.Location.X;
         }
-        private void CleanOldExemplar()
+        private void CleanOldExemplars()
         {
             
             for (int i = 0; i < plMain.Controls.Count; i++)
@@ -119,15 +161,15 @@ namespace time_schedule {
                 if (personButton.Person.ListTask.Tasks.Count > 0)
                 {
                     personButton.SetLocation(0, maxButtonLocationY);
-                    plPersonButton.Controls.Add(personButton.Button);
+                    //plPersonButton.Controls.Add(personButton.Button);
                     maxButtonLocationY += (personButton.Button.Height + Constants.MIN_ROW_HIGHT +1);
                 }
             }
-            return maxButtonLocationY;
+            //maxButtonLocationY += VerticalScrollValue;
+            return maxButtonLocationY; 
         }
         public void Drow(Pen pen, int pX0, int pY0, int pX1, int pY1)
         {
-            
             Graphics graphics = Graphics.FromImage(Bmp);
             graphics.DrawLine(pen, pX0, pY0, pX1, pY1);
             pBForLine.Image = Bmp;
@@ -182,17 +224,10 @@ namespace time_schedule {
             
             try
             {
-                plForDate.HorizontalScroll.Value = MAGIC_ZEROING_FOR_CORRECT_OPERATION;
-                plForDate.HorizontalScroll.Value = MAGIC_ZEROING_FOR_CORRECT_OPERATION;
-                plForDate.HorizontalScroll.Value = PlForDateScrollXSaved;
-                plForDate.HorizontalScroll.Value = PlForDateScrollXSaved;
-
-                plMain.HorizontalScroll.Value = PlForDateScrollXSaved;
-                plMain.HorizontalScroll.Value = PlForDateScrollXSaved;
-                plMain.VerticalScroll.Value = PlMainScrollYSaved;
-                plPersonButton.VerticalScroll.Value = PlPersonButtonYSaved;
-                plMain.VerticalScroll.Value = PlMainScrollYSaved;
-                plPersonButton.VerticalScroll.Value = PlPersonButtonYSaved;
+                plForDate.HorizontalScroll.Value = HorizontalScrollValue;
+                plForDate.HorizontalScroll.Value = HorizontalScrollValue;
+                plMain.HorizontalScroll.Value = HorizontalScrollValue;
+                plMain.HorizontalScroll.Value = HorizontalScrollValue;
             }
             catch { }            
         }
@@ -233,6 +268,7 @@ namespace time_schedule {
                 List<Form> listForm = new List<Form>() { this, fmProgressBar };
                 Thread thread = new Thread(LoadRefreshWithProgressBarr,0);
                 thread.Start(listForm);
+                OpenFormsCount = Application.OpenForms.Count;
                 fmProgressBar.ShowDialog();
             }
         }
@@ -241,30 +277,18 @@ namespace time_schedule {
             fmProgressBar.Close();
         }
         public void LoadRefreshWithProgressBarr(object listForm) {
-            
+            List<Form> result = new List<Form>();
+            do {
+                foreach (Form form in Application.OpenForms) {
+                    if (form.Visible)
+                        result.Add(form);
+                }
+                Thread.Sleep(50);
+            }
+            while (result.Count <= OpenFormsCount);
             fmProgressBar fmProgressBar = (listForm as List<Form>)[1] as fmProgressBar;
             Form1 form1 = (listForm as List<Form>)[0] as Form1;
             form1.BeginInvoke(new Action(delegate () { LoadRefreshForm(fmProgressBar); }));
-        }
-        public void LoadRefreshForm() {
-            ChangePanelVisibility(Statuses.Visibility.Invisible);
-            SaveScrolls();
-            FormReadyToBeAddedControl = Statuses.FormReadyToBeAddedControl.NotReady;
-            plForDate.Enabled = false;
-            
-            CleanOldExemplar(); // 245 мс
-            ClearAllPools();
-            LoadAllPools();
-            LoadColumns(); //281 мс
-            LoadHorizontLine();
-            LoadVerticalLine();
-            LoadScrolls();
-            SaveMinMaxDate();
-            plForDate.Enabled = true;
-            FormReadyToBeAddedControl = Statuses.FormReadyToBeAddedControl.Ready;
-            LoadTaskButtons();//285 мс
-            LoadDateTextBox();
-            ChangePanelVisibility(Statuses.Visibility.Visible);
         }
         private void LoadAllPools() {
             Program.ListTasksAllPerson.SetTasksFromList(Dals.ReadListFromProjectFile(Constants.TASKS));
@@ -308,33 +332,30 @@ namespace time_schedule {
                 plMain.Visible = false;
             }
         }
-        private void LoadColumns() {
+        private void LoadTextBoxWithDate() {
             DateTime dateToTables = Program.ListTasksAllPerson.GetMinDateStartTasks();
             DateTime dateMaxToTable = Program.ListTasksAllPerson.GetMaxDateFinishTasks();
             int height = plMain.Location.Y - plForDate.Location.Y;
             int locationX = 0;
-            plForDate.Controls.Clear();
+            //plForDate.Controls.Clear();
             while (dateToTables <= dateMaxToTable) {
-                if (dateToTables.DayOfWeek != DayOfWeek.Saturday &&
-                    dateToTables.DayOfWeek != DayOfWeek.Sunday &&
-                    !Program.listNonWorkingDays.NonWorkingDays.Contains(dateToTables)) {
+                if (IsNotHolyday(dateToTables)) {
                     DateTextBox dateTextBox = new DateTextBox(dateToTables, height, locationX);
                     Program.PoolTextBox.ListTextBoxes.Add(dateTextBox);
                     if (dateToTables == Program.ListTasksAllPerson.GetMinDateStartTasks() &&
                         dateTextBox.LoadingStatus != Statuses.LoadingStatus.Loaded) {
                         dateTextBox.TextBox.Location = new Point(
-                            dateTextBox.TextBox.Location.X - plMain.HorizontalScroll.Value, 0);
+                            dateTextBox.TextBox.Location.X - HorizontalScrollValue, 0);
                         plForDate.Controls.Add(dateTextBox.TextBox);
                         dateTextBox.SetLoadingStatus(Statuses.LoadingStatus.Loaded);
                     }
-                    if (dateToTables == dateMaxToTable && 
+                    if (dateToTables == dateMaxToTable &&
                         dateTextBox.LoadingStatus != Statuses.LoadingStatus.Loaded) {
                         dateTextBox.TextBox.Location = new Point(
-                            dateTextBox.TextBox.Location.X - plMain.HorizontalScroll.Value, 0);
+                            dateTextBox.TextBox.Location.X - HorizontalScrollValue, 0);
                         plForDate.Controls.Add(dateTextBox.TextBox);
                         dateTextBox.SetLoadingStatus(Statuses.LoadingStatus.Loaded);
                     }
-                        
                     locationX += Constants.COLUMN_WITH;
                 }
                 dateToTables = dateToTables.AddDays(1);
@@ -342,7 +363,15 @@ namespace time_schedule {
             pBForLine.Width = locationX;
             ResizeImage(new Size(locationX, pBForLine.Height));
         }
-        
+        private static bool IsNotHolyday(DateTime dateToTables) {
+            if (dateToTables.DayOfWeek == DayOfWeek.Saturday)
+                return false;
+            if (dateToTables.DayOfWeek == DayOfWeek.Sunday)
+                return false;
+            if (Program.listNonWorkingDays.NonWorkingDays.Contains(dateToTables))
+                return false;
+            return true;
+        }
         public Panel GetPlPeraonButton()
         {
             return plPersonButton;
@@ -388,9 +417,13 @@ namespace time_schedule {
                 plPersonButton.VerticalScroll.Value = test;
             }
             catch
-            { }
+            {
+                MessageBox.Show("2");
+            }
+            VerticalScrollValue = plMain.VerticalScroll.Value;
+            HorizontalScrollValue = plMain.HorizontalScroll.Value;
             LoadTaskButtons();
-            LoadDateTextBox();
+            LoadDateTextBoxes();
         }
         public void ScrollToBottom(Panel p)
         {
@@ -426,10 +459,12 @@ namespace time_schedule {
             }
             catch
             {
-
+                MessageBox.Show("1");
             }
+            VerticalScrollValue = plMain.VerticalScroll.Value;
+            HorizontalScrollValue = plMain.HorizontalScroll.Value;
             LoadTaskButtons();
-            LoadDateTextBox();
+            LoadDateTextBoxes();
         }
         private void toolStripTextBox1_Click(object sender, EventArgs e)
         {
@@ -460,10 +495,6 @@ namespace time_schedule {
         public void ScrollToDate(DateTime targetDateTime)
         {
             int locationX = 0;
-            plMain.HorizontalScroll.Value = 0;
-            plForDate.HorizontalScroll.Value = 0;
-            plMain.HorizontalScroll.Value = 0;
-            plForDate.HorizontalScroll.Value = 0;
             foreach (DateTextBox DateTextBox in Program.PoolTextBox.ListTextBoxes) {
                 if (DateTextBox.Date.Date <= targetDateTime) {
                     locationX += Constants.COLUMN_WITH;
@@ -472,8 +503,6 @@ namespace time_schedule {
                     break;
                 }
             }
-            plForDate.Focus();
-            plMain.Focus();
             int NewLocationX = locationX - 5 * Constants.COLUMN_WITH;
             try
             {
@@ -494,8 +523,9 @@ namespace time_schedule {
                 }
             }
             catch { }
+            HorizontalScrollValue = plMain.HorizontalScroll.Value;
             LoadTaskButtons();
-            LoadDateTextBox();
+            LoadDateTextBoxes();
         }
         private void button3_Click(object sender, EventArgs e)
         {
@@ -504,8 +534,6 @@ namespace time_schedule {
 
         private void Form1_Shown(object sender, EventArgs e)
         {
-            plMain.HorizontalScroll.Value = 0;
-            plForDate.HorizontalScroll.Value = 0;
             ScrollToDate(DateTime.Now.Date);
         }
         private void LoadDataGridPersonButton(ref DataGridView dataGridView, ListPersonButton listPersonButton)
@@ -529,7 +557,7 @@ namespace time_schedule {
             LoadRefreshForm(Statuses.ProgressBar.Use);
         }
 
-        private void button4_Click(object sender, EventArgs e)
+        private void PlusFiveDays(object sender, EventArgs e)
         {
             try
             {
@@ -542,12 +570,10 @@ namespace time_schedule {
             {
 
             }
+            HorizontalScrollValue = plMain.HorizontalScroll.Value;
             LoadTaskButtons();
-            LoadDateTextBox();
+            LoadDateTextBoxes();
         }
-        public Bitmap Bmp
-        { get; set; } = new Bitmap(1, 1);
-
         public void ResizeImage(Size size)
         {
             try
@@ -562,12 +588,10 @@ namespace time_schedule {
             }
             catch
             {
-                
-
             }
         }
 
-        private void minusFiveDay_Click(object sender, EventArgs e)
+        private void MinusFiveDays_Click(object sender, EventArgs e)
         {
             try
             {
@@ -580,8 +604,9 @@ namespace time_schedule {
             {
 
             }
+            HorizontalScrollValue = plMain.HorizontalScroll.Value;
             LoadTaskButtons();
-            LoadDateTextBox();
+            LoadDateTextBoxes();
 
         }
 
@@ -656,6 +681,7 @@ namespace time_schedule {
         private void timer1_Tick(object sender, EventArgs e)
         {
             LoadRefreshForm(Statuses.ProgressBar.Use);
+            timer1.Interval = 900000;
         }
 
         private void btnRefresh_Click(object sender, EventArgs e) {
@@ -681,16 +707,28 @@ namespace time_schedule {
         private void button1_Click_2(object sender, EventArgs e) {
             LoadTaskButtons();
         }
+        private void LoadPersonButtons() {
+            if (FormReadyToBeAddedControl == Statuses.FormReadyToBeAddedControl.NotReady)
+                return;
+            
+            foreach (PersonButton personButton in Program.ListPersonButton.PersonButtons) {
+                if (personButton.Person.ListTask.Tasks.Count > 0) {
+                    plPersonButton.Controls.Add(personButton.Button);
+                    personButton.Button.BringToFront();
+                }
+                   
+            }
+        }
         private void LoadTaskButtons() {
             if (FormReadyToBeAddedControl == Statuses.FormReadyToBeAddedControl.NotReady)
                 return;
             Program.ListTaskButtons.CalculateLoadingStatus(
-                plMain.HorizontalScroll.Value,
+                HorizontalScrollValue,
                 this.Width, 
                 Program.ListTasksAllPerson.GetMinDateStartTasks());
             Program.ListTaskButtons.SetNewLocationToButtons(
-                plMain.VerticalScroll.Value,
-                plMain.HorizontalScroll.Value);
+                VerticalScrollValue,
+                HorizontalScrollValue);
             foreach (TaskButton taskButton in Program.ListTaskButtons.TaskButtons) {
                 if (taskButton.LoadingStatus == Statuses.LoadingStatus.ReadyToLoad) {
                     foreach(Button button in taskButton.Buttons) {
@@ -701,7 +739,7 @@ namespace time_schedule {
                 }
             }
         }
-        private void LoadDateTextBox() {
+        private void LoadDateTextBoxes() {
             if (FormReadyToBeAddedControl == Statuses.FormReadyToBeAddedControl.NotReady)
                 return;
             Program.PoolTextBox.CalculateLoadingStatus(
@@ -720,11 +758,22 @@ namespace time_schedule {
                 }
             }
         }
-
         private void Form1_SizeChanged(object sender, EventArgs e) {
             LoadTaskButtons();
-            LoadDateTextBox();
+            LoadDateTextBoxes();
+            if (this.WindowState == FormWindowState.Minimized) {
+                ProgramWindowState = Statuses.ProgramWindowState.Minimized;
+                timer1.Interval = 100;
+                timer1.Enabled = false;
+                return;
+            }
+            if (ProgramWindowState == Statuses.ProgramWindowState.Minimized) {
+                ProgramWindowState = Statuses.ProgramWindowState.Normal;
+                timer1.Enabled = true;
+            }
+                
         }
+
     }
    
 }

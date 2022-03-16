@@ -906,24 +906,32 @@ namespace time_schedule
                     locationX += Constants.COLUMN_WITH;
                 dateTime = dateTime.AddDays(1);
             }
+            int numberOfDay = 0;
             do
             {
-                if(
+                
+                if (
                     dateTime.DayOfWeek != DayOfWeek.Sunday &&
                     dateTime.DayOfWeek != DayOfWeek.Saturday &&
                     !Program.listNonWorkingDays.NonWorkingDays.Contains(dateTime.Date))
                 {
                     width += Constants.COLUMN_WITH;
-                    if (dateTime.DayOfWeek == DayOfWeek.Friday ||
-                        dateTime.Date == Task.DateFinish.Date)
+                    numberOfDay++;
+                    if ((numberOfDay >= 4 &&
+                        dateTime.DayOfWeek == DayOfWeek.Friday ||
+                        numberOfDay > 13 ||
+                        dateTime.Date == Task.DateFinish.Date)&&
+                        dateTime.AddDays(3).Date!= Task.DateFinish.Date) 
                     {
-
                         AddButton(locationX, locationY, width, Constants.ROW_HIGHT);
                         locationX += width;
                         width = 0;
+                        numberOfDay = 0;
                     }
                 }
+                
                 dateTime=dateTime.AddDays(1);
+                
             }
             while ((dateTime.Date <= Task.DateFinish.Date) && (dateTime.Date <= maxDateFinish));
         }

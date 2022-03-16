@@ -226,7 +226,7 @@
             this.addFiveDays.TabIndex = 7;
             this.addFiveDays.Text = "+5";
             this.addFiveDays.UseVisualStyleBackColor = true;
-            this.addFiveDays.Click += new System.EventHandler(this.button4_Click);
+            this.addFiveDays.Click += new System.EventHandler(this.PlusFiveDays);
             // 
             // dateTimePicker1
             // 
@@ -248,7 +248,7 @@
             this.minusFiveDay.TabIndex = 9;
             this.minusFiveDay.Text = "-5 ";
             this.minusFiveDay.UseVisualStyleBackColor = true;
-            this.minusFiveDay.Click += new System.EventHandler(this.minusFiveDay_Click);
+            this.minusFiveDay.Click += new System.EventHandler(this.MinusFiveDays_Click);
             // 
             // timer1
             // 
@@ -288,9 +288,8 @@
             this.Name = "Form1";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Form1";
-            
             this.Load += new System.EventHandler(this.Form1_Load);
-            this.Shown += new System.EventHandler(this.Form1_Shown);
+            this.Shown += new System.EventHandler(this.Form1_Shown);            
             this.SizeChanged += new System.EventHandler(this.Form1_SizeChanged);
             this.plMain.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.pBForLine)).EndInit();

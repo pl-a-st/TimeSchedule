@@ -32,5 +32,9 @@ namespace time_schedule {
             Load,
             UnLoad
         }
+        public enum ProgramWindowState {
+            Normal,
+            Minimized
+        }
     }
 }
