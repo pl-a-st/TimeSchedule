@@ -75,7 +75,7 @@ namespace time_schedule {
             LoadAllPools();
             LoadTextBoxWithDate(); //281 мс
             LoadHorizontLine();
-            LoadVerticalLine();
+            DrowVerticalLines();
             LoadScrolls();
             SaveMinMaxDate();
             plForDate.Enabled = true;
@@ -86,6 +86,15 @@ namespace time_schedule {
             ChangePanelVisibility(Statuses.Visibility.Visible);
             plPersonButton.VerticalScroll.Value = VerticalScrollValue;
             plPersonButton.VerticalScroll.Value = VerticalScrollValue;
+        }
+        public Panel SetPlMain() {
+            return plMain;
+        }
+        public Panel SetPlForDate() {
+            return plForDate;
+        }
+        public Panel SetPlForPerson() {
+            return plPersonButton;
         }
         private void PlPersonButton_MouseWheel(object sender, MouseEventArgs e)
         {
@@ -155,17 +164,14 @@ namespace time_schedule {
         private int SetMaxLocationAndAddPersonButton(ref ListPersonButton listPersonButton)
         {
             int maxButtonLocationY = 0;
-
             foreach (PersonButton personButton in Program.ListPersonButton.PersonButtons)
             {
                 if (personButton.Person.ListTask.Tasks.Count > 0)
                 {
                     personButton.SetLocation(0, maxButtonLocationY);
-                    //plPersonButton.Controls.Add(personButton.Button);
                     maxButtonLocationY += (personButton.Button.Height + Constants.MIN_ROW_HIGHT +1);
                 }
             }
-            //maxButtonLocationY += VerticalScrollValue;
             return maxButtonLocationY; 
         }
         public void Drow(Pen pen, int pX0, int pY0, int pX1, int pY1)
@@ -194,7 +200,7 @@ namespace time_schedule {
                 }  
             }
         }
-        public void LoadVerticalLine()
+        public void DrowVerticalLines()
         {
             Pen penGrey = new Pen(Color.LightGray, 1);
             Pen penForMonday = new Pen(Color.FromArgb(32,55,100), 2);
@@ -220,8 +226,6 @@ namespace time_schedule {
         }
         public void LoadScrolls()
         {
-            const int MAGIC_ZEROING_FOR_CORRECT_OPERATION = 0;
-            
             try
             {
                 plForDate.HorizontalScroll.Value = HorizontalScrollValue;
@@ -418,7 +422,7 @@ namespace time_schedule {
             }
             catch
             {
-                MessageBox.Show("2");
+                
             }
             VerticalScrollValue = plMain.VerticalScroll.Value;
             HorizontalScrollValue = plMain.HorizontalScroll.Value;
@@ -459,7 +463,7 @@ namespace time_schedule {
             }
             catch
             {
-                MessageBox.Show("1");
+                //MessageBox.Show("1");
             }
             VerticalScrollValue = plMain.VerticalScroll.Value;
             HorizontalScrollValue = plMain.HorizontalScroll.Value;
@@ -685,32 +689,45 @@ namespace time_schedule {
         }
 
         private void btnRefresh_Click(object sender, EventArgs e) {
+           
+           
             LoadRefreshForm(Statuses.ProgressBar.Use);
         }
 
         private void создатьToolStripMenuItem_Click(object sender, EventArgs e) {
             Dals.WriteProjectFolder("Проект", Statuses.WorkWithProject.NewProject);
             SetNewTextForForm();
+            ZeroingScrolss();
             LoadRefreshForm(Statuses.ProgressBar.Use);
+            ScrollToDate(DateTime.Now.Date);
         }
         private void выбратьToolStripMenuItem_Click(object sender, EventArgs e) {
             Dals.WriteProjectFolder("", Statuses.WorkWithProject.LoadProject);
             SetNewTextForForm();
+            ZeroingScrolss();
             LoadRefreshForm(Statuses.ProgressBar.Use);
+            ScrollToDate(DateTime.Now.Date);
+        }
+        private void ZeroingScrolss() {
+            plForDate.HorizontalScroll.Value = 0;
+            plForDate.HorizontalScroll.Value = 0;
+            plMain.HorizontalScroll.Value = 0;
+            plMain.HorizontalScroll.Value = 0;
+            HorizontalScrollValue = 0;
+            plMain.VerticalScroll.Value = 0;
+            plMain.VerticalScroll.Value = 0;
+            VerticalScrollValue = 0;
+            plPersonButton.VerticalScroll.Value = 0;
+            plPersonButton.VerticalScroll.Value = 0;
         }
         private void SetNewTextForForm() {
             this.Text = Dals.ProjectFolderPath;
             this.Text = this.Text.Replace("\\Проект", string.Empty);
             this.Activate();
         }
-
-        private void button1_Click_2(object sender, EventArgs e) {
-            LoadTaskButtons();
-        }
         private void LoadPersonButtons() {
             if (FormReadyToBeAddedControl == Statuses.FormReadyToBeAddedControl.NotReady)
                 return;
-            
             foreach (PersonButton personButton in Program.ListPersonButton.PersonButtons) {
                 if (personButton.Person.ListTask.Tasks.Count > 0) {
                     plPersonButton.Controls.Add(personButton.Button);
@@ -750,17 +767,17 @@ namespace time_schedule {
             plMain.HorizontalScroll.Value);
             foreach (DateTextBox dateTextBox in Program.PoolTextBox.ListTextBoxes) {
                 if (dateTextBox.LoadingStatus == Statuses.LoadingStatus.ReadyToLoad) {
-                    
                     plForDate.Controls.Add(dateTextBox.TextBox);
                     dateTextBox.TextBox.BringToFront();
-                    
                     dateTextBox.SetLoadingStatus(Statuses.LoadingStatus.Loaded);
                 }
             }
+            
         }
         private void Form1_SizeChanged(object sender, EventArgs e) {
             LoadTaskButtons();
             LoadDateTextBoxes();
+            this.VerticalScrollValue = this.plMain.VerticalScroll.Value;
             if (this.WindowState == FormWindowState.Minimized) {
                 ProgramWindowState = Statuses.ProgramWindowState.Minimized;
                 timer1.Interval = 100;
@@ -773,7 +790,7 @@ namespace time_schedule {
             }
                 
         }
-
+      
     }
    
 }

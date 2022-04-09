@@ -4,6 +4,7 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Threading;
 using System.Windows.Forms;
 
 namespace time_schedule
@@ -115,14 +116,16 @@ namespace time_schedule
         private DateTime CalculateMaxLoadDate(int formWith, DateTime minLoadDate) {
             int reserve = formWith / 2 / Constants.COLUMN_WITH;
             int countDaysAfterScroll = formWith / Constants.COLUMN_WITH+2;
-            DateTime MaxLoadDate = minLoadDate;
+            DateTime maxLoadDate = minLoadDate;
             for (int i = 0; i < countDaysAfterScroll; i++) {
-                MaxLoadDate = MaxLoadDate.AddDays(1);
-                if (IsHolydays(MaxLoadDate)) {
+                if (maxLoadDate == DateTime.MaxValue)
+                    break;
+                maxLoadDate = maxLoadDate.AddDays(1);
+                if (IsHolydays(maxLoadDate)) {
                     i--;
                 }
             }
-            return MaxLoadDate;
+            return maxLoadDate;
         }
     }
     /// <summary>
@@ -588,7 +591,7 @@ namespace time_schedule
             Task task = new Task(dateStart, workDayCount);
             return task.DateFinish;
         }
-        public void ChangeDatesCountDays(DateTime dateStart, long countWorksDays)
+        public void ChangeDatesAndCountDays(DateTime dateStart, long countWorksDays)
         {
             dateStart = dateStart.Date;
             SetDateStart(dateStart);
@@ -802,30 +805,38 @@ namespace time_schedule
         private DateTime CalculateMaxLoadDate (int formWith, DateTime minLoadDate) {
             int reserve = formWith / 2 / Constants.COLUMN_WITH;
             int countDaysAfterScroll = formWith / Constants.COLUMN_WITH;
-            DateTime MaxLoadDate = minLoadDate;
+            DateTime maxLoadDate = minLoadDate;
+            
             for (int i = 0; i < countDaysAfterScroll; i++) {
-                MaxLoadDate = MaxLoadDate.AddDays(1);
-                if (IsHolydays(MaxLoadDate)) {
+                if (maxLoadDate == DateTime.MaxValue)
+                    break;
+                maxLoadDate = maxLoadDate.AddDays(1);
+                if (IsHolydays(maxLoadDate)) {
                     i--;
                 }
             }
-            return MaxLoadDate;
+            return maxLoadDate;
         }
     }
 
     public class TaskButton
     {
+        
         public Task Task
         { get; private set; }
-        public void SetTask(Task task)
-        {
-            Task = task;
-        }
+       
         public List<Button> Buttons
         { get; private set; } = new List<Button>();
+        public bool isDown {
+            get;
+            private set;
+        } = false;
         public Statuses.LoadingStatus LoadingStatus {
             get; private set;
         } = Statuses.LoadingStatus.NotReady;
+        public void SetTask(Task task) {
+            Task = task;
+        }
         public void SetLoadingStatus (Statuses.LoadingStatus loadingStatus) {
             LoadingStatus = loadingStatus;
         }
@@ -844,15 +855,17 @@ namespace time_schedule
             button.MouseHover += Button_MouseHover;
             void Button_MouseHover(object sender, EventArgs e)
             {
+               int scroll = Program.fmMain.SetPlMain().Location.Y;
                 ToolTip t = new ToolTip();
-                t.SetToolTip(button, Task.Name + "\n" +
+                t.SetToolTip(button,"№"+ Task.Number + "\n" + Task.Name + "\n" +
                     "до "+Task.DateFinish.ToString().Split(' ')[0] + "\n"+
                     "Статус: " + 
                     ((TaskStatusRus)Enum.Parse(typeof(TaskStatus),
                     Task.Status.ToString(),true)).ToString().Replace("_"," "));
             }
-
-
+            button.MouseDown += Button_MouseDown;
+            button.MouseUp += Button_MouseUp;
+            button.MouseLeave += Button_MouseLeave;
             if (Task.Status == TaskStatus.Closed)
                 button.Font = new Font(button.Font.FontFamily, button.Font.Size, FontStyle.Strikeout);
             if (Task.Status == TaskStatus.Active)
@@ -862,13 +875,108 @@ namespace time_schedule
                 button.Font = new Font(button.Font.FontFamily, button.Font.Size, FontStyle.Bold);
                 button.ForeColor = System.Drawing.Color.DarkRed;
             }
-               
+            void Button_MouseDown(object sender, MouseEventArgs e) {
+                isDown = true;
+                if (Program.UserType == UserType.Admin) {
+                    Thread thread = new Thread(CursorAndWidth, 0);
+                    thread.Start(button);
+                }
+
+                    
+            }
             Buttons.Add(button);
         }
+        private void CursorAndWidth(object button) {
+            Thread.Sleep(250);
+            if (isDown) {
+                (button as Button).BeginInvoke(new Action(delegate () { (button as Button).Width = Constants.COLUMN_WITH; }));
+                Program.fmMain.BeginInvoke(new Action(delegate () { Program.fmMain.Cursor = Cursors.NoMove2D; }));
+            }
+            
+        }
+        private void Button_MouseLeave(object sender, EventArgs e) {
+            
+            if (isDown && Program.UserType==UserType.Admin) {
+                Program.fmMain.SetPlMain().VerticalScroll.Value = Program.fmMain.SetForm1().VerticalScrollValue;
+                Program.fmMain.SetPlMain().VerticalScroll.Value = Program.fmMain.SetForm1().VerticalScrollValue;
+                (PersonButton, DateTime) PDT = SetNewDateAndPerson(
+                    Program.fmMain.PointToClient(Control.MousePosition),
+                    Program.ListPersonButton,
+                    Program.PoolTextBox);
+                if (PDT.Item1.Person!=null && PDT.Item2 != DateTime.MinValue) {
+                    //WriteNewNonWorkigDays();
+                    string personFamaly = PDT.Item1.Person.PersonFamaly;
+                    DateTime newDateStartTask = PDT.Item2;
+                    //MessageBox.Show("" + PDT.Item1.Person.PersonFamaly + " " + PDT.Item2);
+
+                    Task.SetPersonFamaly(PDT.Item1.Person.PersonFamaly);
+                    Task.ChangeDatesAndCountDays(PDT.Item2.Date, Task.CountWorkingDays);
+                    Task.SetTaskNumberAfter(0);
+                    ChekTaskAfter(Task);
+                    Dals.WriteListProjectFileAppend(Constants.TASKS, Program.ListTasksAllPerson.GetListForSave());
+                    Program.fmMain.SetForm1().LoadRefreshForm(Statuses.ProgressBar.Use);
+                    Program.fmMain.SetForm1().SetPlMain().Focus();
+                }
+            }
+            isDown = false;
+        }
+        //private void WriteNewNonWorkigDays() {
+        //    Program.listNonWorkingDays.NonWorkingDays.Sort();
+        //    int newCountDaysAfterChange = (dTmTaskDateFinish.Value.Date - FinishDateBeforeChange).Days;
+        //    if (newCountDaysAfterChange < 0)
+        //        return;
+        //    const int DIFFRENCE_QUANTITY_LAST_INDEX = 1;
+        //    int lastIndex = Program.listNonWorkingDays.NonWorkingDays.Count - DIFFRENCE_QUANTITY_LAST_INDEX;
+        //    DateTime newMaxDateFinish =
+        //        Program.listNonWorkingDays.NonWorkingDays[lastIndex].AddDays(newCountDaysAfterChange);
+        //    Program.listNonWorkingDays.NonWorkDaysWrite(FinishDateBeforeChange, newMaxDateFinish);
+        //}
+        private void ChekTaskAfter(Task task) {
+            for (int i = 0; i < Program.ListTasksAllPerson.Tasks.Count; i++) {
+                if (Program.ListTasksAllPerson.Tasks[i].TaskNumberAfter == task.Number) {
+                    Program.ListTasksAllPerson.Tasks[i].ChangeDatesAndCountDays(
+                        Task.GetDateFinish(task.DateFinish, 2),
+                        Program.ListTasksAllPerson.Tasks[i].CountWorkingDays
+                        ); // Magic number 2 to do
+                    ChekTaskAfter(Program.ListTasksAllPerson.Tasks[i]);
+                }
+            }
+        }
+        private (PersonButton, DateTime) SetNewDateAndPerson(Point point, ListPersonButton listPersonButton, PoolTextBox poolTextBox) {
+            point.Y = point.Y - Program.fmMain.SetPlMain().Location.Y ;
+            point.X = point.X - Program.fmMain.SetPlMain().Location.X ; // -Program.fmMain.SetPlMain().Location.X
+            var targetPersonButton = new PersonButton();
+            var dateTime = DateTime.MinValue;
+            foreach (PersonButton personButton in listPersonButton.PersonButtons) {
+                if (point.Y >= personButton.Button.Location.Y &&
+                    point.Y <= personButton.Button.Location.Y + personButton.Button.Height) {
+                    targetPersonButton = personButton;
+                    break;
+                }
+            }
+            int locX = 0;
+            foreach (DateTextBox dateTextBox in poolTextBox.ListTextBoxes) {
+                if (point.X >= dateTextBox.TextBox.Location.X &&
+                    (point.X <= dateTextBox.TextBox.Location.X + dateTextBox.TextBox.Width)&&
+                    dateTextBox.LoadingStatus==Statuses.LoadingStatus.Loaded) {
+                    locX = dateTextBox.TextBox.Location.X;
+                    dateTime = dateTextBox.Date.Date;
+                    break;
+                }
+                
+            }
+            return (targetPersonButton, dateTime);
+        }
+        private void Button_MouseUp(object sender, MouseEventArgs e) {
+            Program.fmMain.Cursor = Cursors.Default;
+        }
+
+        
+
         //LoadRefreshForm loadRefreshForm;
         private void Button_Click(object sender, EventArgs e)
         {
-
+            isDown = false;
             fmAddChangeTask fmAddTask = new fmAddChangeTask(Program.delegatLoadRefreshForm);
             fmAddTask.GhangeNamebtnCreateTask("Изменить");
             fmAddTask.SetCreateOrChange(CreateOrChange.Change);
@@ -955,7 +1063,9 @@ namespace time_schedule
     }
     public class PersonButton
     {
+        public PersonButton() {
 
+        }
         public PersonButton(Person person, ListTasks listTasksAllPerson, int hightRowForTasks, Form1 form1)
         {
             Person = person;
