@@ -857,11 +857,15 @@ namespace time_schedule
             {
                int scroll = Program.fmMain.SetPlMain().Location.Y;
                 ToolTip t = new ToolTip();
+                string numTaskAfter = string.Empty;
+                if (Task.TaskNumberAfter > 0)
+                    numTaskAfter = "псоле №" + Task.TaskNumberAfter;
                 t.SetToolTip(button,"№"+ Task.Number + "\n" + Task.Name + "\n" +
                     "до "+Task.DateFinish.ToString().Split(' ')[0] + "\n"+
                     "Статус: " + 
                     ((TaskStatusRus)Enum.Parse(typeof(TaskStatus),
-                    Task.Status.ToString(),true)).ToString().Replace("_"," "));
+                    Task.Status.ToString(),true)).ToString().Replace("_"," ") + "\n" +
+                    numTaskAfter);
             }
             button.MouseDown += Button_MouseDown;
             button.MouseUp += Button_MouseUp;

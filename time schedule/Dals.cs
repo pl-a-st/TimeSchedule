@@ -106,6 +106,22 @@ namespace time_schedule {
             }
             return listFromFile;
         }
+        public static List<string> ReadListFromFile(string fileName, string textForError) {
+            List<string> listFromFile = new List<string>();
+            if (File.Exists(fileName)) {
+                StreamReader streamReader = new StreamReader(fileName);
+                while (!streamReader.EndOfStream) {
+                    string stringToWrite = streamReader.ReadLine();
+                    if (stringToWrite != "")
+                        listFromFile.Add(stringToWrite);
+                }
+                streamReader.Close();
+            }
+            else {
+                MessageBox.Show(textForError);
+            }
+            return listFromFile;
+        }
         public static List<string> ReadListFromProjectFile(string fileName) {
             fileName = ProjectFolderPath + "\\" + fileName;
             return ReadListFromFile(fileName);
@@ -146,7 +162,7 @@ namespace time_schedule {
             }
             catch {
                 MessageBox.Show("Не удалось сохранить файл " + pathFileToSave +
-                    ". Заполнение буде произведено в файл шаблона. Необходимо его сохранить самстоятельно",
+                    ". Заполнение будет произведено в файл шаблона. Необходимо его сохранить самстоятельно",
                     "Проблема", MessageBoxButtons.OK, MessageBoxIcon.Error,
                     MessageBoxDefaultButton.Button1, MessageBoxOptions.ServiceNotification);
                 workbook.Save();

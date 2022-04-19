@@ -415,12 +415,15 @@ namespace time_schedule
                 //folderName += "\\" + targetFolderName;
                 Task task = new Task();
                 ListTasks listTasks = new ListTasks();
-                listTasks.SetTasksFromList(Dals.ReadListFromFile(folderName + "\\" + Constants.TASKS));
-                List<string> listStringPersons = Dals.ReadListFromFile(folderName + "\\" + Constants.PERSONS);
+                string textForError = "Для отображения задач необходимо создать хотя бы одну.";
+                listTasks.SetTasksFromList(Dals.ReadListFromFile(folderName + "\\" + Constants.TASKS, textForError));
+                textForError = "Не создано ни одного исполнителя.";
+                List<string> listStringPersons = Dals.ReadListFromFile(folderName + "\\" + Constants.PERSONS, textForError);
                 task = GetTaskForCreateChange(listTasks.GetNextNumForTask());
                 ListPersons listPersons = new ListPersons();
+
                 listPersons.SetPersonsFromList(
-                    Dals.ReadListFromFile(folderName + "\\" + Constants.PERSONS),
+                    Dals.ReadListFromFile(folderName + "\\" + Constants.PERSONS, textForError),
                     listTasks.Tasks);
                 string personFamaly = "Нераспределено";
                 bool isPersonHas = false;
