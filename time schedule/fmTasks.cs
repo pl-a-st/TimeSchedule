@@ -66,8 +66,7 @@ namespace time_schedule {
             return false;
         }
         private Boolean IsPersonTextAndDateMatchConditions(Task task) {
-            if (IsMatchPersonConditions(task) &&
-                task.Name.ToUpper().Contains(tBxTargetTask.Text.ToUpper())
+            if (IsMatchPersonConditions(task) && IsTaskContainsText(task)
                 ) {
                 if (!IsMatchDateConditions(task))
                     return false;
@@ -75,6 +74,12 @@ namespace time_schedule {
             }
             return false;
         }
+
+        private bool IsTaskContainsText(Task task) {
+            return (task.Name.ToUpper().Contains(tBxTargetTask.Text.ToUpper()) ||
+                task.Number.ToString().Contains(tBxTargetTask.Text));
+        }
+
         private void LoadLBxTasks() {
             lBxTasks.Items.Clear();
             foreach (Task task in Program.ListTasksAllPerson.Tasks) {

@@ -85,9 +85,15 @@ namespace time_schedule {
             }
         }
         public static void WriteListProjectFileAppend(string fileName, List<string> listForWrite) {
-            fileName = ProjectFolderPath + "\\" + fileName;
-            if (!Directory.Exists(ProjectFolderPath))
-                Directory.CreateDirectory(ProjectFolderPath);
+            if (ProjectFolderPath == null || ProjectFolderPath == string.Empty)
+                ProjectFolderPath = string.Empty;
+            else {
+                fileName = ProjectFolderPath + "\\" + fileName;
+            }
+            if (!Directory.Exists(ProjectFolderPath)) {
+                if (ProjectFolderPath != null && ProjectFolderPath != string.Empty)
+                    Directory.CreateDirectory(ProjectFolderPath);
+            }  
             WriteListtFileAppend(fileName, listForWrite);
         }
         public static List<string> ReadListFromFile(string fileName) {
@@ -102,10 +108,27 @@ namespace time_schedule {
                 streamReader.Close();
             }
             else {
-                MessageBox.Show("Не удалось зачитать файл " + fileName);
+                MessageAboutProblem(fileName);
             }
             return listFromFile;
         }
+
+        private static void MessageAboutProblem(string fileName) {
+            if (fileName == Constants.PERSONS) {
+                MessageBox.Show("В текущем проекте не создано ни одного исполнителя!");
+                return;
+            }
+            if (fileName == Constants.TASKS) {
+                MessageBox.Show("В текущем проекте не создано ни одной задачи!");
+                return;
+            }
+            if (fileName == Constants.HOLYDAYS) {
+                MessageBox.Show("В текущем проекте не занесены праздничные дни!");
+                return;
+            }
+            MessageBox.Show("Не удалось зачитать файл " + fileName);
+        }
+
         public static List<string> ReadListFromFile(string fileName, string textForError) {
             List<string> listFromFile = new List<string>();
             if (File.Exists(fileName)) {
@@ -123,7 +146,8 @@ namespace time_schedule {
             return listFromFile;
         }
         public static List<string> ReadListFromProjectFile(string fileName) {
-            fileName = ProjectFolderPath + "\\" + fileName;
+            if (ProjectFolderPath!=null && ProjectFolderPath!=string.Empty)
+                fileName = ProjectFolderPath + "\\" + fileName;
             return ReadListFromFile(fileName);
         }
         public static void ExelWriteListTasks(string pathFileToSave, ListTasks listTasks) {

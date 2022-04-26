@@ -54,7 +54,8 @@ namespace time_schedule
             lBxTasks.Items.Clear();
             foreach (Task task in Program.ListTasksAllPerson.Tasks)
             {
-                if (task.Name.ToUpper().Contains(targetTaskName.ToUpper()))
+                if (task.Name.ToUpper().Contains(targetTaskName.ToUpper()) ||
+                    task.Number.ToString().Contains(targetTaskName))
                     lBxTasks.Items.Add(task.Number.ToString() + "\t" + task.Name);
             }
         }

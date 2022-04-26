@@ -341,26 +341,25 @@ namespace time_schedule {
             DateTime dateMaxToTable = Program.ListTasksAllPerson.GetMaxDateFinishTasks();
             int height = plMain.Location.Y - plForDate.Location.Y;
             int locationX = 0;
-            //plForDate.Controls.Clear();
+            plForDate.Controls.Clear();
             while (dateToTables <= dateMaxToTable) {
                 if (IsNotHolyday(dateToTables)) {
                     DateTextBox dateTextBox = new DateTextBox(dateToTables, height, locationX);
-                    Program.PoolTextBox.ListTextBoxes.Add(dateTextBox);
-                    if (dateToTables == Program.ListTasksAllPerson.GetMinDateStartTasks() &&
-                        dateTextBox.LoadingStatus != Statuses.LoadingStatus.Loaded) {
+                   
+                    if (dateToTables == Program.ListTasksAllPerson.GetMinDateStartTasks()) {
                         dateTextBox.TextBox.Location = new Point(
                             dateTextBox.TextBox.Location.X - HorizontalScrollValue, 0);
                         plForDate.Controls.Add(dateTextBox.TextBox);
                         dateTextBox.SetLoadingStatus(Statuses.LoadingStatus.Loaded);
                     }
-                    if (dateToTables == dateMaxToTable &&
-                        dateTextBox.LoadingStatus != Statuses.LoadingStatus.Loaded) {
+                    if (dateToTables == dateMaxToTable) {
                         dateTextBox.TextBox.Location = new Point(
-                            dateTextBox.TextBox.Location.X - HorizontalScrollValue, 0);
+                            dateTextBox.TextBox.Location.X , 0);
                         plForDate.Controls.Add(dateTextBox.TextBox);
-                        dateTextBox.SetLoadingStatus(Statuses.LoadingStatus.Loaded);
+                        dateTextBox.SetLoadingStatus(Statuses.LoadingStatus.ReadyToLoad);
                     }
                     locationX += Constants.COLUMN_WITH;
+                    Program.PoolTextBox.ListTextBoxes.Add(dateTextBox);
                 }
                 dateToTables = dateToTables.AddDays(1);
             }
@@ -469,6 +468,9 @@ namespace time_schedule {
             HorizontalScrollValue = plMain.HorizontalScroll.Value;
             LoadTaskButtons();
             LoadDateTextBoxes();
+            //label1.Text = "задачи " + HorizontalScrollValue;
+            //label2.Text = "даты   " + plForDate.HorizontalScroll.Value;
+
         }
         private void toolStripTextBox1_Click(object sender, EventArgs e)
         {
@@ -500,7 +502,7 @@ namespace time_schedule {
         {
             int locationX = 0;
             foreach (DateTextBox DateTextBox in Program.PoolTextBox.ListTextBoxes) {
-                if (DateTextBox.Date.Date <= targetDateTime) {
+                if (DateTextBox.Date.Date < targetDateTime) {
                     locationX += Constants.COLUMN_WITH;
                 }
                 else {
@@ -689,8 +691,6 @@ namespace time_schedule {
         }
 
         private void btnRefresh_Click(object sender, EventArgs e) {
-           
-           
             LoadRefreshForm(Statuses.ProgressBar.Use);
         }
 
