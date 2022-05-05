@@ -41,6 +41,7 @@ namespace time_schedule {
                 if (workWithProject == Statuses.WorkWithProject.NewProject) {
                     folderBrowserDialog.Description = "Выбирете папку для проекта";
                     ChooseFolderWritePath(targetFolderName, folderBrowserDialog);
+                    return;
                 }
                     
                 if (workWithProject == Statuses.WorkWithProject.LoadProject) {
@@ -54,8 +55,9 @@ namespace time_schedule {
                     }
                     string folderPath = fmProjectChoise.SetTBxAddress().Text;
                     WritePaht(folderPath);
+                    return;
                 }
-                    
+                  WritePaht("Проект");  
             }
             catch {
                 MessageBox.Show("Не удалось произвести запись в файл: " + Constants.PROJECT_FILE_NAME);
@@ -86,7 +88,7 @@ namespace time_schedule {
         }
         public static void WriteListProjectFileAppend(string fileName, List<string> listForWrite) {
             if (ProjectFolderPath == null || ProjectFolderPath == string.Empty)
-                ProjectFolderPath = string.Empty;
+                ProjectFolderPath = "Проект";//ProjectFolderPath = string.Empty;
             else {
                 fileName = ProjectFolderPath + "\\" + fileName;
             }
@@ -112,18 +114,17 @@ namespace time_schedule {
             }
             return listFromFile;
         }
-
         private static void MessageAboutProblem(string fileName) {
-            if (fileName == Constants.PERSONS) {
+            if (fileName.Contains(Constants.PERSONS)) {
                 MessageBox.Show("В текущем проекте не создано ни одного исполнителя!");
                 return;
             }
-            if (fileName == Constants.TASKS) {
+            if (fileName.Contains(Constants.TASKS)) {
                 MessageBox.Show("В текущем проекте не создано ни одной задачи!");
                 return;
             }
-            if (fileName == Constants.HOLYDAYS) {
-                MessageBox.Show("В текущем проекте не занесены праздничные дни!");
+            if (fileName.Contains(Constants.HOLYDAYS)) {
+                MessageBox.Show( "В текущем проекте не занесены праздничные дни!");
                 return;
             }
             MessageBox.Show("Не удалось зачитать файл " + fileName);

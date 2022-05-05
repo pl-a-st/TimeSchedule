@@ -32,7 +32,10 @@ namespace time_schedule {
         public void fmTasks_Load(object sender, EventArgs e) {
             LoadLBxTasks();
             dTPFilterDateStart.Value = DateTime.Now.Date;
-            dTPFilterDateFinish.Value = Program.ListTasksAllPerson.GetMaxDateFinishTasks().Date;
+            try {
+                dTPFilterDateFinish.Value = Program.ListTasksAllPerson.GetMaxDateFinishTasks().Date;
+            }
+            catch { }
             if (Program.UserType != UserType.Admin) {
                 btnDeleteTask.Enabled = false;
                 btnNewTask.Enabled = false;
