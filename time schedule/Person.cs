@@ -596,6 +596,7 @@ namespace time_schedule
             dateStart = dateStart.Date;
             SetDateStart(dateStart);
             SetCountWorkingDays(countWorksDays);
+            Program.listNonWorkingDays.NonWorkDaysWrite(dateStart, dateStart.AddDays(CountDays + 2));
             SetCountDays(Program.listNonWorkingDays);
             SetDateFinish();
         }
@@ -874,11 +875,14 @@ namespace time_schedule
                 button.Font = new Font(button.Font.FontFamily, button.Font.Size, FontStyle.Strikeout);
             if (Task.Status == TaskStatus.Active)
                 button.Font = new Font(button.Font.FontFamily, button.Font.Size, FontStyle.Underline);
-            if (Task.Status == TaskStatus.New && Task.DateStart.Date<DateTime.Now.Date)
+            if (
+                ((Task.Status == TaskStatus.New) && Task.DateStart.Date<DateTime.Now.Date) ||
+                (Task.DateFinish.Date < DateTime.Now.Date) && (Task.Status != TaskStatus.Closed)
+                )
             {
-                button.Font = new Font(button.Font.FontFamily, button.Font.Size, FontStyle.Bold);
                 button.ForeColor = System.Drawing.Color.DarkRed;
             }
+
             void Button_MouseDown(object sender, MouseEventArgs e) {
                 isDown = true;
                 if (Program.UserType == UserType.Admin) {
@@ -1091,19 +1095,8 @@ namespace time_schedule
         {
             Program.Person = Person;
             fmTasks fmTasks = new fmTasks(Form1);
-            fmTasks.Load -= fmTasks.fmTasks_Load;
-            fmTasks.Load += FmTasks_Load;
-            void FmTasks_Load(object sender1, EventArgs e1)
-            {
-                fmTasks.SetFmTasksStatusLoad(FmTasksStatusLoad.loadForPerson);
-                fmTasks.SetFilterDateStart(DateTime.Now.Date);
-                fmTasks.SetFilterDateFinish(Program.ListTasksAllPerson.GetMaxDateFinishTasks().Date);
-                fmTasks.Text = "Испольнитель:" + Person.PersonFamaly + "- задачи";
-                if (Program.UserType != UserType.Admin) {
-                    fmTasks.GetBtnDeleteTask().Enabled = false;
-                    fmTasks.GetBtnNewTask().Enabled = false;
-                }
-            }
+            fmTasks.SetFmTasksStatusLoad(TaskLoadFor.LoadForPerson);
+            fmTasks.Text = "Испольнитель:" + Person.PersonFamaly + "- задачи";
             fmTasks.ShowDialog();
         }
         public Button Button

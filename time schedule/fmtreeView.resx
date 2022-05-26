@@ -117,26 +117,4 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
-  <data name="фильтр3" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\фильтр3.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="img_369387 (2)" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\img_369387 (2).png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="фильтр1" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\фильтр1.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="фильтр21" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\фильтр21.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="фильтр" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\фильтр.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="фильтр2" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\фильтр2.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="kisspng-computer-icons-electronic-filter-low-pass-filter-5af607c33d0303.5914893915260732832499" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\kisspng-computer-icons-electronic-filter-low-pass-filter-5af607c33d0303.5914893915260732832499.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
 </root>

@@ -52,6 +52,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="enums.cs" />
     <Compile Include="Constants.cs" />
     <Compile Include="Dals.cs" />
     <Compile Include="fmAddProject.cs">
@@ -95,6 +96,12 @@
     </Compile>
     <Compile Include="fmTasks.Designer.cs">
       <DependentUpon>fmTasks.cs</DependentUpon>
+    </Compile>
+    <Compile Include="fmtreeView.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="fmtreeView.Designer.cs">
+      <DependentUpon>fmtreeView.cs</DependentUpon>
     </Compile>
     <Compile Include="fmWorkWithPersons.cs">
       <SubType>Form</SubType>
@@ -145,6 +152,9 @@
     <EmbeddedResource Include="fmTasks.resx">
       <DependentUpon>fmTasks.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="fmtreeView.resx">
+      <DependentUpon>fmtreeView.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="fmWorkWithPersons.resx">
       <DependentUpon>fmWorkWithPersons.cs</DependentUpon>
     </EmbeddedResource>
@@ -182,6 +192,13 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="favicon2.ico" />
+    <None Include="Resources\kisspng-computer-icons-electronic-filter-low-pass-filter-5af607c33d0303.5914893915260732832499.png" />
+    <None Include="Resources\фильтр3.png" />
+    <None Include="Resources\фильтр21.png" />
+    <None Include="Resources\фильтр2.png" />
+    <None Include="Resources\фильтр1.png" />
+    <None Include="Resources\фильтр.png" />
+    <None Include="Resources\img_369387 %282%29.png" />
   </ItemGroup>
   <ItemGroup>
     <COMReference Include="Microsoft.Office.Core">

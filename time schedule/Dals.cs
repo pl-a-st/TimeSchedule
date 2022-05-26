@@ -190,6 +190,7 @@ namespace time_schedule {
                     ". Заполнение будет произведено в файл шаблона. Необходимо его сохранить самстоятельно",
                     "Проблема", MessageBoxButtons.OK, MessageBoxIcon.Error,
                     MessageBoxDefaultButton.Button1, MessageBoxOptions.ServiceNotification);
+               
                 workbook.Save();
             }
 
@@ -207,10 +208,17 @@ namespace time_schedule {
                 }
             }
             catch {
-                excelApp.Quit();
-                MessageBox.Show("Не удалось открыть файл " + pathModelFile +
-                    " или проблемы с самим приложением");
-                return;
+                try {
+                    pathModelFile = Environment.CurrentDirectory + "\\" + pathModelFile;
+                    workbook = excelApp.Workbooks.Open(pathModelFile);
+                }
+                catch {
+                    excelApp.Quit();
+                    MessageBox.Show("Не удалось открыть файл " + pathModelFile +
+                        " или проблемы с самим приложением");
+                    return;
+                }
+                
             }
         }
         private static void WorksheetWriteListTasks(Excel.Worksheet worksheet, ListTasks listTasks) {

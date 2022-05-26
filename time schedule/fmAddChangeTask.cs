@@ -100,7 +100,7 @@ namespace time_schedule
             }
             foreach (int element in Enum.GetValues(typeof(TaskStatusRus)))
             {
-                cmBxTaskStatus.Items.Add((TaskStatusRus)element);
+                cmBxTaskStatus.Items.Add(((TaskStatusRus)element).ToString().Replace('_',' '));
             }
             bTnColor.FlatStyle = FlatStyle.Flat;
             if (CreateOrChange == CreateOrChange.Change)
@@ -142,7 +142,12 @@ namespace time_schedule
             tBxTaskName.Text = Program.Task.Name;
             bTnColor.BackColor = Program.Task.Color;
             cmBxPerson.Text = Program.Task.PersonFamaly;
-            cmBxTaskStatus.Text = ((TaskStatusRus)Enum.Parse(typeof(TaskStatus), Program.Task.Status.ToString(), true)).ToString();
+            cmBxTaskStatus.Text = (
+                (TaskStatusRus)Enum.Parse(
+                    typeof(TaskStatus),
+                    Program.Task.Status.ToString(),
+                    true)
+                ).ToString().Replace('_',' ');
             nUpDnPreviousTask.Value = Program.Task.TaskNumberAfter;
             rBnDayStart.Checked = true;
             nUpDnPrioirity.Value= Program.Task.Priority;
@@ -297,8 +302,8 @@ namespace time_schedule
                 }
             }
             Dals.WriteListProjectFileAppend(Constants.TASKS, Program.ListTasksAllPerson.GetListForSave());
-            thisloadRefreshForm?.Invoke();
-            
+            Program.fmMain.LoadRefreshForm(Statuses.ProgressBar.Use);
+           
             this.Close();
         }
         private Boolean IsTBxTaskNameEmpty() {
@@ -328,7 +333,12 @@ namespace time_schedule
         }
         private Task GetTaskForCreateChange(long numTask)
         {
-            TaskStatus taskStatus = (TaskStatus)Enum.Parse(typeof(TaskStatusRus), cmBxTaskStatus.Text, true);
+            TaskStatus taskStatus =
+                (TaskStatus)Enum.Parse(
+                                        typeof(TaskStatusRus),
+                                        cmBxTaskStatus.Text.Replace(' ','_'),
+                                        true
+                                        );
             return  new Task
                 (
                 taskStatus,
@@ -458,8 +468,8 @@ namespace time_schedule
                 listTasks.AddTask(task);
                 Dals.WriteListtFileAppend(folderName + "\\" + Constants.TASKS, listTasks.GetListForSave());
                 MessageBox.Show("Задача успешно скопирована.");
-                thisloadRefreshForm?.Invoke();
-
+                //thisloadRefreshForm?.Invoke();
+                Program.fmMain.LoadRefreshForm(Statuses.ProgressBar.Use);
             }
             catch
             {

@@ -30,6 +30,8 @@ namespace time_schedule {
         { get; private set; } = DateTime.MaxValue;
         public DateTime MaxDateFinish
         { get; private set; } = DateTime.MinValue;
+        public int DiveDays {
+            get; private set;}
         public int VerticalScrollValue {
             get;
             private set;
@@ -65,27 +67,38 @@ namespace time_schedule {
         public Form1(Form form) {
             SelfRef = this;
         }
+        int CalcDivDays() {
+            DateTime maxDateTime = Program.ListTasksAllPerson.GetMaxDateFinishTasks();
+            DateTime minDateTime = Program.ListTasksAllPerson.GetMinDateStartTasks();
+            return (maxDateTime - MaxDateFinish).Days;
+        }
         public void LoadRefreshForm() {
+            
+            
             ChangePanelVisibility(Statuses.Visibility.Invisible);
             SaveScrolls();
+            if (CalcDivDays() < 0) {
+                HorizontalScrollAdd(CalcDivDays());
+            }
             FormReadyToBeAddedControl = Statuses.FormReadyToBeAddedControl.NotReady;
             plForDate.Enabled = false;
             CleanOldExemplars(); // 245 мс
             ClearAllPools();
             LoadAllPools();
+            
             LoadTextBoxWithDate(); //281 мс
             LoadHorizontLine();
             DrowVerticalLines();
-            LoadScrolls();
             SaveMinMaxDate();
             plForDate.Enabled = true;
+            LoadScrolls();
             FormReadyToBeAddedControl = Statuses.FormReadyToBeAddedControl.Ready;
             LoadPersonButtons();
             LoadTaskButtons();//285 мс
             LoadDateTextBoxes();
             ChangePanelVisibility(Statuses.Visibility.Visible);
-            plPersonButton.VerticalScroll.Value = VerticalScrollValue;
-            plPersonButton.VerticalScroll.Value = VerticalScrollValue;
+            //plPersonButton.VerticalScroll.Value = VerticalScrollValue;
+            //plPersonButton.VerticalScroll.Value = VerticalScrollValue;
         }
         public Panel SetPlMain() {
             return plMain;
@@ -261,7 +274,8 @@ namespace time_schedule {
             LoadRefreshForm(Statuses.ProgressBar.Use);
         }
         public void LoadRefreshForm(Statuses.ProgressBar statusProgressBar) {
-            if(statusProgressBar == Statuses.ProgressBar.Use) {
+            timer1.Interval = 900000;
+            if (statusProgressBar == Statuses.ProgressBar.Use) {
                 fmProgressBar fmProgressBar = new fmProgressBar();
                 fmProgressBar.SetTextMessege("Идет обновление");
                 fmProgressBar.StartPosition = FormStartPosition.Manual;
@@ -354,7 +368,7 @@ namespace time_schedule {
                     }
                     if (dateToTables == dateMaxToTable) {
                         dateTextBox.TextBox.Location = new Point(
-                            dateTextBox.TextBox.Location.X , 0);
+                            dateTextBox.TextBox.Location.X, 0);
                         plForDate.Controls.Add(dateTextBox.TextBox);
                         dateTextBox.SetLoadingStatus(Statuses.LoadingStatus.ReadyToLoad);
                     }
@@ -468,8 +482,8 @@ namespace time_schedule {
             HorizontalScrollValue = plMain.HorizontalScroll.Value;
             LoadTaskButtons();
             LoadDateTextBoxes();
-            //label1.Text = "задачи " + HorizontalScrollValue;
-            //label2.Text = "даты   " + plForDate.HorizontalScroll.Value;
+            //label1.Text = "текущее " + plForDate.HorizontalScroll.Value;
+            //label2.Text = "максимальное   " + plForDate.HorizontalScroll.Maximum;
 
         }
         private void toolStripTextBox1_Click(object sender, EventArgs e)
@@ -562,21 +576,21 @@ namespace time_schedule {
         {
             LoadRefreshForm(Statuses.ProgressBar.Use);
         }
-
-        private void PlusFiveDays(object sender, EventArgs e)
-        {
-            try
-            {
-                plMain.HorizontalScroll.Value += 5 * Constants.COLUMN_WITH;
-                plMain.HorizontalScroll.Value += 5 * Constants.COLUMN_WITH;
+        private void HorizontalScrollAdd(int value) {
+            try {
+                plMain.HorizontalScroll.Value += value * Constants.COLUMN_WITH;
+                plMain.HorizontalScroll.Value += value * Constants.COLUMN_WITH;
                 plForDate.HorizontalScroll.Value = plMain.HorizontalScroll.Value;
                 plForDate.HorizontalScroll.Value = plMain.HorizontalScroll.Value;
             }
-            catch
-            {
+            catch {
 
             }
             HorizontalScrollValue = plMain.HorizontalScroll.Value;
+        }
+        private void PlusFiveDays(object sender, EventArgs e)
+        {
+            HorizontalScrollAdd(5);
             LoadTaskButtons();
             LoadDateTextBoxes();
         }
@@ -599,18 +613,7 @@ namespace time_schedule {
 
         private void MinusFiveDays_Click(object sender, EventArgs e)
         {
-            try
-            {
-                plMain.HorizontalScroll.Value -= 5 * Constants.COLUMN_WITH;
-                plMain.HorizontalScroll.Value -= 5 * Constants.COLUMN_WITH;
-                plForDate.HorizontalScroll.Value = plMain.HorizontalScroll.Value;
-                plForDate.HorizontalScroll.Value = plMain.HorizontalScroll.Value;
-            }
-            catch
-            {
-
-            }
-            HorizontalScrollValue = plMain.HorizontalScroll.Value;
+            HorizontalScrollAdd(-5);
             LoadTaskButtons();
             LoadDateTextBoxes();
 
@@ -790,7 +793,10 @@ namespace time_schedule {
             }
                 
         }
-      
+
+        private void dateTimePicker1_ValueChanged(object sender, EventArgs e) {
+
+        }
     }
    
 }

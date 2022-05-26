@@ -236,6 +236,7 @@
             this.dateTimePicker1.Size = new System.Drawing.Size(172, 20);
             this.dateTimePicker1.TabIndex = 8;
             this.dateTimePicker1.CloseUp += new System.EventHandler(this.dateTimePicker1_CloseUp);
+            this.dateTimePicker1.ValueChanged += new System.EventHandler(this.dateTimePicker1_ValueChanged);
             this.dateTimePicker1.Enter += new System.EventHandler(this.dateTimePicker1_Enter);
             this.dateTimePicker1.KeyUp += new System.Windows.Forms.KeyEventHandler(this.dateTimePicker1_KeyUp);
             // 

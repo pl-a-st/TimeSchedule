@@ -98,7 +98,7 @@
             this.btnAdd.UseVisualStyleBackColor = true;
             this.btnAdd.Click += new System.EventHandler(this.btnAdd_Click);
             // 
-            // fmProjectCopy
+            // fmProjectChoise
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -110,9 +110,9 @@
             this.Controls.Add(this.tBxAddress);
             this.Controls.Add(this.btnSelect);
             this.Controls.Add(this.lBxProject);
-            this.Name = "fmProjectCopy";
+            this.Name = "fmProjectChoise";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
-            this.Text = "Выберите проект для копирования";
+            this.Text = "Выберите проект";
             this.Load += new System.EventHandler(this.fmProjectCopy_Load);
             this.ResumeLayout(false);
             this.PerformLayout();

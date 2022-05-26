@@ -14,9 +14,13 @@ using System.Windows.Forms;
 
 
 namespace time_schedule {
-    public enum FmTasksStatusLoad {
-        loadForAll,
-        loadForPerson
+    public enum TaskLoadFor {
+        LoadForAll,
+        LoadForPerson
+    }
+    public enum NeedCheckStatus {
+        Need,
+        Nedlessly
     }
     public partial class fmTasks : Form {
         private Form1 Form1Delegat;
@@ -25,12 +29,20 @@ namespace time_schedule {
             InitializeComponent();
 
         }
-        public FmTasksStatusLoad FmTasksStatusLoad { get; private set; } = FmTasksStatusLoad.loadForAll;
-        public void SetFmTasksStatusLoad(FmTasksStatusLoad fmTasksStatusLoad) {
+        public TaskLoadFor FmTasksStatusLoad { 
+            get;
+            private set; 
+        } = TaskLoadFor.LoadForAll;
+        public NeedCheckStatus NeedCheckStatus {
+            get;
+            private set;
+        } = NeedCheckStatus.Nedlessly;
+        public void SetFmTasksStatusLoad(TaskLoadFor fmTasksStatusLoad) {
             FmTasksStatusLoad = fmTasksStatusLoad;
         }
         public void fmTasks_Load(object sender, EventArgs e) {
             LoadLBxTasks();
+            
             dTPFilterDateStart.Value = DateTime.Now.Date;
             try {
                 dTPFilterDateFinish.Value = Program.ListTasksAllPerson.GetMaxDateFinishTasks().Date;
@@ -60,24 +72,48 @@ namespace time_schedule {
             return false;
         }
         private Boolean IsMatchPersonConditions(Task task) {
-            if (FmTasksStatusLoad == FmTasksStatusLoad.loadForAll)
+            if (FmTasksStatusLoad == TaskLoadFor.LoadForAll)
                 return true;
-            if (FmTasksStatusLoad == FmTasksStatusLoad.loadForPerson &&
+            if (FmTasksStatusLoad == TaskLoadFor.LoadForPerson &&
                 Program.Person.PersonFamaly == task.PersonFamaly) {
                 return true;
             }
             return false;
         }
-        private Boolean IsPersonTextAndDateMatchConditions(Task task) {
-            if (IsMatchPersonConditions(task) && IsTaskContainsText(task)
+
+        private bool  IsNotStarted(Task task) {
+            if (cBxNotStarted.Checked) {
+                return (task.DateStart.Date < DateTime.Now.Date) && (task.Status == TaskStatus.New);
+            }
+            return true;
+        }
+        private bool IsOverdue(Task task) {
+            if (cBxOverdue.Checked) {
+                return (task.DateFinish.Date < DateTime.Now.Date) && (task.Status != TaskStatus.Closed);
+            }
+            return true;
+        }
+        private Boolean IsAllCorresponds(Task task) {
+            if (
+                IsMatchPersonConditions(task) && 
+                IsTaskContainsText(task) &&
+                IsStatusFit(task)&&
+                IsNotStarted(task)&&
+                IsOverdue(task)
                 ) {
                 if (!IsMatchDateConditions(task))
                     return false;
                 return true;
             }
             return false;
+            
         }
-
+        private bool IsStatusFit(Task task) {
+            if (NeedCheckStatus== NeedCheckStatus.Need) {
+                return TaskStatuses.Contains(task.Status);
+            }
+            return true;
+        }
         private bool IsTaskContainsText(Task task) {
             return (task.Name.ToUpper().Contains(tBxTargetTask.Text.ToUpper()) ||
                 task.Number.ToString().Contains(tBxTargetTask.Text));
@@ -86,7 +122,7 @@ namespace time_schedule {
         private void LoadLBxTasks() {
             lBxTasks.Items.Clear();
             foreach (Task task in Program.ListTasksAllPerson.Tasks) {
-                if (IsPersonTextAndDateMatchConditions(task))
+                if (IsAllCorresponds(task))
                     lBxTasks.Items.Add(task.Number.ToString() + "\t" + task.Name);
             }
             ClearTextBoxesIfListBoxOut();
@@ -223,13 +259,14 @@ namespace time_schedule {
             if (cBxFilterByDate.Checked) {
                 dTPFilterDateStart.Enabled = true;
                 dTPFilterDateFinish.Enabled = true;
-                LoadLBxTasks();
+                cBxNotStarted.Checked = false;
+                cBxOverdue.Checked = false;
             }
             if (!cBxFilterByDate.Checked) {
                 dTPFilterDateStart.Enabled = false;
                 dTPFilterDateFinish.Enabled = false;
-                LoadLBxTasks();
             }
+            LoadLBxTasks();
 
         }
         private void dTPFilterDateStart_ValueChanged(object sender, EventArgs e) {
@@ -264,6 +301,125 @@ namespace time_schedule {
             Dals.ExelWriteListTasks(Dals.ProjectFolderPath + "\\" + excelFileNameToSave, listTaskForWrite);
             fmProgressBar fmProgressBarNew = (fmProgressBar as fmProgressBar);
             fmProgressBarNew.BeginInvoke(new Action(delegate() { fmProgressBarNew.Close(); }));
+        }
+        public List<TaskStatus> TaskStatuses {
+            get;
+            private set;
+        } = new List<TaskStatus>();
+        private void cBxStatus_Click(object sender, EventArgs e) {
+            LoadListStatuses();
+            LoadLBxTasks();
+        }
+        private void LoadListStatuses() {
+            fmtreeView fmtreeView = new fmtreeView();
+            fmtreeView.Text = "Выберите статусы";
+            TreeView treeView = fmtreeView.GetTreeView();
+            treeView.CheckBoxes = true;
+            bool isChecked = fmtreeView.GetIsChecked();
+            treeView.Nodes.Add(new TreeNode("Все"));
+            treeView.NodeMouseClick += TreeView_NodeMouseClick;
+            void TreeView_NodeMouseClick(object senderTree, TreeNodeMouseClickEventArgs tree) {
+                if (isChecked) {
+                    foreach (TreeNode node in tree.Node.Nodes) {
+                        node.Checked = tree.Node.Checked;
+                    }
+                    if (tree.Node.Parent != null) {
+                        bool isNodeChecked = true;
+                        foreach (TreeNode node in tree.Node.Parent.Nodes) {
+                            isNodeChecked &= node.Checked;
+                        }
+                        tree.Node.Parent.Checked = isNodeChecked;
+                    }
+                    isChecked = false;
+                }
+            }
+            treeView.BeforeCollapse += TreeView_BeforeCollapse; ;
+            treeView.BeforeCheck += TreeView_BeforeCheck;
+            foreach (int element in Enum.GetValues(typeof(TaskStatusRus))) {
+                treeView.Nodes[0].Nodes.Add(new TreeNode(
+                    ((TaskStatusRus)element).ToString().Replace('_', ' ')));
+            }
+            foreach (TreeNode treeNode in treeView.Nodes[0].Nodes) {
+                if (TaskStatuses.Contains((TaskStatus)Enum.Parse(
+                                    typeof(TaskStatusRus),
+                                    treeNode.Text.Replace(' ', '_'),
+                                    true))) {
+                    treeNode.Checked = true;
+                }
+            }
+            void TreeView_BeforeCollapse(object senderTree, TreeViewCancelEventArgs tree) {
+                tree.Cancel = true;
+            }
+            void TreeView_BeforeCheck(object sensenderTreeder, TreeViewCancelEventArgs tree) {
+                isChecked = true;
+            }
+            treeView.ExpandAll();
+            var listStatuses = new List<TaskStatus>();
+            fmtreeView.ShowDialog();
+            if (fmtreeView.BtnClick == FormBtnClick.Ok) {
+                TaskStatuses.Clear();
+                string allCheckedStatuses = string.Empty;
+                foreach (TreeNode node in treeView.Nodes[0].Nodes) {
+                    if (node.Checked) {
+                        if (allCheckedStatuses != string.Empty)
+                            allCheckedStatuses += ", ";
+                        allCheckedStatuses += node.Text;
+                        TaskStatuses.Add
+                            (
+                                (TaskStatus)Enum.Parse(
+                                    typeof(TaskStatusRus),
+                                    node.Text.Replace(' ', '_'),
+                                    true)
+                            );
+                    }
+                }
+                tBxStatusesFilter.Text = allCheckedStatuses;
+            }
+        }
+        private void cBxFilterByStatus_CheckedChanged(object sender, EventArgs e) {
+            if (cBxFilterByStatus.Checked) {
+                tBxStatusesFilter.Enabled = true;
+                btnFilter.Enabled = true;
+                NeedCheckStatus = NeedCheckStatus.Need;
+                cBxNotStarted.Checked = false;
+                cBxOverdue.Checked = false;
+                LoadListStatuses();
+            }
+            if (!cBxFilterByStatus.Checked) {
+                tBxStatusesFilter.Enabled = false;
+                btnFilter.Enabled = false;
+                NeedCheckStatus = NeedCheckStatus.Nedlessly;
+                TaskStatuses.Clear();
+                tBxStatusesFilter.Text = "";
+            }
+            LoadLBxTasks();
+        }
+
+        private void btnFilter_Click(object sender, EventArgs e) {
+            LoadListStatuses();
+            LoadLBxTasks();
+        }
+
+        private void label6_Click(object sender, EventArgs e) {
+
+        }
+
+        private void cBxOverdue_CheckedChanged(object sender, EventArgs e) {
+            if (cBxOverdue.Checked) {
+                cBxFilterByStatus.Checked = false;
+                cBxFilterByDate.Checked = false;
+                cBxNotStarted.Checked = false;
+            }
+            LoadLBxTasks();
+        }
+
+        private void cBxNotStarted_CheckedChanged(object sender, EventArgs e) {
+            if (cBxNotStarted.Checked) {
+                cBxFilterByStatus.Checked = false;
+                cBxFilterByDate.Checked = false;
+                cBxOverdue.Checked = false;
+            }
+            LoadLBxTasks();
         }
     }
 }
