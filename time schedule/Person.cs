@@ -482,13 +482,11 @@ namespace time_schedule
         }
         public void NonWorkDaysWrite(DateTime вeginningPeriod, DateTime endPeriod)
         {
-            int i = 0;
-            while (вeginningPeriod.AddDays(i) < endPeriod)
+            for (int i = 0; вeginningPeriod.AddDays(i) <= endPeriod; i++)
             {
                 if (вeginningPeriod.AddDays(i).DayOfWeek == DayOfWeek.Sunday ||
                     вeginningPeriod.AddDays(i).DayOfWeek == DayOfWeek.Saturday)
                     Program.listNonWorkingDays.NonWorkingDays.Add(вeginningPeriod.AddDays(i));
-                i++;
             }
         }
 
@@ -499,8 +497,6 @@ namespace time_schedule
     /// </summary>
     public class Task {
         public TaskStatus Status { get; private set; }
-
-       
         public string Name { get; private set; }
         public long Number { get; private set; }
         public string PersonFamaly { get; private set; }
@@ -512,6 +508,7 @@ namespace time_schedule
         public Color Color { get; private set; }
         public long Priority { get; private set; }
         public int PlaceInSynchTask { get; private set; } = 0;
+        public string ProjectName { get; private set; }
         public Task ()
         { }
         public Task(string allParamTab)
@@ -542,8 +539,8 @@ namespace time_schedule
                 DateFinish = Convert.ToDateTime(allParam[DATE_FINISH]);
             if (allParam[COUNT_DAYS] != "")
                 CountDays = Convert.ToInt32(allParam[COUNT_DAYS]);
-                if (allParam[COUNT_WORKING_DAYS] != "")
-                    CountWorkingDays = Convert.ToInt32(allParam[COUNT_WORKING_DAYS]);
+            if (allParam[COUNT_WORKING_DAYS] != "")
+                CountWorkingDays = Convert.ToInt32(allParam[COUNT_WORKING_DAYS]);
             if (allParam[TASK_COLOR] != "")
                 Color = Color.FromArgb(Convert.ToInt32(allParam[TASK_COLOR]));
             if (allParam.Length>10&& allParam[PRIORITY] != "")
@@ -554,8 +551,10 @@ namespace time_schedule
             dateStart = dateStart.Date;
             SetDateStart(dateStart);
             SetCountWorkingDays(countWorksDays);
+            Program.listNonWorkingDays.NonWorkDaysWrite(dateStart, dateStart.AddDays(countWorksDays));
             SetCountDays(Program.listNonWorkingDays);
             SetDateFinish();
+
         }
         public Task(DateTime dateStart, DateTime dateFinish) {
             dateStart = dateStart.Date;
@@ -565,8 +564,14 @@ namespace time_schedule
             SetCountDays();
             SetCountWorkingDays(Program.listNonWorkingDays);
         }
-        public Task(TaskStatus taskStatus, string taskName, string personFamaly, long taskNumber, long taskNumberAfter,
-           DateTime dateStart, DateTime dateFinish, long countDays, long countWorkingDays, Color taskColor, long priority) {
+        public Task(
+                TaskStatus taskStatus, string taskName,
+                string personFamaly, long taskNumber, 
+                long taskNumberAfter,DateTime dateStart,
+                DateTime dateFinish, long countDays,
+                long countWorkingDays, Color taskColor,
+                long priority
+            ) {
             Status = taskStatus;
             Name = taskName;
             PersonFamaly = personFamaly;
@@ -658,7 +663,10 @@ namespace time_schedule
                 {
                     CountDays++;
                 }
-                if (i == CountDays - 1 && (listNonWorkingDays.NonWorkingDays.Contains(dateTime.AddDays(i))))
+                if (
+                    i == CountDays - 1
+                    && (listNonWorkingDays.NonWorkingDays.Contains(dateTime.AddDays(i)))
+                    )
                 {
                     int k = 1;
                     while(
