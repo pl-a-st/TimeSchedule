@@ -88,7 +88,7 @@ namespace time_schedule {
         }
         public static void WriteListProjectFileAppend(string fileName, List<string> listForWrite) {
             if (ProjectFolderPath == null || ProjectFolderPath == string.Empty)
-                ProjectFolderPath = "Проект";//ProjectFolderPath = string.Empty;
+                ProjectFolderPath = "Проект";
             else {
                 fileName = ProjectFolderPath + "\\" + fileName;
             }
