@@ -6,6 +6,8 @@ using Excel = Microsoft.Office.Interop.Excel;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Xml.Serialization;
+
 
 namespace time_schedule {
    
@@ -98,6 +100,19 @@ namespace time_schedule {
             }  
             WriteListtFileAppend(fileName, listForWrite);
         }
+        public static void xmlWriteObjectToFile<Type>(Type serObject, string fileName) {
+            try {
+                XmlSerializer formatter = new XmlSerializer(serObject.GetType());
+                using (FileStream stream = new FileStream(fileName, FileMode.Create))
+                    formatter.Serialize(stream, serObject);
+            }
+            catch {
+                MessageBox.Show("Не удалось произвести запись в файл: " + fileName);
+            }
+            return;
+        }
+
+
         public static List<string> ReadListFromFile(string fileName) {
             List<string> listFromFile = new List<string>();
             if (File.Exists(fileName)) {
@@ -114,16 +129,33 @@ namespace time_schedule {
             }
             return listFromFile;
         }
+        public static Type xmlReadFileToObject <Type>(out Type serObject, string fileName) {
+            serObject = default(Type);
+            XmlSerializer formatter = new XmlSerializer(typeof(Type));
+            try {
+                using (FileStream stream = new FileStream(fileName, FileMode.Open))
+                    serObject = (Type)formatter.Deserialize(stream);
+                return serObject;
+            }
+            catch {
+                MessageAboutProblem(fileName);
+                return serObject;
+            }
+        }
+    
         private static void MessageAboutProblem(string fileName) {
-            if (fileName.Contains(Constants.PERSONS)) {
+            if (fileName.Contains(Constants.PERSONS)||
+                fileName.Contains(Constants.PERSONS_XML)) {
                 MessageBox.Show("В текущем проекте не создано ни одного исполнителя!");
                 return;
             }
-            if (fileName.Contains(Constants.TASKS)) {
+            if (fileName.Contains(Constants.TASKS)||
+                fileName.Contains(Constants.TASKS_XML)) {
                 MessageBox.Show("В текущем проекте не создано ни одной задачи!");
                 return;
             }
-            if (fileName.Contains(Constants.HOLYDAYS)) {
+            if (fileName.Contains(Constants.HOLYDAYS)||
+                fileName.Contains(Constants.HOLYDAYS_XML)) {
                 MessageBox.Show( "В текущем проекте не занесены праздничные дни!");
                 return;
             }
