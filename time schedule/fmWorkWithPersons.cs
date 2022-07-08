@@ -71,12 +71,14 @@ namespace time_schedule
                     task.SetPersonFamaly(fmInpootText.SetTextBox().Text);
             }
             
-            Dals.WriteListProjectFileAppend(
+            Dals.WriteObjectToFile(
                 Constants.PERSONS, 
                 Program.listPersons.GetListForSave());
-            Dals.WriteListProjectFileAppend(
+            Dals.WriteObjectToFile(Constants.PERSONS_BIN,Program.listPersons);
+            Dals.WriteObjectToFile(
                 Constants.TASKS,
                 Program.ListTasksAllPerson.GetListForSave());
+            Dals.WriteObjectToFile(Constants.TASKS_BIN,Program.ListTasksAllPerson);
             LisBoxRefresh();
             thisloadRefreshForm?.Invoke();
         }
@@ -105,7 +107,8 @@ namespace time_schedule
             
             Program.listPersons.Persons.RemoveAt(lBxPersons.SelectedIndex);
              
-            Dals.WriteListProjectFileAppend(Constants.PERSONS, Program.listPersons.GetListForSave());
+            Dals.WriteObjectToFile(Constants.PERSONS, Program.listPersons.GetListForSave());
+            Dals.WriteObjectToFile(Constants.PERSONS_BIN, Program.listPersons);
             LisBoxRefresh();
             thisloadRefreshForm?.Invoke();
         }
@@ -140,7 +143,8 @@ namespace time_schedule
                 }
             }
             Program.listPersons.SetPersonList(listPerson);
-            Dals.WriteListProjectFileAppend(Constants.PERSONS, Program.listPersons.GetListForSave());
+            Dals.WriteObjectToFile(Constants.PERSONS, Program.listPersons.GetListForSave());
+            Dals.WriteObjectToFile(Constants.PERSONS_BIN, Program.listPersons);
         }
         private void RemovePersonPlace(PersonPlaceUpDowm personPlaceUpDowm)
         {

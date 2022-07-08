@@ -504,7 +504,8 @@ namespace time_schedule {
             fmAddTask.StartPosition = FormStartPosition.CenterScreen;
             fmAddTask.SetCreateOrChange(CreateOrChange.Create);
             fmAddTask.Show();
-            Dals.WriteListProjectFileAppend(Constants.TASKS, Program.ListTasksAllPerson.GetListForSave());
+            Dals.WriteObjectToFile(Constants.TASKS, Program.ListTasksAllPerson.GetListForSave());
+            Dals.WriteObjectToFile(Constants.TASKS_BIN, Program.ListTasksAllPerson);
         }
         private void ToolStripMenuProject_Click(object sender, EventArgs e)
         {

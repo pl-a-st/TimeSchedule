@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -275,7 +276,15 @@ namespace time_schedule
             if (IsTBxTaskNameEmpty())
                 return;
             Program.ListTasksAllPerson.Tasks.Clear();
-            Program.ListTasksAllPerson.SetTasksFromList(Dals.ReadListFromProjectFile(Constants.TASKS));
+            string fullFileName = Dals.TakeProjectPath(Constants.TASKS_BIN);
+            if (File.Exists(fullFileName)){
+                Program.ListTasksAllPerson = Dals.binReadFileToObject(
+                    Program.ListTasksAllPerson, fullFileName);
+            }
+            else {
+                Program.ListTasksAllPerson.SetTasksFromList(Dals.ReadListFromProjectFile(Constants.TASKS));
+            }
+            
             Task task = new Task();
             if (CreateOrChange == CreateOrChange.Create)
             {
@@ -301,7 +310,8 @@ namespace time_schedule
                     }    
                 }
             }
-            Dals.WriteListProjectFileAppend(Constants.TASKS, Program.ListTasksAllPerson.GetListForSave());
+            Dals.WriteObjectToFile(Constants.TASKS, Program.ListTasksAllPerson.GetListForSave());
+            Dals.WriteObjectToFile(Constants.TASKS_BIN, Program.ListTasksAllPerson);
             Program.fmMain.LoadRefreshForm(Statuses.ProgressBar.Use);
            
             this.Close();
@@ -421,8 +431,17 @@ namespace time_schedule
             try
             {
                 Program.ListTasksAllPerson.Tasks.Clear();
-                Program.ListTasksAllPerson.SetTasksFromList(Dals.ReadListFromProjectFile(Constants.TASKS));
-                //folderName += "\\" + targetFolderName;
+                string fullFileName = Dals.TakeProjectPath(Constants.TASKS_BIN);
+                if (File.Exists(fullFileName)) {
+                    Program.ListTasksAllPerson = Dals.binReadFileToObject(
+                        Program.ListTasksAllPerson, fullFileName);
+                }
+                else {
+                     Program.ListTasksAllPerson.SetTasksFromList(
+                    Dals.ReadListFromProjectFile(Constants.TASKS));
+                }
+               
+                
                 Task task = new Task();
                 ListTasks listTasks = new ListTasks();
                 string textForError = "Для отображения задач необходимо создать хотя бы одну.";
@@ -450,7 +469,6 @@ namespace time_schedule
                     Person person = new Person(personFamaly);
                     listPersons.Persons.Add(person);
                 }
-                
                 foreach (Person person in listPersons.Persons)
                 {
                     if (person.PersonFamaly == task.PersonFamaly)
@@ -459,14 +477,18 @@ namespace time_schedule
                         break;
                     }
                 }
-                Dals.WriteListtFileAppend(
-                    folderName + "\\" + Constants.PERSONS, 
-                    listPersons.GetListForSave());
+                Dals.binWriteObjectToFile(
+                    listPersons,
+                    folderName + "\\" + Constants.PERSONS_BIN);
+                //Dals.WriteListtFileAppend(
+                //    folderName + "\\" + Constants.PERSONS, 
+                //    listPersons.GetListForSave());
                 task.SetPersonFamaly(personFamaly);
                 const int NUBER_AFTER_FOR_COPY = 0;
                 task.SetTaskNumberAfter(NUBER_AFTER_FOR_COPY);
                 listTasks.AddTask(task);
-                Dals.WriteListtFileAppend(folderName + "\\" + Constants.TASKS, listTasks.GetListForSave());
+                Dals.binWriteObjectToFile(listTasks, folderName + "\\" + Constants.TASKS_BIN);
+                //Dals.WriteListtFileAppend(folderName + "\\" + Constants.TASKS, listTasks.GetListForSave());
                 MessageBox.Show("Задача успешно скопирована.");
                 //thisloadRefreshForm?.Invoke();
                 Program.fmMain.LoadRefreshForm(Statuses.ProgressBar.Use);

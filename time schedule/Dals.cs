@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Xml.Serialization;
+using System.Runtime.Serialization.Formatters.Binary;
 
 
 namespace time_schedule {
@@ -88,7 +89,15 @@ namespace time_schedule {
                 MessageBox.Show("Не удалось произвести запись в файл: " + fileName);
             }
         }
-        public static void WriteListProjectFileAppend(string fileName, List<string> listForWrite) {
+        public static void WriteObjectToFile(string fileName, List<string> listForWrite) {
+            fileName = TakeProjectPath(fileName);
+            WriteListtFileAppend(fileName, listForWrite);
+        }
+        public static void WriteObjectToFile<Type>(string fileName, Type serObject) {
+            fileName = TakeProjectPath(fileName);
+            binWriteObjectToFile(serObject, fileName);
+        }
+        public static string TakeProjectPath(string fileName) {
             if (ProjectFolderPath == null || ProjectFolderPath == string.Empty)
                 ProjectFolderPath = "Проект";
             else {
@@ -97,14 +106,16 @@ namespace time_schedule {
             if (!Directory.Exists(ProjectFolderPath)) {
                 if (ProjectFolderPath != null && ProjectFolderPath != string.Empty)
                     Directory.CreateDirectory(ProjectFolderPath);
-            }  
-            WriteListtFileAppend(fileName, listForWrite);
+            }
+            return fileName;
         }
-        public static void xmlWriteObjectToFile<Type>(Type serObject, string fileName) {
+        public static void binWriteObjectToFile<Type>(Type serObject, string fileName) {
             try {
-                XmlSerializer formatter = new XmlSerializer(serObject.GetType());
-                using (FileStream stream = new FileStream(fileName, FileMode.Create))
-                    formatter.Serialize(stream, serObject);
+                BinaryFormatter bf = new BinaryFormatter();
+                using (FileStream stream = new FileStream(fileName, FileMode.Create)) {
+                    bf.Serialize(stream, serObject);
+                    
+                }
             }
             catch {
                 MessageBox.Show("Не удалось произвести запись в файл: " + fileName);
@@ -129,13 +140,14 @@ namespace time_schedule {
             }
             return listFromFile;
         }
-        public static Type xmlReadFileToObject <Type>(out Type serObject, string fileName) {
+        public static Type binReadFileToObject <Type>(Type serObject, string fileName) {
+            BinaryFormatter bf = new BinaryFormatter();
             serObject = default(Type);
-            XmlSerializer formatter = new XmlSerializer(typeof(Type));
             try {
-                using (FileStream stream = new FileStream(fileName, FileMode.Open))
-                    serObject = (Type)formatter.Deserialize(stream);
-                return serObject;
+                using (FileStream stream = new FileStream(fileName, FileMode.Open)) {
+                    serObject = (Type)bf.Deserialize(stream);
+                    return serObject;
+                }
             }
             catch {
                 MessageAboutProblem(fileName);
@@ -145,17 +157,17 @@ namespace time_schedule {
     
         private static void MessageAboutProblem(string fileName) {
             if (fileName.Contains(Constants.PERSONS)||
-                fileName.Contains(Constants.PERSONS_XML)) {
+                fileName.Contains(Constants.PERSONS_BIN)) {
                 MessageBox.Show("В текущем проекте не создано ни одного исполнителя!");
                 return;
             }
             if (fileName.Contains(Constants.TASKS)||
-                fileName.Contains(Constants.TASKS_XML)) {
+                fileName.Contains(Constants.TASKS_BIN)) {
                 MessageBox.Show("В текущем проекте не создано ни одной задачи!");
                 return;
             }
             if (fileName.Contains(Constants.HOLYDAYS)||
-                fileName.Contains(Constants.HOLYDAYS_XML)) {
+                fileName.Contains(Constants.HOLYDAYS_BIN)) {
                 MessageBox.Show( "В текущем проекте не занесены праздничные дни!");
                 return;
             }

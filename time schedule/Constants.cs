@@ -14,11 +14,11 @@ namespace time_schedule
         public const string TASKS = "Tasks.txt";
         public const string HOLYDAYS = "Holydays.txt";
         public const string PROGECT_TO_CHOOSE = "Project to copy";
-        public const string PROJECT_FILE_NAME_XML = "PROJECT.xml";
-        public const string PERSONS_XML = "Persons.xml";
-        public const string TASKS_XML = "Tasks.xml";
-        public const string HOLYDAYS_XML = "Holydays.xml";
-        public const string PROGECT_TO_CHOOSE_XML = "Project to copy.xml";
+        public const string PROJECT_FILE_NAME_BIN = "PROJECT.bin";
+        public const string PERSONS_BIN = "Persons.bin";
+        public const string TASKS_BIN = "Tasks.bin";
+        public const string HOLYDAYS_BIN = "Holydays.bin";
+        public const string PROGECT_TO_CHOOSE_BIN = "Project to copy.bin";
         public const int COLUMN_WITH = 75;
         public static Color MIN_COLUMN_COLOR = Color.Black;
         public const int ROW_HIGHT = 30;
