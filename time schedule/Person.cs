@@ -9,18 +9,21 @@ using System.Windows.Forms;
 
 namespace time_schedule
 {
+    [Serializable]
     public enum TaskStatus
     {
         New,
         Active,
         Closed
     }
+    [Serializable]
     public enum TaskStatusRus
     {
         Новое=TaskStatus.New,
         В_работе= TaskStatus.Active,
         Закрыто=TaskStatus.Closed
     }
+    [Serializable]
     public enum DayOfWeekRus {
         Воскресенье = DayOfWeek.Sunday,
         Понедельник = DayOfWeek.Monday,
@@ -30,6 +33,7 @@ namespace time_schedule
         Пятница = DayOfWeek.Friday,
         Суббота = DayOfWeek.Saturday
     }
+    [Serializable]
     public class DateTextBox {
         public DateTime Date { get; private set; }
         public TextBox TextBox { get; private set; } = new TextBox();
@@ -57,7 +61,7 @@ namespace time_schedule
             return dayOfWeekRus;
         }
     }
-   
+    [Serializable]
     public class PoolTextBox {
         public List<DateTextBox> ListTextBoxes 
             { get; private set; } = new List<DateTextBox>();
@@ -128,6 +132,7 @@ namespace time_schedule
             return maxLoadDate;
         }
     }
+    [Serializable]
     /// <summary>
     /// Исполнители
     /// </summary>
@@ -214,7 +219,7 @@ namespace time_schedule
             return CountDaysSynchTask1;
         }
     }
-    
+    [Serializable]
     public class ListPersons
     {
         public List<Person> Persons
@@ -246,6 +251,7 @@ namespace time_schedule
             Persons = ListPerson;
         }
     }
+    [Serializable]
     public class ListTasks
     {
         public List<Task> Tasks
@@ -434,6 +440,7 @@ namespace time_schedule
             // прописать метод
         }
     }
+    [Serializable]
     public class ListHolidays
     {
         public List<DateTime> Holidays
@@ -463,6 +470,7 @@ namespace time_schedule
             Holidays.AddRange(holidaysFromList);
         }
     }
+    [Serializable]
     public class ListNonWorkingDays
     {
         public List<DateTime> NonWorkingDays
@@ -491,7 +499,7 @@ namespace time_schedule
         }
 
     }
-   
+    [Serializable]
     /// <summary>
     /// Задачи
     /// </summary>
@@ -735,6 +743,7 @@ namespace time_schedule
             PlaceInSynchTask = placeInSynchTask;
         }
     }
+    [Serializable]
     public class ListTaskButton
     {
         public List<TaskButton> TaskButtons
@@ -827,7 +836,7 @@ namespace time_schedule
             return maxLoadDate;
         }
     }
-
+    [Serializable]
     public class TaskButton
     {
         
@@ -929,7 +938,8 @@ namespace time_schedule
                     Task.ChangeDatesAndCountDays(PDT.Item2.Date, Task.CountWorkingDays);
                     Task.SetTaskNumberAfter(0);
                     ChekTaskAfter(Task);
-                    Dals.WriteListProjectFileAppend(Constants.TASKS, Program.ListTasksAllPerson.GetListForSave());
+                    Dals.WriteObjectToFile(Constants.TASKS, Program.ListTasksAllPerson.GetListForSave());
+                    Dals.WriteObjectToFile(Constants.TASKS_BIN, Program.ListTasksAllPerson);
                     Program.fmMain.SetForm1().LoadRefreshForm(Statuses.ProgressBar.Use);
                     Program.fmMain.SetForm1().SetPlMain().Focus();
                 }
@@ -999,7 +1009,8 @@ namespace time_schedule
             fmAddTask.StartPosition = FormStartPosition.CenterScreen;
             Program.Task = Task;
             fmAddTask.ShowDialog();
-            Dals.WriteListProjectFileAppend(Constants.TASKS, Program.ListTasksAllPerson.GetListForSave());
+            Dals.WriteObjectToFile(Constants.TASKS, Program.ListTasksAllPerson.GetListForSave());
+            Dals.WriteObjectToFile(Constants.TASKS_BIN, Program.ListTasksAllPerson);
         }
         public TaskButton(Task task, ListPersonButton listPersonButton,DateTime minDateStart, DateTime maxDateFinish)
         {
@@ -1060,6 +1071,7 @@ namespace time_schedule
             while ((dateTime.Date <= Task.DateFinish.Date) && (dateTime.Date <= maxDateFinish));
         }
     }
+    [Serializable]
     public class ListPersonButton
     {
         public List<PersonButton> PersonButtons
@@ -1077,6 +1089,7 @@ namespace time_schedule
             }
         }
     }
+    [Serializable]
     public class PersonButton
     {
         public PersonButton() {
@@ -1141,6 +1154,7 @@ namespace time_schedule
         }
 
     }
+    [Serializable]
     public class Project
     {
         public string Name
@@ -1177,6 +1191,7 @@ namespace time_schedule
             Address = arrPfarmetersForProject[ADDRESS];
         }
     }
+    [Serializable]
     public class ListProjects
     {
         public List<Project> Projects

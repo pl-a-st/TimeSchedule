@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace time_schedule {
+    [Serializable]
     public static class Statuses {
          public enum WorkWithProject {
             ProgramStarted,
