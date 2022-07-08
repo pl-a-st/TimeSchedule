@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Threading;
 using System.Windows.Forms;
+using System.IO;
 
 
 namespace time_schedule {
@@ -309,10 +310,25 @@ namespace time_schedule {
             form1.BeginInvoke(new Action(delegate () { LoadRefreshForm(fmProgressBar); }));
         }
         private void LoadAllPools() {
-            Program.ListTasksAllPerson.SetTasksFromList(Dals.ReadListFromProjectFile(Constants.TASKS));
-            Program.listPersons.SetPersonsFromList(
-                Dals.ReadListFromProjectFile(Constants.PERSONS),
-                Program.ListTasksAllPerson.Tasks);
+            if (File.Exists(Dals.TakeProjectPath(Constants.TASKS_BIN))){
+                Program.ListTasksAllPerson = Dals.binReadFileToObject(
+                    Program.ListTasksAllPerson,
+                    Dals.TakeProjectPath(Constants.TASKS_BIN));
+            }
+            else {
+                Program.ListTasksAllPerson.SetTasksFromList(Dals.ReadListFromProjectFile(Constants.TASKS));
+            }
+            if (File.Exists(Dals.TakeProjectPath(Constants.TASKS_BIN))) {
+                Program.listPersons = Dals.binReadFileToObject(
+                    Program.listPersons,
+                    Dals.TakeProjectPath(Constants.PERSONS_BIN));
+            }
+            else {
+                Program.listPersons.SetPersonsFromList(
+                 Dals.ReadListFromProjectFile(Constants.PERSONS),
+                 Program.ListTasksAllPerson.Tasks);
+            }
+            
             Program.ListPersonButton.LoadListPersonButtons(
                 Program.listPersons.Persons,
                 Program.ListTasksAllPerson,
