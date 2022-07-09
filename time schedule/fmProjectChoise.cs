@@ -87,9 +87,9 @@ namespace time_schedule
             }
             if (lBxProject.Items.Count > 0)
                 lBxProject.SelectedIndex = lBxProject.Items.Count - 1;
-            Dals.WriteObjectToFile(
-                Constants.PROGECT_TO_CHOOSE,
-                ListProjects.GetListForSave());
+            //Dals.WriteObjectToFile(
+            //    Constants.PROGECT_TO_CHOOSE,
+            //    ListProjects.GetListForSave());
             Dals.WriteObjectToFile(Constants.PROGECT_TO_CHOOSE_BIN, ListProjects);
         }
         public ListProjects ListProjects

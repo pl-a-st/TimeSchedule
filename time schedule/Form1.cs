@@ -336,7 +336,16 @@ namespace time_schedule {
                 this);
             int maxButtonLocationY = SetMaxLocationAndAddPersonButton(ref Program.ListPersonButton);
             pBForLine.Height = maxButtonLocationY;
-            Program.ListHolidays.SetHolidaysFromList(Dals.ReadListFromProjectFile(Constants.HOLYDAYS));
+            if (File.Exists(Dals.TakeProjectPath(Constants.HOLYDAYS_BIN))) {
+                Program.ListHolidays = Dals.binReadFileToObject(
+                    Program.ListHolidays,
+                    Dals.TakeProjectPath(Constants.HOLYDAYS_BIN));
+            }
+            else {
+                Program.ListHolidays.SetHolidaysFromList(
+                    Dals.ReadListFromProjectFile(Constants.HOLYDAYS));
+            }
+            
             NonWorkDaysWrite(Program.ListTasksAllPerson.GetMinDateStartTasks(), Program.ListTasksAllPerson.GetMaxDateFinishTasks());
             Program.listNonWorkingDays.NonWorkingDays.AddRange(Program.ListHolidays.Holidays);
             Program.ListTaskButtons.AddTaskButtons(
@@ -520,7 +529,7 @@ namespace time_schedule {
             fmAddTask.StartPosition = FormStartPosition.CenterScreen;
             fmAddTask.SetCreateOrChange(CreateOrChange.Create);
             fmAddTask.Show();
-            Dals.WriteObjectToFile(Constants.TASKS, Program.ListTasksAllPerson.GetListForSave());
+            //Dals.WriteObjectToFile(Constants.TASKS, Program.ListTasksAllPerson.GetListForSave());
             Dals.WriteObjectToFile(Constants.TASKS_BIN, Program.ListTasksAllPerson);
         }
         private void ToolStripMenuProject_Click(object sender, EventArgs e)

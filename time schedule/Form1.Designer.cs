@@ -66,7 +66,7 @@
             this.plMain.Controls.Add(this.pBForLine);
             this.plMain.Location = new System.Drawing.Point(182, 46);
             this.plMain.Name = "plMain";
-            this.plMain.Size = new System.Drawing.Size(977, 727);
+            this.plMain.Size = new System.Drawing.Size(977, 625);
             this.plMain.TabIndex = 0;
             this.plMain.Scroll += new System.Windows.Forms.ScrollEventHandler(this.ScrollChange);
             this.plMain.MouseEnter += new System.EventHandler(this.plMain_MouseEnter);
@@ -96,7 +96,7 @@
             // 
             this.btnNewTask.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
             this.btnNewTask.Cursor = System.Windows.Forms.Cursors.Default;
-            this.btnNewTask.Location = new System.Drawing.Point(637, 790);
+            this.btnNewTask.Location = new System.Drawing.Point(637, 688);
             this.btnNewTask.Name = "btnNewTask";
             this.btnNewTask.Size = new System.Drawing.Size(110, 49);
             this.btnNewTask.TabIndex = 3;
@@ -202,14 +202,14 @@
             this.plPersonButton.AutoScroll = true;
             this.plPersonButton.Location = new System.Drawing.Point(12, 46);
             this.plPersonButton.Name = "plPersonButton";
-            this.plPersonButton.Size = new System.Drawing.Size(200, 707);
+            this.plPersonButton.Size = new System.Drawing.Size(200, 605);
             this.plPersonButton.TabIndex = 4;
             this.plPersonButton.Scroll += new System.Windows.Forms.ScrollEventHandler(this.plPersonButton_Scroll);
             // 
             // bTnToDay
             // 
             this.bTnToDay.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
-            this.bTnToDay.Location = new System.Drawing.Point(508, 790);
+            this.bTnToDay.Location = new System.Drawing.Point(508, 688);
             this.bTnToDay.Name = "bTnToDay";
             this.bTnToDay.Size = new System.Drawing.Size(75, 23);
             this.bTnToDay.TabIndex = 5;
@@ -220,7 +220,7 @@
             // addFiveDays
             // 
             this.addFiveDays.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
-            this.addFiveDays.Location = new System.Drawing.Point(589, 790);
+            this.addFiveDays.Location = new System.Drawing.Point(589, 688);
             this.addFiveDays.Name = "addFiveDays";
             this.addFiveDays.Size = new System.Drawing.Size(42, 23);
             this.addFiveDays.TabIndex = 7;
@@ -231,7 +231,7 @@
             // dateTimePicker1
             // 
             this.dateTimePicker1.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
-            this.dateTimePicker1.Location = new System.Drawing.Point(459, 819);
+            this.dateTimePicker1.Location = new System.Drawing.Point(459, 717);
             this.dateTimePicker1.Name = "dateTimePicker1";
             this.dateTimePicker1.Size = new System.Drawing.Size(172, 20);
             this.dateTimePicker1.TabIndex = 8;
@@ -243,7 +243,7 @@
             // minusFiveDay
             // 
             this.minusFiveDay.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
-            this.minusFiveDay.Location = new System.Drawing.Point(459, 790);
+            this.minusFiveDay.Location = new System.Drawing.Point(459, 688);
             this.minusFiveDay.Name = "minusFiveDay";
             this.minusFiveDay.Size = new System.Drawing.Size(43, 23);
             this.minusFiveDay.TabIndex = 9;
@@ -261,7 +261,7 @@
             // 
             this.btnRefresh.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
             this.btnRefresh.Cursor = System.Windows.Forms.Cursors.Default;
-            this.btnRefresh.Location = new System.Drawing.Point(343, 790);
+            this.btnRefresh.Location = new System.Drawing.Point(343, 688);
             this.btnRefresh.Name = "btnRefresh";
             this.btnRefresh.Size = new System.Drawing.Size(110, 49);
             this.btnRefresh.TabIndex = 3;
@@ -273,7 +273,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1171, 851);
+            this.ClientSize = new System.Drawing.Size(1171, 749);
             this.Controls.Add(this.minusFiveDay);
             this.Controls.Add(this.dateTimePicker1);
             this.Controls.Add(this.addFiveDays);

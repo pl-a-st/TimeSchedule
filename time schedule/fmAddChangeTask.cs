@@ -310,7 +310,8 @@ namespace time_schedule
                     }    
                 }
             }
-            Dals.WriteObjectToFile(Constants.TASKS, Program.ListTasksAllPerson.GetListForSave());
+            
+            //Dals.WriteObjectToFile(Constants.TASKS, Program.ListTasksAllPerson.GetListForSave());
             Dals.WriteObjectToFile(Constants.TASKS_BIN, Program.ListTasksAllPerson);
             Program.fmMain.LoadRefreshForm(Statuses.ProgressBar.Use);
            

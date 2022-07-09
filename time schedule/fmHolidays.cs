@@ -143,10 +143,10 @@ namespace time_schedule
         {
             Program.ListHolidays.Holidays.Clear();
             Program.ListHolidays.Holidays.AddRange(CurrentListHolidays.Holidays);
-            Dals.WriteObjectToFile(
-                Constants.HOLYDAYS, 
-                Program.ListHolidays.GetListForSave()
-                );
+            //Dals.WriteObjectToFile(
+            //    Constants.HOLYDAYS, 
+            //    Program.ListHolidays.GetListForSave()
+            //    );
             Dals.WriteObjectToFile(Constants.HOLYDAYS_BIN, Program.ListHolidays);
             Program.listNonWorkingDays.NonWorkingDays.AddRange(Program.ListHolidays.Holidays);
             foreach (Task task in Program.ListTasksAllPerson.Tasks)
@@ -154,7 +154,7 @@ namespace time_schedule
                 task.SetCountDays(Program.listNonWorkingDays);
                 task.SetDateFinish();
             }
-            Dals.WriteObjectToFile(Constants.TASKS, Program.ListTasksAllPerson.GetListForSave());
+            //Dals.WriteObjectToFile(Constants.TASKS, Program.ListTasksAllPerson.GetListForSave());
             Dals.WriteObjectToFile(Constants.TASKS_BIN, Program.ListTasksAllPerson);
             thisloadRefreshForm?.Invoke();
             this.Close();
