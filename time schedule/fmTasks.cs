@@ -187,7 +187,7 @@ namespace time_schedule {
                 }
 
             }
-            Dals.WriteObjectToFile(Constants.TASKS, Program.ListTasksAllPerson.GetListForSave());
+            //Dals.WriteObjectToFile(Constants.TASKS, Program.ListTasksAllPerson.GetListForSave());
             Dals.WriteObjectToFile(Constants.TASKS_BIN, Program.ListTasksAllPerson);
             LoadLBxTasks();
             Form1 form1 = this.Form1Delegat.SetForm1();
@@ -209,7 +209,7 @@ namespace time_schedule {
                 }
             }
             fmAddTask.ShowDialog();
-            Dals.WriteObjectToFile(Constants.TASKS, Program.ListTasksAllPerson.GetListForSave());
+            //Dals.WriteObjectToFile(Constants.TASKS, Program.ListTasksAllPerson.GetListForSave());
             Dals.WriteObjectToFile(Constants.TASKS_BIN, Program.ListTasksAllPerson);
             LoadLBxTasks();
         }

@@ -938,7 +938,7 @@ namespace time_schedule
                     Task.ChangeDatesAndCountDays(PDT.Item2.Date, Task.CountWorkingDays);
                     Task.SetTaskNumberAfter(0);
                     ChekTaskAfter(Task);
-                    Dals.WriteObjectToFile(Constants.TASKS, Program.ListTasksAllPerson.GetListForSave());
+                    //Dals.WriteObjectToFile(Constants.TASKS, Program.ListTasksAllPerson.GetListForSave());
                     Dals.WriteObjectToFile(Constants.TASKS_BIN, Program.ListTasksAllPerson);
                     Program.fmMain.SetForm1().LoadRefreshForm(Statuses.ProgressBar.Use);
                     Program.fmMain.SetForm1().SetPlMain().Focus();
@@ -1009,7 +1009,7 @@ namespace time_schedule
             fmAddTask.StartPosition = FormStartPosition.CenterScreen;
             Program.Task = Task;
             fmAddTask.ShowDialog();
-            Dals.WriteObjectToFile(Constants.TASKS, Program.ListTasksAllPerson.GetListForSave());
+            //Dals.WriteObjectToFile(Constants.TASKS, Program.ListTasksAllPerson.GetListForSave());
             Dals.WriteObjectToFile(Constants.TASKS_BIN, Program.ListTasksAllPerson);
         }
         public TaskButton(Task task, ListPersonButton listPersonButton,DateTime minDateStart, DateTime maxDateFinish)

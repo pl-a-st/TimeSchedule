@@ -40,7 +40,7 @@ namespace time_schedule
             }
             Person person = new Person(personName.Text);
             Program.listPersons.AddPerson(person);
-            Dals.WriteObjectToFile(Constants.PERSONS, Program.listPersons.GetListForSave());
+            //Dals.WriteObjectToFile(Constants.PERSONS, Program.listPersons.GetListForSave());
             Dals.WriteObjectToFile(Constants.PERSONS_BIN, Program.listPersons);
             CreatePerson = CreatePerson.yes;
             this.Close();
