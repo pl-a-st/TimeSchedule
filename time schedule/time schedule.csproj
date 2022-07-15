@@ -55,6 +55,12 @@
     <Compile Include="enums.cs" />
     <Compile Include="Constants.cs" />
     <Compile Include="Dals.cs" />
+    <Compile Include="Forms\fmProjectTree.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\fmProjectTree.Designer.cs">
+      <DependentUpon>fmProjectTree.cs</DependentUpon>
+    </Compile>
     <Compile Include="Forms\fmAddProject.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -131,6 +137,9 @@
       <DependentUpon>fmSelectTask.cs</DependentUpon>
     </Compile>
     <Compile Include="Statuses.cs" />
+    <EmbeddedResource Include="Forms\fmProjectTree.resx">
+      <DependentUpon>fmProjectTree.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Forms\fmAddProject.resx">
       <DependentUpon>fmAddProject.cs</DependentUpon>
     </EmbeddedResource>
