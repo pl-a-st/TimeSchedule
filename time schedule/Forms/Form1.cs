@@ -823,6 +823,16 @@ namespace time_schedule {
         private void dateTimePicker1_ValueChanged(object sender, EventArgs e) {
 
         }
+
+        private void button1_Click_2(object sender, EventArgs e) {
+
+            fmProjectTree fmProjectTree = new fmProjectTree();
+            fmProjectTree.StartPosition = FormStartPosition.CenterParent;
+            if (Program.ProjetTree != null) {
+                fmProjectTree.SetTreeView(Program.ProjetTree);
+            }
+            fmProjectTree.ShowDialog();
+        }
     }
    
 }

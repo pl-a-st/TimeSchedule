@@ -48,6 +48,7 @@ namespace time_schedule {
             this.button1.TabIndex = 1;
             this.button1.Text = "Добавить";
             this.button1.UseVisualStyleBackColor = true;
+            this.button1.Click += new System.EventHandler(this.addNode_Click);
             // 
             // button2
             // 
@@ -57,6 +58,7 @@ namespace time_schedule {
             this.button2.TabIndex = 1;
             this.button2.Text = "Удалить";
             this.button2.UseVisualStyleBackColor = true;
+            this.button2.Click += new System.EventHandler(this.RemoveNode_Click);
             // 
             // button3
             // 
@@ -66,6 +68,7 @@ namespace time_schedule {
             this.button3.TabIndex = 1;
             this.button3.Text = "Применить";
             this.button3.UseVisualStyleBackColor = true;
+            this.button3.Click += new System.EventHandler(this.Apply_Click);
             // 
             // button4
             // 
@@ -75,6 +78,7 @@ namespace time_schedule {
             this.button4.TabIndex = 1;
             this.button4.Text = "Отмена";
             this.button4.UseVisualStyleBackColor = true;
+            this.button4.Click += new System.EventHandler(this.cancel_Click);
             // 
             // button5
             // 
@@ -84,6 +88,7 @@ namespace time_schedule {
             this.button5.TabIndex = 5;
             this.button5.Text = "▼";
             this.button5.UseVisualStyleBackColor = true;
+            this.button5.Click += new System.EventHandler(this.DownNode_Click);
             // 
             // button6
             // 
@@ -93,12 +98,13 @@ namespace time_schedule {
             this.button6.TabIndex = 6;
             this.button6.Text = "▲";
             this.button6.UseVisualStyleBackColor = true;
+            this.button6.Click += new System.EventHandler(this.UpNode_Click);
             // 
             // fmProjectTree
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(405, 481);
+            this.ClientSize = new System.Drawing.Size(365, 481);
             this.Controls.Add(this.button5);
             this.Controls.Add(this.button6);
             this.Controls.Add(this.button4);
@@ -108,6 +114,7 @@ namespace time_schedule {
             this.Controls.Add(this.projectTreeView);
             this.Name = "fmProjectTree";
             this.Text = "Дерево проектов";
+            this.Load += new System.EventHandler(this.fmProjectTree_Load);
             this.ResumeLayout(false);
 
         }
