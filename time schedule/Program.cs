@@ -31,6 +31,7 @@ namespace time_schedule
         public static Person Person = new Person(string.Empty);
         //public static List<TextBox> ListTextBoxes = new  List<TextBox>();
         public static PoolTextBox PoolTextBox = new PoolTextBox();
+        public static TreeView ProjetTree;
         public static UserType UserType = UserType.Reader;
 
         [STAThread]

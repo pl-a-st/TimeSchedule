@@ -52,6 +52,7 @@
             this.minusFiveDay = new System.Windows.Forms.Button();
             this.timer1 = new System.Windows.Forms.Timer(this.components);
             this.btnRefresh = new System.Windows.Forms.Button();
+            this.button1 = new System.Windows.Forms.Button();
             this.plMain.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pBForLine)).BeginInit();
             this.menuStrip1.SuspendLayout();
@@ -64,9 +65,9 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.plMain.AutoScroll = true;
             this.plMain.Controls.Add(this.pBForLine);
-            this.plMain.Location = new System.Drawing.Point(182, 46);
+            this.plMain.Location = new System.Drawing.Point(182, 56);
             this.plMain.Name = "plMain";
-            this.plMain.Size = new System.Drawing.Size(977, 625);
+            this.plMain.Size = new System.Drawing.Size(977, 640);
             this.plMain.TabIndex = 0;
             this.plMain.Scroll += new System.Windows.Forms.ScrollEventHandler(this.ScrollChange);
             this.plMain.MouseEnter += new System.EventHandler(this.plMain_MouseEnter);
@@ -87,7 +88,7 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.plForDate.AutoScroll = true;
             this.plForDate.Enabled = false;
-            this.plForDate.Location = new System.Drawing.Point(182, 12);
+            this.plForDate.Location = new System.Drawing.Point(182, 22);
             this.plForDate.Name = "plForDate";
             this.plForDate.Size = new System.Drawing.Size(958, 52);
             this.plForDate.TabIndex = 1;
@@ -96,7 +97,7 @@
             // 
             this.btnNewTask.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
             this.btnNewTask.Cursor = System.Windows.Forms.Cursors.Default;
-            this.btnNewTask.Location = new System.Drawing.Point(637, 688);
+            this.btnNewTask.Location = new System.Drawing.Point(637, 703);
             this.btnNewTask.Name = "btnNewTask";
             this.btnNewTask.Size = new System.Drawing.Size(110, 49);
             this.btnNewTask.TabIndex = 3;
@@ -200,16 +201,16 @@
             this.plPersonButton.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left)));
             this.plPersonButton.AutoScroll = true;
-            this.plPersonButton.Location = new System.Drawing.Point(12, 46);
+            this.plPersonButton.Location = new System.Drawing.Point(12, 56);
             this.plPersonButton.Name = "plPersonButton";
-            this.plPersonButton.Size = new System.Drawing.Size(200, 605);
+            this.plPersonButton.Size = new System.Drawing.Size(200, 620);
             this.plPersonButton.TabIndex = 4;
             this.plPersonButton.Scroll += new System.Windows.Forms.ScrollEventHandler(this.plPersonButton_Scroll);
             // 
             // bTnToDay
             // 
             this.bTnToDay.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
-            this.bTnToDay.Location = new System.Drawing.Point(508, 688);
+            this.bTnToDay.Location = new System.Drawing.Point(508, 703);
             this.bTnToDay.Name = "bTnToDay";
             this.bTnToDay.Size = new System.Drawing.Size(75, 23);
             this.bTnToDay.TabIndex = 5;
@@ -220,7 +221,7 @@
             // addFiveDays
             // 
             this.addFiveDays.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
-            this.addFiveDays.Location = new System.Drawing.Point(589, 688);
+            this.addFiveDays.Location = new System.Drawing.Point(589, 703);
             this.addFiveDays.Name = "addFiveDays";
             this.addFiveDays.Size = new System.Drawing.Size(42, 23);
             this.addFiveDays.TabIndex = 7;
@@ -231,7 +232,7 @@
             // dateTimePicker1
             // 
             this.dateTimePicker1.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
-            this.dateTimePicker1.Location = new System.Drawing.Point(459, 717);
+            this.dateTimePicker1.Location = new System.Drawing.Point(459, 732);
             this.dateTimePicker1.Name = "dateTimePicker1";
             this.dateTimePicker1.Size = new System.Drawing.Size(172, 20);
             this.dateTimePicker1.TabIndex = 8;
@@ -243,7 +244,7 @@
             // minusFiveDay
             // 
             this.minusFiveDay.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
-            this.minusFiveDay.Location = new System.Drawing.Point(459, 688);
+            this.minusFiveDay.Location = new System.Drawing.Point(459, 703);
             this.minusFiveDay.Name = "minusFiveDay";
             this.minusFiveDay.Size = new System.Drawing.Size(43, 23);
             this.minusFiveDay.TabIndex = 9;
@@ -261,7 +262,7 @@
             // 
             this.btnRefresh.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
             this.btnRefresh.Cursor = System.Windows.Forms.Cursors.Default;
-            this.btnRefresh.Location = new System.Drawing.Point(343, 688);
+            this.btnRefresh.Location = new System.Drawing.Point(343, 703);
             this.btnRefresh.Name = "btnRefresh";
             this.btnRefresh.Size = new System.Drawing.Size(110, 49);
             this.btnRefresh.TabIndex = 3;
@@ -269,11 +270,22 @@
             this.btnRefresh.UseVisualStyleBackColor = true;
             this.btnRefresh.Click += new System.EventHandler(this.btnRefresh_Click);
             // 
+            // button1
+            // 
+            this.button1.Location = new System.Drawing.Point(12, 21);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(170, 35);
+            this.button1.TabIndex = 10;
+            this.button1.Text = "Проекты";
+            this.button1.UseVisualStyleBackColor = true;
+            this.button1.Click += new System.EventHandler(this.button1_Click_2);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1171, 749);
+            this.ClientSize = new System.Drawing.Size(1171, 764);
+            this.Controls.Add(this.button1);
             this.Controls.Add(this.minusFiveDay);
             this.Controls.Add(this.dateTimePicker1);
             this.Controls.Add(this.addFiveDays);
@@ -325,6 +337,7 @@
         private System.Windows.Forms.Button btnRefresh;
         private System.Windows.Forms.ToolStripMenuItem выбратьToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem создатьToolStripMenuItem;
+        private System.Windows.Forms.Button button1;
     }
 }
 

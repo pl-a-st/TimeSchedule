@@ -137,6 +137,7 @@
       <DependentUpon>fmSelectTask.cs</DependentUpon>
     </Compile>
     <Compile Include="Statuses.cs" />
+    <Compile Include="Tree.cs" />
     <EmbeddedResource Include="Forms\fmProjectTree.resx">
       <DependentUpon>fmProjectTree.cs</DependentUpon>
     </EmbeddedResource>
