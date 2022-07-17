@@ -828,9 +828,10 @@ namespace time_schedule {
 
             fmProjectTree fmProjectTree = new fmProjectTree();
             fmProjectTree.StartPosition = FormStartPosition.CenterParent;
-            if (Program.ProjetTree != null) {
-                fmProjectTree.SetTreeView(Program.ProjetTree);
-            }
+
+            string fullFileName = Dals.TakeProjectPath(Constants.PROJECTS_LIST);
+            fmProjectTree.SetTreeView(Dals.binReadFileToObject(new TreeProjects(), fullFileName));
+            
             fmProjectTree.ShowDialog();
         }
     }

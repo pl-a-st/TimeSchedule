@@ -9,18 +9,20 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace time_schedule {
+    [Serializable]
     public partial class fmProjectTree : Form {
         public fmProjectTree() {
             InitializeComponent();
         }
+
         public TreeView GetTreeView() {
             return projectTreeView;
         }
-        public void SetTreeView(TreeView treeView) {
+        public void SetTreeView(TreeProjects treeProjects) {
             projectTreeView.Nodes.Clear();
             projectTreeView.CheckBoxes = true;
 
-            foreach (TreeNode node in treeView.Nodes) {
+            foreach (TreeNode node in treeProjects.TreeViewProjects) {
                 projectTreeView.Nodes.Add(new TreeNode (node.Text));
                 projectTreeView.Nodes[projectTreeView.Nodes.Count - 1].Checked =
                     node.Checked;
@@ -71,7 +73,10 @@ namespace time_schedule {
                 }
                 MarkExpandNodes(node);
             }
-            Program.ProjetTree = projectTreeView;
+            //Program.ProjetTree = projectTreeView;
+            TreeProjects treeProjects = new TreeProjects();
+            treeProjects.SetTreeViewProjects(projectTreeView);
+            Dals.WriteObjectToFile(Constants.PROJECTS_LIST, treeProjects);
             this.Close();
         }
 
