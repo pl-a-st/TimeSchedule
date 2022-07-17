@@ -1,5 +1,6 @@
 ﻿
 namespace time_schedule {
+    
     partial class fmProjectTree {
         /// <summary>
         /// Required designer variable.
@@ -121,7 +122,7 @@ namespace time_schedule {
 
         #endregion
 
-        private System.Windows.Forms.TreeView projectTreeView;
+        public  System.Windows.Forms.TreeView projectTreeView;
         private System.Windows.Forms.Button button1;
         private System.Windows.Forms.Button button2;
         private System.Windows.Forms.Button button3;

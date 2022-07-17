@@ -114,7 +114,6 @@ namespace time_schedule {
                 BinaryFormatter bf = new BinaryFormatter();
                 using (FileStream stream = new FileStream(fileName, FileMode.Create)) {
                     bf.Serialize(stream, serObject);
-                    
                 }
             }
             catch {

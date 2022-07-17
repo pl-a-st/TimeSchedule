@@ -90,7 +90,7 @@ namespace time_schedule
             //Dals.WriteObjectToFile(
             //    Constants.PROGECT_TO_CHOOSE,
             //    ListProjects.GetListForSave());
-            Dals.WriteObjectToFile(Constants.PROGECT_TO_CHOOSE_BIN, ListProjects);
+            Dals.WriteObjectToFile(Constants.PROJECT_TO_CHOOSE_BIN, ListProjects);
         }
         public ListProjects ListProjects
         { get; private set; } = new ListProjects();
@@ -98,7 +98,7 @@ namespace time_schedule
         {
             this.TopMost = true;
             ListProjects = new ListProjects(
-                Dals.ReadListFromFile(Constants.PROGECT_TO_CHOOSE));
+                Dals.ReadListFromFile(Constants.PROJECT_TO_CHOOSE));
             foreach(Project project in ListProjects.Projects)
             {
                 lBxProject.Items.Add(project.Name);
@@ -127,7 +127,7 @@ namespace time_schedule
             if (lBxProject.Items.Count>0)
                 lBxProject.SelectedIndex = lBxProject.Items.Count-1;
             Dals.WriteListtFileAppend(
-                Constants.PROGECT_TO_CHOOSE,
+                Constants.PROJECT_TO_CHOOSE,
                 ListProjects.GetListForSave());
         }
 

@@ -1220,4 +1220,31 @@ namespace time_schedule
         {
         }
     }
+    [Serializable]
+    public class TreeProjects {
+        public List<TreeNode> TreeViewProjects {
+            get; private set; } = new List<TreeNode>();
+        public TreeProjects() {
+
+        }
+        private void CloneTreeView(TreeNode ChangeTreeNode, TreeNode CopyTreeNode) {
+            ChangeTreeNode.Nodes.Add(CopyTreeNode.Clone() as TreeNode);
+            foreach (TreeNode chTreeNode in CopyTreeNode.Nodes) {
+                CloneTreeView(ChangeTreeNode.LastNode, chTreeNode);
+            }
+        }
+        public void SetTreeViewProjects(TreeView treeView) {
+            
+            foreach (TreeNode treeNode in treeView.Nodes) {
+                TreeViewProjects.Add(treeNode.Clone() as TreeNode);
+                //foreach (TreeNode chTreeNode in treeNode.Nodes) {
+                //    CloneTreeView(TreeViewProjects.Last(), chTreeNode);
+                //}
+            }
+        }
+        //private void CloneTreeView(TreeNode ChangeTreeNode, TreeNode CopyTreeNode) {
+        //    ChangeTreeNode.Nodes.Add(CopyTreeNode.Clone() as TreeNode);
+        //}
+
+    }
 }
