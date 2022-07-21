@@ -28,6 +28,9 @@ namespace time_schedule
         Task thisTask = new Task();
         private DateTime FinishDateBeforeChange;
         LoadRefreshForm thisloadRefreshForm;
+        public TreeProjects TreeProjects {
+            get; private set;
+        } = new TreeProjects();
         public CreateOrChange CreateOrChange 
         { get; private set; }
         public fmAddChangeTask(LoadRefreshForm loadRefreshForm)
@@ -165,6 +168,7 @@ namespace time_schedule
             nUpDnCounWorkDay.Value = Program.Task.CountWorkingDays;
             dTmTaskDateStart.Value = Program.Task.DateStart.Date;
             dTmTaskDateFinish.Value = Program.Task.DateFinish.Date;
+            TreeProjects.GetTreeFromTask(Program.Task);
         }
         public void WorkDaysDatesCalculate()
         {
@@ -276,26 +280,28 @@ namespace time_schedule
             if (IsTBxTaskNameEmpty())
                 return;
             Program.ListTasksAllPerson.Tasks.Clear();
-            string fullFileName = Dals.TakeProjectPath(Constants.TASKS_BIN);
+            string fullFileName = Dals.TakeMainPath(Constants.TASKS_BIN);
             if (File.Exists(fullFileName)){
                 Program.ListTasksAllPerson = Dals.binReadFileToObject(
                     Program.ListTasksAllPerson, fullFileName);
             }
             else {
-                Program.ListTasksAllPerson.SetTasksFromList(Dals.ReadListFromProjectFile(Constants.TASKS));
+                Program.ListTasksAllPerson.SetTasksFromList(Dals.ReadListFromMainPathFile(Constants.TASKS));
             }
             
             Task task = new Task();
             if (CreateOrChange == CreateOrChange.Create)
             {
                 task = GetTaskForCreateChange(Program.ListTasksAllPerson.GetNextNumForTask());
+                task.GetTreeProjects().SetTreeViewProjects(TreeProjects.ListTreeNode);
                 Program.ListTasksAllPerson.AddTask(task);
             }  
             if (CreateOrChange == CreateOrChange.Change)
             {
                 WriteNewNonWorkigDays();
                 task = GetTaskForCreateChange(Convert.ToInt32(nUpDnTaskNumber.Value));
-                for(int i=0; i<Program.ListTasksAllPerson.Tasks.Count; i++)
+                task.GetTreeProjects().SetTreeViewProjects(TreeProjects.ListTreeNode);
+                for (int i=0; i<Program.ListTasksAllPerson.Tasks.Count; i++)
                 {
                     if (Program.ListTasksAllPerson.Tasks[i].Number == nUpDnTaskNumber.Value)
                     {
@@ -312,7 +318,7 @@ namespace time_schedule
             }
             
             //Dals.WriteObjectToFile(Constants.TASKS, Program.ListTasksAllPerson.GetListForSave());
-            Dals.WriteObjectToFile(Constants.TASKS_BIN, Program.ListTasksAllPerson);
+            Dals.WriteObjectToMainPathFile(Constants.TASKS_BIN, Program.ListTasksAllPerson);
             Program.fmMain.LoadRefreshForm(Statuses.ProgressBar.Use);
            
             this.Close();
@@ -417,29 +423,29 @@ namespace time_schedule
           
         }
 
-        private void btnCopyAnotherProject_Click(object sender, EventArgs e)
+        private void btnCopyAnotherMainPath_Click(object sender, EventArgs e)
         {
-            fmProjectChoise fmProjectCopy = new fmProjectChoise();
-            fmProjectCopy.ShowDialog();
-            if (fmProjectCopy.SetTBxAddress().Text == "" ||
-                fmProjectCopy.SetTBxAddress().Text == null ||
-                fmProjectCopy.ChoiceIsMade == ChoiceIsMade.no)
+            fmMainPathChoise fmMainPathCopy = new fmMainPathChoise();
+            fmMainPathCopy.ShowDialog();
+            if (fmMainPathCopy.SetTBxAddress().Text == "" ||
+                fmMainPathCopy.SetTBxAddress().Text == null ||
+                fmMainPathCopy.ChoiceIsMade == ChoiceIsMade.no)
             {
                 return;
             }
-            string folderName = fmProjectCopy.SetTBxAddress().Text;
+            string folderName = fmMainPathCopy.SetTBxAddress().Text;
             //string targetFolderName = "Проект";
             try
             {
                 Program.ListTasksAllPerson.Tasks.Clear();
-                string fullFileName = Dals.TakeProjectPath(Constants.TASKS_BIN);
+                string fullFileName = Dals.TakeMainPath(Constants.TASKS_BIN);
                 if (File.Exists(fullFileName)) {
                     Program.ListTasksAllPerson = Dals.binReadFileToObject(
                         Program.ListTasksAllPerson, fullFileName);
                 }
                 else {
                      Program.ListTasksAllPerson.SetTasksFromList(
-                    Dals.ReadListFromProjectFile(Constants.TASKS));
+                    Dals.ReadListFromMainPathFile(Constants.TASKS));
                 }
                
                 
@@ -481,22 +487,41 @@ namespace time_schedule
                 Dals.binWriteObjectToFile(
                     listPersons,
                     folderName + "\\" + Constants.PERSONS_BIN);
-                //Dals.WriteListtFileAppend(
-                //    folderName + "\\" + Constants.PERSONS, 
-                //    listPersons.GetListForSave());
                 task.SetPersonFamaly(personFamaly);
                 const int NUBER_AFTER_FOR_COPY = 0;
                 task.SetTaskNumberAfter(NUBER_AFTER_FOR_COPY);
                 listTasks.AddTask(task);
                 Dals.binWriteObjectToFile(listTasks, folderName + "\\" + Constants.TASKS_BIN);
-                //Dals.WriteListtFileAppend(folderName + "\\" + Constants.TASKS, listTasks.GetListForSave());
                 MessageBox.Show("Задача успешно скопирована.");
-                //thisloadRefreshForm?.Invoke();
                 Program.fmMain.LoadRefreshForm(Statuses.ProgressBar.Use);
             }
             catch
             {
                 MessageBox.Show("Не удалось произвести запись в файл: " + folderName + "\\" + Constants.TASKS);
+            }
+        }
+
+        private void button2_Click(object sender, EventArgs e) {
+            fmProjectTree fmProjectTree = new fmProjectTree();
+            fmProjectTree.StartPosition = FormStartPosition.CenterParent;
+            
+            
+            if (CreateOrChange == CreateOrChange.Change) {
+                //TreeProjects.SetTreeViewProjects(Program.Task.TreeProjects.TreeViewProjects);
+                fmProjectTree.SetTreeView(TreeProjects);//2c
+                fmProjectTree.SetHasLoad(HasLoad.Yes);
+                fmProjectTree.ShowDialog();
+                if(fmProjectTree.ClickButton==ClickButton.Aplly)
+                    TreeProjects.SetTreeViewProjects(fmProjectTree.projectTreeView);
+            }
+            if(CreateOrChange == CreateOrChange.Create) {
+                string fullFileName = Dals.TakeMainPath(Constants.PROJECTS_LIST);
+                TreeProjects.GetTreeFromFile();
+                fmProjectTree.SetTreeView(TreeProjects);
+                fmProjectTree.SetHasLoad(HasLoad.Yes);
+                fmProjectTree.ShowDialog();
+                if (fmProjectTree.ClickButton == ClickButton.Aplly)
+                    TreeProjects.SetTreeViewProjects(fmProjectTree.projectTreeView);
             }
         }
     }

@@ -74,11 +74,11 @@ namespace time_schedule
             //Dals.WriteObjectToFile(
             //    Constants.PERSONS, 
             //    Program.listPersons.GetListForSave());
-            Dals.WriteObjectToFile(Constants.PERSONS_BIN,Program.listPersons);
+            Dals.WriteObjectToMainPathFile(Constants.PERSONS_BIN,Program.listPersons);
             //Dals.WriteObjectToFile(
             //    Constants.TASKS,
             //    Program.ListTasksAllPerson.GetListForSave());
-            Dals.WriteObjectToFile(Constants.TASKS_BIN,Program.ListTasksAllPerson);
+            Dals.WriteObjectToMainPathFile(Constants.TASKS_BIN,Program.ListTasksAllPerson);
             LisBoxRefresh();
             thisloadRefreshForm?.Invoke();
         }
@@ -108,7 +108,7 @@ namespace time_schedule
             Program.listPersons.Persons.RemoveAt(lBxPersons.SelectedIndex);
              
             //Dals.WriteObjectToFile(Constants.PERSONS, Program.listPersons.GetListForSave());
-            Dals.WriteObjectToFile(Constants.PERSONS_BIN, Program.listPersons);
+            Dals.WriteObjectToMainPathFile(Constants.PERSONS_BIN, Program.listPersons);
             LisBoxRefresh();
             thisloadRefreshForm?.Invoke();
         }
@@ -144,7 +144,7 @@ namespace time_schedule
             }
             Program.listPersons.SetPersonList(listPerson);
             //Dals.WriteObjectToFile(Constants.PERSONS, Program.listPersons.GetListForSave());
-            Dals.WriteObjectToFile(Constants.PERSONS_BIN, Program.listPersons);
+            Dals.WriteObjectToMainPathFile(Constants.PERSONS_BIN, Program.listPersons);
         }
         private void RemovePersonPlace(PersonPlaceUpDowm personPlaceUpDowm)
         {

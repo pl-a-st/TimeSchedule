@@ -310,22 +310,22 @@ namespace time_schedule {
             form1.BeginInvoke(new Action(delegate () { LoadRefreshForm(fmProgressBar); }));
         }
         private void LoadAllPools() {
-            if (File.Exists(Dals.TakeProjectPath(Constants.TASKS_BIN))){
+            if (File.Exists(Dals.TakeMainPath(Constants.TASKS_BIN))){
                 Program.ListTasksAllPerson = Dals.binReadFileToObject(
                     Program.ListTasksAllPerson,
-                    Dals.TakeProjectPath(Constants.TASKS_BIN));
+                    Dals.TakeMainPath(Constants.TASKS_BIN));
             }
             else {
-                Program.ListTasksAllPerson.SetTasksFromList(Dals.ReadListFromProjectFile(Constants.TASKS));
+                Program.ListTasksAllPerson.SetTasksFromList(Dals.ReadListFromMainPathFile(Constants.TASKS));
             }
-            if (File.Exists(Dals.TakeProjectPath(Constants.TASKS_BIN))) {
+            if (File.Exists(Dals.TakeMainPath(Constants.TASKS_BIN))) {
                 Program.listPersons = Dals.binReadFileToObject(
                     Program.listPersons,
-                    Dals.TakeProjectPath(Constants.PERSONS_BIN));
+                    Dals.TakeMainPath(Constants.PERSONS_BIN));
             }
             else {
                 Program.listPersons.SetPersonsFromList(
-                 Dals.ReadListFromProjectFile(Constants.PERSONS),
+                 Dals.ReadListFromMainPathFile(Constants.PERSONS),
                  Program.ListTasksAllPerson.Tasks);
             }
             
@@ -336,14 +336,14 @@ namespace time_schedule {
                 this);
             int maxButtonLocationY = SetMaxLocationAndAddPersonButton(ref Program.ListPersonButton);
             pBForLine.Height = maxButtonLocationY;
-            if (File.Exists(Dals.TakeProjectPath(Constants.HOLYDAYS_BIN))) {
+            if (File.Exists(Dals.TakeMainPath(Constants.HOLYDAYS_BIN))) {
                 Program.ListHolidays = Dals.binReadFileToObject(
                     Program.ListHolidays,
-                    Dals.TakeProjectPath(Constants.HOLYDAYS_BIN));
+                    Dals.TakeMainPath(Constants.HOLYDAYS_BIN));
             }
             else {
                 Program.ListHolidays.SetHolidaysFromList(
-                    Dals.ReadListFromProjectFile(Constants.HOLYDAYS));
+                    Dals.ReadListFromMainPathFile(Constants.HOLYDAYS));
             }
             
             NonWorkDaysWrite(Program.ListTasksAllPerson.GetMinDateStartTasks(), Program.ListTasksAllPerson.GetMaxDateFinishTasks());
@@ -530,7 +530,7 @@ namespace time_schedule {
             fmAddTask.SetCreateOrChange(CreateOrChange.Create);
             fmAddTask.Show();
             //Dals.WriteObjectToFile(Constants.TASKS, Program.ListTasksAllPerson.GetListForSave());
-            Dals.WriteObjectToFile(Constants.TASKS_BIN, Program.ListTasksAllPerson);
+            Dals.WriteObjectToMainPathFile(Constants.TASKS_BIN, Program.ListTasksAllPerson);
         }
         private void ToolStripMenuProject_Click(object sender, EventArgs e)
         {
@@ -724,14 +724,14 @@ namespace time_schedule {
         }
 
         private void создатьToolStripMenuItem_Click(object sender, EventArgs e) {
-            Dals.WriteProjectFolder("Проект", Statuses.WorkWithProject.NewProject);
+            Dals.WriteMainPathFolder("Проект", Statuses.WorkWithProject.NewProject);
             SetNewTextForForm();
             ZeroingScrolss();
             LoadRefreshForm(Statuses.ProgressBar.Use);
             ScrollToDate(DateTime.Now.Date);
         }
         private void выбратьToolStripMenuItem_Click(object sender, EventArgs e) {
-            Dals.WriteProjectFolder("", Statuses.WorkWithProject.LoadProject);
+            Dals.WriteMainPathFolder("", Statuses.WorkWithProject.LoadProject);
             SetNewTextForForm();
             ZeroingScrolss();
             LoadRefreshForm(Statuses.ProgressBar.Use);
@@ -824,15 +824,26 @@ namespace time_schedule {
 
         }
 
-        private void button1_Click_2(object sender, EventArgs e) {
-
+        private void Projects_Click_2(object sender, EventArgs e) {
             fmProjectTree fmProjectTree = new fmProjectTree();
             fmProjectTree.StartPosition = FormStartPosition.CenterParent;
-
-            string fullFileName = Dals.TakeProjectPath(Constants.PROJECTS_LIST);
-            fmProjectTree.SetTreeView(Dals.binReadFileToObject(new TreeProjects(), fullFileName));
-            
+            //fmProjectTree.SetTreeView(Dals.binReadMainPathFileToObject(
+            //    new TreeProjects(),
+            //    Constants.PROJECTS_LIST));
+            TreeProjects treeProjectsFromFile = new TreeProjects();
+            treeProjectsFromFile.GetTreeFromFile();
+            fmProjectTree.SetTreeView(treeProjectsFromFile);
+            fmProjectTree.SetHasLoad(HasLoad.Yes);
             fmProjectTree.ShowDialog();
+            TreeProjects treeProjects = new TreeProjects();
+            treeProjects.SetTreeViewProjects(fmProjectTree.projectTreeView);
+            if (fmProjectTree.ClickButton == ClickButton.Aplly) {
+                treeProjects.SaveTree();
+                treeProjects.SaveSettingsTree();
+                //Dals.WriteObjectToMainPathFile(Constants.PROJECTS_LIST, treeProjects);
+            }
+                
+                
         }
     }
    

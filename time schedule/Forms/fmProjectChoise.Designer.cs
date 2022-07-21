@@ -1,5 +1,5 @@
 ﻿namespace time_schedule {
-    partial class fmProjectChoise {
+    partial class fmMainPathChoise {
         /// <summary>
         /// Required designer variable.
         /// </summary>

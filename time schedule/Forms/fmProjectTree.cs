@@ -7,10 +7,40 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Threading;
 
 namespace time_schedule {
+    public enum HasLoad {
+        Yes,
+        No
+    }
+    public enum ApllyingChaced {
+        Yes,
+        No
+    }
+    public enum StatusFmProjectTree {
+        ForAll,
+        ForTaskCreate,
+        ForTaskChange
+    }
+    public enum ClickButton {
+        Aplly,
+        Cancel
+    }
     [Serializable]
     public partial class fmProjectTree : Form {
+        public HasLoad HasLoad {
+            get; private set; 
+        } = HasLoad.No;
+        public ApllyingChaced ApllyingChaced { 
+            get; private set; 
+        } = ApllyingChaced.No;
+        public StatusFmProjectTree StatusFmProjectTree {
+            get; private set;
+        }
+        public ClickButton ClickButton {
+            get; private set;
+        } = ClickButton.Cancel;
         public fmProjectTree() {
             InitializeComponent();
         }
@@ -18,11 +48,17 @@ namespace time_schedule {
         public TreeView GetTreeView() {
             return projectTreeView;
         }
+        public  void SetHasLoad(HasLoad hasLoad) {
+             HasLoad = hasLoad;
+        }
+        public void SetStatusFmProjectTree(StatusFmProjectTree statusFmProjectTree) {
+            StatusFmProjectTree = statusFmProjectTree;
+        }
         public void SetTreeView(TreeProjects treeProjects) {
             projectTreeView.Nodes.Clear();
             projectTreeView.CheckBoxes = true;
 
-            foreach (TreeNode node in treeProjects.TreeViewProjects) {
+            foreach (TreeNode node in treeProjects.ListTreeNode) {
                 projectTreeView.Nodes.Add(new TreeNode (node.Text));
                 projectTreeView.Nodes[projectTreeView.Nodes.Count - 1].Checked =
                     node.Checked;
@@ -76,7 +112,7 @@ namespace time_schedule {
             //Program.ProjetTree = projectTreeView;
             TreeProjects treeProjects = new TreeProjects();
             treeProjects.SetTreeViewProjects(projectTreeView);
-            Dals.WriteObjectToFile(Constants.PROJECTS_LIST, treeProjects);
+            ClickButton = ClickButton.Aplly;
             this.Close();
         }
 
@@ -86,21 +122,38 @@ namespace time_schedule {
                 projectTreeView.Nodes.Add(new TreeNode("Все"));
             }
         }
-
+        private bool CheckNameAndAddNode(fmInpootText inpootText, bool isNameCorrecrt) {
+            foreach (TreeNode treeNode in projectTreeView.SelectedNode.Nodes) {
+                if (treeNode.Text == inpootText.SetTextBox().Text) {
+                    MessageBox.Show("Такое название уже существует.");
+                    isNameCorrecrt = false;
+                    return isNameCorrecrt;
+                }
+                isNameCorrecrt = true;
+            }
+            projectTreeView.SelectedNode.Nodes.Add(inpootText.SetTextBox().Text);
+            projectTreeView.SelectedNode.Expand();
+            this.ApllyCheckedToParentIfAllChieldChecked(projectTreeView.SelectedNode);
+            return isNameCorrecrt;
+        }
         private void addNode_Click(object sender, EventArgs e) {
             projectTreeView.Focus();
             fmInpootText inpootText = new fmInpootText();
             inpootText.SetLabel().Text = "Введите имя узла";
             inpootText.SetBtnYes().Text = "Ок";
             inpootText.Text = "Ввод названия";
-            inpootText.ShowDialog();
-            if (inpootText.ChoiceIsMade== ChoiceIsMade.yes) {
-                projectTreeView.SelectedNode.Nodes.Add(inpootText.SetTextBox().Text);
-                projectTreeView.SelectedNode.Expand();
-            }
-            
+            bool isNameCorrecrt = false;
+            while (!isNameCorrecrt || inpootText.ChoiceIsMade != ChoiceIsMade.yes) {
+                inpootText.ShowDialog();
+                if (inpootText.ChoiceIsMade == ChoiceIsMade.yes) {
+                    isNameCorrecrt = CheckNameAndAddNode(inpootText, isNameCorrecrt);
+                }
+                else {
+                    break;
+                }
+            } 
         }
-
+       
         private void RemoveNode_Click(object sender, EventArgs e) {
             projectTreeView.Focus();
             if (projectTreeView.SelectedNode.Level == 0) {
@@ -175,6 +228,52 @@ namespace time_schedule {
                 return;
             int index = projectTreeView.SelectedNode.NextNode.Index+1;
             MoveNode(index);
+        }
+
+        private void ApllyCheckedToChilde(TreeNode node) {
+            foreach (TreeNode chNode in node.Nodes) {
+                chNode.Checked = node.Checked;
+                ApllyCheckedToChilde(chNode);
+            }
+        }
+        private void ApllyCheckedToParentIfAllChieldChecked(TreeNode node) {
+            if (node.Parent == null)
+                return;
+            foreach (TreeNode chNode in node.Parent.Nodes) {
+                if (!chNode.Checked)
+                    return;
+            }
+            node.Parent.Checked = true;
+            ApllyCheckedToParentIfAllChieldChecked(node.Parent);
+        }
+        private void ApllyCheckedToParent(TreeNode node) {
+            if (node.Parent == null)
+                return;
+            if (!node.Checked)
+                node.Parent.Checked = false;
+            ApllyCheckedToParent(node.Parent);
+        }
+
+        private void projectTreeView_AfterCheck(object sender, TreeViewEventArgs node) {
+            if (HasLoad == HasLoad.No)
+                return;
+            if (ApllyingChaced == ApllyingChaced.Yes)
+                return;
+            ApllyingChaced = ApllyingChaced.Yes;
+            Thread.Sleep(300);
+            ApllyCheckedToChilde(node.Node);
+            ApllyCheckedToParent(node.Node);
+            ApllyCheckedToParentIfAllChieldChecked(node.Node);
+            ApllyingChaced = ApllyingChaced.No;
+            this.Enabled = true;
+        }
+
+        private void projectTreeView_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e) {
+            //NodeMouseClick = NodeMouseClick.yes;
+        }
+
+        private void projectTreeView_BeforeCheck(object sender, TreeViewCancelEventArgs node) {
+            
         }
     }
 }
