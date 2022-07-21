@@ -516,7 +516,13 @@ namespace time_schedule
         public Color Color { get; private set; }
         public long Priority { get; private set; }
         public int PlaceInSynchTask { get; private set; } = 0;
-        public string ProjectName { get; private set; }
+        public PoolProjects PoolProjects { get; private set; } = new PoolProjects();
+        private TreeProjects TreeProjects  = new TreeProjects();
+        public TreeProjects GetTreeProjects() {
+            if (TreeProjects == null)
+                TreeProjects = new TreeProjects();
+            return TreeProjects;
+        }
         public Task ()
         { }
         public Task(string allParamTab)
@@ -939,7 +945,7 @@ namespace time_schedule
                     Task.SetTaskNumberAfter(0);
                     ChekTaskAfter(Task);
                     //Dals.WriteObjectToFile(Constants.TASKS, Program.ListTasksAllPerson.GetListForSave());
-                    Dals.WriteObjectToFile(Constants.TASKS_BIN, Program.ListTasksAllPerson);
+                    Dals.WriteObjectToMainPathFile(Constants.TASKS_BIN, Program.ListTasksAllPerson);
                     Program.fmMain.SetForm1().LoadRefreshForm(Statuses.ProgressBar.Use);
                     Program.fmMain.SetForm1().SetPlMain().Focus();
                 }
@@ -1002,6 +1008,7 @@ namespace time_schedule
         //LoadRefreshForm loadRefreshForm;
         private void Button_Click(object sender, EventArgs e)
         {
+            Program.fmMain.SetPlForDate().HorizontalScroll.Value = Program.fmMain.SetPlMain().HorizontalScroll.Value;
             isDown = false;
             fmAddChangeTask fmAddTask = new fmAddChangeTask(Program.delegatLoadRefreshForm);
             fmAddTask.GhangeNamebtnCreateTask("Изменить");
@@ -1009,8 +1016,8 @@ namespace time_schedule
             fmAddTask.StartPosition = FormStartPosition.CenterScreen;
             Program.Task = Task;
             fmAddTask.ShowDialog();
-            //Dals.WriteObjectToFile(Constants.TASKS, Program.ListTasksAllPerson.GetListForSave());
-            Dals.WriteObjectToFile(Constants.TASKS_BIN, Program.ListTasksAllPerson);
+            Dals.WriteObjectToMainPathFile(Constants.TASKS, Program.ListTasksAllPerson);
+            
         }
         public TaskButton(Task task, ListPersonButton listPersonButton,DateTime minDateStart, DateTime maxDateFinish)
         {
@@ -1192,7 +1199,7 @@ namespace time_schedule
         }
     }
     [Serializable]
-    public class ListProjects
+    public class PoolProjects
     {
         public List<Project> Projects
         { get; private set; } = new List<Project>();
@@ -1209,20 +1216,20 @@ namespace time_schedule
         {
             Projects.Add(project);
         }
-        public ListProjects (List<string> listStringFromFile)
+        public PoolProjects (List<string> listStringFromFile)
         {
             foreach (string stringFromFile in listStringFromFile)
             {
                 Projects.Add(new Project(stringFromFile));
             }
         }
-        public ListProjects()
+        public PoolProjects()
         {
         }
     }
     [Serializable]
     public class TreeProjects {
-        public List<TreeNode> TreeViewProjects {
+        public List<TreeNode> ListTreeNode {
             get; private set; } = new List<TreeNode>();
         public TreeProjects() {
 
@@ -1234,17 +1241,107 @@ namespace time_schedule
             }
         }
         public void SetTreeViewProjects(TreeView treeView) {
-            
+            ListTreeNode.Clear();
             foreach (TreeNode treeNode in treeView.Nodes) {
-                TreeViewProjects.Add(treeNode.Clone() as TreeNode);
-                //foreach (TreeNode chTreeNode in treeNode.Nodes) {
-                //    CloneTreeView(TreeViewProjects.Last(), chTreeNode);
-                //}
+                ListTreeNode.Add(treeNode.Clone() as TreeNode);
             }
         }
-        //private void CloneTreeView(TreeNode ChangeTreeNode, TreeNode CopyTreeNode) {
-        //    ChangeTreeNode.Nodes.Add(CopyTreeNode.Clone() as TreeNode);
-        //}
+        public void SetTreeViewProjects(List<TreeNode> treeNodes) {
+            ListTreeNode.Clear();
+            foreach (TreeNode treeNode in treeNodes) {
+                ListTreeNode.Add(treeNode.Clone() as TreeNode);
+            }
+        }
+        public void SaveTree() {
+            Dals.WriteObjectToMainPathFile(Constants.PROJECTS_LIST, this);
+        }
+        public void SaveSettingsTree() {
+            Dals.WriteObjectToUserPathFile(Constants.PROJECTS_LIST, this);
+        }
+        public void GetTreeFromTask(Task task) {
+            TreeProjects mainTree = GetMainTree();
+            TreeProjects settingsTree = GetSettingsTreeFromTask(task);
+            TreeProjects resultTree = GetResultTree(mainTree, settingsTree);
+            this.ListTreeNode = resultTree.ListTreeNode;
+        }
+        private static TreeProjects GetSettingsTreeFromTask(Task task) {
+            TreeProjects settingsTree = new TreeProjects();
+            settingsTree.SetTreeViewProjects(task.GetTreeProjects().ListTreeNode);
+            return settingsTree;
+        }
+        public void GetTreeFromFile() {
+            TreeProjects mainTree = GetMainTree();
+            TreeProjects settingsTree = GetSettingsTreeFromFile();
+            TreeProjects resultTree = GetResultTree(mainTree, settingsTree);
+            this.ListTreeNode = resultTree.ListTreeNode;
+        }
+       
+        private static TreeProjects GetResultTree(TreeProjects mainTree, TreeProjects settingsTree) {
+            TreeProjects resultTree = new TreeProjects();
+            if (mainTree.ListTreeNode != null && settingsTree.ListTreeNode != null) {
+                foreach (TreeNode mainNode in mainTree.ListTreeNode) {
+                    bool isMainNodeInSettings = false;
+                    foreach (TreeNode settingsNode in settingsTree.ListTreeNode) {
+                        if (mainNode.Text == settingsNode.Text) {
+                            resultTree.ListTreeNode.Add(settingsNode.Clone() as TreeNode);
+                            resultTree.ListTreeNode.Last().Nodes.Clear();
+                            isMainNodeInSettings = true;
+                            CheckAndCloneTeeNodes(resultTree.ListTreeNode.Last(), mainNode, settingsNode);
+                            break;
+                        }
+                    }
+                    if (!isMainNodeInSettings) {
+                        resultTree.ListTreeNode.Add(mainNode.Clone() as TreeNode);
+                    }
+                }
+            }
+            return resultTree;
+        }
 
+        private static TreeProjects GetSettingsTreeFromFile() {
+            TreeProjects settingsTree = new TreeProjects();
+            settingsTree.SetTreeViewProjects(Dals.binReadUserPathFileToObject(settingsTree, Constants.PROJECTS_LIST).ListTreeNode);
+            return settingsTree;
+        }
+
+        private static TreeProjects GetMainTree() {
+            TreeProjects mainTree = new TreeProjects();
+            mainTree.SetTreeViewProjects(Dals.binReadMainPathFileToObject(mainTree, Constants.PROJECTS_LIST).ListTreeNode);
+            if (mainTree.ListTreeNode != null) {
+                foreach (TreeNode treeNode in mainTree.ListTreeNode) {
+                    ClearSettings(treeNode);
+                }
+            }
+            return mainTree;
+        }
+
+        private static void CheckAndCloneTeeNodes(TreeNode resultTree, TreeNode mainNode, TreeNode settingsNode) {
+            foreach (TreeNode chMainNode in mainNode.Nodes) {
+                bool isChMainNodeInChSetting = false;
+                foreach (TreeNode chSettingsNode in settingsNode.Nodes) {
+                    if (chMainNode.Text == chSettingsNode.Text) {
+                        resultTree.Nodes.Add(chSettingsNode.Clone() as TreeNode);
+                        resultTree.LastNode.Nodes.Clear();
+                        isChMainNodeInChSetting = true;
+                        CheckAndCloneTeeNodes(resultTree.LastNode, chMainNode, chSettingsNode);
+                        break;
+                    }
+                    
+                }
+                if (!isChMainNodeInChSetting) {
+                    resultTree.Nodes.Add(chMainNode.Clone() as TreeNode);
+                }
+            }
+        }
+
+        private static void ClearSettings(TreeNode treeNode) {
+            treeNode.Checked = false;
+            treeNode.Tag = null;
+            treeNode.Expand();
+            foreach (TreeNode chTreeNode in treeNode.Nodes) {
+                ClearSettings(chTreeNode);
+            }
+
+        }
     }
 }

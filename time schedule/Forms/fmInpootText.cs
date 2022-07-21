@@ -43,6 +43,7 @@ namespace time_schedule
 
         private void btnCancel_Click(object sender, EventArgs e)
         {
+            ChoiceIsMade = ChoiceIsMade.no;
             this.Close();
         }
     }

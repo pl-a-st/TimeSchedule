@@ -40,6 +40,9 @@ namespace time_schedule {
             this.projectTreeView.Name = "projectTreeView";
             this.projectTreeView.Size = new System.Drawing.Size(262, 447);
             this.projectTreeView.TabIndex = 0;
+            this.projectTreeView.BeforeCheck += new System.Windows.Forms.TreeViewCancelEventHandler(this.projectTreeView_BeforeCheck);
+            this.projectTreeView.AfterCheck += new System.Windows.Forms.TreeViewEventHandler(this.projectTreeView_AfterCheck);
+            this.projectTreeView.NodeMouseClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.projectTreeView_NodeMouseClick);
             // 
             // button1
             // 

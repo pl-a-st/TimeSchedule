@@ -10,9 +10,9 @@ using System.Windows.Forms;
 
 namespace time_schedule
 {
-    public partial class fmProjectChoise : Form
+    public partial class fmMainPathChoise : Form
     {
-        public fmProjectChoise()
+        public fmMainPathChoise()
         {
             InitializeComponent();
         }
@@ -90,14 +90,14 @@ namespace time_schedule
             //Dals.WriteObjectToFile(
             //    Constants.PROGECT_TO_CHOOSE,
             //    ListProjects.GetListForSave());
-            Dals.WriteObjectToFile(Constants.PROJECT_TO_CHOOSE_BIN, ListProjects);
+            Dals.WriteObjectToMainPathFile(Constants.PROJECT_TO_CHOOSE_BIN, ListProjects);
         }
-        public ListProjects ListProjects
-        { get; private set; } = new ListProjects();
+        public PoolProjects ListProjects
+        { get; private set; } = new PoolProjects();
         private void fmProjectCopy_Load(object sender, EventArgs e)
         {
             this.TopMost = true;
-            ListProjects = new ListProjects(
+            ListProjects = new PoolProjects(
                 Dals.ReadListFromFile(Constants.PROJECT_TO_CHOOSE));
             foreach(Project project in ListProjects.Projects)
             {

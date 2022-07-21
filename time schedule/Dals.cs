@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Xml.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
+using Syroot.Windows.IO;
 
 
 namespace time_schedule {
@@ -24,7 +25,7 @@ namespace time_schedule {
             if (statusWorkWithProject == Statuses.WorkWithProject.ProgramStarted &&
                 (!File.Exists(Constants.PROJECT_FILE_NAME) ||
                 File.ReadAllLines(Constants.PROJECT_FILE_NAME).Length == 0)) {
-                WriteProjectFolder("Проект", statusWorkWithProject);
+                WriteMainPathFolder("Проект", statusWorkWithProject);
             }
             else {
                 if (File.Exists(Constants.PROJECT_FILE_NAME)) {
@@ -38,7 +39,7 @@ namespace time_schedule {
 
             }
         }
-        public static void WriteProjectFolder(string targetFolderName, Statuses.WorkWithProject workWithProject) {
+        public static void WriteMainPathFolder(string targetFolderName, Statuses.WorkWithProject workWithProject) {
             try {
                 FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog();
                 if (workWithProject == Statuses.WorkWithProject.NewProject) {
@@ -49,7 +50,7 @@ namespace time_schedule {
                     
                 if (workWithProject == Statuses.WorkWithProject.LoadProject) {
                     
-                    fmProjectChoise fmProjectChoise = new fmProjectChoise();
+                    fmMainPathChoise fmProjectChoise = new fmMainPathChoise();
                     fmProjectChoise.ShowDialog();
                     if (fmProjectChoise.SetTBxAddress().Text == "" ||
                         fmProjectChoise.SetTBxAddress().Text == null ||
@@ -90,14 +91,18 @@ namespace time_schedule {
             }
         }
         public static void WriteObjectToFile(string fileName, List<string> listForWrite) {
-            fileName = TakeProjectPath(fileName);
+            fileName = TakeMainPath(fileName);
             WriteListtFileAppend(fileName, listForWrite);
         }
-        public static void WriteObjectToFile<Type>(string fileName, Type serObject) {
-            fileName = TakeProjectPath(fileName);
+        public static void WriteObjectToMainPathFile<Type>(string fileName, Type serObject) {
+            fileName = TakeMainPath(fileName);
             binWriteObjectToFile(serObject, fileName);
         }
-        public static string TakeProjectPath(string fileName) {
+        public static void WriteObjectToUserPathFile<Type>(string fileName, Type serObject) {
+            fileName = TakeUserPath(fileName);
+            binWriteObjectToFile(serObject, fileName);
+        }
+        public static string TakeMainPath(string fileName) {
             if (ProjectFolderPath == null || ProjectFolderPath == string.Empty)
                 ProjectFolderPath = "Проект";
             else {
@@ -108,6 +113,13 @@ namespace time_schedule {
                     Directory.CreateDirectory(ProjectFolderPath);
             }
             return fileName;
+        }
+        public static string TakeUserPath(string fileName) {
+            string path = Environment.GetFolderPath(Environment.SpecialFolder.Personal) + "\\Time schedule\\";
+            if (!Directory.Exists(path)) {
+                Directory.CreateDirectory(path);
+            }
+            return path+ fileName;
         }
         public static void binWriteObjectToFile<Type>(Type serObject, string fileName) {
             try {
@@ -139,17 +151,25 @@ namespace time_schedule {
             }
             return listFromFile;
         }
-        public static Type binReadFileToObject <Type>(Type serObject, string fileName) {
-            BinaryFormatter bf = new BinaryFormatter();
-            serObject = default(Type);
+        public static Type binReadMainPathFileToObject<Type>(Type serObject, string fileName) {
+            return binReadFileToObject(serObject, Dals.TakeMainPath(fileName));
+        }
+        public static Type binReadUserPathFileToObject<Type>(Type serObject, string fileName) {
+            return binReadFileToObject(serObject, Dals.TakeUserPath(fileName));
+        }
+        public static Type binReadFileToObject <Type>(Type serObject, string fullPathFileName) {
+        BinaryFormatter bf = new BinaryFormatter();
+            //serObject = default(Type);
             try {
-                using (FileStream stream = new FileStream(fileName, FileMode.Open)) {
+                using (FileStream stream = new FileStream(fullPathFileName, FileMode.Open)) {
+                    
                     serObject = (Type)bf.Deserialize(stream);
+
                     return serObject;
                 }
             }
             catch {
-                MessageAboutProblem(fileName);
+                MessageAboutProblem(fullPathFileName);
                 return serObject;
             }
         }
@@ -189,7 +209,7 @@ namespace time_schedule {
             }
             return listFromFile;
         }
-        public static List<string> ReadListFromProjectFile(string fileName) {
+        public static List<string> ReadListFromMainPathFile(string fileName) {
             if (ProjectFolderPath!=null && ProjectFolderPath!=string.Empty)
                 fileName = ProjectFolderPath + "\\" + fileName;
             return ReadListFromFile(fileName);

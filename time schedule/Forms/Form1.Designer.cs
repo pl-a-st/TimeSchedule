@@ -147,20 +147,20 @@
             this.создатьToolStripMenuItem});
             this.проектToolStripMenuItem.Name = "проектToolStripMenuItem";
             this.проектToolStripMenuItem.Size = new System.Drawing.Size(191, 22);
-            this.проектToolStripMenuItem.Text = "Проект";
+            this.проектToolStripMenuItem.Text = "Файл";
             this.проектToolStripMenuItem.Click += new System.EventHandler(this.ToolStripMenuProject_Click);
             // 
             // выбратьToolStripMenuItem
             // 
             this.выбратьToolStripMenuItem.Name = "выбратьToolStripMenuItem";
-            this.выбратьToolStripMenuItem.Size = new System.Drawing.Size(121, 22);
+            this.выбратьToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.выбратьToolStripMenuItem.Text = "Выбрать";
             this.выбратьToolStripMenuItem.Click += new System.EventHandler(this.выбратьToolStripMenuItem_Click);
             // 
             // создатьToolStripMenuItem
             // 
             this.создатьToolStripMenuItem.Name = "создатьToolStripMenuItem";
-            this.создатьToolStripMenuItem.Size = new System.Drawing.Size(121, 22);
+            this.создатьToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.создатьToolStripMenuItem.Text = "Создать";
             this.создатьToolStripMenuItem.Click += new System.EventHandler(this.создатьToolStripMenuItem_Click);
             // 
@@ -278,7 +278,7 @@
             this.button1.TabIndex = 10;
             this.button1.Text = "Проекты";
             this.button1.UseVisualStyleBackColor = true;
-            this.button1.Click += new System.EventHandler(this.button1_Click_2);
+            this.button1.Click += new System.EventHandler(this.Projects_Click_2);
             // 
             // Form1
             // 
