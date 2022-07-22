@@ -318,6 +318,7 @@ namespace time_schedule {
             else {
                 Program.ListTasksAllPerson.SetTasksFromList(Dals.ReadListFromMainPathFile(Constants.TASKS));
             }
+            Program.ListTasksAllPerson.SetTasks(GetProjectEntryTasks(Program.ListTasksAllPerson.Tasks));
             if (File.Exists(Dals.TakeMainPath(Constants.TASKS_BIN))) {
                 Program.listPersons = Dals.binReadFileToObject(
                     Program.listPersons,
@@ -351,6 +352,55 @@ namespace time_schedule {
             Program.ListTaskButtons.AddTaskButtons(
                 Program.ListTasksAllPerson,
                 Program.ListPersonButton);
+        }
+        private List<Task> GetProjectEntryTasks(List<Task> tasks) {
+            var resultListTasks = new List<Task>();
+            TreeProjects treeProjects = new TreeProjects();
+            treeProjects.GetTreeFromFile();
+            foreach(TreeNode treeNodeProject in treeProjects.ListTreeNode) {
+                if (treeNodeProject.Text == "Все" && treeNodeProject.Checked != false) {
+                    return resultListTasks = tasks.GetRange(0, tasks.Count);
+                }
+            }
+            foreach (Task task in tasks) {
+                
+                TreeProjects treeTask = new TreeProjects();
+                treeTask = task.GetTreeProjects();
+                if(CheckEntryProject(treeProjects, treeTask)) {
+                    resultListTasks.Add(task);
+                }
+            }
+            return resultListTasks;
+        }
+
+        private static bool CheckEntryProject(TreeProjects treeProjects, TreeProjects treeTask) {
+            bool isEntry = false;
+            foreach (TreeNode taskNode in treeTask.ListTreeNode) {
+                foreach (TreeNode projectNode in treeProjects.ListTreeNode) {
+                    if (taskNode.Text == projectNode.Text &&
+                        taskNode.Checked == true &&
+                        projectNode.Checked == true) {
+                        isEntry = true;
+                        return isEntry;
+                    }
+                    isEntry= CheckEntryProject(projectNode, taskNode, isEntry);
+                }
+            }
+            return isEntry;
+        }
+        private static bool CheckEntryProject(TreeNode treeProjects, TreeNode treeTask,bool isEntry) {
+            foreach (TreeNode taskNode in treeTask.Nodes) {
+                foreach (TreeNode projectNode in treeProjects.Nodes) {
+                    if (taskNode.Text == projectNode.Text &&
+                        taskNode.Checked == true &&
+                        projectNode.Checked == true) {
+                        isEntry = true;
+                        return isEntry;
+                    }
+                    isEntry = CheckEntryProject(projectNode, taskNode, isEntry);
+                }
+            }
+            return isEntry;
         }
         private static void ClearAllPools() {
             Program.PoolTextBox.ListTextBoxes.Clear();
@@ -840,6 +890,8 @@ namespace time_schedule {
             if (fmProjectTree.ClickButton == ClickButton.Aplly) {
                 treeProjects.SaveTree();
                 treeProjects.SaveSettingsTree();
+                Program.fmMain.LoadRefreshForm(Statuses.ProgressBar.Use);
+                Program.fmMain.ScrollToDate(DateTime.Now.Date);
                 //Dals.WriteObjectToMainPathFile(Constants.PROJECTS_LIST, treeProjects);
             }
                 

@@ -137,6 +137,8 @@ namespace time_schedule
             nUpDnPreviousTask.Enabled = false;
             tBxPreviousTask.Enabled = false;
             bTnColor.BackColor = Program.TaskColor;
+            TreeProjects.GetTreeFromFile();
+            
         }
         private void LoadFmAddTaskToCangeTask()
         {
@@ -511,17 +513,24 @@ namespace time_schedule
                 fmProjectTree.SetTreeView(TreeProjects);//2c
                 fmProjectTree.SetHasLoad(HasLoad.Yes);
                 fmProjectTree.ShowDialog();
-                if(fmProjectTree.ClickButton==ClickButton.Aplly)
+                if (fmProjectTree.ClickButton == ClickButton.Aplly) {
                     TreeProjects.SetTreeViewProjects(fmProjectTree.projectTreeView);
+                    TreeProjects.SaveTree();
+                }
+                    
             }
             if(CreateOrChange == CreateOrChange.Create) {
                 string fullFileName = Dals.TakeMainPath(Constants.PROJECTS_LIST);
                 TreeProjects.GetTreeFromFile();
+
                 fmProjectTree.SetTreeView(TreeProjects);
                 fmProjectTree.SetHasLoad(HasLoad.Yes);
                 fmProjectTree.ShowDialog();
-                if (fmProjectTree.ClickButton == ClickButton.Aplly)
+                if (fmProjectTree.ClickButton == ClickButton.Aplly) {
                     TreeProjects.SetTreeViewProjects(fmProjectTree.projectTreeView);
+                    TreeProjects.SaveTree();
+                }
+                    
             }
         }
     }

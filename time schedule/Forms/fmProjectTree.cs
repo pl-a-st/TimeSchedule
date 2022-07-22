@@ -59,20 +59,23 @@ namespace time_schedule {
             projectTreeView.CheckBoxes = true;
 
             foreach (TreeNode node in treeProjects.ListTreeNode) {
-                projectTreeView.Nodes.Add(new TreeNode (node.Text));
+                projectTreeView.Nodes.Add(new TreeNode(node.Text));
                 projectTreeView.Nodes[projectTreeView.Nodes.Count - 1].Checked =
                     node.Checked;
-                if (node.Tag!=null) {
+                if (node.Tag != null) {
                     projectTreeView.Nodes[projectTreeView.Nodes.Count - 1].Expand();
                 }
                 if (node.Nodes.Count > 0) {
                     foreach (TreeNode copyNode in node.Nodes) {
                         CopyNodeToProjectTreeView(
-                            projectTreeView.Nodes[projectTreeView.Nodes.Count -1],
+                            projectTreeView.Nodes[projectTreeView.Nodes.Count - 1],
                             copyNode);
                     }
-                } 
+                }
             }
+            //foreach (TreeNode node in treeProjects.ListTreeNode) {
+            //    projectTreeView.Nodes.Add(node.Clone() as TreeNode);
+            //}
         }
         private void CopyNodeToProjectTreeView(TreeNode changedNode, TreeNode copyNode) {
             changedNode.Nodes.Add(new TreeNode(copyNode.Text));
@@ -114,6 +117,7 @@ namespace time_schedule {
             treeProjects.SetTreeViewProjects(projectTreeView);
             ClickButton = ClickButton.Aplly;
             this.Close();
+            
         }
 
         private void fmProjectTree_Load(object sender, EventArgs e) {
