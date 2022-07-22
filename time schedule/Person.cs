@@ -14,14 +14,16 @@ namespace time_schedule
     {
         New,
         Active,
-        Closed
+        Closed,
+        To_approving
     }
     [Serializable]
     public enum TaskStatusRus
     {
         Новое=TaskStatus.New,
         В_работе= TaskStatus.Active,
-        Закрыто=TaskStatus.Closed
+        Закрыто=TaskStatus.Closed,
+        На_согласовании=TaskStatus.To_approving
     }
     [Serializable]
     public enum DayOfWeekRus {
@@ -256,6 +258,9 @@ namespace time_schedule
     {
         public List<Task> Tasks
         { get; private set; } = new List<Task>();
+        public void SetTasks(List<Task> tasks) {
+            Tasks = tasks.GetRange(0, tasks.Count);
+        }
         /// <summary>
         /// Список задач исполнителя
         /// </summary>
@@ -808,12 +813,15 @@ namespace time_schedule
             int countDaysBeforScroll = horizontalScroll / Constants.COLUMN_WITH - 1;
             int reserve = formWith / 2/ Constants.COLUMN_WITH;
             DateTime minLoadDate = minDateStart;
-            for (int i=0;i< countDaysBeforScroll;i++) {
-                minLoadDate = minLoadDate.AddDays(1);
-                if (IsHolydays(minLoadDate)) {
-                    i--;
+            try {
+                for (int i = 0; i < countDaysBeforScroll; i++) {
+                    minLoadDate = minLoadDate.AddDays(1);
+                    if (IsHolydays(minLoadDate)) {
+                        i--;
+                    }
                 }
             }
+            catch { }
             return minLoadDate;
         }
 
@@ -898,11 +906,15 @@ namespace time_schedule
                 button.Font = new Font(button.Font.FontFamily, button.Font.Size, FontStyle.Strikeout);
             if (Task.Status == TaskStatus.Active)
                 button.Font = new Font(button.Font.FontFamily, button.Font.Size, FontStyle.Underline);
+            if (Task.Status == TaskStatus.To_approving) {
+                button.Font = new Font(button.Font.FontFamily, button.Font.Size, FontStyle.Italic | FontStyle.Underline);
+            }
             if (
                 ((Task.Status == TaskStatus.New) && Task.DateStart.Date<DateTime.Now.Date) ||
                 (Task.DateFinish.Date < DateTime.Now.Date) && (Task.Status != TaskStatus.Closed)
                 )
             {
+                button.Font = new Font(button.Font.FontFamily, button.Font.Size, button.Font.Style);
                 button.ForeColor = System.Drawing.Color.DarkRed;
             }
 
@@ -1337,7 +1349,7 @@ namespace time_schedule
         private static void ClearSettings(TreeNode treeNode) {
             treeNode.Checked = false;
             treeNode.Tag = null;
-            treeNode.Expand();
+            treeNode.ExpandAll();
             foreach (TreeNode chTreeNode in treeNode.Nodes) {
                 ClearSettings(chTreeNode);
             }
