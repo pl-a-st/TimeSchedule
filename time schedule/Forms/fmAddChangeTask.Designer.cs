@@ -436,7 +436,6 @@
             // 
             // tBxProjects
             // 
-            this.tBxProjects.Enabled = false;
             this.tBxProjects.Location = new System.Drawing.Point(129, 27);
             this.tBxProjects.Name = "tBxProjects";
             this.tBxProjects.ReadOnly = true;

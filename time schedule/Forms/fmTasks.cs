@@ -457,10 +457,11 @@ namespace time_schedule {
                         }
                     }
                 }
+                Dals.WriteObjectToMainPathFile(Constants.TASKS_BIN, Program.ListTasksAllPersonToSave);
+                LoadLBxTasks();
+                Program.fmMain.SetForm1().LoadRefreshForm(Statuses.ProgressBar.Use);
             }
-            Dals.WriteObjectToMainPathFile(Constants.TASKS_BIN, Program.ListTasksAllPersonToSave);
-            LoadLBxTasks();
-            Program.fmMain.SetForm1().LoadRefreshForm(Statuses.ProgressBar.Use);
+            
         }
     }
 }
