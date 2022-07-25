@@ -69,8 +69,8 @@ namespace time_schedule {
             SelfRef = this;
         }
         int CalcDivDays() {
-            DateTime maxDateTime = Program.ListTasksAllPerson.GetMaxDateFinishTasks();
-            DateTime minDateTime = Program.ListTasksAllPerson.GetMinDateStartTasks();
+            DateTime maxDateTime = Program.ListTasksAllPersonToShow.GetMaxDateFinishTasks();
+            DateTime minDateTime = Program.ListTasksAllPersonToShow.GetMinDateStartTasks();
             return (maxDateTime - MaxDateFinish).Days;
         }
         public void LoadRefreshForm() {
@@ -258,8 +258,8 @@ namespace time_schedule {
         }
         public void SaveMinMaxDate()
         {
-            MaxDateFinish = Program.ListTasksAllPerson.GetMaxDateFinishTasks();
-            MinDateStart = Program.ListTasksAllPerson.GetMinDateStartTasks();
+            MaxDateFinish = Program.ListTasksAllPersonToShow.GetMaxDateFinishTasks();
+            MinDateStart = Program.ListTasksAllPersonToShow.GetMinDateStartTasks();
         }
         public void LoadRefreshForm(RefreshType refreshType)
         {
@@ -311,14 +311,14 @@ namespace time_schedule {
         }
         private void LoadAllPools() {
             if (File.Exists(Dals.TakeMainPath(Constants.TASKS_BIN))){
-                Program.ListTasksAllPerson = Dals.binReadFileToObject(
-                    Program.ListTasksAllPerson,
+                Program.ListTasksAllPersonToSave = Dals.binReadFileToObject(
+                    Program.ListTasksAllPersonToSave,
                     Dals.TakeMainPath(Constants.TASKS_BIN));
             }
             else {
-                Program.ListTasksAllPerson.SetTasksFromList(Dals.ReadListFromMainPathFile(Constants.TASKS));
+                Program.ListTasksAllPersonToSave.SetTasksFromList(Dals.ReadListFromMainPathFile(Constants.TASKS));
             }
-            Program.ListTasksAllPerson.SetTasks(GetProjectEntryTasks(Program.ListTasksAllPerson.Tasks));
+            Program.ListTasksAllPersonToShow.SetTasks(GetProjectEntryTasks(Program.ListTasksAllPersonToSave.Tasks));
             if (File.Exists(Dals.TakeMainPath(Constants.TASKS_BIN))) {
                 Program.listPersons = Dals.binReadFileToObject(
                     Program.listPersons,
@@ -327,12 +327,12 @@ namespace time_schedule {
             else {
                 Program.listPersons.SetPersonsFromList(
                  Dals.ReadListFromMainPathFile(Constants.PERSONS),
-                 Program.ListTasksAllPerson.Tasks);
+                 Program.ListTasksAllPersonToShow.Tasks);
             }
             
             Program.ListPersonButton.LoadListPersonButtons(
                 Program.listPersons.Persons,
-                Program.ListTasksAllPerson,
+                Program.ListTasksAllPersonToShow,
                 Constants.ROW_HIGHT,
                 this);
             int maxButtonLocationY = SetMaxLocationAndAddPersonButton(ref Program.ListPersonButton);
@@ -347,17 +347,20 @@ namespace time_schedule {
                     Dals.ReadListFromMainPathFile(Constants.HOLYDAYS));
             }
             
-            NonWorkDaysWrite(Program.ListTasksAllPerson.GetMinDateStartTasks(), Program.ListTasksAllPerson.GetMaxDateFinishTasks());
+            NonWorkDaysWrite(Program.ListTasksAllPersonToShow.GetMinDateStartTasks(), Program.ListTasksAllPersonToShow.GetMaxDateFinishTasks());
             Program.listNonWorkingDays.NonWorkingDays.AddRange(Program.ListHolidays.Holidays);
             Program.ListTaskButtons.AddTaskButtons(
-                Program.ListTasksAllPerson,
+                Program.ListTasksAllPersonToShow,
                 Program.ListPersonButton);
         }
         private List<Task> GetProjectEntryTasks(List<Task> tasks) {
             var resultListTasks = new List<Task>();
             TreeProjects treeProjects = new TreeProjects();
             treeProjects.GetTreeFromFile();
-            foreach(TreeNode treeNodeProject in treeProjects.ListTreeNode) {
+            if (treeProjects.ListTreeNode.Count == 0) {
+                return resultListTasks = tasks.GetRange(0, tasks.Count);
+            }
+            foreach (TreeNode treeNodeProject in treeProjects.ListTreeNode) {
                 if (treeNodeProject.Text == "Все" && treeNodeProject.Checked != false) {
                     return resultListTasks = tasks.GetRange(0, tasks.Count);
                 }
@@ -405,7 +408,8 @@ namespace time_schedule {
         private static void ClearAllPools() {
             Program.PoolTextBox.ListTextBoxes.Clear();
             Program.ListTaskButtons.TaskButtons.Clear();
-            Program.ListTasksAllPerson.Tasks.Clear();
+            Program.ListTasksAllPersonToSave.Tasks.Clear();
+            Program.ListTasksAllPersonToShow.Tasks.Clear();
             Program.listPersons.Persons.Clear();
             Program.ListPersonButton.PersonButtons.Clear();
             Program.ListTaskButtons.TaskButtons.Clear();
@@ -426,8 +430,8 @@ namespace time_schedule {
             }
         }
         private void LoadTextBoxWithDate() {
-            DateTime dateToTables = Program.ListTasksAllPerson.GetMinDateStartTasks();
-            DateTime dateMaxToTable = Program.ListTasksAllPerson.GetMaxDateFinishTasks();
+            DateTime dateToTables = Program.ListTasksAllPersonToShow.GetMinDateStartTasks();
+            DateTime dateMaxToTable = Program.ListTasksAllPersonToShow.GetMaxDateFinishTasks();
             int height = plMain.Location.Y - plForDate.Location.Y;
             int locationX = 0;
             plForDate.Controls.Clear();
@@ -435,7 +439,7 @@ namespace time_schedule {
                 if (IsNotHolyday(dateToTables)) {
                     DateTextBox dateTextBox = new DateTextBox(dateToTables, height, locationX);
                    
-                    if (dateToTables == Program.ListTasksAllPerson.GetMinDateStartTasks()) {
+                    if (dateToTables == Program.ListTasksAllPersonToShow.GetMinDateStartTasks()) {
                         dateTextBox.TextBox.Location = new Point(
                             dateTextBox.TextBox.Location.X - HorizontalScrollValue, 0);
                         plForDate.Controls.Add(dateTextBox.TextBox);
@@ -580,7 +584,9 @@ namespace time_schedule {
             fmAddTask.SetCreateOrChange(CreateOrChange.Create);
             fmAddTask.Show();
             //Dals.WriteObjectToFile(Constants.TASKS, Program.ListTasksAllPerson.GetListForSave());
-            Dals.WriteObjectToMainPathFile(Constants.TASKS_BIN, Program.ListTasksAllPerson);
+            Dals.WriteObjectToMainPathFile(Constants.TASKS_BIN, Program.ListTasksAllPersonToSave);
+            Dals.WriteObjectToMainPathFile(Constants.PERSONS_BIN, Program.listPersons);
+
         }
         private void ToolStripMenuProject_Click(object sender, EventArgs e)
         {
@@ -821,7 +827,7 @@ namespace time_schedule {
             Program.ListTaskButtons.CalculateLoadingStatus(
                 HorizontalScrollValue,
                 this.Width, 
-                Program.ListTasksAllPerson.GetMinDateStartTasks());
+                Program.ListTasksAllPersonToShow.GetMinDateStartTasks());
             Program.ListTaskButtons.SetNewLocationToButtons(
                 VerticalScrollValue,
                 HorizontalScrollValue);
@@ -841,7 +847,7 @@ namespace time_schedule {
             Program.PoolTextBox.CalculateLoadingStatus(
                 plMain.HorizontalScroll.Value,
                 this.Width,
-                Program.ListTasksAllPerson.GetMinDateStartTasks());
+                Program.ListTasksAllPersonToShow.GetMinDateStartTasks());
             Program.PoolTextBox.SetNewLocationToButtons(
             plMain.HorizontalScroll.Value);
             foreach (DateTextBox dateTextBox in Program.PoolTextBox.ListTextBoxes) {

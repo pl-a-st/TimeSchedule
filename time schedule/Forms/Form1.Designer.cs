@@ -65,9 +65,9 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.plMain.AutoScroll = true;
             this.plMain.Controls.Add(this.pBForLine);
-            this.plMain.Location = new System.Drawing.Point(182, 56);
+            this.plMain.Location = new System.Drawing.Point(179, 60);
             this.plMain.Name = "plMain";
-            this.plMain.Size = new System.Drawing.Size(977, 640);
+            this.plMain.Size = new System.Drawing.Size(977, 641);
             this.plMain.TabIndex = 0;
             this.plMain.Scroll += new System.Windows.Forms.ScrollEventHandler(this.ScrollChange);
             this.plMain.MouseEnter += new System.EventHandler(this.plMain_MouseEnter);
@@ -76,7 +76,7 @@
             // pBForLine
             // 
             this.pBForLine.BackColor = System.Drawing.SystemColors.Window;
-            this.pBForLine.Location = new System.Drawing.Point(0, 0);
+            this.pBForLine.Location = new System.Drawing.Point(0, 1);
             this.pBForLine.Name = "pBForLine";
             this.pBForLine.Size = new System.Drawing.Size(100, 50);
             this.pBForLine.TabIndex = 0;
@@ -88,7 +88,7 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.plForDate.AutoScroll = true;
             this.plForDate.Enabled = false;
-            this.plForDate.Location = new System.Drawing.Point(182, 22);
+            this.plForDate.Location = new System.Drawing.Point(179, 26);
             this.plForDate.Name = "plForDate";
             this.plForDate.Size = new System.Drawing.Size(958, 52);
             this.plForDate.TabIndex = 1;
@@ -97,7 +97,7 @@
             // 
             this.btnNewTask.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
             this.btnNewTask.Cursor = System.Windows.Forms.Cursors.Default;
-            this.btnNewTask.Location = new System.Drawing.Point(637, 703);
+            this.btnNewTask.Location = new System.Drawing.Point(634, 707);
             this.btnNewTask.Name = "btnNewTask";
             this.btnNewTask.Size = new System.Drawing.Size(110, 49);
             this.btnNewTask.TabIndex = 3;
@@ -153,14 +153,14 @@
             // выбратьToolStripMenuItem
             // 
             this.выбратьToolStripMenuItem.Name = "выбратьToolStripMenuItem";
-            this.выбратьToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.выбратьToolStripMenuItem.Size = new System.Drawing.Size(121, 22);
             this.выбратьToolStripMenuItem.Text = "Выбрать";
             this.выбратьToolStripMenuItem.Click += new System.EventHandler(this.выбратьToolStripMenuItem_Click);
             // 
             // создатьToolStripMenuItem
             // 
             this.создатьToolStripMenuItem.Name = "создатьToolStripMenuItem";
-            this.создатьToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.создатьToolStripMenuItem.Size = new System.Drawing.Size(121, 22);
             this.создатьToolStripMenuItem.Text = "Создать";
             this.создатьToolStripMenuItem.Click += new System.EventHandler(this.создатьToolStripMenuItem_Click);
             // 
@@ -201,16 +201,16 @@
             this.plPersonButton.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left)));
             this.plPersonButton.AutoScroll = true;
-            this.plPersonButton.Location = new System.Drawing.Point(12, 56);
+            this.plPersonButton.Location = new System.Drawing.Point(9, 60);
             this.plPersonButton.Name = "plPersonButton";
-            this.plPersonButton.Size = new System.Drawing.Size(200, 620);
+            this.plPersonButton.Size = new System.Drawing.Size(200, 621);
             this.plPersonButton.TabIndex = 4;
             this.plPersonButton.Scroll += new System.Windows.Forms.ScrollEventHandler(this.plPersonButton_Scroll);
             // 
             // bTnToDay
             // 
             this.bTnToDay.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
-            this.bTnToDay.Location = new System.Drawing.Point(508, 703);
+            this.bTnToDay.Location = new System.Drawing.Point(505, 707);
             this.bTnToDay.Name = "bTnToDay";
             this.bTnToDay.Size = new System.Drawing.Size(75, 23);
             this.bTnToDay.TabIndex = 5;
@@ -221,7 +221,7 @@
             // addFiveDays
             // 
             this.addFiveDays.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
-            this.addFiveDays.Location = new System.Drawing.Point(589, 703);
+            this.addFiveDays.Location = new System.Drawing.Point(586, 707);
             this.addFiveDays.Name = "addFiveDays";
             this.addFiveDays.Size = new System.Drawing.Size(42, 23);
             this.addFiveDays.TabIndex = 7;
@@ -232,7 +232,7 @@
             // dateTimePicker1
             // 
             this.dateTimePicker1.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
-            this.dateTimePicker1.Location = new System.Drawing.Point(459, 732);
+            this.dateTimePicker1.Location = new System.Drawing.Point(456, 736);
             this.dateTimePicker1.Name = "dateTimePicker1";
             this.dateTimePicker1.Size = new System.Drawing.Size(172, 20);
             this.dateTimePicker1.TabIndex = 8;
@@ -244,7 +244,7 @@
             // minusFiveDay
             // 
             this.minusFiveDay.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
-            this.minusFiveDay.Location = new System.Drawing.Point(459, 703);
+            this.minusFiveDay.Location = new System.Drawing.Point(456, 707);
             this.minusFiveDay.Name = "minusFiveDay";
             this.minusFiveDay.Size = new System.Drawing.Size(43, 23);
             this.minusFiveDay.TabIndex = 9;
@@ -262,7 +262,7 @@
             // 
             this.btnRefresh.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
             this.btnRefresh.Cursor = System.Windows.Forms.Cursors.Default;
-            this.btnRefresh.Location = new System.Drawing.Point(343, 703);
+            this.btnRefresh.Location = new System.Drawing.Point(340, 707);
             this.btnRefresh.Name = "btnRefresh";
             this.btnRefresh.Size = new System.Drawing.Size(110, 49);
             this.btnRefresh.TabIndex = 3;
@@ -272,9 +272,9 @@
             // 
             // button1
             // 
-            this.button1.Location = new System.Drawing.Point(12, 21);
+            this.button1.Location = new System.Drawing.Point(9, 25);
             this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(170, 35);
+            this.button1.Size = new System.Drawing.Size(170, 37);
             this.button1.TabIndex = 10;
             this.button1.Text = "Проекты";
             this.button1.UseVisualStyleBackColor = true;

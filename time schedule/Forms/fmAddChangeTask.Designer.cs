@@ -49,7 +49,7 @@
             this.nUpDnPreviousTask = new System.Windows.Forms.NumericUpDown();
             this.btnCreateTask = new System.Windows.Forms.Button();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
-            this.button1 = new System.Windows.Forms.Button();
+            this.btnCancel = new System.Windows.Forms.Button();
             this.bTnColor = new System.Windows.Forms.Button();
             this.cmBxTaskStatus = new System.Windows.Forms.ComboBox();
             this.label7 = new System.Windows.Forms.Label();
@@ -61,7 +61,7 @@
             this.btnCopyAnotherProject = new System.Windows.Forms.Button();
             this.label9 = new System.Windows.Forms.Label();
             this.button2 = new System.Windows.Forms.Button();
-            this.textBox1 = new System.Windows.Forms.TextBox();
+            this.tBxProjects = new System.Windows.Forms.TextBox();
             ((System.ComponentModel.ISupportInitialize)(this.nUpDnCounWorkDay)).BeginInit();
             this.groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nUpDnPreviousTask)).BeginInit();
@@ -306,15 +306,15 @@
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Окончание работы";
             // 
-            // button1
+            // btnCancel
             // 
-            this.button1.Location = new System.Drawing.Point(478, 101);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(95, 36);
-            this.button1.TabIndex = 14;
-            this.button1.Text = "Отмена";
-            this.button1.UseVisualStyleBackColor = true;
-            this.button1.Click += new System.EventHandler(this.button1_Click);
+            this.btnCancel.Location = new System.Drawing.Point(478, 101);
+            this.btnCancel.Name = "btnCancel";
+            this.btnCancel.Size = new System.Drawing.Size(95, 36);
+            this.btnCancel.TabIndex = 14;
+            this.btnCancel.Text = "Отмена";
+            this.btnCancel.UseVisualStyleBackColor = true;
+            this.btnCancel.Click += new System.EventHandler(this.button1_Click);
             // 
             // bTnColor
             // 
@@ -434,14 +434,14 @@
             this.button2.UseVisualStyleBackColor = true;
             this.button2.Click += new System.EventHandler(this.button2_Click);
             // 
-            // textBox1
+            // tBxProjects
             // 
-            this.textBox1.Enabled = false;
-            this.textBox1.Location = new System.Drawing.Point(129, 27);
-            this.textBox1.Name = "textBox1";
-            this.textBox1.ReadOnly = true;
-            this.textBox1.Size = new System.Drawing.Size(408, 20);
-            this.textBox1.TabIndex = 18;
+            this.tBxProjects.Enabled = false;
+            this.tBxProjects.Location = new System.Drawing.Point(129, 27);
+            this.tBxProjects.Name = "tBxProjects";
+            this.tBxProjects.ReadOnly = true;
+            this.tBxProjects.Size = new System.Drawing.Size(408, 20);
+            this.tBxProjects.TabIndex = 18;
             // 
             // fmAddChangeTask
             // 
@@ -450,7 +450,7 @@
             this.ClientSize = new System.Drawing.Size(585, 331);
             this.Controls.Add(this.button2);
             this.Controls.Add(this.label9);
-            this.Controls.Add(this.textBox1);
+            this.Controls.Add(this.tBxProjects);
             this.Controls.Add(this.btnCopyAnotherProject);
             this.Controls.Add(this.addPerson);
             this.Controls.Add(this.nUpDnPrioirity);
@@ -461,7 +461,7 @@
             this.Controls.Add(this.cmBxTaskStatus);
             this.Controls.Add(this.bTnColor);
             this.Controls.Add(this.groupBox2);
-            this.Controls.Add(this.button1);
+            this.Controls.Add(this.btnCancel);
             this.Controls.Add(this.btnCreateTask);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.tBxTaskName);
@@ -516,7 +516,7 @@
             btnCreateTask.Text = name;
         }
         private System.Windows.Forms.GroupBox groupBox2;
-        private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.Button btnCancel;
         private System.Windows.Forms.Button bTnColor;
         private System.Windows.Forms.ComboBox cmBxTaskStatus;
         private System.Windows.Forms.Label label7;
@@ -528,6 +528,6 @@
         private System.Windows.Forms.Button btnCopyAnotherProject;
         private System.Windows.Forms.Label label9;
         private System.Windows.Forms.Button button2;
-        private System.Windows.Forms.TextBox textBox1;
+        private System.Windows.Forms.TextBox tBxProjects;
     }
 }

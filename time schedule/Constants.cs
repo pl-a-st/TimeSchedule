@@ -22,7 +22,7 @@ namespace time_schedule
         public const string PROJECTS_LIST = "Projects list.bin";
         public const int COLUMN_WITH = 75;
         public static Color MIN_COLUMN_COLOR = Color.Black;
-        public const int ROW_HIGHT = 30;
+        public const int ROW_HIGHT = 31;
         public const int MIN_ROW_HIGHT = 2;
         public const int PERSON_BUTTON_WITH = 100;
         public const int LINE_HIGHT = 1;

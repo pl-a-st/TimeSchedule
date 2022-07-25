@@ -21,7 +21,8 @@ namespace time_schedule
     public enum CreateOrChange
     {
         Create,
-        Change
+        Change,
+        ChangeToSelect
     }
     public partial class fmAddChangeTask : Form
     {
@@ -33,11 +34,29 @@ namespace time_schedule
         } = new TreeProjects();
         public CreateOrChange CreateOrChange 
         { get; private set; }
+        public ClickButton ClickButton {
+            get; private set;
+        } = ClickButton.Cancel;
         public fmAddChangeTask(LoadRefreshForm loadRefreshForm)
         {
             
             InitializeComponent();
             thisloadRefreshForm = loadRefreshForm;
+        }
+        public NumericUpDown GetPriority() {
+            return nUpDnPrioirity;
+        }
+        public ComboBox GetStatus() {
+            return cmBxTaskStatus;
+        }
+        public ComboBox GetPerson() {
+            return cmBxPerson;
+        }
+        public Button GetColor() {
+            return bTnColor;
+        }
+        public TextBox GetProject() {
+            return tBxProjects;
         }
         public void SetCreateOrChange (CreateOrChange createOrChange)
         {
@@ -94,36 +113,97 @@ namespace time_schedule
             }
                 
         }
+        private void ControlToNotEnabled(Control control) {
+            if (control is RadioButton)
+                control.Enabled = false;
+            if (control is TextBox)
+                (control as TextBox).Enabled = false;
+            if (control is NumericUpDown) {
+                (control as NumericUpDown).Enabled = false;
+            }
+            if (control is DateTimePicker) {
+                (control as DateTimePicker).Enabled = false;
+            }
+            if (control is ComboBox) {
+                (control as ComboBox).Enabled = false;
+            }
+            if (control is GroupBox) {
+                foreach (Control controlInGbx in (control as GroupBox).Controls) {
+                    ControlToNotEnabled(controlInGbx);
+                }
+            }
+
+        }
         private void fmAddTask_Load(object sender, EventArgs e)
         {
-            this.TopLevel = true;
-            FinishDateBeforeChange = Program.ListTasksAllPerson.GetMaxDateFinishTasks();
-            foreach (Person person in Program.listPersons.Persons)
-            {
-                cmBxPerson.Items.Add(person.PersonFamaly);
+            //this.TopLevel = true;
+            this.TopMost = true;
+           
+            foreach (int element in Enum.GetValues(typeof(TaskStatusRus))) {
+                cmBxTaskStatus.Items.Add(((TaskStatusRus)element).ToString().Replace('_', ' '));
             }
-            foreach (int element in Enum.GetValues(typeof(TaskStatusRus)))
-            {
-                cmBxTaskStatus.Items.Add(((TaskStatusRus)element).ToString().Replace('_',' '));
-            }
-            bTnColor.FlatStyle = FlatStyle.Flat;
-            if (CreateOrChange == CreateOrChange.Change)
-            {
-                thisloadRefreshForm?.Invoke();
-                LoadFmAddTaskToCangeTask();
-            }
-            if (CreateOrChange == CreateOrChange.Create)
-                LoadFmAddTaskToCreateTask();
-            if (Program.UserType != UserType.Admin)
-            {
-                foreach (Control control in this.Controls)
-                {
-                    ControlToReadOnly(control);
+            if (CreateOrChange != CreateOrChange.ChangeToSelect) {
+                FinishDateBeforeChange = Program.ListTasksAllPersonToSave.GetMaxDateFinishTasks();
+                foreach (Person person in Program.listPersons.Persons) {
+                    cmBxPerson.Items.Add(person.PersonFamaly);
                 }
-                cmBxTaskStatus.Enabled = true;
-                btnCreateTask.Enabled = true;
+                bTnColor.FlatStyle = FlatStyle.Flat;
+                if (CreateOrChange == CreateOrChange.Change) {
+                    thisloadRefreshForm?.Invoke();
+                    LoadFmAddTaskToCangeTask();
+                }
+                if (CreateOrChange == CreateOrChange.Create)
+                    LoadFmAddTaskToCreateTask();
+                if (Program.UserType != UserType.Admin) {
+                    foreach (Control control in this.Controls) {
+                        ControlToReadOnly(control);
+                    }
+                    cmBxTaskStatus.Enabled = true;
+                    btnCreateTask.Enabled = true;
+                    btnCancel.Enabled = true;
+                }
+            }
+            if (CreateOrChange == CreateOrChange.ChangeToSelect) {
+                foreach (Control control in this.Controls) {
+                    ControlToNotEnabled(control);
+                }
+                foreach (Person person in Program.listPersons.Persons) {
+                    cmBxPerson.Items.Add(person.PersonFamaly);
+                }
+                TreeProjects.GetTreeFromFile();
+                AddCheckBoxForEnabled(cmBxTaskStatus);
+                AddCheckBoxForEnabled(nUpDnPrioirity);
+                AddCheckBoxForEnabled(tBxProjects);
+                AddCheckBoxForEnabled(cmBxPerson);
+                AddCheckBoxForEnabled(bTnColor);
+                bTnColor.Enabled = false;
+                btnCopyAnotherProject.Enabled = false;
             }
         }
+
+        private void AddCheckBoxForEnabled(Control control) {
+            CheckBox checkBox = new CheckBox();
+            checkBox.Text = string.Empty;
+            
+            checkBox.Width = 13;
+            control.Width -= (checkBox.Width+5);
+            checkBox.Location = new Point(
+                control.Location.X + control.Width + 5,
+                control.Location.Y);
+            control.Parent.Controls.Add(checkBox);
+            checkBox.MouseClick += CheckBox_MouseClick;
+            void CheckBox_MouseClick(object sender, MouseEventArgs e) {
+                if (checkBox.Checked) {
+                    control.Enabled = true;
+                }
+                if (!checkBox.Checked) {
+                    control.Enabled = false;
+                }
+            }
+        }
+
+        
+
         private void LoadFmAddTaskToCreateTask()
         {
             if (cmBxTaskStatus.Items.Count > 0)
@@ -159,7 +239,7 @@ namespace time_schedule
             nUpDnPrioirity.Value= Program.Task.Priority;
             if (nUpDnPreviousTask.Value>0)
             {
-                foreach (Task task in Program.ListTasksAllPerson.Tasks)
+                foreach (Task task in Program.ListTasksAllPersonToSave.Tasks)
                 {
                     if (nUpDnPreviousTask.Value == task.Number)
                         tBxPreviousTask.Text = task.Name;
@@ -279,54 +359,56 @@ namespace time_schedule
         }
         private void btnCreateTask_Click(object sender, EventArgs e)
         {
+            ClickButton = ClickButton.Aplly;
             if (IsTBxTaskNameEmpty())
                 return;
-            Program.ListTasksAllPerson.Tasks.Clear();
+            Program.ListTasksAllPersonToSave.Tasks.Clear();
             string fullFileName = Dals.TakeMainPath(Constants.TASKS_BIN);
             if (File.Exists(fullFileName)){
-                Program.ListTasksAllPerson = Dals.binReadFileToObject(
-                    Program.ListTasksAllPerson, fullFileName);
+                Program.ListTasksAllPersonToSave = Dals.binReadFileToObject(
+                    Program.ListTasksAllPersonToSave, fullFileName);
             }
             else {
-                Program.ListTasksAllPerson.SetTasksFromList(Dals.ReadListFromMainPathFile(Constants.TASKS));
+                Program.ListTasksAllPersonToSave.SetTasksFromList(Dals.ReadListFromMainPathFile(Constants.TASKS));
             }
             
             Task task = new Task();
             if (CreateOrChange == CreateOrChange.Create)
             {
-                task = GetTaskForCreateChange(Program.ListTasksAllPerson.GetNextNumForTask());
+                task = GetTaskForCreateChange(Program.ListTasksAllPersonToSave.GetNextNumForTask());
                 task.GetTreeProjects().SetTreeViewProjects(TreeProjects.ListTreeNode);
-                Program.ListTasksAllPerson.AddTask(task);
+                Program.ListTasksAllPersonToSave.AddTask(task);
             }  
             if (CreateOrChange == CreateOrChange.Change)
             {
                 WriteNewNonWorkigDays();
                 task = GetTaskForCreateChange(Convert.ToInt32(nUpDnTaskNumber.Value));
                 task.GetTreeProjects().SetTreeViewProjects(TreeProjects.ListTreeNode);
-                for (int i=0; i<Program.ListTasksAllPerson.Tasks.Count; i++)
+                for (int i=0; i<Program.ListTasksAllPersonToSave.Tasks.Count; i++)
                 {
-                    if (Program.ListTasksAllPerson.Tasks[i].Number == nUpDnTaskNumber.Value)
+                    if (Program.ListTasksAllPersonToSave.Tasks[i].Number == nUpDnTaskNumber.Value)
                     {
                         bool needToCheck = false;
-                        if (Program.ListTasksAllPerson.Tasks[i].DateFinish.Date != task.DateFinish.Date)
+                        if (Program.ListTasksAllPersonToSave.Tasks[i].DateFinish.Date != task.DateFinish.Date)
                         {
                             needToCheck = true;
                         }
-                        Program.ListTasksAllPerson.Tasks[i] = task;
+                        Program.ListTasksAllPersonToSave.Tasks[i] = task;
                         if (needToCheck)
-                            ChekTaskAfter(Program.ListTasksAllPerson.Tasks[i]);
+                            ChekTaskAfter(Program.ListTasksAllPersonToSave.Tasks[i]);
                     }    
                 }
             }
             
             //Dals.WriteObjectToFile(Constants.TASKS, Program.ListTasksAllPerson.GetListForSave());
-            Dals.WriteObjectToMainPathFile(Constants.TASKS_BIN, Program.ListTasksAllPerson);
+            Dals.WriteObjectToMainPathFile(Constants.TASKS_BIN, Program.ListTasksAllPersonToSave);
+            Dals.WriteObjectToMainPathFile(Constants.PERSONS_BIN, Program.listPersons);
             Program.fmMain.LoadRefreshForm(Statuses.ProgressBar.Use);
            
             this.Close();
         }
         private Boolean IsTBxTaskNameEmpty() {
-            if (tBxTaskName.Text == "") {
+            if (tBxTaskName.Text == "" && CreateOrChange!=CreateOrChange.ChangeToSelect) {
                 MessageBox.Show(
                     "Использвание пустых наименований задач недопустимо!",
                     "Предупреждение",
@@ -338,15 +420,15 @@ namespace time_schedule
         }
         private void ChekTaskAfter(Task task)
         {
-            for (int i=0;i<Program.ListTasksAllPerson.Tasks.Count; i++)
+            for (int i=0;i<Program.ListTasksAllPersonToSave.Tasks.Count; i++)
             {
-                if (Program.ListTasksAllPerson.Tasks[i].TaskNumberAfter==task.Number)
+                if (Program.ListTasksAllPersonToSave.Tasks[i].TaskNumberAfter==task.Number)
                 {
-                    Program.ListTasksAllPerson.Tasks[i].ChangeDatesAndCountDays(
+                    Program.ListTasksAllPersonToSave.Tasks[i].ChangeDatesAndCountDays(
                         Task.GetDateFinish(task.DateFinish,2),
-                        Program.ListTasksAllPerson.Tasks[i].CountWorkingDays
+                        Program.ListTasksAllPersonToSave.Tasks[i].CountWorkingDays
                         ); // Magic number 2 to do
-                    ChekTaskAfter(Program.ListTasksAllPerson.Tasks[i]);
+                    ChekTaskAfter(Program.ListTasksAllPersonToSave.Tasks[i]);
                 }
             }
         }
@@ -439,14 +521,14 @@ namespace time_schedule
             //string targetFolderName = "Проект";
             try
             {
-                Program.ListTasksAllPerson.Tasks.Clear();
+                Program.ListTasksAllPersonToSave.Tasks.Clear();
                 string fullFileName = Dals.TakeMainPath(Constants.TASKS_BIN);
                 if (File.Exists(fullFileName)) {
-                    Program.ListTasksAllPerson = Dals.binReadFileToObject(
-                        Program.ListTasksAllPerson, fullFileName);
+                    Program.ListTasksAllPersonToSave = Dals.binReadFileToObject(
+                        Program.ListTasksAllPersonToSave, fullFileName);
                 }
                 else {
-                     Program.ListTasksAllPerson.SetTasksFromList(
+                     Program.ListTasksAllPersonToSave.SetTasksFromList(
                     Dals.ReadListFromMainPathFile(Constants.TASKS));
                 }
                
@@ -519,7 +601,8 @@ namespace time_schedule
                 }
                     
             }
-            if(CreateOrChange == CreateOrChange.Create) {
+            if(CreateOrChange == CreateOrChange.Create ||
+                CreateOrChange == CreateOrChange.ChangeToSelect) {
                 string fullFileName = Dals.TakeMainPath(Constants.PROJECTS_LIST);
                 TreeProjects.GetTreeFromFile();
 

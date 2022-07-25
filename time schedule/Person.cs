@@ -244,7 +244,7 @@ namespace time_schedule
             foreach(string stringAllParamTab in listString)
             {
                 Person person = new Person(stringAllParamTab, tasks);
-                person.setTasks(Program.ListTasksAllPerson);
+                person.setTasks(Program.ListTasksAllPersonToSave);
                 AddPerson(person);
             }
         }
@@ -527,6 +527,9 @@ namespace time_schedule
             if (TreeProjects == null)
                 TreeProjects = new TreeProjects();
             return TreeProjects;
+        }
+        public void SetTreeProject(TreeProjects treeProjects) {
+            TreeProjects.SetTreeViewProjects(treeProjects.ListTreeNode);
         }
         public Task ()
         { }
@@ -877,7 +880,7 @@ namespace time_schedule
             Button button = new Button();
             button.Location = new Point(locationX+1, locationY+1);
             button.Width = with-2;
-            button.Height = height-2;
+            button.Height = height-1;
             button.Text = Task.Name;
             button.BackColor = Task.Color;
             button.FlatStyle = FlatStyle.Flat;
@@ -957,7 +960,7 @@ namespace time_schedule
                     Task.SetTaskNumberAfter(0);
                     ChekTaskAfter(Task);
                     //Dals.WriteObjectToFile(Constants.TASKS, Program.ListTasksAllPerson.GetListForSave());
-                    Dals.WriteObjectToMainPathFile(Constants.TASKS_BIN, Program.ListTasksAllPerson);
+                    Dals.WriteObjectToMainPathFile(Constants.TASKS_BIN, Program.ListTasksAllPersonToSave);
                     Program.fmMain.SetForm1().LoadRefreshForm(Statuses.ProgressBar.Use);
                     Program.fmMain.SetForm1().SetPlMain().Focus();
                 }
@@ -976,13 +979,13 @@ namespace time_schedule
         //    Program.listNonWorkingDays.NonWorkDaysWrite(FinishDateBeforeChange, newMaxDateFinish);
         //}
         private void ChekTaskAfter(Task task) {
-            for (int i = 0; i < Program.ListTasksAllPerson.Tasks.Count; i++) {
-                if (Program.ListTasksAllPerson.Tasks[i].TaskNumberAfter == task.Number) {
-                    Program.ListTasksAllPerson.Tasks[i].ChangeDatesAndCountDays(
+            for (int i = 0; i < Program.ListTasksAllPersonToSave.Tasks.Count; i++) {
+                if (Program.ListTasksAllPersonToSave.Tasks[i].TaskNumberAfter == task.Number) {
+                    Program.ListTasksAllPersonToSave.Tasks[i].ChangeDatesAndCountDays(
                         Task.GetDateFinish(task.DateFinish, 2),
-                        Program.ListTasksAllPerson.Tasks[i].CountWorkingDays
+                        Program.ListTasksAllPersonToSave.Tasks[i].CountWorkingDays
                         ); // Magic number 2 to do
-                    ChekTaskAfter(Program.ListTasksAllPerson.Tasks[i]);
+                    ChekTaskAfter(Program.ListTasksAllPersonToSave.Tasks[i]);
                 }
             }
         }
@@ -1028,7 +1031,7 @@ namespace time_schedule
             fmAddTask.StartPosition = FormStartPosition.CenterScreen;
             Program.Task = Task;
             fmAddTask.ShowDialog();
-            Dals.WriteObjectToMainPathFile(Constants.TASKS, Program.ListTasksAllPerson);
+            Dals.WriteObjectToMainPathFile(Constants.TASKS, Program.ListTasksAllPersonToSave);
             
         }
         public TaskButton(Task task, ListPersonButton listPersonButton,DateTime minDateStart, DateTime maxDateFinish)

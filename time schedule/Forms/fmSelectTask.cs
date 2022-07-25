@@ -24,7 +24,7 @@ namespace time_schedule
                 MessageBox.Show("Не выбрана задача.");
                 return;
             }
-            foreach (Task task in Program.ListTasksAllPerson.Tasks)
+            foreach (Task task in Program.ListTasksAllPersonToSave.Tasks)
             {
                 if (task.Number == Convert.ToInt32(lBxTasks.SelectedItem.ToString().Split('\t')[0]))
                 {
@@ -44,7 +44,7 @@ namespace time_schedule
         private void LoadLBxTasks()
         {
             lBxTasks.Items.Clear();
-            foreach (Task task in Program.ListTasksAllPerson.Tasks)
+            foreach (Task task in Program.ListTasksAllPersonToSave.Tasks)
             {
                 lBxTasks.Items.Add(task.Number.ToString() + "\t" + task.Name);
             }
@@ -52,7 +52,7 @@ namespace time_schedule
         private void LoadLBxTasks(string targetTaskName)
         {
             lBxTasks.Items.Clear();
-            foreach (Task task in Program.ListTasksAllPerson.Tasks)
+            foreach (Task task in Program.ListTasksAllPersonToSave.Tasks)
             {
                 if (task.Name.ToUpper().Contains(targetTaskName.ToUpper()) ||
                     task.Number.ToString().Contains(targetTaskName))
