@@ -179,8 +179,29 @@ namespace time_schedule
                 bTnColor.Enabled = false;
                 btnCopyAnotherProject.Enabled = false;
             }
+            PushTBxProjects();
         }
-
+        private void PushTBxProjects() {
+            tBxProjects.Clear();
+            foreach (TreeNode treeNode in TreeProjects.ListTreeNode) {
+                if (treeNode.Checked) {
+                    tBxProjects.Text += treeNode.Text + "; ";
+                    break;
+                }
+                PushTBxProjects(treeNode);
+            }
+        }
+        private void PushTBxProjects(TreeNode treeNode) {
+            foreach (TreeNode chTreeNode in treeNode.Nodes) {
+                if (chTreeNode.Checked) {
+                    tBxProjects.Text += chTreeNode.Text + "; ";
+                }
+                else {
+                    PushTBxProjects(chTreeNode);
+                }
+            }
+            
+        }
         private void AddCheckBoxForEnabled(Control control) {
             CheckBox checkBox = new CheckBox();
             checkBox.Text = string.Empty;
@@ -615,6 +636,7 @@ namespace time_schedule
                 }
                     
             }
+            PushTBxProjects();
         }
     }
 }
