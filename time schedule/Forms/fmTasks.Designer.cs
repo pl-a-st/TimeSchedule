@@ -51,13 +51,14 @@
             this.cBxFilterByStatus = new System.Windows.Forms.CheckBox();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
             this.tBxStatusesFilter = new System.Windows.Forms.TextBox();
+            this.btnFilter = new System.Windows.Forms.Button();
             this.cBxOverdue = new System.Windows.Forms.CheckBox();
             this.label6 = new System.Windows.Forms.Label();
             this.cBxNotStarted = new System.Windows.Forms.CheckBox();
             this.label7 = new System.Windows.Forms.Label();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
             this.groupBox4 = new System.Windows.Forms.GroupBox();
-            this.btnFilter = new System.Windows.Forms.Button();
+            this.btnChangeToSelectTasks = new System.Windows.Forms.Button();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox3.SuspendLayout();
@@ -242,7 +243,7 @@
             // 
             // button1
             // 
-            this.button1.Location = new System.Drawing.Point(485, 246);
+            this.button1.Location = new System.Drawing.Point(480, 302);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(142, 48);
             this.button1.TabIndex = 10;
@@ -279,6 +280,18 @@
             this.tBxStatusesFilter.ReadOnly = true;
             this.tBxStatusesFilter.Size = new System.Drawing.Size(365, 20);
             this.tBxStatusesFilter.TabIndex = 21;
+            // 
+            // btnFilter
+            // 
+            this.btnFilter.BackgroundImage = global::time_schedule.Properties.Resources.img_369387__2_;
+            this.btnFilter.Enabled = false;
+            this.btnFilter.Image = global::time_schedule.Properties.Resources.kisspng_computer_icons_electronic_filter_low_pass_filter_5af607c33d0303_5914893915260732832499;
+            this.btnFilter.Location = new System.Drawing.Point(377, 9);
+            this.btnFilter.Name = "btnFilter";
+            this.btnFilter.Size = new System.Drawing.Size(27, 33);
+            this.btnFilter.TabIndex = 20;
+            this.btnFilter.UseVisualStyleBackColor = true;
+            this.btnFilter.Click += new System.EventHandler(this.btnFilter_Click);
             // 
             // cBxOverdue
             // 
@@ -345,17 +358,15 @@
             this.groupBox4.TabStop = false;
             this.groupBox4.Text = "Отфильтровать";
             // 
-            // btnFilter
+            // btnChangeToSelectTasks
             // 
-            this.btnFilter.BackgroundImage = global::time_schedule.Properties.Resources.img_369387__2_;
-            this.btnFilter.Enabled = false;
-            this.btnFilter.Image = global::time_schedule.Properties.Resources.kisspng_computer_icons_electronic_filter_low_pass_filter_5af607c33d0303_5914893915260732832499;
-            this.btnFilter.Location = new System.Drawing.Point(377, 9);
-            this.btnFilter.Name = "btnFilter";
-            this.btnFilter.Size = new System.Drawing.Size(27, 33);
-            this.btnFilter.TabIndex = 20;
-            this.btnFilter.UseVisualStyleBackColor = true;
-            this.btnFilter.Click += new System.EventHandler(this.btnFilter_Click);
+            this.btnChangeToSelectTasks.Location = new System.Drawing.Point(480, 246);
+            this.btnChangeToSelectTasks.Name = "btnChangeToSelectTasks";
+            this.btnChangeToSelectTasks.Size = new System.Drawing.Size(142, 48);
+            this.btnChangeToSelectTasks.TabIndex = 10;
+            this.btnChangeToSelectTasks.Text = "Изменить выбранные задачи";
+            this.btnChangeToSelectTasks.UseVisualStyleBackColor = true;
+            this.btnChangeToSelectTasks.Click += new System.EventHandler(this.ChangeSelectTasks_Click);
             // 
             // fmTasks
             // 
@@ -372,6 +383,7 @@
             this.Controls.Add(this.label2);
             this.Controls.Add(this.tBxStatus);
             this.Controls.Add(this.tBxPerson);
+            this.Controls.Add(this.btnChangeToSelectTasks);
             this.Controls.Add(this.button1);
             this.Controls.Add(this.btnGoToDateStartTask);
             this.Controls.Add(this.label1);
@@ -429,5 +441,6 @@
         private System.Windows.Forms.Label label7;
         private System.Windows.Forms.GroupBox groupBox3;
         private System.Windows.Forms.GroupBox groupBox4;
+        private System.Windows.Forms.Button btnChangeToSelectTasks;
     }
 }

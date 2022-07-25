@@ -149,13 +149,13 @@ namespace time_schedule
             //    );
             Dals.WriteObjectToMainPathFile(Constants.HOLYDAYS_BIN, Program.ListHolidays);
             Program.listNonWorkingDays.NonWorkingDays.AddRange(Program.ListHolidays.Holidays);
-            foreach (Task task in Program.ListTasksAllPerson.Tasks)
+            foreach (Task task in Program.ListTasksAllPersonToSave.Tasks)
             {
                 task.SetCountDays(Program.listNonWorkingDays);
                 task.SetDateFinish();
             }
             //Dals.WriteObjectToFile(Constants.TASKS, Program.ListTasksAllPerson.GetListForSave());
-            Dals.WriteObjectToMainPathFile(Constants.TASKS_BIN, Program.ListTasksAllPerson);
+            Dals.WriteObjectToMainPathFile(Constants.TASKS_BIN, Program.ListTasksAllPersonToSave);
             thisloadRefreshForm?.Invoke();
             this.Close();
         }

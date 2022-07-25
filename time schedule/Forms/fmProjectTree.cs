@@ -124,16 +124,18 @@ namespace time_schedule {
             projectTreeView.CheckBoxes = true;
             if (projectTreeView.Nodes.Count == 0) {
                 projectTreeView.Nodes.Add(new TreeNode("Все"));
+                projectTreeView.Nodes[0].Checked = true;
             }
+            this.TopMost = true;
         }
         private bool CheckNameAndAddNode(fmInpootText inpootText, bool isNameCorrecrt) {
+            isNameCorrecrt = true;
             foreach (TreeNode treeNode in projectTreeView.SelectedNode.Nodes) {
                 if (treeNode.Text == inpootText.SetTextBox().Text) {
                     MessageBox.Show("Такое название уже существует.");
                     isNameCorrecrt = false;
                     return isNameCorrecrt;
                 }
-                isNameCorrecrt = true;
             }
             projectTreeView.SelectedNode.Nodes.Add(inpootText.SetTextBox().Text);
             projectTreeView.SelectedNode.Expand();
@@ -147,7 +149,7 @@ namespace time_schedule {
             inpootText.SetBtnYes().Text = "Ок";
             inpootText.Text = "Ввод названия";
             bool isNameCorrecrt = false;
-            while (!isNameCorrecrt || inpootText.ChoiceIsMade != ChoiceIsMade.yes) {
+            do {
                 inpootText.ShowDialog();
                 if (inpootText.ChoiceIsMade == ChoiceIsMade.yes) {
                     isNameCorrecrt = CheckNameAndAddNode(inpootText, isNameCorrecrt);
@@ -155,7 +157,8 @@ namespace time_schedule {
                 else {
                     break;
                 }
-            } 
+            }
+            while (!isNameCorrecrt);
         }
        
         private void RemoveNode_Click(object sender, EventArgs e) {

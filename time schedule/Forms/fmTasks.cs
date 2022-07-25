@@ -45,12 +45,14 @@ namespace time_schedule {
             
             dTPFilterDateStart.Value = DateTime.Now.Date;
             try {
-                dTPFilterDateFinish.Value = Program.ListTasksAllPerson.GetMaxDateFinishTasks().Date;
+                dTPFilterDateFinish.Value = Program.ListTasksAllPersonToSave.GetMaxDateFinishTasks().Date;
             }
             catch { }
             if (Program.UserType != UserType.Admin) {
                 btnDeleteTask.Enabled = false;
                 btnNewTask.Enabled = false;
+                btnChangeToSelectTasks.Enabled = false;
+                btnChangeTask.Enabled = false;
             }
         }
         public void SetFilterDateStart(DateTime dateTime) {
@@ -121,7 +123,7 @@ namespace time_schedule {
 
         private void LoadLBxTasks() {
             lBxTasks.Items.Clear();
-            foreach (Task task in Program.ListTasksAllPerson.Tasks) {
+            foreach (Task task in Program.ListTasksAllPersonToSave.Tasks) {
                 if (IsAllCorresponds(task))
                     lBxTasks.Items.Add(task.Number.ToString() + "\t" + task.Name);
             }
@@ -140,7 +142,7 @@ namespace time_schedule {
         }
         public void LoadLBxTasksPerson(string targetTaskName, string personFamaly) {
             lBxTasks.Items.Clear();
-            foreach (Task task in Program.ListTasksAllPerson.Tasks) {
+            foreach (Task task in Program.ListTasksAllPersonToSave.Tasks) {
                 if (task.PersonFamaly == personFamaly && task.Name.ToUpper().Contains(targetTaskName.ToUpper()))
                     lBxTasks.Items.Add(task.Number.ToString() + "\t" + task.Name);
             }
@@ -180,15 +182,15 @@ namespace time_schedule {
                 return;
             }
             this.Activate();
-            foreach (Task task in Program.ListTasksAllPerson.Tasks) {
+            foreach (Task task in Program.ListTasksAllPersonToSave.Tasks) {
                 if (task.Number == Convert.ToInt32(lBxTasks.SelectedItem.ToString().Split('\t')[0])) {
-                    Program.ListTasksAllPerson.Tasks.Remove(task);
+                    Program.ListTasksAllPersonToSave.Tasks.Remove(task);
                     break;
                 }
 
             }
             //Dals.WriteObjectToFile(Constants.TASKS, Program.ListTasksAllPerson.GetListForSave());
-            Dals.WriteObjectToMainPathFile(Constants.TASKS_BIN, Program.ListTasksAllPerson);
+            Dals.WriteObjectToMainPathFile(Constants.TASKS_BIN, Program.ListTasksAllPersonToSave);
             LoadLBxTasks();
             Form1 form1 = this.Form1Delegat.SetForm1();
             form1.LoadRefreshForm(Statuses.ProgressBar.Use);
@@ -202,15 +204,14 @@ namespace time_schedule {
             fmAddChangeTask fmAddTask = new fmAddChangeTask(Program.delegatLoadRefreshForm);
             fmAddTask.GhangeNamebtnCreateTask("Изменить");
             fmAddTask.SetCreateOrChange(CreateOrChange.Change);
-            foreach (Task task in Program.ListTasksAllPerson.Tasks) {
+            foreach (Task task in Program.ListTasksAllPersonToSave.Tasks) {
                 if (task.Number == Convert.ToInt32(lBxTasks.SelectedItem.ToString().Split('\t')[0])) {
                     Program.Task = task;
                     break;
                 }
             }
             fmAddTask.ShowDialog();
-            //Dals.WriteObjectToFile(Constants.TASKS, Program.ListTasksAllPerson.GetListForSave());
-            Dals.WriteObjectToMainPathFile(Constants.TASKS_BIN, Program.ListTasksAllPerson);
+            Dals.WriteObjectToMainPathFile(Constants.TASKS_BIN, Program.ListTasksAllPersonToSave);
             LoadLBxTasks();
         }
 
@@ -231,7 +232,7 @@ namespace time_schedule {
                 return;
             }
 
-            foreach (Task task in Program.ListTasksAllPerson.Tasks) {
+            foreach (Task task in Program.ListTasksAllPersonToSave.Tasks) {
                 if (task.Number == Convert.ToInt32(lBxTasks.SelectedItem.ToString().Split('\t')[0])) {
                     Program.Task = task;
                     break;
@@ -243,7 +244,7 @@ namespace time_schedule {
         private void lBxTasks_SelectedIndexChanged(object sender, EventArgs e) {
             if (lBxTasks.SelectedIndex == -1)
                 return;
-            foreach (Task task in Program.ListTasksAllPerson.Tasks) {
+            foreach (Task task in Program.ListTasksAllPersonToSave.Tasks) {
                 if (task.Number == Convert.ToInt32(lBxTasks.SelectedItem.ToString().Split('\t')[0])) {
                     tBxPerson.Text = task.PersonFamaly;
                     tBxStatus.Text = GetStatusInRus(task.Status.ToString()).Replace('_', ' ');
@@ -292,7 +293,7 @@ namespace time_schedule {
             }
             var listTaskForWrite = new ListTasks();
             foreach (long taskNumber in listTaskNumber) {
-                foreach (Task task in Program.ListTasksAllPerson.Tasks) {
+                foreach (Task task in Program.ListTasksAllPersonToSave.Tasks) {
                     if (task.Number == taskNumber) {
                         listTaskForWrite.AddTask(task);
                         break;
@@ -319,6 +320,7 @@ namespace time_schedule {
             treeView.CheckBoxes = true;
             bool isChecked = fmtreeView.GetIsChecked();
             treeView.Nodes.Add(new TreeNode("Все"));
+
             treeView.NodeMouseClick += TreeView_NodeMouseClick;
             void TreeView_NodeMouseClick(object senderTree, TreeNodeMouseClickEventArgs tree) {
                 if (isChecked) {
@@ -422,6 +424,43 @@ namespace time_schedule {
                 cBxOverdue.Checked = false;
             }
             LoadLBxTasks();
+        }
+
+        private void ChangeSelectTasks_Click(object sender, EventArgs e) {
+            fmAddChangeTask fmChangeTask = new fmAddChangeTask(Program.delegatLoadRefreshForm);
+            fmChangeTask.GhangeNamebtnCreateTask("Изменить для \n выбранных задач");
+            fmChangeTask.SetCreateOrChange(CreateOrChange.ChangeToSelect);
+            fmChangeTask.ShowDialog();
+            if (fmChangeTask.ClickButton == ClickButton.Aplly) {
+                foreach (string itemLbx in lBxTasks.Items) {
+                    foreach (Task task in Program.ListTasksAllPersonToSave.Tasks) {
+                        if (task.Number == Convert.ToInt32(itemLbx.ToString().Split('\t')[0])) {
+                            if (fmChangeTask.GetPriority().Enabled)
+                                task.SetPriority((int)fmChangeTask.GetPriority().Value);
+                            if (fmChangeTask.GetStatus().Enabled) {
+                                task.SetTaskStatus((TaskStatus)Enum.Parse(
+                                            typeof(TaskStatusRus),
+                                            fmChangeTask.GetStatus().Text.Replace(' ', '_'),
+                                            true
+                                            ));
+                            }
+                            if (fmChangeTask.GetColor().Enabled) {
+                                task.SetTaskColor(fmChangeTask.GetColor().BackColor);
+                            }
+                            if (fmChangeTask.GetProject().Enabled) {
+                                task.SetTreeProject(fmChangeTask.TreeProjects);
+                            }
+                            if (fmChangeTask.GetPerson().Enabled) {
+                                task.SetPersonFamaly(fmChangeTask.GetPerson().Text);
+                            }
+                            break;
+                        }
+                    }
+                }
+            }
+            Dals.WriteObjectToMainPathFile(Constants.TASKS_BIN, Program.ListTasksAllPersonToSave);
+            LoadLBxTasks();
+            Program.fmMain.SetForm1().LoadRefreshForm(Statuses.ProgressBar.Use);
         }
     }
 }

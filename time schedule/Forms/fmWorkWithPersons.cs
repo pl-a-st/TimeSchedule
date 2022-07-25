@@ -65,7 +65,7 @@ namespace time_schedule
                 if (person.PersonFamaly == lBxPersons.Items[lBxPersons.SelectedIndex].ToString())
                     person.SetPersonFamaly(fmInpootText.SetTextBox().Text);
             }
-            foreach (Task task in Program.ListTasksAllPerson.Tasks)
+            foreach (Task task in Program.ListTasksAllPersonToSave.Tasks)
             {
                 if (task.PersonFamaly == lBxPersons.Items[lBxPersons.SelectedIndex].ToString())
                     task.SetPersonFamaly(fmInpootText.SetTextBox().Text);
@@ -78,7 +78,7 @@ namespace time_schedule
             //Dals.WriteObjectToFile(
             //    Constants.TASKS,
             //    Program.ListTasksAllPerson.GetListForSave());
-            Dals.WriteObjectToMainPathFile(Constants.TASKS_BIN,Program.ListTasksAllPerson);
+            Dals.WriteObjectToMainPathFile(Constants.TASKS_BIN,Program.ListTasksAllPersonToSave);
             LisBoxRefresh();
             thisloadRefreshForm?.Invoke();
         }
@@ -124,7 +124,7 @@ namespace time_schedule
             {
                 if (person.PersonFamaly == lBxPersons.SelectedItem.ToString().Split('\t')[0])
                 {
-                    MessageBox.Show(Convert.ToString(person.GetMaxCountSynchTask(Program.ListTasksAllPerson)));
+                    MessageBox.Show(Convert.ToString(person.GetMaxCountSynchTask(Program.ListTasksAllPersonToSave)));
                     break;
                 }
             }
