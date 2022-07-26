@@ -101,12 +101,15 @@ namespace time_schedule
             int countDaysBeforScroll = horizontalScroll / Constants.COLUMN_WITH-2;
             int reserve = formWith / 2 / Constants.COLUMN_WITH;
             DateTime minLoadDate = minDateStart;
-            for (int i = 0; i < countDaysBeforScroll; i++) {
-                minLoadDate = minLoadDate.AddDays(1);
-                if (IsHolydays(minLoadDate)) {
-                    i--;
+            try {
+                for (int i = 0; i < countDaysBeforScroll; i++) {
+                    minLoadDate = minLoadDate.AddDays(1);
+                    if (IsHolydays(minLoadDate)) {
+                        i--;
+                    }
                 }
             }
+            catch { }
             return minLoadDate;
         }
 
@@ -1031,7 +1034,7 @@ namespace time_schedule
             fmAddTask.StartPosition = FormStartPosition.CenterScreen;
             Program.Task = Task;
             fmAddTask.ShowDialog();
-            Dals.WriteObjectToMainPathFile(Constants.TASKS, Program.ListTasksAllPersonToSave);
+            Dals.WriteObjectToMainPathFile(Constants.TASKS_BIN, Program.ListTasksAllPersonToSave);
             
         }
         public TaskButton(Task task, ListPersonButton listPersonButton,DateTime minDateStart, DateTime maxDateFinish)
@@ -1277,17 +1280,20 @@ namespace time_schedule
             TreeProjects mainTree = GetMainTree();
             TreeProjects settingsTree = GetSettingsTreeFromTask(task);
             TreeProjects resultTree = GetResultTree(mainTree, settingsTree);
+            CheckChekedChilde(resultTree);
             this.ListTreeNode = resultTree.ListTreeNode;
         }
-        private static TreeProjects GetSettingsTreeFromTask(Task task) {
+        private TreeProjects GetSettingsTreeFromTask(Task task) {
             TreeProjects settingsTree = new TreeProjects();
             settingsTree.SetTreeViewProjects(task.GetTreeProjects().ListTreeNode);
+           
             return settingsTree;
         }
         public void GetTreeFromFile() {
             TreeProjects mainTree = GetMainTree();
             TreeProjects settingsTree = GetSettingsTreeFromFile();
             TreeProjects resultTree = GetResultTree(mainTree, settingsTree);
+            CheckChekedChilde(resultTree);
             this.ListTreeNode = resultTree.ListTreeNode;
         }
        
@@ -1310,12 +1316,22 @@ namespace time_schedule
                     }
                 }
             }
-            return resultTree;
+            if (mainTree.ListTreeNode != null && settingsTree.ListTreeNode == null) {
+                resultTree.ListTreeNode = mainTree.ListTreeNode.GetRange(0, mainTree.ListTreeNode.Count);
+            }
+                return resultTree;
         }
 
         private static TreeProjects GetSettingsTreeFromFile() {
             TreeProjects settingsTree = new TreeProjects();
             settingsTree.SetTreeViewProjects(Dals.binReadUserPathFileToObject(settingsTree, Constants.PROJECTS_LIST).ListTreeNode);
+            if (settingsTree.ListTreeNode == null || settingsTree.ListTreeNode.Count ==0) {
+                settingsTree.ListTreeNode = new List<TreeNode>();
+                TreeNode treeNode = new TreeNode("Все");
+                treeNode.Checked = true;
+                settingsTree.ListTreeNode.Add(treeNode);
+                settingsTree.SaveSettingsTree();
+            }
             return settingsTree;
         }
 
@@ -1357,6 +1373,19 @@ namespace time_schedule
                 ClearSettings(chTreeNode);
             }
 
+        }
+        private void CheckChekedChilde(TreeProjects treeProjects) {
+            foreach (TreeNode node in treeProjects.ListTreeNode) {
+                ApllyCheckedToChilde(node);
+            }
+        }
+        private void ApllyCheckedToChilde(TreeNode node) {
+            if (node.Checked) {
+                foreach (TreeNode chNode in node.Nodes) {
+                    chNode.Checked = node.Checked;
+                    ApllyCheckedToChilde(chNode);
+                }
+            }
         }
     }
 }

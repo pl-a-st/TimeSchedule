@@ -159,6 +159,7 @@ namespace time_schedule {
                 }
             }
             while (!isNameCorrecrt);
+            CheckChecked(projectTreeView.SelectedNode);
         }
        
         private void RemoveNode_Click(object sender, EventArgs e) {
@@ -262,17 +263,21 @@ namespace time_schedule {
         }
 
         private void projectTreeView_AfterCheck(object sender, TreeViewEventArgs node) {
+            CheckChecked(node.Node);
+            this.Enabled = true;
+        }
+
+        private void CheckChecked(TreeNode node) {
             if (HasLoad == HasLoad.No)
                 return;
             if (ApllyingChaced == ApllyingChaced.Yes)
                 return;
             ApllyingChaced = ApllyingChaced.Yes;
             Thread.Sleep(300);
-            ApllyCheckedToChilde(node.Node);
-            ApllyCheckedToParent(node.Node);
-            ApllyCheckedToParentIfAllChieldChecked(node.Node);
+            ApllyCheckedToChilde(node);
+            ApllyCheckedToParent(node);
+            ApllyCheckedToParentIfAllChieldChecked(node);
             ApllyingChaced = ApllyingChaced.No;
-            this.Enabled = true;
         }
 
         private void projectTreeView_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e) {

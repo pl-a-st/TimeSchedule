@@ -23,18 +23,18 @@ namespace time_schedule {
         //}
         public static void WriteProjectFolder(Statuses.WorkWithProject statusWorkWithProject) {
             if (statusWorkWithProject == Statuses.WorkWithProject.ProgramStarted &&
-                (!File.Exists(Constants.PROJECT_FILE_NAME) ||
-                File.ReadAllLines(Constants.PROJECT_FILE_NAME).Length == 0)) {
+                (!File.Exists(Dals.TakeUserPath(Constants.PROJECT_FILE_NAME)) ||
+                File.ReadAllLines(Dals.TakeUserPath(Constants.PROJECT_FILE_NAME)).Length == 0)) {
                 WriteMainPathFolder("Проект", statusWorkWithProject);
             }
             else {
-                if (File.Exists(Constants.PROJECT_FILE_NAME)) {
-                    StreamReader streamReader = new StreamReader(Constants.PROJECT_FILE_NAME);
+                if (File.Exists(Dals.TakeUserPath(Constants.PROJECT_FILE_NAME))) {
+                    StreamReader streamReader = new StreamReader(Dals.TakeUserPath(Constants.PROJECT_FILE_NAME));
                     SetProjectFolderPath(streamReader.ReadLine());
                     streamReader.Close();
                 }
                 else {
-                    MessageBox.Show("Не удалось зачитать файл " + Constants.PROJECT_FILE_NAME + "Создайте или выбирите проект.");
+                    MessageBox.Show("Не удалось зачитать файл " + Dals.TakeUserPath(Constants.PROJECT_FILE_NAME) + "Создайте или выбирите проект.");
                 }
 
             }
@@ -177,20 +177,22 @@ namespace time_schedule {
         private static void MessageAboutProblem(string fileName) {
             if (fileName.Contains(Constants.PERSONS)||
                 fileName.Contains(Constants.PERSONS_BIN)) {
-                MessageBox.Show("В текущем проекте не создано ни одного исполнителя!");
+                MessageBox.Show("В текущем проекте не создано ни одного исполнителя!", "");
                 return;
             }
             if (fileName.Contains(Constants.TASKS)||
                 fileName.Contains(Constants.TASKS_BIN)) {
-                MessageBox.Show("В текущем проекте не создано ни одной задачи!");
+                MessageBox.Show("В текущем проекте не создано ни одной задачи!", "");
                 return;
             }
             if (fileName.Contains(Constants.HOLYDAYS)||
                 fileName.Contains(Constants.HOLYDAYS_BIN)) {
-                MessageBox.Show( "В текущем проекте не занесены праздничные дни!");
+                
+                
+                MessageBox.Show( "В текущем проекте не занесены праздничные дни!","");
                 return;
             }
-            MessageBox.Show("Не удалось зачитать файл " + fileName);
+            MessageBox.Show("Не удалось зачитать файл " + fileName, "");
         }
 
         public static List<string> ReadListFromFile(string fileName, string textForError) {
@@ -235,7 +237,7 @@ namespace time_schedule {
         }
 
         private static void WritePaht(string folderName) {
-            StreamWriter streamWriter = new StreamWriter(Constants.PROJECT_FILE_NAME, false);
+            StreamWriter streamWriter = new StreamWriter(Dals.TakeUserPath(Constants.PROJECT_FILE_NAME), false);
             if (!Directory.Exists(folderName))
                 Directory.CreateDirectory(folderName);
             streamWriter.WriteLine(folderName);

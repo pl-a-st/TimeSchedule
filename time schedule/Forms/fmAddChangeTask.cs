@@ -380,6 +380,7 @@ namespace time_schedule
         }
         private void btnCreateTask_Click(object sender, EventArgs e)
         {
+            this.TopMost = false;
             ClickButton = ClickButton.Aplly;
             if (IsTBxTaskNameEmpty())
                 return;
@@ -495,6 +496,7 @@ namespace time_schedule
 
         private void button1_Click(object sender, EventArgs e)
         {
+            this.TopMost = false;
             this.Close();
         }
 
@@ -541,31 +543,27 @@ namespace time_schedule
             string folderName = fmMainPathCopy.SetTBxAddress().Text;
             //string targetFolderName = "Проект";
             try
-            {
-                Program.ListTasksAllPersonToSave.Tasks.Clear();
-                string fullFileName = Dals.TakeMainPath(Constants.TASKS_BIN);
-                if (File.Exists(fullFileName)) {
-                    Program.ListTasksAllPersonToSave = Dals.binReadFileToObject(
-                        Program.ListTasksAllPersonToSave, fullFileName);
-                }
-                else {
-                     Program.ListTasksAllPersonToSave.SetTasksFromList(
-                    Dals.ReadListFromMainPathFile(Constants.TASKS));
-                }
-               
-                
+            { 
                 Task task = new Task();
                 ListTasks listTasks = new ListTasks();
-                string textForError = "Для отображения задач необходимо создать хотя бы одну.";
-                listTasks.SetTasksFromList(Dals.ReadListFromFile(folderName + "\\" + Constants.TASKS, textForError));
+                string textForError = "Не удалось записать задачу в файл проекта.";
+                if(File.Exists(folderName + "\\" + Constants.TASKS_BIN)) {
+                    listTasks = Dals.binReadFileToObject(listTasks, folderName + "\\" + Constants.TASKS_BIN);
+                }
+                else {
+                    listTasks.SetTasksFromList(Dals.ReadListFromFile(folderName + "\\" + Constants.TASKS, textForError));
+                }
                 textForError = "Не создано ни одного исполнителя.";
-                List<string> listStringPersons = Dals.ReadListFromFile(folderName + "\\" + Constants.PERSONS, textForError);
                 task = GetTaskForCreateChange(listTasks.GetNextNumForTask());
                 ListPersons listPersons = new ListPersons();
-
-                listPersons.SetPersonsFromList(
-                    Dals.ReadListFromFile(folderName + "\\" + Constants.PERSONS, textForError),
-                    listTasks.Tasks);
+                if (File.Exists(folderName + "\\" + Constants.TASKS_BIN)) {
+                    listPersons = Dals.binReadFileToObject(listPersons, folderName + "\\" + Constants.PERSONS_BIN);
+                }
+                else {
+                    listPersons.SetPersonsFromList(
+                        Dals.ReadListFromFile(folderName + "\\" + Constants.PERSONS, textForError),
+                        listTasks.Tasks);
+                }
                 string personFamaly = "Нераспределено";
                 bool isPersonHas = false;
                 foreach (Person person in listPersons.Persons)
