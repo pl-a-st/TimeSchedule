@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -97,8 +98,14 @@ namespace time_schedule
         private void fmProjectCopy_Load(object sender, EventArgs e)
         {
             this.TopMost = true;
-            ListProjects = new PoolProjects(
+            string fullFileName = Dals.TakeUserPath(Constants.PROJECT_TO_CHOOSE_BIN);
+            if (File.Exists(fullFileName)) {
+                ListProjects = Dals.binReadUserPathFileToObject(ListProjects, fullFileName);
+            }
+            else {
+                ListProjects = new PoolProjects(
                 Dals.ReadListFromFile(Constants.PROJECT_TO_CHOOSE));
+            }
             foreach(Project project in ListProjects.Projects)
             {
                 lBxProject.Items.Add(project.Name);
@@ -126,9 +133,10 @@ namespace time_schedule
             }
             if (lBxProject.Items.Count>0)
                 lBxProject.SelectedIndex = lBxProject.Items.Count-1;
-            Dals.WriteListtFileAppend(
-                Constants.PROJECT_TO_CHOOSE,
-                ListProjects.GetListForSave());
+            //Dals.WriteListtFileAppend(
+            //    Constants.PROJECT_TO_CHOOSE,
+            //    ListProjects.GetListForSave());
+            Dals.binWriteObjectToFile(ListProjects, Dals.TakeUserPath(Constants.PROJECT_TO_CHOOSE_BIN));
         }
 
         private void Cancel_Click(object sender, EventArgs e)
