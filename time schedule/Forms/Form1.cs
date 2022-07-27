@@ -233,6 +233,7 @@ namespace time_schedule {
         }
         public void SaveScrolls()
         {
+
             PlForDateScrollXSaved = plForDate.HorizontalScroll.Value;
             PlMainScrollXSaved = plMain.HorizontalScroll.Value;
             PlMainScrollYSaved = plMain.VerticalScroll.Value;

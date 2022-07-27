@@ -890,6 +890,7 @@ namespace time_schedule
             button.FlatAppearance.BorderSize = 1;
             button.FlatAppearance.BorderColor = Color.DimGray;
             button.Click += Button_Click;
+            
             button.MouseHover += Button_MouseHover;
             void Button_MouseHover(object sender, EventArgs e)
             {
@@ -925,6 +926,7 @@ namespace time_schedule
             }
 
             void Button_MouseDown(object sender, MouseEventArgs e) {
+                Program.fmMain.SetPlForDate().HorizontalScroll.Value = Program.fmMain.SetPlMain().HorizontalScroll.Value;
                 isDown = true;
                 if (Program.UserType == UserType.Admin) {
                     Thread thread = new Thread(CursorAndWidth, 0);
@@ -1019,6 +1021,7 @@ namespace time_schedule
         }
         private void Button_MouseUp(object sender, MouseEventArgs e) {
             Program.fmMain.Cursor = Cursors.Default;
+            
         }
 
         
@@ -1026,7 +1029,7 @@ namespace time_schedule
         //LoadRefreshForm loadRefreshForm;
         private void Button_Click(object sender, EventArgs e)
         {
-            Program.fmMain.SetPlForDate().HorizontalScroll.Value = Program.fmMain.SetPlMain().HorizontalScroll.Value;
+            Program.fmMain.SetPlForDate().AutoScroll = false;
             isDown = false;
             fmAddChangeTask fmAddTask = new fmAddChangeTask(Program.delegatLoadRefreshForm);
             fmAddTask.GhangeNamebtnCreateTask("Изменить");
@@ -1034,6 +1037,7 @@ namespace time_schedule
             fmAddTask.StartPosition = FormStartPosition.CenterScreen;
             Program.Task = Task;
             fmAddTask.ShowDialog();
+            Program.fmMain.SetPlForDate().AutoScroll = true;
             Dals.WriteObjectToMainPathFile(Constants.TASKS_BIN, Program.ListTasksAllPersonToSave);
             
         }
