@@ -45,7 +45,7 @@ namespace time_schedule {
             
             dTPFilterDateStart.Value = DateTime.Now.Date;
             try {
-                dTPFilterDateFinish.Value = Program.ListTasksAllPersonToSave.GetMaxDateFinishTasks().Date;
+                dTPFilterDateFinish.Value = Program.ListTasksAllPersonToShow.GetMaxDateFinishTasks().Date;
             }
             catch { }
             if (Program.UserType != UserType.Admin) {
@@ -123,7 +123,7 @@ namespace time_schedule {
 
         private void LoadLBxTasks() {
             lBxTasks.Items.Clear();
-            foreach (Task task in Program.ListTasksAllPersonToSave.Tasks) {
+            foreach (Task task in Program.ListTasksAllPersonToShow.Tasks) {
                 if (IsAllCorresponds(task))
                     lBxTasks.Items.Add(task.Number.ToString() + "\t" + task.Name);
             }
@@ -191,9 +191,10 @@ namespace time_schedule {
             }
             //Dals.WriteObjectToFile(Constants.TASKS, Program.ListTasksAllPerson.GetListForSave());
             Dals.WriteObjectToMainPathFile(Constants.TASKS_BIN, Program.ListTasksAllPersonToSave);
-            LoadLBxTasks();
             Form1 form1 = this.Form1Delegat.SetForm1();
             form1.LoadRefreshForm(Statuses.ProgressBar.Use);
+            LoadLBxTasks();
+            
         }
 
         private void btnChangeTask_Click(object sender, EventArgs e) {

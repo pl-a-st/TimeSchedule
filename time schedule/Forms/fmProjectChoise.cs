@@ -98,9 +98,9 @@ namespace time_schedule
         private void fmProjectCopy_Load(object sender, EventArgs e)
         {
             this.TopMost = true;
-            string fullFileName = Dals.TakeUserPath(Constants.PROJECT_TO_CHOOSE_BIN);
-            if (File.Exists(fullFileName)) {
-                ListProjects = Dals.binReadUserPathFileToObject(ListProjects, fullFileName);
+            
+            if (File.Exists(Constants.PROJECT_TO_CHOOSE_BIN)) {
+                ListProjects = Dals.binReadUserPathFileToObject(ListProjects, Constants.PROJECT_TO_CHOOSE_BIN);
             }
             else {
                 ListProjects = new PoolProjects(

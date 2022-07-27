@@ -597,6 +597,9 @@ namespace time_schedule {
         
         public void ScrollToDate(DateTime targetDateTime)
         {
+            if (!plForDate.HorizontalScroll.Visible) {
+                return;
+            }
             int locationX = 0;
             foreach (DateTextBox DateTextBox in Program.PoolTextBox.ListTextBoxes) {
                 if (DateTextBox.Date.Date < targetDateTime) {
@@ -903,6 +906,15 @@ namespace time_schedule {
             }
                 
                 
+        }
+
+        private void plMain_Resize(object sender, EventArgs e) {
+            if(plMain.VerticalScroll.Visible == true) {
+                plForDate.Width = plMain.Width - 18;
+            }
+            if (plMain.VerticalScroll.Visible == false) {
+                plForDate.Width = plMain.Width;
+            }
         }
     }
    
