@@ -555,6 +555,7 @@ namespace time_schedule
                 }
                 textForError = "Не создано ни одного исполнителя.";
                 task = GetTaskForCreateChange(listTasks.GetNextNumForTask());
+                task.SetTreeProject(TreeProjects);
                 ListPersons listPersons = new ListPersons();
                 if (File.Exists(folderName + "\\" + Constants.TASKS_BIN)) {
                     listPersons = Dals.binReadFileToObject(listPersons, folderName + "\\" + Constants.PERSONS_BIN);

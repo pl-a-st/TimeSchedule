@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -286,6 +287,68 @@ namespace time_schedule {
 
         private void projectTreeView_BeforeCheck(object sender, TreeViewCancelEventArgs node) {
             
+        }
+
+        private void btnSave_Click(object sender, EventArgs e) {
+            fmInpootText inpootText = new fmInpootText();
+            inpootText.SetBtnYes().Text = "Ок";
+            inpootText.SetLabel().Text = "Введите название";
+            inpootText.Text = "Ввод имени для сохранения";
+            TreeProjects treeProjects = new TreeProjects();
+            
+            treeProjects.SetTreeViewProjects(projectTreeView);
+            string fileName = Dals.ProjectFolderPath.Replace('\\', '_');
+            fileName = fileName.Replace(':', '+');
+            List<TreeProjects> ListTreeProjects = new List<TreeProjects>();
+            if (File.Exists(Dals.TakeUserPath(fileName))) {
+                ListTreeProjects = Dals.binReadUserPathFileToObject(ListTreeProjects, fileName);
+            }
+            List<string> listString = new List<string>();
+            foreach (TreeProjects targetTreeProjects in ListTreeProjects) {
+                listString.Add(targetTreeProjects.GetName());
+            }
+
+            bool isNameCorrecrt ;
+            do {
+                isNameCorrecrt = false;
+                inpootText.SetChoiceIsMade(ChoiceIsMade.no);
+                inpootText.ShowDialog();
+                if (inpootText.ChoiceIsMade == ChoiceIsMade.yes) {
+                    isNameCorrecrt = IsNameCorrect(inpootText, listString);
+                }
+                else {
+                    break;
+                }
+            } while (!isNameCorrecrt);
+            if (inpootText.ChoiceIsMade == ChoiceIsMade.yes) {
+                treeProjects.SetName(inpootText.SetTextBox().Text);
+                ListTreeProjects.Add(treeProjects);
+                Dals.WriteObjectToUserPathFile(fileName, ListTreeProjects);
+            }
+            
+
+
+
+        }
+
+        private static bool IsNameCorrect(fmInpootText inpootText, List<string> listString) {
+            if (inpootText.SetTextBox().Text == "") {
+                MessageBox.Show("Введите название");
+                return false;
+            }
+            if (listString.Contains(inpootText.SetTextBox().Text)) {
+                MessageBox.Show("такое название уже существует");
+                return false;
+            }
+            return true;
+        }
+
+        private void projectTreeView_BeforeExpand(object sender, TreeViewCancelEventArgs e) {
+            e.Node.Tag = true;
+        }
+
+        private void projectTreeView_BeforeCollapse(object sender, TreeViewCancelEventArgs e) {
+            e.Node.Tag = null;
         }
     }
 }

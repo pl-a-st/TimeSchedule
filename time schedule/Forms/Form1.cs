@@ -885,6 +885,8 @@ namespace time_schedule {
         }
 
         private void Projects_Click_2(object sender, EventArgs e) {
+            cBxSeetingsProgects.Items.Clear();
+            cBxSeetingsProgects.Text = "";
             fmProjectTree fmProjectTree = new fmProjectTree();
             fmProjectTree.StartPosition = FormStartPosition.CenterParent;
             //fmProjectTree.SetTreeView(Dals.binReadMainPathFileToObject(
@@ -915,6 +917,33 @@ namespace time_schedule {
             if (plMain.VerticalScroll.Visible == false) {
                 plForDate.Width = plMain.Width;
             }
+        }
+
+        private void comboBox1_Click(object sender, EventArgs e) {
+            cBxSeetingsProgects.Items.Clear();
+            cBxSeetingsProgects.Text = "";
+            string fileName = Dals.ProjectFolderPath.Replace('\\', '_');
+            fileName = fileName.Replace(':', '+');
+            List<TreeProjects> listTreeProject = new List<TreeProjects>();
+            listTreeProject = Dals.binReadUserPathFileToObject(listTreeProject, fileName);
+            foreach(TreeProjects treeProjects in listTreeProject) {
+                cBxSeetingsProgects.Items.Add(treeProjects.GetName());
+            }
+        }
+        private void cBxSeetingsProgects_SelectedIndexChanged(object sender, EventArgs e) {
+            string fileName = Dals.ProjectFolderPath.Replace('\\', '_');
+            fileName = fileName.Replace(':', '+');
+            List<TreeProjects> listTreeProject = new List<TreeProjects>();
+            listTreeProject = Dals.binReadUserPathFileToObject(listTreeProject, fileName);
+            foreach (TreeProjects treeProjects in listTreeProject) {
+                if (treeProjects.GetName()== cBxSeetingsProgects.SelectedItem.ToString()) {
+                    treeProjects.SaveSettingsTree();
+                    
+                }
+            }
+            ZeroingScrolss();
+            Program.fmMain.LoadRefreshForm(Statuses.ProgressBar.Use);
+            Program.fmMain.ScrollToDate(DateTime.Now.Date);
         }
     }
    

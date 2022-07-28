@@ -53,7 +53,7 @@
             this.timer1 = new System.Windows.Forms.Timer(this.components);
             this.btnRefresh = new System.Windows.Forms.Button();
             this.button1 = new System.Windows.Forms.Button();
-            this.comboBox1 = new System.Windows.Forms.ComboBox();
+            this.cBxSeetingsProgects = new System.Windows.Forms.ComboBox();
             this.plMain.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pBForLine)).BeginInit();
             this.menuStrip1.SuspendLayout();
@@ -282,20 +282,22 @@
             this.button1.UseVisualStyleBackColor = true;
             this.button1.Click += new System.EventHandler(this.Projects_Click_2);
             // 
-            // comboBox1
+            // cBxSeetingsProgects
             // 
-            this.comboBox1.FormattingEnabled = true;
-            this.comboBox1.Location = new System.Drawing.Point(12, 27);
-            this.comboBox1.Name = "comboBox1";
-            this.comboBox1.Size = new System.Drawing.Size(169, 21);
-            this.comboBox1.TabIndex = 11;
+            this.cBxSeetingsProgects.FormattingEnabled = true;
+            this.cBxSeetingsProgects.Location = new System.Drawing.Point(12, 27);
+            this.cBxSeetingsProgects.Name = "cBxSeetingsProgects";
+            this.cBxSeetingsProgects.Size = new System.Drawing.Size(169, 21);
+            this.cBxSeetingsProgects.TabIndex = 11;
+            this.cBxSeetingsProgects.SelectedIndexChanged += new System.EventHandler(this.cBxSeetingsProgects_SelectedIndexChanged);
+            this.cBxSeetingsProgects.Click += new System.EventHandler(this.comboBox1_Click);
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1171, 820);
-            this.Controls.Add(this.comboBox1);
+            this.Controls.Add(this.cBxSeetingsProgects);
             this.Controls.Add(this.button1);
             this.Controls.Add(this.minusFiveDay);
             this.Controls.Add(this.dateTimePicker1);
@@ -349,7 +351,7 @@
         private System.Windows.Forms.ToolStripMenuItem выбратьToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem создатьToolStripMenuItem;
         private System.Windows.Forms.Button button1;
-        private System.Windows.Forms.ComboBox comboBox1;
+        private System.Windows.Forms.ComboBox cBxSeetingsProgects;
     }
 }
 
