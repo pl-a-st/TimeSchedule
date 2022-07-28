@@ -23,18 +23,18 @@ namespace time_schedule {
         //}
         public static void WriteProjectFolder(Statuses.WorkWithProject statusWorkWithProject) {
             if (statusWorkWithProject == Statuses.WorkWithProject.ProgramStarted &&
-                (!File.Exists(Dals.TakeUserPath(Constants.PROJECT_FILE_NAME)) ||
-                File.ReadAllLines(Dals.TakeUserPath(Constants.PROJECT_FILE_NAME)).Length == 0)) {
+                (!File.Exists(Constants.PROJECT_FILE_NAME) ||
+                File.ReadAllLines(Constants.PROJECT_FILE_NAME).Length == 0)) {
                 WriteMainPathFolder("Проект", statusWorkWithProject);
             }
             else {
-                if (File.Exists(Dals.TakeUserPath(Constants.PROJECT_FILE_NAME))) {
-                    StreamReader streamReader = new StreamReader(Dals.TakeUserPath(Constants.PROJECT_FILE_NAME));
+                if (File.Exists(Constants.PROJECT_FILE_NAME)) {
+                    StreamReader streamReader = new StreamReader(Constants.PROJECT_FILE_NAME);
                     SetProjectFolderPath(streamReader.ReadLine());
                     streamReader.Close();
                 }
                 else {
-                    MessageBox.Show("Не удалось зачитать файл " + Dals.TakeUserPath(Constants.PROJECT_FILE_NAME) + "Создайте или выбирите проект.");
+                    MessageBox.Show("Не удалось зачитать файл " + Constants.PROJECT_FILE_NAME + "Создайте или выбирите проект.");
                 }
 
             }
@@ -237,7 +237,7 @@ namespace time_schedule {
         }
 
         private static void WritePaht(string folderName) {
-            StreamWriter streamWriter = new StreamWriter(Dals.TakeUserPath(Constants.PROJECT_FILE_NAME), false);
+            StreamWriter streamWriter = new StreamWriter(Constants.PROJECT_FILE_NAME, false);
             if (!Directory.Exists(folderName))
                 Directory.CreateDirectory(folderName);
             streamWriter.WriteLine(folderName);

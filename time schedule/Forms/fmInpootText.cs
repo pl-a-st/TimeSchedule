@@ -18,6 +18,9 @@ namespace time_schedule
         }
         public ChoiceIsMade ChoiceIsMade
         { get; private set; } = ChoiceIsMade.no;
+        public void SetChoiceIsMade(ChoiceIsMade choiceIsMade) {
+            ChoiceIsMade = choiceIsMade;
+        }
         private void fmInpootText_Load(object sender, EventArgs e)
         {
             this.TopMost = true;

@@ -1256,6 +1256,16 @@ namespace time_schedule
         public TreeProjects() {
 
         }
+        private string Name;
+        public void SetName(string name) {
+            Name = name;
+        }
+        public string GetName() {
+            if (Name == null) {
+                Name = string.Empty;
+            }
+            return Name;
+        }
         private void CloneTreeView(TreeNode ChangeTreeNode, TreeNode CopyTreeNode) {
             ChangeTreeNode.Nodes.Add(CopyTreeNode.Clone() as TreeNode);
             foreach (TreeNode chTreeNode in CopyTreeNode.Nodes) {
@@ -1266,6 +1276,9 @@ namespace time_schedule
             ListTreeNode.Clear();
             foreach (TreeNode treeNode in treeView.Nodes) {
                 ListTreeNode.Add(treeNode.Clone() as TreeNode);
+                if (treeNode.IsExpanded) {
+                    ListTreeNode.Last().Tag = true;
+                } 
             }
         }
         public void SetTreeViewProjects(List<TreeNode> treeNodes) {
