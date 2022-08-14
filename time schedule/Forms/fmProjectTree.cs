@@ -132,13 +132,13 @@ namespace time_schedule {
         private bool CheckNameAndAddNode(fmInpootText inpootText, bool isNameCorrecrt) {
             isNameCorrecrt = true;
             foreach (TreeNode treeNode in projectTreeView.SelectedNode.Nodes) {
-                if (treeNode.Text == inpootText.SetTextBox().Text) {
+                if (treeNode.Text == inpootText.GetTextBox().Text) {
                     MessageBox.Show("Такое название уже существует.");
                     isNameCorrecrt = false;
                     return isNameCorrecrt;
                 }
             }
-            projectTreeView.SelectedNode.Nodes.Add(inpootText.SetTextBox().Text);
+            projectTreeView.SelectedNode.Nodes.Add(inpootText.GetTextBox().Text);
             projectTreeView.SelectedNode.Expand();
             this.ApllyCheckedToParentIfAllChieldChecked(projectTreeView.SelectedNode);
             return isNameCorrecrt;
@@ -146,8 +146,8 @@ namespace time_schedule {
         private void addNode_Click(object sender, EventArgs e) {
             projectTreeView.Focus();
             fmInpootText inpootText = new fmInpootText();
-            inpootText.SetLabel().Text = "Введите имя узла";
-            inpootText.SetBtnYes().Text = "Ок";
+            inpootText.GetLabel().Text = "Введите имя узла";
+            inpootText.GetBtnYes().Text = "Ок";
             inpootText.Text = "Ввод названия";
             bool isNameCorrecrt = false;
             do {
@@ -288,14 +288,12 @@ namespace time_schedule {
         private void projectTreeView_BeforeCheck(object sender, TreeViewCancelEventArgs node) {
             
         }
-
         private void btnSave_Click(object sender, EventArgs e) {
             fmInpootText inpootText = new fmInpootText();
-            inpootText.SetBtnYes().Text = "Ок";
-            inpootText.SetLabel().Text = "Введите название";
+            inpootText.GetBtnYes().Text = "Ок";
+            inpootText.GetLabel().Text = "Введите название";
             inpootText.Text = "Ввод имени для сохранения";
             TreeProjects treeProjects = new TreeProjects();
-            
             treeProjects.SetTreeViewProjects(projectTreeView);
             string fileName = Dals.ProjectFolderPath.Replace('\\', '_');
             fileName = fileName.Replace(':', '+');
@@ -307,7 +305,6 @@ namespace time_schedule {
             foreach (TreeProjects targetTreeProjects in ListTreeProjects) {
                 listString.Add(targetTreeProjects.GetName());
             }
-
             bool isNameCorrecrt ;
             do {
                 isNameCorrecrt = false;
@@ -321,22 +318,18 @@ namespace time_schedule {
                 }
             } while (!isNameCorrecrt);
             if (inpootText.ChoiceIsMade == ChoiceIsMade.yes) {
-                treeProjects.SetName(inpootText.SetTextBox().Text);
+                treeProjects.SetName(inpootText.GetTextBox().Text);
                 ListTreeProjects.Add(treeProjects);
                 Dals.WriteObjectToUserPathFile(fileName, ListTreeProjects);
             }
-            
-
-
-
         }
 
         private static bool IsNameCorrect(fmInpootText inpootText, List<string> listString) {
-            if (inpootText.SetTextBox().Text == "") {
+            if (inpootText.GetTextBox().Text == "") {
                 MessageBox.Show("Введите название");
                 return false;
             }
-            if (listString.Contains(inpootText.SetTextBox().Text)) {
+            if (listString.Contains(inpootText.GetTextBox().Text)) {
                 MessageBox.Show("такое название уже существует");
                 return false;
             }

@@ -4,6 +4,7 @@ using System.Drawing;
 using System.Threading;
 using System.Windows.Forms;
 using System.IO;
+using time_schedule.Forms;
 
 
 namespace time_schedule {
@@ -53,14 +54,15 @@ namespace time_schedule {
             get;
             private set;
         } = Statuses.ProgramWindowState.Normal;
-        public Form1()
-        {
+        public Form1() {
             Program.fmMain = this;
             InitializeComponent();
             plMain.MouseWheel += CalendarTasks_MouseWheel;
             plMain.ClientSizeChanged += PlMain_ClientSizeChanged;
             plPersonButton.MouseWheel += PlPersonButton_MouseWheel;
-        }
+            
+
+        }  
         public static Form1 SelfRef {
             get; 
             set;
@@ -98,9 +100,31 @@ namespace time_schedule {
             LoadTaskButtons();//285 мс
             LoadDateTextBoxes();
             ChangePanelVisibility(Statuses.Visibility.Visible);
-            //plPersonButton.VerticalScroll.Value = VerticalScrollValue;
-            //plPersonButton.VerticalScroll.Value = VerticalScrollValue;
+            PushLableProject();
         }
+        private void PushLableProject() {
+            TreeProjects treeProjects = new TreeProjects();
+            treeProjects.GetTreeFromFile();
+            lblProjects.Text="";
+            foreach (TreeNode treeNode in treeProjects.ListTreeNode) {
+                if (treeNode.Checked) {
+                    lblProjects.Text += "<"+treeNode.Text + ">";
+                    break;
+                }
+                PushLableProject(treeNode);
+            }
+        }
+        private void PushLableProject(TreeNode treeNode) {
+            foreach (TreeNode chTreeNode in treeNode.Nodes) {
+                if (chTreeNode.Checked) {
+                    lblProjects.Text += "<"+chTreeNode.Text + "> ";
+                }
+                else {
+                    PushLableProject(chTreeNode);
+                }
+            }
+        }
+         
         public Panel SetPlMain() {
             return plMain;
         }
@@ -149,7 +173,7 @@ namespace time_schedule {
         }
         public int GetPersonButtonWith()
         {
-            return plMain.Location.X - plPersonButton.Location.X;
+            return plMain.Location.X - plPersonButton.Location.X-2;
         }
         private void CleanOldExemplars()
         {
@@ -183,7 +207,7 @@ namespace time_schedule {
                 if (personButton.Person.ListTask.Tasks.Count > 0)
                 {
                     personButton.SetLocation(0, maxButtonLocationY);
-                    maxButtonLocationY += (personButton.Button.Height + Constants.MIN_ROW_HIGHT +1);
+                    maxButtonLocationY += (personButton.Button.Height + Constants.MIN_ROW_HIGHT);
                 }
             }
             return maxButtonLocationY; 
@@ -202,22 +226,24 @@ namespace time_schedule {
                 if(personButton.Person.ListTask.Tasks.Count>0)
                 {
                     int locationY = personButton.Button.Location.Y;
-                    Pen pen = new Pen(Color.LightGray, 1);
-                    do
+                    Pen pen = new Pen(Color.FromArgb(213, 207, 196), 1);
+                  
+                    while (locationY < (personButton.Button.Location.Y + personButton.Button.Height)) 
                     {
-                        Drow(pen, 0, locationY, pBForLine.Width, locationY);
                         locationY += Constants.ROW_HIGHT;
+                        Drow(pen, 0, locationY, pBForLine.Width, locationY);
+
                     }
-                    while (locationY < (personButton.Button.Location.Y + personButton.Button.Height));
-                    Pen pen1 = new Pen(Color.Black, 5);
-                    Drow(pen1, 0, locationY + 1, pBForLine.Width, locationY);
+                   
+                    Pen pen1 = new Pen(Color.FromArgb(240, 240, 240), 2);
+                    Drow(pen1, 0, locationY, pBForLine.Width, locationY+1);
                 }  
             }
         }
         public void DrowVerticalLines()
         {
-            Pen penGrey = new Pen(Color.LightGray, 1);
-            Pen penForMonday = new Pen(Color.FromArgb(32,55,100), 2);
+            Pen penGrey = new Pen(Color.FromArgb(213, 207, 196), 1);
+            Pen penForMonday = new Pen(Color.FromArgb(240, 240, 240), 2);
             foreach (DateTextBox dateTextBox in Program.PoolTextBox.ListTextBoxes)
             {             
                 int locationX = dateTextBox.TextBox.Location.X;
@@ -320,6 +346,8 @@ namespace time_schedule {
                 Program.ListTasksAllPersonToSave.SetTasksFromList(Dals.ReadListFromMainPathFile(Constants.TASKS));
             }
             Program.ListTasksAllPersonToShow.SetTasks(GetProjectEntryTasks(Program.ListTasksAllPersonToSave.Tasks));
+            if(cBxShowTask.Text == cBxShowTask.Items[0].ToString())
+            Program.ListTasksAllPersonToShow.SetTasks(GetRelevantTasks(Program.ListTasksAllPersonToShow.Tasks));
             if (File.Exists(Dals.TakeMainPath(Constants.TASKS_BIN))) {
                 Program.listPersons = Dals.binReadFileToObject(
                     Program.listPersons,
@@ -370,13 +398,38 @@ namespace time_schedule {
                 
                 TreeProjects treeTask = new TreeProjects();
                 treeTask = task.GetTreeProjects();
-                if(CheckEntryProject(treeProjects, treeTask)) {
+                if (CheckEntryProject(treeProjects, treeTask)) {
+                    resultListTasks.Add(task);
+                }
+                
+
+            }
+            return resultListTasks;
+        }
+        private List<Task> GetRelevantTasks (List<Task> tasks) {
+            var resultListTasks = new List<Task>();
+            foreach (Task task in tasks) {
+                if (IsDateSuitable(task)) {
                     resultListTasks.Add(task);
                 }
             }
             return resultListTasks;
         }
 
+        private bool IsDateSuitable(Task task) {
+            return IsRelevant(task) || IsNotStarted(task) ||IsOverdue(task);
+        }
+
+        private static bool IsRelevant(Task task) {
+            return task.DateFinish >= DateTime.Now.Date.AddMonths(-1);
+        }
+
+        private bool IsNotStarted(Task task) {
+            return (task.DateStart.Date < DateTime.Now.Date.AddMonths(-1)) && (task.Status == TaskStatus.New);
+        }
+        private bool IsOverdue(Task task) {
+             return (task.DateFinish.Date < DateTime.Now.Date.AddMonths(-1)) && (task.Status != TaskStatus.Closed);
+        }
         private static bool CheckEntryProject(TreeProjects treeProjects, TreeProjects treeTask) {
             bool isEntry = false;
             foreach (TreeNode taskNode in treeTask.ListTreeNode) {
@@ -387,7 +440,8 @@ namespace time_schedule {
                         isEntry = true;
                         return isEntry;
                     }
-                    isEntry= CheckEntryProject(projectNode, taskNode, isEntry);
+                    if (taskNode.Text == projectNode.Text)
+                        isEntry = CheckEntryProject(projectNode, taskNode, isEntry);
                 }
             }
             return isEntry;
@@ -401,7 +455,8 @@ namespace time_schedule {
                         isEntry = true;
                         return isEntry;
                     }
-                    isEntry = CheckEntryProject(projectNode, taskNode, isEntry);
+                    if (taskNode.Text == projectNode.Text)
+                        isEntry = CheckEntryProject(projectNode, taskNode, isEntry);
                 }
             }
             return isEntry;
@@ -487,6 +542,7 @@ namespace time_schedule {
         }
         private void Form1_Load(object sender, EventArgs e)
         {
+           
             this.DoubleBuffered = true;
             Program.delegatLoadRefreshForm = LoadRefreshFormForDelegat;
             myScrollBar.Height = plMain.Height;
@@ -885,8 +941,7 @@ namespace time_schedule {
         }
 
         private void Projects_Click_2(object sender, EventArgs e) {
-            cBxSeetingsProgects.Items.Clear();
-            cBxSeetingsProgects.Text = "";
+            
             fmProjectTree fmProjectTree = new fmProjectTree();
             fmProjectTree.StartPosition = FormStartPosition.CenterParent;
             //fmProjectTree.SetTreeView(Dals.binReadMainPathFileToObject(
@@ -900,8 +955,11 @@ namespace time_schedule {
             TreeProjects treeProjects = new TreeProjects();
             treeProjects.SetTreeViewProjects(fmProjectTree.projectTreeView);
             if (fmProjectTree.ClickButton == ClickButton.Aplly) {
+                cBxSeetingsProgects.Items.Clear();
+                cBxSeetingsProgects.Text = "";
                 treeProjects.SaveTree();
                 treeProjects.SaveSettingsTree();
+                ZeroingScrolss();
                 Program.fmMain.LoadRefreshForm(Statuses.ProgressBar.Use);
                 Program.fmMain.ScrollToDate(DateTime.Now.Date);
                 //Dals.WriteObjectToMainPathFile(Constants.PROJECTS_LIST, treeProjects);
@@ -944,6 +1002,65 @@ namespace time_schedule {
             ZeroingScrolss();
             Program.fmMain.LoadRefreshForm(Statuses.ProgressBar.Use);
             Program.fmMain.ScrollToDate(DateTime.Now.Date);
+        }
+
+        private void cBxShowTask_SelectedIndexChanged(object sender, EventArgs e) {
+            ZeroingScrolss();
+            Program.fmMain.LoadRefreshForm(Statuses.ProgressBar.Use);
+            Program.fmMain.ScrollToDate(DateTime.Now.Date);
+        }
+
+        private void btnSetings_Click(object sender, EventArgs e) {
+            fmChangeList fm = new fmChangeList();
+            fm.Text = "Сохраненные настройки";
+            fm.StartPosition = FormStartPosition.CenterParent;
+            fm.TopMost = true;
+            fm.BtnChange.Text = "Изменить название";
+            fm.BtnNew.Text = "Добавить";
+            fm.BtnNew.Enabled = false;
+            fm.BtnDelete.Text = "Удалить";
+            fm.LblReplace.Text = "Переместить \n настройки";
+            string fileName = Dals.ProjectFolderPath.Replace('\\', '_');
+            fileName = fileName.Replace(':', '+');
+            SetLbx(fm, fileName);
+            var listStr = new List<string>();
+            
+            fm.ShowDialog();
+            if (fm.BtnClick == BtnClick.aplly) {
+                SaveListProjects(fm, fileName);
+            }
+        }
+
+        private static void SaveListProjects(fmChangeList fm, string fileName) {
+            List<TreeProjects> listTreeForChange = new List<TreeProjects>();
+            List<TreeProjects> listTreeForSave = new List<TreeProjects>();
+            if (File.Exists(Dals.TakeUserPath(fileName))) {
+                listTreeForChange = Dals.binReadUserPathFileToObject(listTreeForChange, fileName);
+            }
+            foreach(StringNumChange stringNumChange in fm.ListStringNumChange) {
+                listTreeForChange[stringNumChange.Num].SetName(stringNumChange.Str);
+            }
+            foreach (string str in fm.LBx.Items) {
+                foreach (TreeProjects tree in listTreeForChange) {
+                    if (tree.GetName() == str) {
+                        listTreeForSave.Add(tree);
+                        break;
+                    }
+                }
+            }
+            Dals.WriteObjectToUserPathFile(fileName, listTreeForSave);
+        }
+
+        private static void SetLbx(fmChangeList fm, string fileName) {
+            List<TreeProjects> listTreeProjects = new List<TreeProjects>();
+            if (File.Exists(Dals.TakeUserPath(fileName))) {
+                listTreeProjects = Dals.binReadUserPathFileToObject(listTreeProjects, fileName);
+            }
+            List<string> listString = new List<string>();
+            foreach (TreeProjects targetTreeProjects in listTreeProjects) {
+                listString.Add(targetTreeProjects.GetName());
+            }
+            fm.LBx.Items.AddRange(listString.ToArray());
         }
     }
    

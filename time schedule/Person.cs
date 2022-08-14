@@ -42,17 +42,22 @@ namespace time_schedule
         public Statuses.LoadingStatus LoadingStatus { get; private set; } = Statuses.LoadingStatus.NotReady;
         public DateTextBox (DateTime dateTime, int TextBoxHight, int locationX) {
             Date = dateTime.Date;
-            TextBox.BorderStyle = BorderStyle.FixedSingle;
+            TextBox.BorderStyle = BorderStyle.Fixed3D;
+            
+
+
             TextBox.AutoSize = false;
             TextBox.Size = new Size(Constants.COLUMN_WITH, TextBoxHight);
             TextBox.Multiline = true;
             TextBox.Text = dateTime.ToShortDateString() + "\n" + GetDayOfWeekRus(dateTime.DayOfWeek);
-            TextBox.BackColor = Color.AliceBlue;
-            TextBox.ForeColor = Color.Black;
+            TextBox.BackColor = Color.FromArgb(90,90,90);
+            TextBox.ForeColor = Color.FromArgb(240, 240, 240);
             TextBox.TextAlign = HorizontalAlignment.Center;
             TextBox.ReadOnly = true;
-            if (dateTime == DateTime.Now.Date)
-                TextBox.BackColor = Color.LightBlue;
+            if (dateTime == DateTime.Now.Date) {
+                TextBox.BackColor = Color.FromArgb(255,255,255);
+                TextBox.ForeColor = Color.FromArgb(45, 45, 45);
+            }
             TextBox.Location = new Point(locationX, 0);            
         }
         public void SetLoadingStatus (Statuses.LoadingStatus loadingStatus) {
@@ -887,7 +892,7 @@ namespace time_schedule
             button.Text = Task.Name;
             button.BackColor = Task.Color;
             button.FlatStyle = FlatStyle.Flat;
-            button.FlatAppearance.BorderSize = 1;
+            button.FlatAppearance.BorderSize = 0;
             button.FlatAppearance.BorderColor = Color.DimGray;
             button.Click += Button_Click;
             
@@ -1129,6 +1134,12 @@ namespace time_schedule
             Person = person;
             Person.setTasks(listTasksAllPerson);
             Button.Text = person.PersonFamaly;
+            Button.FlatStyle = FlatStyle.Flat;
+            Button.FlatAppearance.BorderSize = 0;
+            
+            Button.ForeColor = Color.FromArgb(240,240,240);
+            Button.FlatAppearance.BorderColor = Color.FromArgb(200,200,200);
+            Button.BackColor = Color.FromArgb(90, 90, 90);
             Button.Height = GetHightBooton(listTasksAllPerson, hightRowForTasks);
             Button.BringToFront();
             Button.Click += PersonButton_Click;
@@ -1397,12 +1408,14 @@ namespace time_schedule
             }
         }
         private void ApllyCheckedToChilde(TreeNode node) {
-            if (node.Checked) {
-                foreach (TreeNode chNode in node.Nodes) {
+             
+
+            foreach (TreeNode chNode in node.Nodes) {
+                if (node.Checked)
                     chNode.Checked = node.Checked;
-                    ApllyCheckedToChilde(chNode);
-                }
+                ApllyCheckedToChilde(chNode);
             }
+            
         }
     }
 }

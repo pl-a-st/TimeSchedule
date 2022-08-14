@@ -25,15 +25,15 @@ namespace time_schedule
         {
             this.TopMost = true;
         }
-        public TextBox SetTextBox()
+        public TextBox GetTextBox()
         {
             return tbxInpootText;
         }
-        public Label SetLabel()
+        public Label GetLabel()
         {
             return label1;
         }
-        public Button SetBtnYes()
+        public Button GetBtnYes()
         {
             return btnYes;
         }

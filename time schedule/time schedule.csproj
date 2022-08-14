@@ -63,9 +63,16 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="StringNumChange.cs" />
     <Compile Include="enums.cs" />
     <Compile Include="Constants.cs" />
     <Compile Include="Dals.cs" />
+    <Compile Include="Forms\fmChangeList.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\fmChangeList.Designer.cs">
+      <DependentUpon>fmChangeList.cs</DependentUpon>
+    </Compile>
     <Compile Include="Forms\fmProjectTree.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -148,6 +155,9 @@
       <DependentUpon>fmSelectTask.cs</DependentUpon>
     </Compile>
     <Compile Include="Statuses.cs" />
+    <EmbeddedResource Include="Forms\fmChangeList.resx">
+      <DependentUpon>fmChangeList.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Forms\fmProjectTree.resx">
       <DependentUpon>fmProjectTree.cs</DependentUpon>
     </EmbeddedResource>
