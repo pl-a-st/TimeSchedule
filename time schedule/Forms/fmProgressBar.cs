@@ -24,7 +24,7 @@ namespace time_schedule {
         //ForControl ForControl = new ForControl(GetForm);
         private void fmProgressBar_Load(object sender, EventArgs e) {
             StatusLoad = Statuses.FormLoad.Load;
-            progressBar.MarqueeAnimationSpeed = 30;
+            progressBar.MarqueeAnimationSpeed = 1;
             progressBar.Style = ProgressBarStyle.Marquee;
             //Program.delegatForControl = GetForm;
         }

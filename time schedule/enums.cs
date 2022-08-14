@@ -8,14 +8,19 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace time_schedule { 
-    public enum FormBtnClick {
-        Ok,
-        Cancel,
-        NoClick
+    public enum BtnClick {
+        ok,
+        aplly,
+        cancel,
+        noClick
     }
     public enum IsChecked {
-        Yes,
-        No,
-        Undefined
+        yes,
+        no,
+        undefined
+    }
+    public enum BtnUpDowm {
+        up,
+        down
     }
 }

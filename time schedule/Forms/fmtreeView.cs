@@ -10,10 +10,10 @@ using System.Windows.Forms;
 
 namespace time_schedule {
     public partial class fmtreeView : Form {
-        public FormBtnClick BtnClick {
+        public BtnClick BtnClick {
             get;
             private set;
-        } = FormBtnClick.NoClick;
+        } = BtnClick.noClick;
         public bool IsChecked {
             get;
             private set;
@@ -30,11 +30,11 @@ namespace time_schedule {
         }
 
         private void BtnOk_Click(object sender, EventArgs e) {
-            BtnClick = FormBtnClick.Ok;
+            BtnClick = BtnClick.ok;
             this.Close();
         }
 
-        public FormBtnClick GetBtnClick() {
+        public BtnClick GetBtnClick() {
             return BtnClick;
         }
         public TreeView GetTreeView() {

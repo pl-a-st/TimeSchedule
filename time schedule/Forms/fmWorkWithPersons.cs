@@ -23,6 +23,9 @@ namespace time_schedule
             thisloadRefreshForm = loadRefreshForm;
         }
         LoadRefreshForm thisloadRefreshForm;
+        public Form setForm() {
+            return this;
+        }
         private void btnNewPerson_Click(object sender, EventArgs e)
         {
             fmAddPerson fmAddPerson = new fmAddPerson();
@@ -53,22 +56,22 @@ namespace time_schedule
                 MessageBox.Show("Не выбран исполнитель.");
                 return;
             }
-            fmInpootText.SetTextBox().Text = lBxPersons.Items[lBxPersons.SelectedIndex].ToString();
+            fmInpootText.GetTextBox().Text = lBxPersons.Items[lBxPersons.SelectedIndex].ToString();
             fmInpootText.Text = "Введите новое имя исполнителя";
-            fmInpootText.SetBtnYes().Text = "Изменить";
-            fmInpootText.SetLabel().Text = "Введите новое имя исполнителя";
+            fmInpootText.GetBtnYes().Text = "Изменить";
+            fmInpootText.GetLabel().Text = "Введите новое имя исполнителя";
             fmInpootText.ShowDialog();
             if (fmInpootText.ChoiceIsMade == ChoiceIsMade.no)
                 return;
             foreach (Person person in Program.listPersons.Persons)
             {
                 if (person.PersonFamaly == lBxPersons.Items[lBxPersons.SelectedIndex].ToString())
-                    person.SetPersonFamaly(fmInpootText.SetTextBox().Text);
+                    person.SetPersonFamaly(fmInpootText.GetTextBox().Text);
             }
             foreach (Task task in Program.ListTasksAllPersonToSave.Tasks)
             {
                 if (task.PersonFamaly == lBxPersons.Items[lBxPersons.SelectedIndex].ToString())
-                    task.SetPersonFamaly(fmInpootText.SetTextBox().Text);
+                    task.SetPersonFamaly(fmInpootText.GetTextBox().Text);
             }
             
             //Dals.WriteObjectToFile(

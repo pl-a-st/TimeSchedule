@@ -361,7 +361,7 @@ namespace time_schedule {
             treeView.ExpandAll();
             var listStatuses = new List<TaskStatus>();
             fmtreeView.ShowDialog();
-            if (fmtreeView.BtnClick == FormBtnClick.Ok) {
+            if (fmtreeView.BtnClick == BtnClick.ok) {
                 TaskStatuses.Clear();
                 string allCheckedStatuses = string.Empty;
                 foreach (TreeNode node in treeView.Nodes[0].Nodes) {
