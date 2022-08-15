@@ -311,6 +311,7 @@ namespace time_schedule {
                     this.Left + this.Width/2- fmProgressBar.Width/2,
                     this.Top + this.Height/2-fmProgressBar.Height/2);
                 fmProgressBar.TopLevel = true;
+
                 List<Form> listForm = new List<Form>() { this, fmProgressBar };
                 Thread thread = new Thread(LoadRefreshWithProgressBarr,0);
                 thread.Start(listForm);
