@@ -380,6 +380,7 @@ namespace time_schedule
         }
         private void btnCreateTask_Click(object sender, EventArgs e)
         {
+
             this.TopMost = false;
             ClickButton = ClickButton.Aplly;
             if (IsTBxTaskNameEmpty())
