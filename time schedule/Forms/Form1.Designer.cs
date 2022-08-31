@@ -137,8 +137,8 @@
             this.toolStripMenuItem2,
             this.adminToolStripMenuItem});
             this.сенитьПользователяToolStripMenuItem.Name = "сенитьПользователяToolStripMenuItem";
-            this.сенитьПользователяToolStripMenuItem.Size = new System.Drawing.Size(191, 22);
-            this.сенитьПользователяToolStripMenuItem.Text = "Сенить пользователя";
+            this.сенитьПользователяToolStripMenuItem.Size = new System.Drawing.Size(200, 22);
+            this.сенитьПользователяToolStripMenuItem.Text = "Сменить пользователя";
             // 
             // toolStripMenuItem2
             // 
@@ -160,7 +160,7 @@
             this.выбратьToolStripMenuItem,
             this.создатьToolStripMenuItem});
             this.проектToolStripMenuItem.Name = "проектToolStripMenuItem";
-            this.проектToolStripMenuItem.Size = new System.Drawing.Size(191, 22);
+            this.проектToolStripMenuItem.Size = new System.Drawing.Size(200, 22);
             this.проектToolStripMenuItem.Text = "Файл";
             this.проектToolStripMenuItem.Click += new System.EventHandler(this.ToolStripMenuProject_Click);
             // 
@@ -181,21 +181,21 @@
             // задачиToolStripMenuItem
             // 
             this.задачиToolStripMenuItem.Name = "задачиToolStripMenuItem";
-            this.задачиToolStripMenuItem.Size = new System.Drawing.Size(191, 22);
+            this.задачиToolStripMenuItem.Size = new System.Drawing.Size(200, 22);
             this.задачиToolStripMenuItem.Text = "Задачи";
             this.задачиToolStripMenuItem.Click += new System.EventHandler(this.задачиToolStripMenuItem_Click);
             // 
             // menuPersons
             // 
             this.menuPersons.Name = "menuPersons";
-            this.menuPersons.Size = new System.Drawing.Size(191, 22);
+            this.menuPersons.Size = new System.Drawing.Size(200, 22);
             this.menuPersons.Text = "Исполнители";
             this.menuPersons.Click += new System.EventHandler(this.toolStripMenuItem2_Click);
             // 
             // нерабочиеДниToolStripMenuItem
             // 
             this.нерабочиеДниToolStripMenuItem.Name = "нерабочиеДниToolStripMenuItem";
-            this.нерабочиеДниToolStripMenuItem.Size = new System.Drawing.Size(191, 22);
+            this.нерабочиеДниToolStripMenuItem.Size = new System.Drawing.Size(200, 22);
             this.нерабочиеДниToolStripMenuItem.Text = "Нерабочие дни";
             this.нерабочиеДниToolStripMenuItem.Click += new System.EventHandler(this.нерабочиеДниToolStripMenuItem_Click);
             // 
@@ -231,7 +231,7 @@
             this.plPersonButton.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(240)))), ((int)(((byte)(240)))), ((int)(((byte)(240)))));
             this.plPersonButton.Location = new System.Drawing.Point(11, 85);
             this.plPersonButton.Name = "plPersonButton";
-            this.plPersonButton.Size = new System.Drawing.Size(200, 629);
+            this.plPersonButton.Size = new System.Drawing.Size(200, 624);
             this.plPersonButton.TabIndex = 4;
             this.plPersonButton.Scroll += new System.Windows.Forms.ScrollEventHandler(this.plPersonButton_Scroll);
             // 

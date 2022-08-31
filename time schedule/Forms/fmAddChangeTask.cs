@@ -398,6 +398,7 @@ namespace time_schedule
             Task task = new Task();
             if (CreateOrChange == CreateOrChange.Create)
             {
+              
                 task = GetTaskForCreateChange(Program.ListTasksAllPersonToSave.GetNextNumForTask());
                 task.GetTreeProjects().SetTreeViewProjects(TreeProjects.ListTreeNode);
                 Program.ListTasksAllPersonToSave.AddTask(task);

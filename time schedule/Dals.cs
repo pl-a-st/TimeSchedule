@@ -159,7 +159,7 @@ namespace time_schedule {
         }
         public static Type binReadFileToObject <Type>(Type serObject, string fullPathFileName) {
         BinaryFormatter bf = new BinaryFormatter();
-            //serObject = default(Type);
+            serObject = default(Type);
             try {
                 using (FileStream stream = new FileStream(fullPathFileName, FileMode.Open)) {
                     
