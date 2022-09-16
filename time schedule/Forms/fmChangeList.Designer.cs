@@ -41,6 +41,7 @@ namespace time_schedule.Forms {
             // 
             // btnChange
             // 
+            this.btnChange.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.btnChange.Location = new System.Drawing.Point(261, 82);
             this.btnChange.Name = "btnChange";
             this.btnChange.Size = new System.Drawing.Size(142, 29);
@@ -51,6 +52,7 @@ namespace time_schedule.Forms {
             // 
             // btnDelete
             // 
+            this.btnDelete.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.btnDelete.Location = new System.Drawing.Point(261, 47);
             this.btnDelete.Name = "btnDelete";
             this.btnDelete.Size = new System.Drawing.Size(142, 29);
@@ -61,6 +63,7 @@ namespace time_schedule.Forms {
             // 
             // btnNew
             // 
+            this.btnNew.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.btnNew.Location = new System.Drawing.Point(261, 12);
             this.btnNew.Name = "btnNew";
             this.btnNew.Size = new System.Drawing.Size(142, 29);
@@ -70,8 +73,9 @@ namespace time_schedule.Forms {
             // 
             // lBx
             // 
-            this.lBx.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left)));
+            this.lBx.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.lBx.FormattingEnabled = true;
             this.lBx.Location = new System.Drawing.Point(12, 12);
             this.lBx.Name = "lBx";
@@ -90,6 +94,7 @@ namespace time_schedule.Forms {
             // 
             // groupBox1
             // 
+            this.groupBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.groupBox1.Controls.Add(this.lblReplace);
             this.groupBox1.Controls.Add(this.btnDown);
             this.groupBox1.Controls.Add(this.btnUp);
@@ -120,6 +125,7 @@ namespace time_schedule.Forms {
             // 
             // btnApply
             // 
+            this.btnApply.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.btnApply.Location = new System.Drawing.Point(62, 250);
             this.btnApply.Name = "btnApply";
             this.btnApply.Size = new System.Drawing.Size(142, 29);
@@ -130,6 +136,7 @@ namespace time_schedule.Forms {
             // 
             // btnCancel
             // 
+            this.btnCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.btnCancel.Location = new System.Drawing.Point(228, 250);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(142, 29);
@@ -180,5 +187,6 @@ namespace time_schedule.Forms {
         public GroupBox GroupBox1 { get => groupBox1; set => groupBox1 = value; }
         public Label LblReplace { get => lblReplace; set => lblReplace = value; }
         public Button BtnDown { get => btnDown; set => btnDown = value; }
+        public Button BtnApply { get => btnApply; set => btnApply = value; }
     }
 }

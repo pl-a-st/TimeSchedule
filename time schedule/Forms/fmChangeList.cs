@@ -74,25 +74,26 @@ namespace time_schedule.Forms {
         }
 
         private void btnDelete_Click(object sender, EventArgs e) {
-            lBx.Items.RemoveAt(lBx.SelectedIndex);
+            if (lBx.SelectedIndex != -1) {
+                lBx.Items.RemoveAt(lBx.SelectedIndex);
+            }
         }
-
         private void btnCancel_Click(object sender, EventArgs e) {
             this.Close();
         }
-
         private void btnChange_Click(object sender, EventArgs e) {
-            fmInpootText fm = new fmInpootText();
-            fm.Text = "Ввод имени настроек";
-            fm.GetLabel().Text = "Измените имя";
-            fm.GetTextBox().Text = LBx.SelectedItem.ToString();
-            fm.GetBtnYes().Text = "Ок";
-            fm.ShowDialog();
-            if (fm.ChoiceIsMade == ChoiceIsMade.yes) {
-                lBx.Items[lBx.SelectedIndex] = fm.GetTextBox().Text;
-                ListStringNumChange[LBx.SelectedIndex].SetStr(fm.GetTextBox().Text);
+            if (LBx.SelectedIndex != -1) {
+                fmInpootText fm = new fmInpootText();
+                fm.Text = "Ввод имени настроек";
+                fm.GetLabel().Text = "Измените имя";
+                fm.GetTextBox().Text = LBx.SelectedItem.ToString();
+                fm.GetBtnYes().Text = "Ок";
+                fm.ShowDialog();
+                if (fm.ChoiceIsMade == ChoiceIsMade.yes) {
+                    lBx.Items[lBx.SelectedIndex] = fm.GetTextBox().Text;
+                    ListStringNumChange[LBx.SelectedIndex].SetStr(fm.GetTextBox().Text);
+                }
             }
-            
         }
     }
 }

@@ -36,7 +36,11 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup>
-    <ApplicationIcon>favicon2.ico</ApplicationIcon>
+    <ApplicationIcon>favicon %285%29.ico</ApplicationIcon>
+  </PropertyGroup>
+  <PropertyGroup>
+    <Win32Resource>
+    </Win32Resource>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Syroot.KnownFolders, Version=1.3.0.0, Culture=neutral, processorArchitecture=MSIL">
@@ -223,6 +227,8 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="favicon %285%29.ico" />
+    <Content Include="favicon.ico" />
     <Content Include="favicon2.ico" />
     <None Include="Resources\kisspng-computer-icons-electronic-filter-low-pass-filter-5af607c33d0303.5914893915260732832499.png" />
     <None Include="Resources\фильтр3.png" />

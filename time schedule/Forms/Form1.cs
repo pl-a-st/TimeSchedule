@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Drawing;
 using System.Threading;
 using System.Windows.Forms;
 using System.IO;
 using time_schedule.Forms;
+
 
 
 namespace time_schedule {
@@ -295,10 +297,10 @@ namespace time_schedule {
             form1.BeginInvoke(new Action(delegate () { LoadRefreshForm(fmProgressBar); }));
         }
         private void LoadAllPools() {
-            if (File.Exists(Dals.TakeMainPath(Constants.TASKS_BIN))) {
+            if (File.Exists(Dals.TakeMainPathFile(Constants.TASKS_BIN))) {
                 Program.ListTasksAllPersonToSave = Dals.binReadFileToObject(
                     Program.ListTasksAllPersonToSave,
-                    Dals.TakeMainPath(Constants.TASKS_BIN));
+                    Dals.TakeMainPathFile(Constants.TASKS_BIN));
             }
             else {
                 Program.ListTasksAllPersonToSave.SetTasksFromList(Dals.ReadListFromMainPathFile(Constants.TASKS));
@@ -306,10 +308,10 @@ namespace time_schedule {
             Program.ListTasksAllPersonToShow.SetTasks(GetProjectEntryTasks(Program.ListTasksAllPersonToSave.Tasks));
             if (cBxShowTask.Text == cBxShowTask.Items[0].ToString())
                 Program.ListTasksAllPersonToShow.SetTasks(GetRelevantTasks(Program.ListTasksAllPersonToShow.Tasks));
-            if (File.Exists(Dals.TakeMainPath(Constants.TASKS_BIN))) {
+            if (File.Exists(Dals.TakeMainPathFile(Constants.TASKS_BIN))) {
                 Program.listPersons = Dals.binReadFileToObject(
                     Program.listPersons,
-                    Dals.TakeMainPath(Constants.PERSONS_BIN));
+                    Dals.TakeMainPathFile(Constants.PERSONS_BIN));
             }
             else {
                 Program.listPersons.SetPersonsFromList(
@@ -324,10 +326,10 @@ namespace time_schedule {
                 this);
             int maxButtonLocationY = SetMaxLocationAndAddPersonButton(ref Program.ListPersonButton);
             pBForLine.Height = maxButtonLocationY;
-            if (File.Exists(Dals.TakeMainPath(Constants.HOLYDAYS_BIN))) {
+            if (File.Exists(Dals.TakeMainPathFile(Constants.HOLYDAYS_BIN))) {
                 Program.ListHolidays = Dals.binReadFileToObject(
                     Program.ListHolidays,
-                    Dals.TakeMainPath(Constants.HOLYDAYS_BIN));
+                    Dals.TakeMainPathFile(Constants.HOLYDAYS_BIN));
             }
             else {
                 Program.ListHolidays.SetHolidaysFromList(
@@ -970,6 +972,55 @@ namespace time_schedule {
             }
             fm.LBx.Items.AddRange(listString.ToArray());
         }
+
+        private void восстановлениеЗадачToolStripMenuItem_Click(object sender, EventArgs e) {
+            fmChangeList fm = new fmChangeList();
+            fm.Text = "Файлы";
+            fm.StartPosition = FormStartPosition.CenterParent;
+            fm.TopMost = true;
+            fm.BtnChange.Visible = false;
+            fm.BtnNew.Visible = false;
+            fm.BtnDelete.Visible = false;
+            fm.LblReplace.Visible = false;
+            fm.BtnUp.Visible = false;
+            fm.BtnDown.Visible = false;
+            fm.BtnApply.Text = "Восстановить";
+            fm.BtnApply.Enabled = false;
+            fm.GroupBox1.Visible = false;
+            fm.LBx.Width = fm.Width - fm.LBx.Location.X * 3;
+            List<string> stringsToShow = new List<string>();
+            FileSystemInfo[] backUpsFiles = new DirectoryInfo(Dals.TakeBackUpPathDirectory(Constants.TASKS_BIN)).GetFileSystemInfos();
+            backUpsFiles = backUpsFiles.OrderBy(fi => fi.CreationTime).ToArray();
+
+            foreach (FileSystemInfo backUp in backUpsFiles) {
+                stringsToShow.Add(backUp.Name.Replace('_', ':'));
+            }
+            stringsToShow.Reverse();
+            fm.LBx.Items.AddRange(stringsToShow.ToArray());
+            fm.LBx.Click += LBx_Click;
+            void LBx_Click(object newSender, EventArgs newE) {
+                if (fm.LBx.SelectedIndex != -1) {
+                    fm.BtnApply.Enabled = true;
+                }
+                if (fm.LBx.SelectedIndex == -1) {
+                    fm.BtnApply.Enabled = false;
+                }
+            }
+            fm.ShowDialog();
+            if (fm.BtnClick == BtnClick.aplly) {
+                string fileName = Dals.TakeBackUpPathDirectory(Constants.TASKS_BIN);
+                fileName += "\\" + fm.LBx.SelectedItem.ToString().Replace(':', '_');
+
+                Program.ListTasksAllPersonToSave = Dals.binReadFileToObject(
+                    Program.ListTasksAllPersonToSave,
+                    fileName);
+                Dals.WriteObjectToMainPathFile(Constants.TASKS_BIN, Program.ListTasksAllPersonToSave);
+                Program.fmMain.LoadRefreshForm(Statuses.ProgressBar.Use);
+            }
+
+        }
+
+
     }
 
 }

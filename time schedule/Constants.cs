@@ -26,5 +26,6 @@ namespace time_schedule
         public const int MIN_ROW_HIGHT = 2;
         public const int PERSON_BUTTON_WITH = 100;
         public const int LINE_HIGHT =2;
+        public const int MAX_BACKUP_FILESES = 100;
     }
 }

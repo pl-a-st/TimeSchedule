@@ -12,7 +12,7 @@ using Syroot.Windows.IO;
 
 
 namespace time_schedule {
-   
+
     public class Dals {
         public static string ProjectFolderPath { get; private set; }
         public static void SetProjectFolderPath(string projectFolder) {
@@ -47,9 +47,9 @@ namespace time_schedule {
                     ChooseFolderWritePath(targetFolderName, folderBrowserDialog);
                     return;
                 }
-                    
+
                 if (workWithProject == Statuses.WorkWithProject.LoadProject) {
-                    
+
                     fmMainPathChoise fmProjectChoise = new fmMainPathChoise();
                     fmProjectChoise.ShowDialog();
                     if (fmProjectChoise.SetTBxAddress().Text == "" ||
@@ -61,7 +61,7 @@ namespace time_schedule {
                     WritePaht(folderPath);
                     return;
                 }
-                  WritePaht("Проект");  
+                WritePaht("Проект");
             }
             catch {
                 MessageBox.Show("Не удалось произвести запись в файл: " + Constants.PROJECT_FILE_NAME);
@@ -75,7 +75,7 @@ namespace time_schedule {
                 streamWriter.Close();
             }
             catch {
-                
+
             }
         }
         public static void WriteListtFileAppend(string fileName, List<string> listForWrite) {
@@ -91,18 +91,26 @@ namespace time_schedule {
             }
         }
         public static void WriteObjectToFile(string fileName, List<string> listForWrite) {
-            fileName = TakeMainPath(fileName);
+            fileName = TakeMainPathFile(fileName);
             WriteListtFileAppend(fileName, listForWrite);
         }
         public static void WriteObjectToMainPathFile<Type>(string fileName, Type serObject) {
-            fileName = TakeMainPath(fileName);
+            fileName = TakeMainPathFile(fileName);
             binWriteObjectToFile(serObject, fileName);
+        }
+        public static void WriteObjectToBackUpPathFile<Type>(string DirectoryName, Type serObject) {
+            string fileNameToSave = TakeBackUpPathFile(DirectoryName);
+            binWriteObjectToFile(serObject, fileNameToSave);
+            while(new DirectoryInfo(TakeBackUpPathDirectory(DirectoryName)).GetFileSystemInfos().Length > Constants.MAX_BACKUP_FILESES) {
+                FileSystemInfo fileToDelete = new DirectoryInfo(TakeBackUpPathDirectory(DirectoryName)).GetFileSystemInfos().OrderBy(fi => fi.CreationTime).First();
+                fileToDelete?.Delete();
+            }
         }
         public static void WriteObjectToUserPathFile<Type>(string fileName, Type serObject) {
             fileName = TakeUserPath(fileName);
             binWriteObjectToFile(serObject, fileName);
         }
-        public static string TakeMainPath(string fileName) {
+        public static string TakeMainPathFile(string fileName) {
             if (ProjectFolderPath == null || ProjectFolderPath == string.Empty)
                 ProjectFolderPath = "Проект";
             else {
@@ -114,12 +122,31 @@ namespace time_schedule {
             }
             return fileName;
         }
+        public static string TakeBackUpPathFile(string fileNameToBuckUp) {
+            if (ProjectFolderPath == null || ProjectFolderPath == string.Empty)
+                ProjectFolderPath = "Проект";
+            if (!Directory.Exists(ProjectFolderPath + "\\BackUp\\" + fileNameToBuckUp)) {
+                Directory.CreateDirectory(ProjectFolderPath + "\\BackUp\\" + fileNameToBuckUp);
+            }
+            fileNameToBuckUp = ProjectFolderPath + "\\BackUp\\" + fileNameToBuckUp + "\\" + DateTime.Now.ToString ("G").Replace(':', '_') +' '+ Environment.UserName;
+            return fileNameToBuckUp;
+        }
+        public static string TakeBackUpPathDirectory(string fileName) {
+            string directory;
+            if (ProjectFolderPath == null || ProjectFolderPath == string.Empty)
+                ProjectFolderPath = "Проект";
+            if (!Directory.Exists(ProjectFolderPath + "\\BackUp\\" + fileName)) {
+                Directory.CreateDirectory(ProjectFolderPath + "\\BackUp\\" + fileName);
+            }
+            directory = ProjectFolderPath + "\\BackUp\\" + fileName;
+            return directory;
+        }
         public static string TakeUserPath(string fileName) {
             string path = Environment.GetFolderPath(Environment.SpecialFolder.Personal) + "\\Time schedule\\";
             if (!Directory.Exists(path)) {
                 Directory.CreateDirectory(path);
             }
-            return path+ fileName;
+            return path + fileName;
         }
         public static void binWriteObjectToFile<Type>(Type serObject, string fileName) {
             try {
@@ -141,7 +168,7 @@ namespace time_schedule {
                 StreamReader streamReader = new StreamReader(fileName);
                 while (!streamReader.EndOfStream) {
                     string stringToWrite = streamReader.ReadLine();
-                    if (stringToWrite!="")
+                    if (stringToWrite != "")
                         listFromFile.Add(stringToWrite);
                 }
                 streamReader.Close();
@@ -152,17 +179,17 @@ namespace time_schedule {
             return listFromFile;
         }
         public static Type binReadMainPathFileToObject<Type>(Type serObject, string fileName) {
-            return binReadFileToObject(serObject, Dals.TakeMainPath(fileName));
+            return binReadFileToObject(serObject, Dals.TakeMainPathFile(fileName));
         }
         public static Type binReadUserPathFileToObject<Type>(Type serObject, string fileName) {
             return binReadFileToObject(serObject, Dals.TakeUserPath(fileName));
         }
-        public static Type binReadFileToObject <Type>(Type serObject, string fullPathFileName) {
-        BinaryFormatter bf = new BinaryFormatter();
-            serObject = default(Type);
+        public static Type binReadFileToObject<Type>(Type serObject, string fullPathFileName) {
+            BinaryFormatter bf = new BinaryFormatter();
+            //serObject = default(Type);
             try {
                 using (FileStream stream = new FileStream(fullPathFileName, FileMode.Open)) {
-                    
+
                     serObject = (Type)bf.Deserialize(stream);
 
                     return serObject;
@@ -173,23 +200,23 @@ namespace time_schedule {
                 return serObject;
             }
         }
-    
+
         private static void MessageAboutProblem(string fileName) {
-            if (fileName.Contains(Constants.PERSONS)||
+            if (fileName.Contains(Constants.PERSONS) ||
                 fileName.Contains(Constants.PERSONS_BIN)) {
                 MessageBox.Show("В текущем проекте не создано ни одного исполнителя!", "");
                 return;
             }
-            if (fileName.Contains(Constants.TASKS)||
+            if (fileName.Contains(Constants.TASKS) ||
                 fileName.Contains(Constants.TASKS_BIN)) {
                 MessageBox.Show("В текущем проекте не создано ни одной задачи!", "");
                 return;
             }
-            if (fileName.Contains(Constants.HOLYDAYS)||
+            if (fileName.Contains(Constants.HOLYDAYS) ||
                 fileName.Contains(Constants.HOLYDAYS_BIN)) {
-                
-                
-                MessageBox.Show( "В текущем проекте не занесены праздничные дни!","");
+
+
+                MessageBox.Show("В текущем проекте не занесены праздничные дни!", "");
                 return;
             }
             MessageBox.Show("Не удалось зачитать файл " + fileName, "");
@@ -212,14 +239,14 @@ namespace time_schedule {
             return listFromFile;
         }
         public static List<string> ReadListFromMainPathFile(string fileName) {
-            if (ProjectFolderPath!=null && ProjectFolderPath!=string.Empty)
+            if (ProjectFolderPath != null && ProjectFolderPath != string.Empty)
                 fileName = ProjectFolderPath + "\\" + fileName;
             return ReadListFromFile(fileName);
         }
         public static void ExelWriteListTasks(string pathFileToSave, ListTasks listTasks) {
             string pathModelFileName = Dals.ProjectFolderPath + "\\шаблон.xlsm";
             Excel.Application excelApp = new Excel.Application();
-            Excel.Workbook workbook=null;
+            Excel.Workbook workbook = null;
             OpenWorkBook(ref excelApp, ref workbook, pathModelFileName);
             SaveWorkBook(ref workbook, pathFileToSave);
             const int FIRST_SHEET = 1;
@@ -245,7 +272,7 @@ namespace time_schedule {
             streamWriter.Close();
         }
 
-        private static void SaveWorkBook (ref Excel.Workbook workbook, string pathFileToSave) {
+        private static void SaveWorkBook(ref Excel.Workbook workbook, string pathFileToSave) {
             try {
                 workbook.SaveAs(pathFileToSave);
                 MessageBox.Show("Файл будет сохранен по адресу: " + pathFileToSave);
@@ -255,14 +282,14 @@ namespace time_schedule {
                     ". Заполнение будет произведено в файл шаблона. Необходимо его сохранить самстоятельно",
                     "Проблема", MessageBoxButtons.OK, MessageBoxIcon.Error,
                     MessageBoxDefaultButton.Button1, MessageBoxOptions.ServiceNotification);
-               
+
                 workbook.Save();
             }
 
         }
         private static void OpenWorkBook(
-            ref Excel.Application excelApp, 
-            ref Excel.Workbook workbook, 
+            ref Excel.Application excelApp,
+            ref Excel.Workbook workbook,
             string pathModelFile) {
             try {
                 if (File.Exists(pathModelFile)) {
@@ -283,7 +310,7 @@ namespace time_schedule {
                         " или проблемы с самим приложением");
                     return;
                 }
-                
+
             }
         }
         private static void WorksheetWriteListTasks(Excel.Worksheet worksheet, ListTasks listTasks) {
@@ -297,13 +324,13 @@ namespace time_schedule {
             const int FIRST_ROW_TO_WRITE = 2;
             int i = FIRST_ROW_TO_WRITE;
             foreach (Task task in listTasks.Tasks) {
-                worksheet.Cells[i , COLUMN_TASK_NAME].Value = task.Name;
-                worksheet.Cells[i , COLUMN_NUMBER_TASK].Value = task.Number;
-                worksheet.Cells[i , COlUMN_DATE_START].Value = task.DateStart;
-                worksheet.Cells[i , COLUMN_DATE_FINISH].Value = task.DateFinish;
-                worksheet.Cells[i , COLUMN_COUNT_WORKING].Value = task.CountWorkingDays;
-                worksheet.Cells[i , COLUMN_PERSON_NAME].Value = task.PersonFamaly;
-                worksheet.Cells[i , COLUMN_TASK_AFTER].Value = task.TaskNumberAfter;
+                worksheet.Cells[i, COLUMN_TASK_NAME].Value = task.Name;
+                worksheet.Cells[i, COLUMN_NUMBER_TASK].Value = task.Number;
+                worksheet.Cells[i, COlUMN_DATE_START].Value = task.DateStart;
+                worksheet.Cells[i, COLUMN_DATE_FINISH].Value = task.DateFinish;
+                worksheet.Cells[i, COLUMN_COUNT_WORKING].Value = task.CountWorkingDays;
+                worksheet.Cells[i, COLUMN_PERSON_NAME].Value = task.PersonFamaly;
+                worksheet.Cells[i, COLUMN_TASK_AFTER].Value = task.TaskNumberAfter;
                 i++;
             }
         }

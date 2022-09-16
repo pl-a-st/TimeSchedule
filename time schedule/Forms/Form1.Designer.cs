@@ -44,6 +44,7 @@
             this.задачиToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuPersons = new System.Windows.Forms.ToolStripMenuItem();
             this.нерабочиеДниToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.восстановлениеЗадачToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.cBxShowTask = new System.Windows.Forms.ToolStripComboBox();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.plPersonButton = new System.Windows.Forms.Panel();
@@ -125,6 +126,7 @@
             this.задачиToolStripMenuItem,
             this.menuPersons,
             this.нерабочиеДниToolStripMenuItem,
+            this.восстановлениеЗадачToolStripMenuItem,
             this.cBxShowTask});
             this.toolStripMenuItem1.ForeColor = System.Drawing.SystemColors.ActiveCaptionText;
             this.toolStripMenuItem1.Name = "toolStripMenuItem1";
@@ -198,6 +200,13 @@
             this.нерабочиеДниToolStripMenuItem.Size = new System.Drawing.Size(200, 22);
             this.нерабочиеДниToolStripMenuItem.Text = "Нерабочие дни";
             this.нерабочиеДниToolStripMenuItem.Click += new System.EventHandler(this.нерабочиеДниToolStripMenuItem_Click);
+            // 
+            // восстановлениеЗадачToolStripMenuItem
+            // 
+            this.восстановлениеЗадачToolStripMenuItem.Name = "восстановлениеЗадачToolStripMenuItem";
+            this.восстановлениеЗадачToolStripMenuItem.Size = new System.Drawing.Size(200, 22);
+            this.восстановлениеЗадачToolStripMenuItem.Text = "Восстановление задач";
+            this.восстановлениеЗадачToolStripMenuItem.Click += new System.EventHandler(this.восстановлениеЗадачToolStripMenuItem_Click);
             // 
             // cBxShowTask
             // 
@@ -428,6 +437,7 @@
         private System.Windows.Forms.Label lblProjects;
         private System.Windows.Forms.ToolStripComboBox cBxShowTask;
         private System.Windows.Forms.Button btnSetings;
+        private System.Windows.Forms.ToolStripMenuItem восстановлениеЗадачToolStripMenuItem;
     }
 }
 

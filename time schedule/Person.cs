@@ -953,6 +953,7 @@ namespace time_schedule
         private void Button_MouseLeave(object sender, EventArgs e) {
             
             if (isDown && Program.UserType==UserType.Admin) {
+                Dals.WriteObjectToBackUpPathFile(Constants.TASKS_BIN, Program.ListTasksAllPersonToSave);
                 Program.fmMain.SetPlMain().VerticalScroll.Value = Program.fmMain.SetForm1().VerticalScrollValue;
                 Program.fmMain.SetPlMain().VerticalScroll.Value = Program.fmMain.SetForm1().VerticalScrollValue;
                 (PersonButton, DateTime) PDT = SetNewDateAndPerson(

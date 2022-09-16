@@ -386,7 +386,7 @@ namespace time_schedule
             if (IsTBxTaskNameEmpty())
                 return;
             Program.ListTasksAllPersonToSave.Tasks.Clear();
-            string fullFileName = Dals.TakeMainPath(Constants.TASKS_BIN);
+            string fullFileName = Dals.TakeMainPathFile(Constants.TASKS_BIN);
             if (File.Exists(fullFileName)){
                 Program.ListTasksAllPersonToSave = Dals.binReadFileToObject(
                     Program.ListTasksAllPersonToSave, fullFileName);
@@ -394,7 +394,7 @@ namespace time_schedule
             else {
                 Program.ListTasksAllPersonToSave.SetTasksFromList(Dals.ReadListFromMainPathFile(Constants.TASKS));
             }
-            
+            Dals.WriteObjectToBackUpPathFile(Constants.TASKS_BIN, Program.ListTasksAllPersonToSave);
             Task task = new Task();
             if (CreateOrChange == CreateOrChange.Create)
             {
@@ -625,7 +625,7 @@ namespace time_schedule
             }
             if(CreateOrChange == CreateOrChange.Create ||
                 CreateOrChange == CreateOrChange.ChangeToSelect) {
-                string fullFileName = Dals.TakeMainPath(Constants.PROJECTS_LIST);
+                string fullFileName = Dals.TakeMainPathFile(Constants.PROJECTS_LIST);
                 TreeProjects.GetTreeFromFile();
 
                 fmProjectTree.SetTreeView(TreeProjects);
