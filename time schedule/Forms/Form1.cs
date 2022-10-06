@@ -69,8 +69,6 @@ namespace time_schedule {
             return (maxDateTime - MaxDateFinish).Days;
         }
         public void LoadRefreshForm() {
-
-
             ChangePanelVisibility(Statuses.Visibility.Invisible);
             SaveScrolls();
             if (CalcDivDays() < 0) {
@@ -78,7 +76,7 @@ namespace time_schedule {
             }
             FormReadyToBeAddedControl = Statuses.FormReadyToBeAddedControl.NotReady;
             plForDate.Enabled = false;
-            CleanOldExemplars(); // 245 мс
+            ClearOldExemplars(); // 245 мс
             ClearAllPools();
             LoadAllPools();
             LoadTextBoxWithDate(); //281 мс
@@ -158,7 +156,7 @@ namespace time_schedule {
         public int GetPersonButtonWith() {
             return plMain.Location.X - plPersonButton.Location.X - 2;
         }
-        private void CleanOldExemplars() {
+        private void ClearOldExemplars() {
 
             for (int i = 0; i < plMain.Controls.Count; i++) {
                 if (plMain.Controls[i] is Button) {

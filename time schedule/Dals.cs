@@ -101,7 +101,7 @@ namespace time_schedule {
         public static void WriteObjectToBackUpPathFile<Type>(string DirectoryName, Type serObject) {
             string fileNameToSave = TakeBackUpPathFile(DirectoryName);
             binWriteObjectToFile(serObject, fileNameToSave);
-            while(new DirectoryInfo(TakeBackUpPathDirectory(DirectoryName)).GetFileSystemInfos().Length > Constants.MAX_BACKUP_FILESES) {
+            while (new DirectoryInfo(TakeBackUpPathDirectory(DirectoryName)).GetFileSystemInfos().Length > Constants.MAX_BACKUP_FILESES) {
                 FileSystemInfo fileToDelete = new DirectoryInfo(TakeBackUpPathDirectory(DirectoryName)).GetFileSystemInfos().OrderBy(fi => fi.CreationTime).First();
                 fileToDelete?.Delete();
             }
@@ -128,7 +128,7 @@ namespace time_schedule {
             if (!Directory.Exists(ProjectFolderPath + "\\BackUp\\" + fileNameToBuckUp)) {
                 Directory.CreateDirectory(ProjectFolderPath + "\\BackUp\\" + fileNameToBuckUp);
             }
-            fileNameToBuckUp = ProjectFolderPath + "\\BackUp\\" + fileNameToBuckUp + "\\" + DateTime.Now.ToString ("G").Replace(':', '_') +' '+ Environment.UserName;
+            fileNameToBuckUp = ProjectFolderPath + "\\BackUp\\" + fileNameToBuckUp + "\\" + DateTime.Now.ToString("G").Replace(':', '_') + ' ' + Environment.UserName;
             return fileNameToBuckUp;
         }
         public static string TakeBackUpPathDirectory(string fileName) {
@@ -154,14 +154,13 @@ namespace time_schedule {
                 using (FileStream stream = new FileStream(fileName, FileMode.Create)) {
                     bf.Serialize(stream, serObject);
                 }
+                return;
             }
             catch {
-                MessageBox.Show("Не удалось произвести запись в файл: " + fileName);
             }
+            MessageBox.Show("Не удалось произвести запись в файл: " + fileName);
             return;
         }
-
-
         public static List<string> ReadListFromFile(string fileName) {
             List<string> listFromFile = new List<string>();
             if (File.Exists(fileName)) {
@@ -187,20 +186,19 @@ namespace time_schedule {
         public static Type binReadFileToObject<Type>(Type serObject, string fullPathFileName) {
             BinaryFormatter bf = new BinaryFormatter();
             //serObject = default(Type);
-            try {
-                using (FileStream stream = new FileStream(fullPathFileName, FileMode.Open)) {
-
-                    serObject = (Type)bf.Deserialize(stream);
-
+            for(int i = 0; i < Constants.COUNT_OF_TRIES; i++) {
+                try {
+                    using (FileStream stream = new FileStream(fullPathFileName, FileMode.Open)) {
+                        serObject = (Type)bf.Deserialize(stream);
+                    }
                     return serObject;
                 }
+                catch {
+                }
             }
-            catch {
-                MessageAboutProblem(fullPathFileName);
-                return serObject;
-            }
+            MessageAboutProblem(fullPathFileName);
+            return serObject;
         }
-
         private static void MessageAboutProblem(string fileName) {
             if (fileName.Contains(Constants.PERSONS) ||
                 fileName.Contains(Constants.PERSONS_BIN)) {
