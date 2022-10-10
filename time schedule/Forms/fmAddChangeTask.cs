@@ -595,11 +595,11 @@ namespace time_schedule {
             newFmAddChangeTask.BeginInvoke(new Action(delegate () { newFmAddChangeTask.WtriteComboBox(); }));
         }
         private void WtriteComboBox() {
-
             if (Program.UserType == UserType.Admin && IsFirstClickCmBxPerson) {
                 //cmBxPerson.BeginUpdate();
                 cmBxPerson.AutoCompleteMode = AutoCompleteMode.SuggestAppend;
                 cmBxPerson.AutoCompleteSource = AutoCompleteSource.ListItems;
+                Persons.Clear();
                 foreach (Person person in Program.listPersons.Persons) {
                     //cmBxPerson.Items.Add(person.PersonFamaly);
                     Persons.Add(person.PersonFamaly);
@@ -609,7 +609,6 @@ namespace time_schedule {
                 IsFirstClickCmBxPerson = false;
             }
         }
-
         private void fmAddChangeTask_Activated(object sender, EventArgs e) {
 
         }
