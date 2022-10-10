@@ -11,35 +11,33 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 //using System.Drawing.Color;
 
-namespace time_schedule
-{
-    enum TypeStartWork
-    {
+namespace time_schedule {
+    enum TypeStartWork {
         DateStart,
         TaskBefor
     }
-    public enum CreateOrChange
-    {
+    public enum CreateOrChange {
         Create,
         Change,
-        ChangeToSelect
+        ChangeToSelectTasks
     }
-    public partial class fmAddChangeTask : Form
-    {
+    public partial class fmAddChangeTask : Form {
         Task thisTask = new Task();
         private DateTime FinishDateBeforeChange;
         LoadRefreshForm thisloadRefreshForm;
         public TreeProjects TreeProjects {
             get; private set;
         } = new TreeProjects();
-        public CreateOrChange CreateOrChange 
-        { get; private set; }
+        public CreateOrChange CreateOrChange { get; private set; }
         public ClickButton ClickButton {
             get; private set;
         } = ClickButton.Cancel;
-        public fmAddChangeTask(LoadRefreshForm loadRefreshForm)
-        {
-            
+        private static List<string> Persons {
+            get; set;
+        } = new List<string>();
+        bool IsFirstClickCmBxPerson = true;
+        public fmAddChangeTask(LoadRefreshForm loadRefreshForm) {
+
             InitializeComponent();
             thisloadRefreshForm = loadRefreshForm;
         }
@@ -58,60 +56,48 @@ namespace time_schedule
         public TextBox GetProject() {
             return tBxProjects;
         }
-        public void SetCreateOrChange (CreateOrChange createOrChange)
-        {
+        public void SetCreateOrChange(CreateOrChange createOrChange) {
             CreateOrChange = createOrChange;
         }
 
-        private void radioButton1_CheckedChanged(object sender, EventArgs e)
-        {
-            if (rBnWorksDay.Checked)
-            {
+        private void radioButton1_CheckedChanged(object sender, EventArgs e) {
+            if (rBnWorksDay.Checked) {
                 nUpDnCounWorkDay.Enabled = true;
                 dTmTaskDateFinish.Enabled = false;
             }
-            if (!rBnWorksDay.Checked)
-            {
+            if (!rBnWorksDay.Checked) {
                 nUpDnCounWorkDay.Enabled = false;
                 dTmTaskDateFinish.Enabled = true;
             }
             WorkDaysDatesCalculate();
         }
-        private void ControlToReadOnly(Control control)
-        {
+        private void ControlToReadOnly(Control control) {
             if (control is Button || control is RadioButton)
                 control.Enabled = false;
             if (control is TextBox)
                 (control as TextBox).ReadOnly = true;
-            if (control is NumericUpDown)
-            {
+            if (control is NumericUpDown) {
                 (control as NumericUpDown).ReadOnly = true;
                 (control as NumericUpDown).Increment = 0;
             }
-            if (control is DateTimePicker)
-            {
+            if (control is DateTimePicker) {
                 (control as DateTimePicker).Enabled = false;
             }
-            if (control is ComboBox && control != cmBxTaskStatus)
-            {
+            if (control is ComboBox && control != cmBxTaskStatus) {
                 (control as ComboBox).DropDownStyle = ComboBoxStyle.DropDownList;
-                for (int i=0; i< (control as ComboBox).Items.Count;i++)
-                {
-                    if ((control as ComboBox).Items[i].ToString() != (control as ComboBox).Text)
-                    {
+                for (int i = 0; i < (control as ComboBox).Items.Count; i++) {
+                    if ((control as ComboBox).Items[i].ToString() != (control as ComboBox).Text) {
                         (control as ComboBox).Items.RemoveAt(i);
                         i--;
                     }
-                }   
+                }
             }
-            if (control is GroupBox)
-            {
-                foreach (Control controlInGbx in (control as GroupBox).Controls)
-                {
+            if (control is GroupBox) {
+                foreach (Control controlInGbx in (control as GroupBox).Controls) {
                     ControlToReadOnly(controlInGbx);
                 }
             }
-                
+
         }
         private void ControlToNotEnabled(Control control) {
             if (control is RadioButton)
@@ -134,19 +120,16 @@ namespace time_schedule
             }
 
         }
-        private void fmAddTask_Load(object sender, EventArgs e)
-        {
-            //this.TopLevel = true;
-            this.TopMost = true;
-           
+
+        private void fmAddTask_Load(object sender, EventArgs e) {
+            Thread thread = new Thread(WtriteComboBoxThread);
+            thread.Start(this);
             foreach (int element in Enum.GetValues(typeof(TaskStatusRus))) {
                 cmBxTaskStatus.Items.Add(((TaskStatusRus)element).ToString().Replace('_', ' '));
             }
-            if (CreateOrChange != CreateOrChange.ChangeToSelect) {
+            if (CreateOrChange != CreateOrChange.ChangeToSelectTasks) {
                 FinishDateBeforeChange = Program.ListTasksAllPersonToSave.GetMaxDateFinishTasks();
-                foreach (Person person in Program.listPersons.Persons) {
-                    cmBxPerson.Items.Add(person.PersonFamaly);
-                }
+
                 bTnColor.FlatStyle = FlatStyle.Flat;
                 if (CreateOrChange == CreateOrChange.Change) {
                     thisloadRefreshForm?.Invoke();
@@ -163,13 +146,11 @@ namespace time_schedule
                     btnCancel.Enabled = true;
                 }
             }
-            if (CreateOrChange == CreateOrChange.ChangeToSelect) {
+            if (CreateOrChange == CreateOrChange.ChangeToSelectTasks) {
                 foreach (Control control in this.Controls) {
                     ControlToNotEnabled(control);
                 }
-                foreach (Person person in Program.listPersons.Persons) {
-                    cmBxPerson.Items.Add(person.PersonFamaly);
-                }
+
                 TreeProjects.GetTreeFromFile();
                 AddCheckBoxForEnabled(cmBxTaskStatus);
                 AddCheckBoxForEnabled(nUpDnPrioirity);
@@ -180,12 +161,18 @@ namespace time_schedule
                 btnCopyAnotherProject.Enabled = false;
             }
             PushTBxProjects();
+            this.TopMost = true;
         }
+        delegate void WriteCmBx();
+        private void WriteToCmBxPerson(ComboBox comboBox, string[] stringArray) {
+            comboBox.Items.AddRange(stringArray);
+        }
+
         private void PushTBxProjects() {
             tBxProjects.Clear();
             foreach (TreeNode treeNode in TreeProjects.ListTreeNode) {
                 if (treeNode.Checked) {
-                    tBxProjects.Text += "<"+treeNode.Text + "> ";
+                    tBxProjects.Text += "<" + treeNode.Text + "> ";
                     break;
                 }
                 PushTBxProjects(treeNode);
@@ -194,20 +181,20 @@ namespace time_schedule
         private void PushTBxProjects(TreeNode treeNode) {
             foreach (TreeNode chTreeNode in treeNode.Nodes) {
                 if (chTreeNode.Checked) {
-                    tBxProjects.Text += "<"+chTreeNode.Text + "> ";
+                    tBxProjects.Text += "<" + chTreeNode.Text + "> ";
                 }
                 else {
                     PushTBxProjects(chTreeNode);
                 }
             }
-            
+
         }
         private void AddCheckBoxForEnabled(Control control) {
             CheckBox checkBox = new CheckBox();
             checkBox.Text = string.Empty;
-            
+
             checkBox.Width = 13;
-            control.Width -= (checkBox.Width+5);
+            control.Width -= (checkBox.Width + 5);
             checkBox.Location = new Point(
                 control.Location.X + control.Width + 5,
                 control.Location.Y);
@@ -223,10 +210,9 @@ namespace time_schedule
             }
         }
 
-        
 
-        private void LoadFmAddTaskToCreateTask()
-        {
+
+        private void LoadFmAddTaskToCreateTask() {
             if (cmBxTaskStatus.Items.Count > 0)
                 cmBxTaskStatus.Text = cmBxTaskStatus.Items[0].ToString();
             if (cmBxPerson.Items.Count > 0)
@@ -239,29 +225,27 @@ namespace time_schedule
             tBxPreviousTask.Enabled = false;
             bTnColor.BackColor = Program.TaskColor;
             TreeProjects.GetTreeFromFile();
-            
+
         }
-        private void LoadFmAddTaskToCangeTask()
-        {
+        private void LoadFmAddTaskToCangeTask() {
             nUpDnTaskNumber.Visible = true;
             nUpDnTaskNumber.Value = Program.Task.Number;
             lBlTaskNum.Visible = true;
             tBxTaskName.Text = Program.Task.Name;
             bTnColor.BackColor = Program.Task.Color;
+            cmBxPerson.Items.Add(Program.Task.PersonFamaly);
             cmBxPerson.Text = Program.Task.PersonFamaly;
             cmBxTaskStatus.Text = (
                 (TaskStatusRus)Enum.Parse(
                     typeof(TaskStatus),
                     Program.Task.Status.ToString(),
                     true)
-                ).ToString().Replace('_',' ');
+                ).ToString().Replace('_', ' ');
             nUpDnPreviousTask.Value = Program.Task.TaskNumberAfter;
             rBnDayStart.Checked = true;
-            nUpDnPrioirity.Value= Program.Task.Priority;
-            if (nUpDnPreviousTask.Value>0)
-            {
-                foreach (Task task in Program.ListTasksAllPersonToSave.Tasks)
-                {
+            nUpDnPrioirity.Value = Program.Task.Priority;
+            if (nUpDnPreviousTask.Value > 0) {
+                foreach (Task task in Program.ListTasksAllPersonToSave.Tasks) {
                     if (nUpDnPreviousTask.Value == task.Number)
                         tBxPreviousTask.Text = task.Name;
                 }
@@ -273,40 +257,33 @@ namespace time_schedule
             dTmTaskDateFinish.Value = Program.Task.DateFinish.Date;
             TreeProjects.GetTreeFromTask(Program.Task);
         }
-        public void WorkDaysDatesCalculate()
-        {
-            if (rBnDayFinish.Checked)
-            {
+        public void WorkDaysDatesCalculate() {
+            if (rBnDayFinish.Checked) {
                 thisTask = new Task(dTmTaskDateStart.Value.Date, dTmTaskDateFinish.Value.Date);
                 nUpDnCounWorkDay.Value = thisTask.CountWorkingDays;
             }
-            if (rBnWorksDay.Checked)
-            {
+            if (rBnWorksDay.Checked) {
                 thisTask = new Task(dTmTaskDateStart.Value.Date, Convert.ToInt32(nUpDnCounWorkDay.Value));
                 dTmTaskDateFinish.Value = thisTask.DateFinish;
             }
         }
-        private void dTTaskDateStart_ValueChanged(object sender, EventArgs e)
-        {
-            
+        private void dTTaskDateStart_ValueChanged(object sender, EventArgs e) {
+
             Program.listNonWorkingDays.NonWorkDaysWrite(
                 dTmTaskDateStart.Value.Date,
                 dTmTaskDateFinish.Value.Date
                 );
             WorkDaysDatesCalculate();
         }
-        private void taskDateFinishCalculate()
-        {
+        private void taskDateFinishCalculate() {
 
         }
 
-        private void nUpDnCounWorkDay_ValueChanged(object sender, EventArgs e)
-        {
+        private void nUpDnCounWorkDay_ValueChanged(object sender, EventArgs e) {
             WorkDaysDatesCalculate();
         }
 
-        private void dTmTaskDateFinish_ValueChanged(object sender, EventArgs e)
-        {
+        private void dTmTaskDateFinish_ValueChanged(object sender, EventArgs e) {
             Program.listNonWorkingDays.NonWorkDaysWrite(
                 dTmTaskDateStart.Value.Date,
                 dTmTaskDateFinish.Value.Date
@@ -314,20 +291,16 @@ namespace time_schedule
             WorkDaysDatesCalculate();
         }
 
-        private void rBnDayStart_CheckedChanged(object sender, EventArgs e)
-        {
+        private void rBnDayStart_CheckedChanged(object sender, EventArgs e) {
 
         }
 
-        private void rBnDayFinish_CheckedChanged(object sender, EventArgs e)
-        {
+        private void rBnDayFinish_CheckedChanged(object sender, EventArgs e) {
 
         }
 
-        private void rBtPreviousTask_CheckedChanged(object sender, EventArgs e)
-        {
-            if (rBnDayStart.Checked)
-            {
+        private void rBtPreviousTask_CheckedChanged(object sender, EventArgs e) {
+            if (rBnDayStart.Checked) {
                 dTmTaskDateStart.Enabled = true;
                 nUpDnPreviousTask.Value = 0;
                 tBxPreviousTask.Text = string.Empty;
@@ -335,17 +308,15 @@ namespace time_schedule
                 nUpDnPreviousTask.Enabled = false;
                 nUpDnPreviousTask.Enabled = false;
             }
-            if (!rBnDayStart.Checked)
-            {
+            if (!rBnDayStart.Checked) {
                 btnPreviousTask.Enabled = true;
                 dTmTaskDateStart.Enabled = false;
             }
         }
-        private void bTnColor_Click(object sender, EventArgs e)
-        {
+        private void bTnColor_Click(object sender, EventArgs e) {
             ColorDialog colorDialog1 = new ColorDialog();
             colorDialog1.AllowFullOpen = true;
-            colorDialog1.CustomColors = new int[] { 
+            colorDialog1.CustomColors = new int[] {
                 ToInt(Color.FromArgb(169,208,142)),
                 ToInt(Color.FromArgb(248,203,173)),
                 ToInt(Color.FromArgb(132,151,176)),
@@ -357,14 +328,12 @@ namespace time_schedule
                 ToInt(Color.FromArgb(221,235,247)),
                 };
             colorDialog1.SolidColorOnly = true;
-            if (colorDialog1.ShowDialog() != DialogResult.Cancel)
-            {
+            if (colorDialog1.ShowDialog() != DialogResult.Cancel) {
                 bTnColor.BackColor = colorDialog1.Color;
                 Program.TaskColor = colorDialog1.Color;
             }
         }
-        static int ToInt(Color c)
-        {
+        static int ToInt(Color c) {
             return c.R + c.G * 0x100 + c.B * 0x10000;
         }
         private void WriteNewNonWorkigDays() {
@@ -374,12 +343,11 @@ namespace time_schedule
                 return;
             const int DIFFRENCE_QUANTITY_LAST_INDEX = 1;
             int lastIndex = Program.listNonWorkingDays.NonWorkingDays.Count - DIFFRENCE_QUANTITY_LAST_INDEX;
-            DateTime newMaxDateFinish = 
+            DateTime newMaxDateFinish =
                 Program.listNonWorkingDays.NonWorkingDays[lastIndex].AddDays(newCountDaysAfterChange);
             Program.listNonWorkingDays.NonWorkDaysWrite(FinishDateBeforeChange, newMaxDateFinish);
         }
-        private void btnCreateTask_Click(object sender, EventArgs e)
-        {
+        private void btnCreateTask_Click(object sender, EventArgs e) {
 
             this.TopMost = false;
             ClickButton = ClickButton.Aplly;
@@ -387,7 +355,7 @@ namespace time_schedule
                 return;
             Program.ListTasksAllPersonToSave.Tasks.Clear();
             string fullFileName = Dals.TakeMainPathFile(Constants.TASKS_BIN);
-            if (File.Exists(fullFileName)){
+            if (File.Exists(fullFileName)) {
                 Program.ListTasksAllPersonToSave = Dals.binReadFileToObject(
                     Program.ListTasksAllPersonToSave, fullFileName);
             }
@@ -396,43 +364,38 @@ namespace time_schedule
             }
             Dals.WriteObjectToBackUpPathFile(Constants.TASKS_BIN, Program.ListTasksAllPersonToSave);
             Task task = new Task();
-            if (CreateOrChange == CreateOrChange.Create)
-            {
-              
+            if (CreateOrChange == CreateOrChange.Create) {
+
                 task = GetTaskForCreateChange(Program.ListTasksAllPersonToSave.GetNextNumForTask());
                 task.GetTreeProjects().SetTreeViewProjects(TreeProjects.ListTreeNode);
                 Program.ListTasksAllPersonToSave.AddTask(task);
-            }  
-            if (CreateOrChange == CreateOrChange.Change)
-            {
+            }
+            if (CreateOrChange == CreateOrChange.Change) {
                 WriteNewNonWorkigDays();
                 task = GetTaskForCreateChange(Convert.ToInt32(nUpDnTaskNumber.Value));
                 task.GetTreeProjects().SetTreeViewProjects(TreeProjects.ListTreeNode);
-                for (int i=0; i<Program.ListTasksAllPersonToSave.Tasks.Count; i++)
-                {
-                    if (Program.ListTasksAllPersonToSave.Tasks[i].Number == nUpDnTaskNumber.Value)
-                    {
+                for (int i = 0; i < Program.ListTasksAllPersonToSave.Tasks.Count; i++) {
+                    if (Program.ListTasksAllPersonToSave.Tasks[i].Number == nUpDnTaskNumber.Value) {
                         bool needToCheck = false;
-                        if (Program.ListTasksAllPersonToSave.Tasks[i].DateFinish.Date != task.DateFinish.Date)
-                        {
+                        if (Program.ListTasksAllPersonToSave.Tasks[i].DateFinish.Date != task.DateFinish.Date) {
                             needToCheck = true;
                         }
                         Program.ListTasksAllPersonToSave.Tasks[i] = task;
                         if (needToCheck)
                             ChekTaskAfter(Program.ListTasksAllPersonToSave.Tasks[i]);
-                    }    
+                    }
                 }
             }
-            
+
             //Dals.WriteObjectToFile(Constants.TASKS, Program.ListTasksAllPerson.GetListForSave());
             Dals.WriteObjectToMainPathFile(Constants.TASKS_BIN, Program.ListTasksAllPersonToSave);
             Dals.WriteObjectToMainPathFile(Constants.PERSONS_BIN, Program.listPersons);
             Program.fmMain.LoadRefreshForm(Statuses.ProgressBar.Use);
-           
+
             this.Close();
         }
         private Boolean IsTBxTaskNameEmpty() {
-            if (tBxTaskName.Text == "" && CreateOrChange!=CreateOrChange.ChangeToSelect) {
+            if (tBxTaskName.Text == "" && CreateOrChange != CreateOrChange.ChangeToSelectTasks) {
                 MessageBox.Show(
                     "Использвание пустых наименований задач недопустимо!",
                     "Предупреждение",
@@ -442,29 +405,25 @@ namespace time_schedule
             }
             return false;
         }
-        private void ChekTaskAfter(Task task)
-        {
-            for (int i=0;i<Program.ListTasksAllPersonToSave.Tasks.Count; i++)
-            {
-                if (Program.ListTasksAllPersonToSave.Tasks[i].TaskNumberAfter==task.Number)
-                {
+        private void ChekTaskAfter(Task task) {
+            for (int i = 0; i < Program.ListTasksAllPersonToSave.Tasks.Count; i++) {
+                if (Program.ListTasksAllPersonToSave.Tasks[i].TaskNumberAfter == task.Number) {
                     Program.ListTasksAllPersonToSave.Tasks[i].ChangeDatesAndCountDays(
-                        Task.GetDateFinish(task.DateFinish,2),
+                        Task.GetDateFinish(task.DateFinish, 2),
                         Program.ListTasksAllPersonToSave.Tasks[i].CountWorkingDays
                         ); // Magic number 2 to do
                     ChekTaskAfter(Program.ListTasksAllPersonToSave.Tasks[i]);
                 }
             }
         }
-        private Task GetTaskForCreateChange(long numTask)
-        {
+        private Task GetTaskForCreateChange(long numTask) {
             TaskStatus taskStatus =
                 (TaskStatus)Enum.Parse(
                                         typeof(TaskStatusRus),
-                                        cmBxTaskStatus.Text.Replace(' ','_'),
+                                        cmBxTaskStatus.Text.Replace(' ', '_'),
                                         true
                                         );
-            return  new Task
+            return new Task
                 (
                 taskStatus,
                 tBxTaskName.Text,
@@ -479,77 +438,65 @@ namespace time_schedule
                 Convert.ToInt32(nUpDnPrioirity.Value)
                 );
         }
-        private void cmBxPerson_SelectedIndexChanged(object sender, EventArgs e)
-        {
+        private void cmBxPerson_SelectedIndexChanged(object sender, EventArgs e) {
 
         }
 
-        private void btnPreviousTask_Click(object sender, EventArgs e)
-        {
+        private void btnPreviousTask_Click(object sender, EventArgs e) {
             fmSelectTask fmSelectTask = new fmSelectTask();
             fmSelectTask.ShowDialog();
             nUpDnPreviousTask.Value = Program.Task.Number;
             tBxPreviousTask.Text = Program.Task.Name;
-            if (nUpDnPreviousTask.Value != 0)
-            {
+            if (nUpDnPreviousTask.Value != 0) {
                 dTmTaskDateStart.Value = Task.GetDateFinish(Program.Task.DateFinish.Date, 2);
             }
         }
 
-        private void button1_Click(object sender, EventArgs e)
-        {
+        private void button1_Click(object sender, EventArgs e) {
             this.TopMost = false;
             this.Close();
         }
 
-        private void nUpDnCounWorkDay_KeyUp(object sender, KeyEventArgs e)
-        {
+        private void nUpDnCounWorkDay_KeyUp(object sender, KeyEventArgs e) {
             WorkDaysDatesCalculate();
         }
 
-        private void label8_Click(object sender, EventArgs e)
-        {
+        private void label8_Click(object sender, EventArgs e) {
 
         }
 
-        private void addPerson_Click(object sender, EventArgs e)
-        {
+        private void addPerson_Click(object sender, EventArgs e) {
             fmAddPerson fmAddPerson = new fmAddPerson();
-            
+
             fmAddPerson.ShowDialog();
-            
+
             cmBxPerson.Items.Clear();
-            foreach (Person person in Program.listPersons.Persons)
-            {
+            foreach (Person person in Program.listPersons.Persons) {
                 cmBxPerson.Items.Add(person.PersonFamaly);
             }
             if (fmAddPerson.CreatePerson == CreatePerson.yes)
                 cmBxPerson.Text = fmAddPerson.GetPersonName();
         }
 
-        private void fmAddTask_FormClosed(object sender, FormClosedEventArgs e)
-        {
-          
+        private void fmAddTask_FormClosed(object sender, FormClosedEventArgs e) {
+
         }
 
-        private void btnCopyAnotherMainPath_Click(object sender, EventArgs e)
-        {
+        private void btnCopyAnotherMainPath_Click(object sender, EventArgs e) {
             fmMainPathChoise fmMainPathCopy = new fmMainPathChoise();
             fmMainPathCopy.ShowDialog();
             if (fmMainPathCopy.SetTBxAddress().Text == "" ||
                 fmMainPathCopy.SetTBxAddress().Text == null ||
-                fmMainPathCopy.ChoiceIsMade == ChoiceIsMade.no)
-            {
+                fmMainPathCopy.ChoiceIsMade == ChoiceIsMade.no) {
                 return;
             }
             string folderName = fmMainPathCopy.SetTBxAddress().Text;
             //string targetFolderName = "Проект";
-            try
-            { 
+            try {
                 Task task = new Task();
                 ListTasks listTasks = new ListTasks();
                 string textForError = "Не удалось записать задачу в файл проекта.";
-                if(File.Exists(folderName + "\\" + Constants.TASKS_BIN)) {
+                if (File.Exists(folderName + "\\" + Constants.TASKS_BIN)) {
                     listTasks = Dals.binReadFileToObject(listTasks, folderName + "\\" + Constants.TASKS_BIN);
                 }
                 else {
@@ -569,23 +516,18 @@ namespace time_schedule
                 }
                 string personFamaly = "Нераспределено";
                 bool isPersonHas = false;
-                foreach (Person person in listPersons.Persons)
-                {
-                    if (person.PersonFamaly== personFamaly)
-                    {
+                foreach (Person person in listPersons.Persons) {
+                    if (person.PersonFamaly == personFamaly) {
                         isPersonHas = true;
                         break;
                     }
                 }
-                if(!isPersonHas)
-                {
+                if (!isPersonHas) {
                     Person person = new Person(personFamaly);
                     listPersons.Persons.Add(person);
                 }
-                foreach (Person person in listPersons.Persons)
-                {
-                    if (person.PersonFamaly == task.PersonFamaly)
-                    {
+                foreach (Person person in listPersons.Persons) {
+                    if (person.PersonFamaly == task.PersonFamaly) {
                         personFamaly = task.PersonFamaly;
                         break;
                     }
@@ -601,8 +543,7 @@ namespace time_schedule
                 MessageBox.Show("Задача успешно скопирована.");
                 Program.fmMain.LoadRefreshForm(Statuses.ProgressBar.Use);
             }
-            catch
-            {
+            catch {
                 MessageBox.Show("Не удалось произвести запись в файл: " + folderName + "\\" + Constants.TASKS);
             }
         }
@@ -610,8 +551,8 @@ namespace time_schedule
         private void button2_Click(object sender, EventArgs e) {
             fmProjectTree fmProjectTree = new fmProjectTree();
             fmProjectTree.StartPosition = FormStartPosition.CenterParent;
-            
-            
+
+
             if (CreateOrChange == CreateOrChange.Change) {
                 //TreeProjects.SetTreeViewProjects(Program.Task.TreeProjects.TreeViewProjects);
                 fmProjectTree.SetTreeView(TreeProjects);//2c
@@ -621,10 +562,10 @@ namespace time_schedule
                     TreeProjects.SetTreeViewProjects(fmProjectTree.projectTreeView);
                     TreeProjects.SaveTree();
                 }
-                    
+
             }
-            if(CreateOrChange == CreateOrChange.Create ||
-                CreateOrChange == CreateOrChange.ChangeToSelect) {
+            if (CreateOrChange == CreateOrChange.Create ||
+                CreateOrChange == CreateOrChange.ChangeToSelectTasks) {
                 string fullFileName = Dals.TakeMainPathFile(Constants.PROJECTS_LIST);
                 TreeProjects.GetTreeFromFile();
 
@@ -635,9 +576,42 @@ namespace time_schedule
                     TreeProjects.SetTreeViewProjects(fmProjectTree.projectTreeView);
                     TreeProjects.SaveTree();
                 }
-                    
+
             }
             PushTBxProjects();
+        }
+
+        private void cmBxPerson_KeyUp(object sender, KeyEventArgs e) {
+        }
+
+        private void cmBxPerson_Click(object sender, EventArgs e) {
+        }
+
+        private void fmAddChangeTask_Shown(object sender, EventArgs e) {
+
+        }
+        private void WtriteComboBoxThread(object fmAddChangeTask) {
+            fmAddChangeTask newFmAddChangeTask = (fmAddChangeTask as fmAddChangeTask);
+            newFmAddChangeTask.BeginInvoke(new Action(delegate () { newFmAddChangeTask.WtriteComboBox(); }));
+        }
+        private void WtriteComboBox() {
+
+            if (Program.UserType == UserType.Admin && IsFirstClickCmBxPerson) {
+                //cmBxPerson.BeginUpdate();
+                cmBxPerson.AutoCompleteMode = AutoCompleteMode.SuggestAppend;
+                cmBxPerson.AutoCompleteSource = AutoCompleteSource.ListItems;
+                foreach (Person person in Program.listPersons.Persons) {
+                    //cmBxPerson.Items.Add(person.PersonFamaly);
+                    Persons.Add(person.PersonFamaly);
+                }
+                WriteToCmBxPerson(cmBxPerson, Persons.ToArray());
+                //cmBxPerson.EndUpdate();
+                IsFirstClickCmBxPerson = false;
+            }
+        }
+
+        private void fmAddChangeTask_Activated(object sender, EventArgs e) {
+
         }
     }
 }

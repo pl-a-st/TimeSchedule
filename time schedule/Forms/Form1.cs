@@ -863,8 +863,8 @@ namespace time_schedule {
             TreeProjects treeProjects = new TreeProjects();
             treeProjects.SetTreeViewProjects(fmProjectTree.projectTreeView);
             if (fmProjectTree.ClickButton == ClickButton.Aplly) {
-                cBxSeetingsProgects.Items.Clear();
-                cBxSeetingsProgects.Text = "";
+                cBxSeetingsProjects.Items.Clear();
+                cBxSeetingsProjects.Text = "";
                 treeProjects.SaveTree();
                 treeProjects.SaveSettingsTree();
                 ZeroingScrolss();
@@ -886,15 +886,17 @@ namespace time_schedule {
         }
 
         private void comboBox1_Click(object sender, EventArgs e) {
-            cBxSeetingsProgects.Items.Clear();
-            cBxSeetingsProgects.Text = "";
+            cBxSeetingsProjects.Items.Clear();
+            cBxSeetingsProjects.Text = "";
             string fileName = Dals.ProjectFolderPath.Replace('\\', '_');
             fileName = fileName.Replace(':', '+');
             List<TreeProjects> listTreeProject = new List<TreeProjects>();
             listTreeProject = Dals.binReadUserPathFileToObject(listTreeProject, fileName);
+            List<string> projectNames = new List<string>();
             foreach (TreeProjects treeProjects in listTreeProject) {
-                cBxSeetingsProgects.Items.Add(treeProjects.GetName());
+                projectNames.Add(treeProjects.GetName());
             }
+            cBxSeetingsProjects.Items.AddRange(projectNames.ToArray());
         }
         private void cBxSeetingsProgects_SelectedIndexChanged(object sender, EventArgs e) {
             string fileName = Dals.ProjectFolderPath.Replace('\\', '_');
@@ -902,7 +904,7 @@ namespace time_schedule {
             List<TreeProjects> listTreeProject = new List<TreeProjects>();
             listTreeProject = Dals.binReadUserPathFileToObject(listTreeProject, fileName);
             foreach (TreeProjects treeProjects in listTreeProject) {
-                if (treeProjects.GetName() == cBxSeetingsProgects.SelectedItem.ToString()) {
+                if (treeProjects.GetName() == cBxSeetingsProjects.SelectedItem.ToString()) {
                     treeProjects.SaveSettingsTree();
 
                 }

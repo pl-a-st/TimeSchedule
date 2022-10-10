@@ -430,7 +430,7 @@ namespace time_schedule {
         private void ChangeSelectTasks_Click(object sender, EventArgs e) {
             fmAddChangeTask fmChangeTask = new fmAddChangeTask(Program.delegatLoadRefreshForm);
             fmChangeTask.GhangeNamebtnCreateTask("Изменить для \n выбранных задач");
-            fmChangeTask.SetCreateOrChange(CreateOrChange.ChangeToSelect);
+            fmChangeTask.SetCreateOrChange(CreateOrChange.ChangeToSelectTasks);
             fmChangeTask.ShowDialog();
             if (fmChangeTask.ClickButton == ClickButton.Aplly) {
                 foreach (string itemLbx in lBxTasks.Items) {

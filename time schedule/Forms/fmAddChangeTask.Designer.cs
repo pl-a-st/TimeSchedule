@@ -81,13 +81,14 @@
             // 
             // cmBxPerson
             // 
-            this.cmBxPerson.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmBxPerson.FormattingEnabled = true;
             this.cmBxPerson.Location = new System.Drawing.Point(12, 108);
             this.cmBxPerson.Name = "cmBxPerson";
             this.cmBxPerson.Size = new System.Drawing.Size(239, 21);
             this.cmBxPerson.TabIndex = 1;
             this.cmBxPerson.SelectedIndexChanged += new System.EventHandler(this.cmBxPerson_SelectedIndexChanged);
+            this.cmBxPerson.Click += new System.EventHandler(this.cmBxPerson_Click);
+            this.cmBxPerson.KeyUp += new System.Windows.Forms.KeyEventHandler(this.cmBxPerson_KeyUp);
             // 
             // label2
             // 
@@ -473,8 +474,10 @@
             this.Name = "fmAddChangeTask";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Добавление задачи";
+            this.Activated += new System.EventHandler(this.fmAddChangeTask_Activated);
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.fmAddTask_FormClosed);
             this.Load += new System.EventHandler(this.fmAddTask_Load);
+            this.Shown += new System.EventHandler(this.fmAddChangeTask_Shown);
             ((System.ComponentModel.ISupportInitialize)(this.nUpDnCounWorkDay)).EndInit();
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();

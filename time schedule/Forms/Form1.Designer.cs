@@ -55,7 +55,7 @@
             this.timer1 = new System.Windows.Forms.Timer(this.components);
             this.btnRefresh = new System.Windows.Forms.Button();
             this.button1 = new System.Windows.Forms.Button();
-            this.cBxSeetingsProgects = new System.Windows.Forms.ComboBox();
+            this.cBxSeetingsProjects = new System.Windows.Forms.ComboBox();
             this.lblProjects = new System.Windows.Forms.Label();
             this.btnSetings = new System.Windows.Forms.Button();
             this.plMain.SuspendLayout();
@@ -340,13 +340,13 @@
             // 
             // cBxSeetingsProgects
             // 
-            this.cBxSeetingsProgects.FormattingEnabled = true;
-            this.cBxSeetingsProgects.Location = new System.Drawing.Point(44, 27);
-            this.cBxSeetingsProgects.Name = "cBxSeetingsProgects";
-            this.cBxSeetingsProgects.Size = new System.Drawing.Size(135, 21);
-            this.cBxSeetingsProgects.TabIndex = 11;
-            this.cBxSeetingsProgects.SelectedIndexChanged += new System.EventHandler(this.cBxSeetingsProgects_SelectedIndexChanged);
-            this.cBxSeetingsProgects.Click += new System.EventHandler(this.comboBox1_Click);
+            this.cBxSeetingsProjects.FormattingEnabled = true;
+            this.cBxSeetingsProjects.Location = new System.Drawing.Point(44, 27);
+            this.cBxSeetingsProjects.Name = "cBxSeetingsProgects";
+            this.cBxSeetingsProjects.Size = new System.Drawing.Size(135, 21);
+            this.cBxSeetingsProjects.TabIndex = 11;
+            this.cBxSeetingsProjects.SelectedIndexChanged += new System.EventHandler(this.cBxSeetingsProgects_SelectedIndexChanged);
+            this.cBxSeetingsProjects.Click += new System.EventHandler(this.comboBox1_Click);
             // 
             // lblProjects
             // 
@@ -377,7 +377,7 @@
             this.ClientSize = new System.Drawing.Size(1171, 820);
             this.Controls.Add(this.btnSetings);
             this.Controls.Add(this.lblProjects);
-            this.Controls.Add(this.cBxSeetingsProgects);
+            this.Controls.Add(this.cBxSeetingsProjects);
             this.Controls.Add(this.button1);
             this.Controls.Add(this.minusFiveDay);
             this.Controls.Add(this.dateTimePicker1);
@@ -433,7 +433,7 @@
         private System.Windows.Forms.ToolStripMenuItem выбратьToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem создатьToolStripMenuItem;
         private System.Windows.Forms.Button button1;
-        private System.Windows.Forms.ComboBox cBxSeetingsProgects;
+        private System.Windows.Forms.ComboBox cBxSeetingsProjects;
         private System.Windows.Forms.Label lblProjects;
         private System.Windows.Forms.ToolStripComboBox cBxShowTask;
         private System.Windows.Forms.Button btnSetings;
