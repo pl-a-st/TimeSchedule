@@ -148,18 +148,18 @@ namespace time_schedule {
             }
             return path + fileName;
         }
-        public static void binWriteObjectToFile<Type>(Type serObject, string fileName) {
+        public static MethodResultStatus binWriteObjectToFile<Type>(Type serObject, string fileName) {
             try {
                 BinaryFormatter bf = new BinaryFormatter();
                 using (FileStream stream = new FileStream(fileName, FileMode.Create)) {
                     bf.Serialize(stream, serObject);
                 }
-                return;
+                return MethodResultStatus.Ok;
             }
             catch {
             }
             MessageBox.Show("Не удалось произвести запись в файл: " + fileName);
-            return;
+            return MethodResultStatus.Fault;
         }
         public static List<string> ReadListFromFile(string fileName) {
             List<string> listFromFile = new List<string>();

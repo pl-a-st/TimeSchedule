@@ -122,8 +122,7 @@ namespace time_schedule {
         }
 
         private void fmAddTask_Load(object sender, EventArgs e) {
-            Thread thread = new Thread(WtriteComboBoxThread);
-            thread.Start(this);
+            
             foreach (int element in Enum.GetValues(typeof(TaskStatusRus))) {
                 cmBxTaskStatus.Items.Add(((TaskStatusRus)element).ToString().Replace('_', ' '));
             }
@@ -146,6 +145,8 @@ namespace time_schedule {
                     btnCancel.Enabled = true;
                 }
             }
+            Thread thread = new Thread(WtriteComboBoxThread);
+            thread.Start(this);
             if (CreateOrChange == CreateOrChange.ChangeToSelectTasks) {
                 foreach (Control control in this.Controls) {
                     ControlToNotEnabled(control);
@@ -592,20 +593,17 @@ namespace time_schedule {
         }
         private void WtriteComboBoxThread(object fmAddChangeTask) {
             fmAddChangeTask newFmAddChangeTask = (fmAddChangeTask as fmAddChangeTask);
-            newFmAddChangeTask.BeginInvoke(new Action(delegate () { newFmAddChangeTask.WtriteComboBox(); }));
+            newFmAddChangeTask.BeginInvoke(new Action(delegate () { newFmAddChangeTask.СustomizeСmBxPerson(); }));
         }
-        private void WtriteComboBox() {
+        private void СustomizeСmBxPerson() {
             if (Program.UserType == UserType.Admin && IsFirstClickCmBxPerson) {
-                //cmBxPerson.BeginUpdate();
                 cmBxPerson.AutoCompleteMode = AutoCompleteMode.SuggestAppend;
                 cmBxPerson.AutoCompleteSource = AutoCompleteSource.ListItems;
                 Persons.Clear();
                 foreach (Person person in Program.listPersons.Persons) {
-                    //cmBxPerson.Items.Add(person.PersonFamaly);
                     Persons.Add(person.PersonFamaly);
                 }
                 WriteToCmBxPerson(cmBxPerson, Persons.ToArray());
-                //cmBxPerson.EndUpdate();
                 IsFirstClickCmBxPerson = false;
             }
         }

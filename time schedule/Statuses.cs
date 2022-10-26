@@ -4,7 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+
 namespace time_schedule {
+    public enum MethodResultStatus {
+        Ok,
+        Fault
+    }
     [Serializable]
     public static class Statuses {
          public enum WorkWithProject {
