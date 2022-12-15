@@ -348,12 +348,44 @@ namespace time_schedule {
                 Program.listNonWorkingDays.NonWorkingDays[lastIndex].AddDays(newCountDaysAfterChange);
             Program.listNonWorkingDays.NonWorkDaysWrite(FinishDateBeforeChange, newMaxDateFinish);
         }
-        private void btnCreateTask_Click(object sender, EventArgs e) {
-
+        private void btnCreateChangeTask_Click(object sender, EventArgs e) {
             this.TopMost = false;
             ClickButton = ClickButton.Aplly;
             if (IsTBxTaskNameEmpty())
                 return;
+            ReloadListTaskToSave();
+            Dals.WriteObjectToBackUpPathFile(Constants.TASKS_BIN, Program.ListTasksAllPersonToSave);
+            Task task = new Task();
+            if (CreateOrChange == CreateOrChange.Create) {
+                task = GetTaskForCreateChange(Program.ListTasksAllPersonToSave.GetNextNumForTask());
+                task.GetTreeProjects().SetTreeViewProjects(TreeProjects.ListTreeNode);
+                Program.ListTasksAllPersonToSave.AddTask(task);
+            }
+            if (CreateOrChange == CreateOrChange.Change) {
+                WriteNewNonWorkigDays();
+                RewriteTasks();
+            }
+            Dals.WriteObjectToMainPathFile(Constants.TASKS_BIN, Program.ListTasksAllPersonToSave);
+            Dals.WriteObjectToMainPathFile(Constants.PERSONS_BIN, Program.listPersons);
+            Program.fmMain.LoadRefreshForm(Statuses.ProgressBar.Use);
+            this.Close();
+        }
+
+        private void RewriteTasks() {
+            Task task = GetTaskForCreateChange(Convert.ToInt32(nUpDnTaskNumber.Value));
+            task.GetTreeProjects().SetTreeViewProjects(TreeProjects.ListTreeNode);
+            for (int i = 0; i < Program.ListTasksAllPersonToSave.Tasks.Count; i++) {
+                if (Program.ListTasksAllPersonToSave.Tasks[i].Number == nUpDnTaskNumber.Value) {
+                    if (Program.ListTasksAllPersonToSave.Tasks[i].DateFinish.Date != task.DateFinish.Date) {
+                        ChekTaskAfter(task);
+                    }
+                    Program.ListTasksAllPersonToSave.Tasks[i] = task;
+                    break;
+                }
+            }
+        }
+
+        private static void ReloadListTaskToSave() {
             Program.ListTasksAllPersonToSave.Tasks.Clear();
             string fullFileName = Dals.TakeMainPathFile(Constants.TASKS_BIN);
             if (File.Exists(fullFileName)) {
@@ -363,38 +395,8 @@ namespace time_schedule {
             else {
                 Program.ListTasksAllPersonToSave.SetTasksFromList(Dals.ReadListFromMainPathFile(Constants.TASKS));
             }
-            Dals.WriteObjectToBackUpPathFile(Constants.TASKS_BIN, Program.ListTasksAllPersonToSave);
-            Task task = new Task();
-            if (CreateOrChange == CreateOrChange.Create) {
-
-                task = GetTaskForCreateChange(Program.ListTasksAllPersonToSave.GetNextNumForTask());
-                task.GetTreeProjects().SetTreeViewProjects(TreeProjects.ListTreeNode);
-                Program.ListTasksAllPersonToSave.AddTask(task);
-            }
-            if (CreateOrChange == CreateOrChange.Change) {
-                WriteNewNonWorkigDays();
-                task = GetTaskForCreateChange(Convert.ToInt32(nUpDnTaskNumber.Value));
-                task.GetTreeProjects().SetTreeViewProjects(TreeProjects.ListTreeNode);
-                for (int i = 0; i < Program.ListTasksAllPersonToSave.Tasks.Count; i++) {
-                    if (Program.ListTasksAllPersonToSave.Tasks[i].Number == nUpDnTaskNumber.Value) {
-                        bool needToCheck = false;
-                        if (Program.ListTasksAllPersonToSave.Tasks[i].DateFinish.Date != task.DateFinish.Date) {
-                            needToCheck = true;
-                        }
-                        Program.ListTasksAllPersonToSave.Tasks[i] = task;
-                        if (needToCheck)
-                            ChekTaskAfter(Program.ListTasksAllPersonToSave.Tasks[i]);
-                    }
-                }
-            }
-
-            //Dals.WriteObjectToFile(Constants.TASKS, Program.ListTasksAllPerson.GetListForSave());
-            Dals.WriteObjectToMainPathFile(Constants.TASKS_BIN, Program.ListTasksAllPersonToSave);
-            Dals.WriteObjectToMainPathFile(Constants.PERSONS_BIN, Program.listPersons);
-            Program.fmMain.LoadRefreshForm(Statuses.ProgressBar.Use);
-
-            this.Close();
         }
+
         private Boolean IsTBxTaskNameEmpty() {
             if (tBxTaskName.Text == "" && CreateOrChange != CreateOrChange.ChangeToSelectTasks) {
                 MessageBox.Show(

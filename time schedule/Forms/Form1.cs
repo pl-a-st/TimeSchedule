@@ -904,9 +904,11 @@ namespace time_schedule {
             List<TreeProjects> listTreeProject = new List<TreeProjects>();
             listTreeProject = Dals.binReadUserPathFileToObject(listTreeProject, fileName);
             foreach (TreeProjects treeProjects in listTreeProject) {
+                if (cBxSeetingsProjects.SelectedItem == null) {
+                    break;
+                }
                 if (treeProjects.GetName() == cBxSeetingsProjects.SelectedItem.ToString()) {
                     treeProjects.SaveSettingsTree();
-
                 }
             }
             ZeroingScrolss();

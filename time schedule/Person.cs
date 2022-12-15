@@ -929,16 +929,16 @@ namespace time_schedule
                 button.Font = new Font(button.Font.FontFamily, button.Font.Size, button.Font.Style);
                 button.ForeColor = System.Drawing.Color.DarkRed;
             }
-
             void Button_MouseDown(object sender, MouseEventArgs e) {
+                if (e.Button != MouseButtons.Left) {
+                    return;
+                }
                 Program.fmMain.SetPlForDate().HorizontalScroll.Value = Program.fmMain.SetPlMain().HorizontalScroll.Value;
                 isDown = true;
                 if (Program.UserType == UserType.Admin) {
                     Thread thread = new Thread(CursorAndWidth, 0);
                     thread.Start(button);
-                }
-
-                    
+                }   
             }
             Buttons.Add(button);
         }

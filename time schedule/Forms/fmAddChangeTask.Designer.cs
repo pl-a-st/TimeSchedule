@@ -290,7 +290,7 @@
             this.btnCreateTask.TabIndex = 14;
             this.btnCreateTask.Text = "Создать";
             this.btnCreateTask.UseVisualStyleBackColor = true;
-            this.btnCreateTask.Click += new System.EventHandler(this.btnCreateTask_Click);
+            this.btnCreateTask.Click += new System.EventHandler(this.btnCreateChangeTask_Click);
             // 
             // groupBox2
             // 
