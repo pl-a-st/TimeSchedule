@@ -373,20 +373,17 @@ namespace time_schedule {
             }
             return resultListTasks;
         }
-
         private bool IsDateSuitable(Task task) {
             return IsRelevant(task) || IsNotStarted(task) || IsOverdue(task);
         }
-
         private static bool IsRelevant(Task task) {
             return task.DateFinish >= DateTime.Now.Date.AddMonths(-1);
         }
-
+         private bool IsOverdue(Task task) {
+            return (task.DateFinish.Date < DateTime.Now.Date.AddMonths(-1)) && (task.Status != TaskStatus.Closed);
+        }
         private bool IsNotStarted(Task task) {
             return (task.DateStart.Date < DateTime.Now.Date.AddMonths(-1)) && (task.Status == TaskStatus.New);
-        }
-        private bool IsOverdue(Task task) {
-            return (task.DateFinish.Date < DateTime.Now.Date.AddMonths(-1)) && (task.Status != TaskStatus.Closed);
         }
         private static bool CheckEntryProject(TreeProjects treeProjects, TreeProjects treeTask) {
             bool isEntry = false;
