@@ -23,8 +23,8 @@ namespace time_schedule {
         //}
         public static void WriteProjectFolder(Statuses.WorkWithProject statusWorkWithProject) {
             if (statusWorkWithProject == Statuses.WorkWithProject.ProgramStarted &&
-                (!File.Exists(Constants.PROJECT_FILE_NAME) ||
-                File.ReadAllLines(Constants.PROJECT_FILE_NAME).Length == 0)) {
+                    (!File.Exists(Constants.PROJECT_FILE_NAME) ||
+                    File.ReadAllLines(Constants.PROJECT_FILE_NAME).Length == 0)) {
                 WriteMainPathFolder("Проект", statusWorkWithProject);
             }
             else {
