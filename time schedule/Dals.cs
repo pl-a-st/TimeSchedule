@@ -94,9 +94,9 @@ namespace time_schedule {
             fileName = TakeMainPathFile(fileName);
             WriteListtFileAppend(fileName, listForWrite);
         }
-        public static void WriteObjectToMainPathFile<Type>(string fileName, Type serObject) {
+        public static MethodResultStatus WriteObjectToMainPathFile<Type>(string fileName, Type serObject) {
             fileName = TakeMainPathFile(fileName);
-            binWriteObjectToFile(serObject, fileName);
+            return binWriteObjectToFile(serObject, fileName);
         }
         public static void WriteObjectToBackUpPathFile<Type>(string DirectoryName, Type serObject) {
             string fileNameToSave = TakeBackUpPathFile(DirectoryName);
@@ -158,7 +158,7 @@ namespace time_schedule {
             }
             catch {
             }
-            MessageBox.Show("Не удалось произвести запись в файл: " + fileName);
+            //MessageBox.Show("Не удалось произвести запись в файл: " + fileName);
             return MethodResultStatus.Fault;
         }
         public static List<string> ReadListFromFile(string fileName) {
@@ -186,7 +186,7 @@ namespace time_schedule {
         public static Type binReadFileToObject<Type>(Type serObject, string fullPathFileName) {
             BinaryFormatter bf = new BinaryFormatter();
             //serObject = default(Type);
-            for(int i = 0; i < Constants.COUNT_OF_TRIES; i++) {
+            for (int i = 0; i < Constants.COUNT_OF_TRIES; i++) {
                 try {
                     using (FileStream stream = new FileStream(fullPathFileName, FileMode.Open)) {
                         serObject = (Type)bf.Deserialize(stream);

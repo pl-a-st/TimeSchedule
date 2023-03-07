@@ -8,46 +8,35 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace time_schedule
-{
-    public enum CreatePerson
-    {
+namespace time_schedule {
+    public enum CreatePerson {
         yes,
         no
     }
-    public partial class fmAddPerson : Form
-    {
-        public fmAddPerson()
-        {
+    public partial class fmAddPerson : Form {
+        public fmAddPerson() {
             InitializeComponent();
         }
-        public CreatePerson CreatePerson
-        { get; private set; } = CreatePerson.no;
-        public void SetCreatePerson(CreatePerson createPerson)
-        {
+        public CreatePerson CreatePerson { get; private set; } = CreatePerson.no;
+        public void SetCreatePerson(CreatePerson createPerson) {
             CreatePerson = createPerson;
         }
-        public string GetPersonName()
-        {
+        public string GetPersonName() {
             return personName.Text;
         }
-        private void button1_Click(object sender, EventArgs e)
-        {
-            if (personName.Text == "")
-            {
-                MessageBox.Show("Не указанно имя испонителя");
+        private void btnAddPerson_Click(object sender, EventArgs e) {
+            if (personName.Text == "") {
+                MessageBox.Show("Не указанно имя испонителя!");
                 return;
             }
             Person person = new Person(personName.Text);
             Program.listPersons.AddPerson(person);
-            //Dals.WriteObjectToFile(Constants.PERSONS, Program.listPersons.GetListForSave());
             Dals.WriteObjectToMainPathFile(Constants.PERSONS_BIN, Program.listPersons);
             CreatePerson = CreatePerson.yes;
             this.Close();
         }
-        
-        private void fmAddPerson_Load(object sender, EventArgs e)
-        {
+
+        private void fmAddPerson_Load(object sender, EventArgs e) {
             this.TopMost = true;
         }
     }

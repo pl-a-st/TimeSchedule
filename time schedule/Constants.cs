@@ -28,5 +28,6 @@ namespace time_schedule
         public const int LINE_HIGHT =2;
         public const int MAX_BACKUP_FILESES = 100;
         public const int COUNT_OF_TRIES = 5;
+        
     }
 }

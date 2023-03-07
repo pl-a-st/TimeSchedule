@@ -29,7 +29,7 @@
         private void InitializeComponent()
         {
             this.personName = new System.Windows.Forms.TextBox();
-            this.button1 = new System.Windows.Forms.Button();
+            this.btnAddPerson = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
@@ -40,15 +40,15 @@
             this.personName.Size = new System.Drawing.Size(229, 20);
             this.personName.TabIndex = 0;
             // 
-            // button1
+            // btnAddPerson
             // 
-            this.button1.Location = new System.Drawing.Point(247, 37);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(75, 23);
-            this.button1.TabIndex = 1;
-            this.button1.Text = "Добавить";
-            this.button1.UseVisualStyleBackColor = true;
-            this.button1.Click += new System.EventHandler(this.button1_Click);
+            this.btnAddPerson.Location = new System.Drawing.Point(247, 37);
+            this.btnAddPerson.Name = "btnAddPerson";
+            this.btnAddPerson.Size = new System.Drawing.Size(75, 23);
+            this.btnAddPerson.TabIndex = 1;
+            this.btnAddPerson.Text = "Добавить";
+            this.btnAddPerson.UseVisualStyleBackColor = true;
+            this.btnAddPerson.Click += new System.EventHandler(this.btnAddPerson_Click);
             // 
             // label1
             // 
@@ -65,7 +65,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(334, 72);
             this.Controls.Add(this.label1);
-            this.Controls.Add(this.button1);
+            this.Controls.Add(this.btnAddPerson);
             this.Controls.Add(this.personName);
             this.Name = "fmAddPerson";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
@@ -79,7 +79,7 @@
         #endregion
 
         private System.Windows.Forms.TextBox personName;
-        private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.Button btnAddPerson;
         private System.Windows.Forms.Label label1;
     }
 }

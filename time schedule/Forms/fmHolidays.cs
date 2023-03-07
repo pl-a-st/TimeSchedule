@@ -143,10 +143,6 @@ namespace time_schedule
         {
             Program.ListHolidays.Holidays.Clear();
             Program.ListHolidays.Holidays.AddRange(CurrentListHolidays.Holidays);
-            //Dals.WriteObjectToFile(
-            //    Constants.HOLYDAYS, 
-            //    Program.ListHolidays.GetListForSave()
-            //    );
             Dals.WriteObjectToMainPathFile(Constants.HOLYDAYS_BIN, Program.ListHolidays);
             Program.listNonWorkingDays.NonWorkingDays.AddRange(Program.ListHolidays.Holidays);
             foreach (Task task in Program.ListTasksAllPersonToSave.Tasks)

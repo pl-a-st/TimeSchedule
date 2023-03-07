@@ -5,15 +5,12 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace time_schedule
-{
-    enum UserType
-    {
+namespace time_schedule {
+    enum UserType {
         Admin,
         Reader
     }
-    static class Program
-    {
+    static class Program {
         /// <summary>
         /// Главная точка входа для приложения.
         /// </summary>
@@ -24,7 +21,7 @@ namespace time_schedule
         public static ListTasks ListTasksAllPersonToShow = new ListTasks();
         public static ListPersons listPersons = new ListPersons();
         public static Task Task = new Task();
-        public static ListNonWorkingDays listNonWorkingDays= new ListNonWorkingDays();
+        public static ListNonWorkingDays listNonWorkingDays = new ListNonWorkingDays();
         public static ListHolidays ListHolidays = new ListHolidays();
         public static Color TaskColor = Color.FromArgb(132, 151, 176);
         public static ListPersonButton ListPersonButton = new ListPersonButton();
@@ -36,8 +33,7 @@ namespace time_schedule
         public static UserType UserType = UserType.Reader;
 
         [STAThread]
-        static void Main()
-        {
+        static void Main() {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new Form1());

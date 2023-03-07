@@ -306,16 +306,7 @@ namespace time_schedule {
             Program.ListTasksAllPersonToShow.SetTasks(GetProjectEntryTasks(Program.ListTasksAllPersonToSave.Tasks));
             if (cBxShowTask.Text == cBxShowTask.Items[0].ToString())
                 Program.ListTasksAllPersonToShow.SetTasks(GetRelevantTasks(Program.ListTasksAllPersonToShow.Tasks));
-            if (File.Exists(Dals.TakeMainPathFile(Constants.TASKS_BIN))) {
-                Program.listPersons = Dals.binReadFileToObject(
-                    Program.listPersons,
-                    Dals.TakeMainPathFile(Constants.PERSONS_BIN));
-            }
-            else {
-                Program.listPersons.SetPersonsFromList(
-                 Dals.ReadListFromMainPathFile(Constants.PERSONS),
-                 Program.ListTasksAllPersonToShow.Tasks);
-            }
+            ReReadListPerson();
 
             Program.ListPersonButton.LoadListPersonButtons(
                 Program.listPersons.Persons,
@@ -340,6 +331,20 @@ namespace time_schedule {
                 Program.ListTasksAllPersonToShow,
                 Program.ListPersonButton);
         }
+
+        public void ReReadListPerson() {
+            if (File.Exists(Dals.TakeMainPathFile(Constants.TASKS_BIN))) {
+                Program.listPersons = Dals.binReadFileToObject(
+                    Program.listPersons,
+                    Dals.TakeMainPathFile(Constants.PERSONS_BIN));
+            }
+            else {
+                Program.listPersons.SetPersonsFromList(
+                 Dals.ReadListFromMainPathFile(Constants.PERSONS),
+                 Program.ListTasksAllPersonToShow.Tasks);
+            }
+        }
+
         private List<Task> GetProjectEntryTasks(List<Task> tasks) {
             var resultListTasks = new List<Task>();
             TreeProjects treeProjects = new TreeProjects();

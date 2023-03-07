@@ -351,10 +351,25 @@ namespace time_schedule {
         private void btnCreateChangeTask_Click(object sender, EventArgs e) {
             this.TopMost = false;
             ClickButton = ClickButton.Aplly;
-            if (IsTBxTaskNameEmpty())
+            if (IsTBxTaskNameEmpty()) {
                 return;
+            }
             ReloadListTaskToSave();
             Dals.WriteObjectToBackUpPathFile(Constants.TASKS_BIN, Program.ListTasksAllPersonToSave);
+            for (int i = 0; i<Constants.COUNT_OF_TRIES; i++) {
+                ReloadListTaskToSave();
+                PushNewTaskInListTasks();
+                if (Dals.WriteObjectToMainPathFile(Constants.TASKS_BIN, Program.ListTasksAllPersonToSave) == MethodResultStatus.Ok) {
+                    //Dals.WriteObjectToMainPathFile(Constants.PERSONS_BIN, Program.listPersons);
+                    Program.fmMain.LoadRefreshForm(Statuses.ProgressBar.Use);
+                    this.Close();
+                    return;
+                }
+            }
+            MessageBox.Show("Не удалось записать файл Constants.TASKS_BIN");
+        }
+
+        private void PushNewTaskInListTasks() {
             Task task = new Task();
             if (CreateOrChange == CreateOrChange.Create) {
                 task = GetTaskForCreateChange(Program.ListTasksAllPersonToSave.GetNextNumForTask());
@@ -365,10 +380,6 @@ namespace time_schedule {
                 WriteNewNonWorkigDays();
                 RewriteTasks();
             }
-            Dals.WriteObjectToMainPathFile(Constants.TASKS_BIN, Program.ListTasksAllPersonToSave);
-            Dals.WriteObjectToMainPathFile(Constants.PERSONS_BIN, Program.listPersons);
-            Program.fmMain.LoadRefreshForm(Statuses.ProgressBar.Use);
-            this.Close();
         }
 
         private void RewriteTasks() {
