@@ -30,10 +30,16 @@ namespace time_schedule {
                 return;
             }
             Person person = new Person(personName.Text);
-            Program.listPersons.AddPerson(person);
-            Dals.WriteObjectToMainPathFile(Constants.PERSONS_BIN, Program.listPersons);
-            CreatePerson = CreatePerson.yes;
-            this.Close();
+            for(int i = 0; i < Constants.COUNT_OF_TRIES; i++) {
+                Program.fmMain.ReReadListPerson();
+                Program.listPersons.AddPerson(person);
+                if(Dals.WriteObjectToMainPathFile(Constants.PERSONS_BIN, Program.listPersons) == MethodResultStatus.Ok) {
+                    CreatePerson = CreatePerson.yes;
+                    this.Close();
+                    return;
+                }
+            }
+            MessageBox.Show($"Не удалось записать нового исполнителя в файл{Constants.PERSONS_BIN}!");
         }
 
         private void fmAddPerson_Load(object sender, EventArgs e) {
