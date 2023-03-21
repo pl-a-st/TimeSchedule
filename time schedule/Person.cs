@@ -955,7 +955,6 @@ namespace time_schedule
             
         }
         private void Button_MouseLeave(object sender, EventArgs e) {
-            
             if (isDown && Program.UserType==UserType.Admin) {
                 Dals.WriteObjectToBackUpPathFile(Constants.TASKS_BIN, Program.ListTasksAllPersonToSave);
                 Program.fmMain.SetPlMain().VerticalScroll.Value = Program.fmMain.SetForm1().VerticalScrollValue;
@@ -965,16 +964,12 @@ namespace time_schedule
                     Program.ListPersonButton,
                     Program.PoolTextBox);
                 if (PDT.Item1.Person!=null && PDT.Item2 != DateTime.MinValue) {
-                    //WriteNewNonWorkigDays();
                     string personFamaly = PDT.Item1.Person.PersonFamaly;
                     DateTime newDateStartTask = PDT.Item2;
-                    //MessageBox.Show("" + PDT.Item1.Person.PersonFamaly + " " + PDT.Item2);
-
                     Task.SetPersonFamaly(PDT.Item1.Person.PersonFamaly);
                     Task.ChangeDatesAndCountDays(PDT.Item2.Date, Task.CountWorkingDays);
                     Task.SetTaskNumberAfter(0);
                     ChekTaskAfter(Task);
-                    //Dals.WriteObjectToFile(Constants.TASKS, Program.ListTasksAllPerson.GetListForSave());
                     Dals.WriteObjectToMainPathFile(Constants.TASKS_BIN, Program.ListTasksAllPersonToSave);
                     Program.fmMain.SetForm1().LoadRefreshForm(Statuses.ProgressBar.Use);
                     Program.fmMain.SetForm1().SetPlMain().Focus();
