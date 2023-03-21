@@ -123,7 +123,7 @@ namespace time_schedule {
                 task.SetDateFinish();
             }
             //Dals.WriteObjectToFile(Constants.TASKS, Program.ListTasksAllPerson.GetListForSave());
-            Dals.WriteObjectToMainPathFile(Constants.TASKS_BIN, Program.ListTasksAllPersonToSave);
+            //Dals.WriteObjectToMainPathFile(Constants.TASKS_BIN, Program.ListTasksAllPersonToSave);
             thisloadRefreshForm?.Invoke();
             this.Close();
         }

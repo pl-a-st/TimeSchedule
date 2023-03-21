@@ -874,6 +874,10 @@ namespace time_schedule
             get;
             private set;
         } = false;
+        public Point MouseLocation {
+            get;
+            private set;
+        }
         public Statuses.LoadingStatus LoadingStatus {
             get; private set;
         } = Statuses.LoadingStatus.NotReady;
@@ -957,7 +961,7 @@ namespace time_schedule
                 Program.fmMain.SetPlMain().VerticalScroll.Value = Program.fmMain.SetForm1().VerticalScrollValue;
                 Program.fmMain.SetPlMain().VerticalScroll.Value = Program.fmMain.SetForm1().VerticalScrollValue;
                 (PersonButton, DateTime) PDT = SetNewDateAndPerson(
-                    Program.fmMain.PointToClient(Control.MousePosition),
+                    Program.fmMain.SetPlMain().PointToClient(MouseLocation),
                     Program.ListPersonButton,
                     Program.PoolTextBox);
                 if (PDT.Item1.Person!=null && PDT.Item2 != DateTime.MinValue) {
@@ -978,17 +982,6 @@ namespace time_schedule
             }
             isDown = false;
         }
-        //private void WriteNewNonWorkigDays() {
-        //    Program.listNonWorkingDays.NonWorkingDays.Sort();
-        //    int newCountDaysAfterChange = (dTmTaskDateFinish.Value.Date - FinishDateBeforeChange).Days;
-        //    if (newCountDaysAfterChange < 0)
-        //        return;
-        //    const int DIFFRENCE_QUANTITY_LAST_INDEX = 1;
-        //    int lastIndex = Program.listNonWorkingDays.NonWorkingDays.Count - DIFFRENCE_QUANTITY_LAST_INDEX;
-        //    DateTime newMaxDateFinish =
-        //        Program.listNonWorkingDays.NonWorkingDays[lastIndex].AddDays(newCountDaysAfterChange);
-        //    Program.listNonWorkingDays.NonWorkDaysWrite(FinishDateBeforeChange, newMaxDateFinish);
-        //}
         private void ChekTaskAfter(Task task) {
             for (int i = 0; i < Program.ListTasksAllPersonToSave.Tasks.Count; i++) {
                 if (Program.ListTasksAllPersonToSave.Tasks[i].TaskNumberAfter == task.Number) {
@@ -1001,8 +994,6 @@ namespace time_schedule
             }
         }
         private (PersonButton, DateTime) SetNewDateAndPerson(Point point, ListPersonButton listPersonButton, PoolTextBox poolTextBox) {
-            point.Y = point.Y - Program.fmMain.SetPlMain().Location.Y ;
-            point.X = point.X - Program.fmMain.SetPlMain().Location.X ; // -Program.fmMain.SetPlMain().Location.X
             var targetPersonButton = new PersonButton();
             var dateTime = DateTime.MinValue;
             foreach (PersonButton personButton in listPersonButton.PersonButtons) {
@@ -1026,6 +1017,7 @@ namespace time_schedule
             return (targetPersonButton, dateTime);
         }
         private void Button_MouseUp(object sender, MouseEventArgs e) {
+            MouseLocation = Control.MousePosition;
             Program.fmMain.Cursor = Cursors.Default;
             
         }
