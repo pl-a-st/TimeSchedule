@@ -76,10 +76,10 @@ namespace time_schedule {
             }
             FormReadyToBeAddedControl = Statuses.FormReadyToBeAddedControl.NotReady;
             plForDate.Enabled = false;
-            ClearOldExemplars(); // 245 мс
+            ClearOldExemplars(); 
             ClearAllPools();
             LoadAllPools();
-            LoadTextBoxWithDate(); //281 мс
+            LoadTextBoxWithDate(); 
             LoadHorizontLine();
             DrowVerticalLines();
             SaveMinMaxDate();
@@ -87,10 +87,11 @@ namespace time_schedule {
             LoadScrolls();
             FormReadyToBeAddedControl = Statuses.FormReadyToBeAddedControl.Ready;
             LoadPersonButtons();
-            LoadTaskButtons();//285 мс
+            LoadTaskButtons();
             LoadDateTextBoxes();
             ChangePanelVisibility(Statuses.Visibility.Visible);
             PushLableProject();
+            LoadScrolls();
         }
         private void PushLableProject() {
             TreeProjects treeProjects = new TreeProjects();
@@ -227,6 +228,7 @@ namespace time_schedule {
             PlMainScrollXSaved = plMain.HorizontalScroll.Value;
             PlMainScrollYSaved = plMain.VerticalScroll.Value;
             PlPersonButtonYSaved = plPersonButton.VerticalScroll.Value;
+
         }
         public void LoadScrolls() {
             try {
@@ -236,6 +238,15 @@ namespace time_schedule {
                 plMain.HorizontalScroll.Value = HorizontalScrollValue;
             }
             catch { }
+            try
+            {
+                plPersonButton.VerticalScroll.Value = VerticalScrollValue;
+                plPersonButton.VerticalScroll.Value = VerticalScrollValue;
+                plMain.VerticalScroll.Value = VerticalScrollValue;
+                plMain.VerticalScroll.Value = VerticalScrollValue;
+            }
+            catch { }
+
         }
         public void ScrollToZero() {
             plForDate.HorizontalScroll.Value = 0;

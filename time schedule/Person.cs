@@ -1025,6 +1025,7 @@ namespace time_schedule
             {
 
                 Dals.WriteObjectToBackUpPathFile(Constants.TASKS_BIN, Program.ListTasksAllPersonToSave);
+                //Dals.ReloadListTaskToSave();
                 Program.fmMain.SetPlMain().VerticalScroll.Value = Program.fmMain.SetForm1().VerticalScrollValue;
                 Program.fmMain.SetPlMain().VerticalScroll.Value = Program.fmMain.SetForm1().VerticalScrollValue;
                 (PersonButton, DateTime) PDT = SetNewDateAndPerson(

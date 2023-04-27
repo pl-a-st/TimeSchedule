@@ -477,21 +477,6 @@ namespace time_schedule
             }
         }
 
-        //public static void ReloadListTaskToSave()
-        //{
-        //    Program.ListTasksAllPersonToSave.Tasks.Clear();
-        //    string fullFileName = Dals.TakeMainPathFile(Constants.TASKS_BIN);
-        //    if (File.Exists(fullFileName))
-        //    {
-        //        Program.ListTasksAllPersonToSave = Dals.binReadFileToObject(
-        //            Program.ListTasksAllPersonToSave, fullFileName);
-        //    }
-        //    else
-        //    {
-        //        Program.ListTasksAllPersonToSave.SetTasksFromList(Dals.ReadListFromMainPathFile(Constants.TASKS));
-        //    }
-        //}
-
         private Boolean IsTBxTaskNameEmpty()
         {
             if (tBxTaskName.Text == "" && CreateOrChange != CreateOrChange.ChangeToSelectTasks)
