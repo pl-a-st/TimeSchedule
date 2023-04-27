@@ -45,6 +45,7 @@ namespace time_schedule {
             this.projectTreeView.AfterCheck += new System.Windows.Forms.TreeViewEventHandler(this.projectTreeView_AfterCheck);
             this.projectTreeView.BeforeCollapse += new System.Windows.Forms.TreeViewCancelEventHandler(this.projectTreeView_BeforeCollapse);
             this.projectTreeView.BeforeExpand += new System.Windows.Forms.TreeViewCancelEventHandler(this.projectTreeView_BeforeExpand);
+            this.projectTreeView.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.projectTreeView_AfterSelect);
             this.projectTreeView.NodeMouseClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.projectTreeView_NodeMouseClick);
             // 
             // button1

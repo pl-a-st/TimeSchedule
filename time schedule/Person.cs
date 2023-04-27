@@ -20,13 +20,14 @@ namespace time_schedule
     [Serializable]
     public enum TaskStatusRus
     {
-        Новое=TaskStatus.New,
-        В_работе= TaskStatus.Active,
-        Закрыто=TaskStatus.Closed,
-        На_согласовании=TaskStatus.To_approving
+        Новое = TaskStatus.New,
+        В_работе = TaskStatus.Active,
+        Закрыто = TaskStatus.Closed,
+        На_согласовании = TaskStatus.To_approving
     }
     [Serializable]
-    public enum DayOfWeekRus {
+    public enum DayOfWeekRus
+    {
         Воскресенье = DayOfWeek.Sunday,
         Понедельник = DayOfWeek.Monday,
         Вторник = DayOfWeek.Tuesday,
@@ -36,80 +37,99 @@ namespace time_schedule
         Суббота = DayOfWeek.Saturday
     }
     [Serializable]
-    public class DateTextBox {
+    public class DateTextBox
+    {
         public DateTime Date { get; private set; }
         public TextBox TextBox { get; private set; } = new TextBox();
         public Statuses.LoadingStatus LoadingStatus { get; private set; } = Statuses.LoadingStatus.NotReady;
-        public DateTextBox (DateTime dateTime, int TextBoxHight, int locationX) {
+        public DateTextBox(DateTime dateTime, int TextBoxHight, int locationX)
+        {
             Date = dateTime.Date;
             TextBox.BorderStyle = BorderStyle.Fixed3D;
-            
+
 
 
             TextBox.AutoSize = false;
             TextBox.Size = new Size(Constants.COLUMN_WITH, TextBoxHight);
             TextBox.Multiline = true;
             TextBox.Text = dateTime.ToShortDateString() + "\n" + GetDayOfWeekRus(dateTime.DayOfWeek);
-            TextBox.BackColor = Color.FromArgb(90,90,90);
+            TextBox.BackColor = Color.FromArgb(90, 90, 90);
             TextBox.ForeColor = Color.FromArgb(240, 240, 240);
             TextBox.TextAlign = HorizontalAlignment.Center;
             TextBox.ReadOnly = true;
-            if (dateTime == DateTime.Now.Date) {
-                TextBox.BackColor = Color.FromArgb(255,255,255);
+            if (dateTime == DateTime.Now.Date)
+            {
+                TextBox.BackColor = Color.FromArgb(255, 255, 255);
                 TextBox.ForeColor = Color.FromArgb(45, 45, 45);
             }
-            TextBox.Location = new Point(locationX, 0);            
+            TextBox.Location = new Point(locationX, 0);
         }
-        public void SetLoadingStatus (Statuses.LoadingStatus loadingStatus) {
+        public void SetLoadingStatus(Statuses.LoadingStatus loadingStatus)
+        {
             LoadingStatus = loadingStatus;
         }
-        private static DayOfWeekRus GetDayOfWeekRus(DayOfWeek dayOfWeek) {
+        private static DayOfWeekRus GetDayOfWeekRus(DayOfWeek dayOfWeek)
+        {
             DayOfWeekRus dayOfWeekRus = (DayOfWeekRus)Enum.Parse(typeof(DayOfWeek), dayOfWeek.ToString(), true);
             return dayOfWeekRus;
         }
     }
     [Serializable]
-    public class PoolTextBox {
-        public List<DateTextBox> ListTextBoxes 
-            { get; private set; } = new List<DateTextBox>();
-        public void SetNewLocationToButtons(int horizontalScroll) {
-            foreach (DateTextBox dateTextBox in ListTextBoxes) {
-                if (dateTextBox.LoadingStatus == Statuses.LoadingStatus.ReadyToLoad) {
+    public class PoolTextBox
+    {
+        public List<DateTextBox> ListTextBoxes
+        { get; private set; } = new List<DateTextBox>();
+        public void SetNewLocationToButtons(int horizontalScroll)
+        {
+            foreach (DateTextBox dateTextBox in ListTextBoxes)
+            {
+                if (dateTextBox.LoadingStatus == Statuses.LoadingStatus.ReadyToLoad)
+                {
                     dateTextBox.TextBox.Location = new Point(
-                        dateTextBox.TextBox.Location.X - horizontalScroll, dateTextBox.TextBox.Location.Y );                   
+                        dateTextBox.TextBox.Location.X - horizontalScroll, dateTextBox.TextBox.Location.Y);
                 }
-            }   
+            }
         }
-        public void CalculateLoadingStatus(int horizontalScroll, int formWith, DateTime minDateStart) {
+        public void CalculateLoadingStatus(int horizontalScroll, int formWith, DateTime minDateStart)
+        {
             DateTime minLoadDate = CalculateMinLoadDate(horizontalScroll, formWith, minDateStart);
             DateTime maxLoadDate = CalculateMaxLoadDate(formWith, minLoadDate);
-            foreach (DateTextBox dateTextBox in ListTextBoxes) {
+            foreach (DateTextBox dateTextBox in ListTextBoxes)
+            {
                 if (IsReadyToLoad(minLoadDate, maxLoadDate, dateTextBox))
                     dateTextBox.SetLoadingStatus(Statuses.LoadingStatus.ReadyToLoad);
             }
         }
-        private static Boolean IsReadyToLoad(DateTime minLoadDate, DateTime maxLoadDate, DateTextBox dateTextBox) {
-            if (dateTextBox.LoadingStatus != Statuses.LoadingStatus.NotReady) {
+        private static Boolean IsReadyToLoad(DateTime minLoadDate, DateTime maxLoadDate, DateTextBox dateTextBox)
+        {
+            if (dateTextBox.LoadingStatus != Statuses.LoadingStatus.NotReady)
+            {
                 return false;
             }
-            if (IsDateExsistInTargetRange(minLoadDate, maxLoadDate, dateTextBox)) {
+            if (IsDateExsistInTargetRange(minLoadDate, maxLoadDate, dateTextBox))
+            {
                 return true;
             }
             return false;
         }
-        private static Boolean IsDateExsistInTargetRange(DateTime minLoadDate, DateTime maxLoadDate, DateTextBox dateTextBox) {
+        private static Boolean IsDateExsistInTargetRange(DateTime minLoadDate, DateTime maxLoadDate, DateTextBox dateTextBox)
+        {
             if (dateTextBox.Date >= minLoadDate && dateTextBox.Date <= maxLoadDate)
                 return true;
             return false;
         }
-        private DateTime CalculateMinLoadDate(int horizontalScroll, int formWith, DateTime minDateStart) {
-            int countDaysBeforScroll = horizontalScroll / Constants.COLUMN_WITH-2;
+        private DateTime CalculateMinLoadDate(int horizontalScroll, int formWith, DateTime minDateStart)
+        {
+            int countDaysBeforScroll = horizontalScroll / Constants.COLUMN_WITH - 2;
             int reserve = formWith / 2 / Constants.COLUMN_WITH;
             DateTime minLoadDate = minDateStart;
-            try {
-                for (int i = 0; i < countDaysBeforScroll; i++) {
+            try
+            {
+                for (int i = 0; i < countDaysBeforScroll; i++)
+                {
                     minLoadDate = minLoadDate.AddDays(1);
-                    if (IsHolydays(minLoadDate)) {
+                    if (IsHolydays(minLoadDate))
+                    {
                         i--;
                     }
                 }
@@ -118,7 +138,8 @@ namespace time_schedule
             return minLoadDate;
         }
 
-        private static bool IsHolydays(DateTime minLoadDate) {
+        private static bool IsHolydays(DateTime minLoadDate)
+        {
             if (Program.ListHolidays.Holidays.Contains(minLoadDate))
                 return true;
             if (minLoadDate.DayOfWeek == DayOfWeek.Sunday)
@@ -127,15 +148,18 @@ namespace time_schedule
                 return true;
             return false;
         }
-        private DateTime CalculateMaxLoadDate(int formWith, DateTime minLoadDate) {
+        private DateTime CalculateMaxLoadDate(int formWith, DateTime minLoadDate)
+        {
             int reserve = formWith / 2 / Constants.COLUMN_WITH;
-            int countDaysAfterScroll = formWith / Constants.COLUMN_WITH+2;
+            int countDaysAfterScroll = formWith / Constants.COLUMN_WITH + 2;
             DateTime maxLoadDate = minLoadDate;
-            for (int i = 0; i < countDaysAfterScroll; i++) {
+            for (int i = 0; i < countDaysAfterScroll; i++)
+            {
                 if (maxLoadDate == DateTime.MaxValue)
                     break;
                 maxLoadDate = maxLoadDate.AddDays(1);
-                if (IsHolydays(maxLoadDate)) {
+                if (IsHolydays(maxLoadDate))
+                {
                     i--;
                 }
             }
@@ -146,25 +170,25 @@ namespace time_schedule
     /// <summary>
     /// Исполнители
     /// </summary>
-    public  class Person
+    public class Person
     {
         public Person(string personFamaly)
         {
             PersonFamaly = personFamaly;
         }
-        public Person(string  allParamTab, List<Task> tasks)
+        public Person(string allParamTab, List<Task> tasks)
         {
             string[] allParam = allParamTab.Split('\t');
             const int NAME_STRING = 0;
             const int NUM_TASK_STRING_AFTER = 1;
             PersonFamaly = allParam[NAME_STRING];
-            if (allParam.Length> NUM_TASK_STRING_AFTER)
+            if (allParam.Length > NUM_TASK_STRING_AFTER)
             {
-                for (int i = NUM_TASK_STRING_AFTER;i<allParam.Length;i++)
+                for (int i = NUM_TASK_STRING_AFTER; i < allParam.Length; i++)
                 {
-                    foreach(Task task in tasks)
+                    foreach (Task task in tasks)
                     {
-                        if (task.Number==Convert.ToInt32(allParam[i]))
+                        if (task.Number == Convert.ToInt32(allParam[i]))
                         {
                             AddTasks(task);
                             break;
@@ -199,8 +223,8 @@ namespace time_schedule
         public string GetStringForSave()
         {
             string stringForSave = string.Empty;
-            PersonFamaly= PersonFamaly.Replace("\t", " ");
-            stringForSave +=  PersonFamaly;
+            PersonFamaly = PersonFamaly.Replace("\t", " ");
+            stringForSave += PersonFamaly;
             foreach (Task task in ListTask.Tasks)
             {
                 stringForSave = stringForSave + "\t" + task.Number;
@@ -210,7 +234,7 @@ namespace time_schedule
         public void setTasks(ListTasks listTasksAllPerson)
         {
             ListTask.Tasks.Clear();
-            foreach(Task task in listTasksAllPerson.Tasks)
+            foreach (Task task in listTasksAllPerson.Tasks)
             {
                 if (task.PersonFamaly == PersonFamaly)
                     AddTasks(task);
@@ -221,7 +245,7 @@ namespace time_schedule
             setTasks(listTasksAllPerson);
             int CountDaysSynchTask1 = 1;
             ListTask.AssingPlace();
-            foreach(Task task in ListTask.Tasks)
+            foreach (Task task in ListTask.Tasks)
             {
                 if (task.PlaceInSynchTask + 1 > CountDaysSynchTask1)
                     CountDaysSynchTask1 = task.PlaceInSynchTask + 1;
@@ -249,7 +273,7 @@ namespace time_schedule
         }
         public void SetPersonsFromList(List<string> listString, List<Task> tasks)
         {
-            foreach(string stringAllParamTab in listString)
+            foreach (string stringAllParamTab in listString)
             {
                 Person person = new Person(stringAllParamTab, tasks);
                 person.setTasks(Program.ListTasksAllPersonToSave);
@@ -266,7 +290,8 @@ namespace time_schedule
     {
         public List<Task> Tasks
         { get; private set; } = new List<Task>();
-        public void SetTasks(List<Task> tasks) {
+        public void SetTasks(List<Task> tasks)
+        {
             Tasks = tasks.GetRange(0, tasks.Count);
         }
         /// <summary>
@@ -307,7 +332,7 @@ namespace time_schedule
         public DateTime GetMinDateStartTasks()
         {
             DateTime dateStartTasks = DateTime.MaxValue.AddDays(-1);
-            foreach(Task task in Tasks)
+            foreach (Task task in Tasks)
             {
                 if (task.DateStart < dateStartTasks)
                     dateStartTasks = task.DateStart;
@@ -337,7 +362,7 @@ namespace time_schedule
                 synckTasks.Add(Tasks[i]);
                 for (int j = 0; j < Tasks.Count; j++)
                 {
-                    if (i!=j)
+                    if (i != j)
                     {
                         if ((Tasks[i].DateStart.Date >= Tasks[j].DateStart.Date && Tasks[i].DateStart.Date <= Tasks[j].DateFinish.Date) ||
                     (Tasks[i].DateStart.Date <= Tasks[j].DateStart.Date && Tasks[i].DateFinish.Date >= Tasks[j].DateStart.Date)
@@ -351,13 +376,13 @@ namespace time_schedule
             }
             return listSynckTasks;
         }
-        private void SetPlaceAfterChange(List<List<Task>> listSynckTasks,List<Task> synckTasks,Task changedTask)
+        private void SetPlaceAfterChange(List<List<Task>> listSynckTasks, List<Task> synckTasks, Task changedTask)
         {
-            for(int i = 0; i< listSynckTasks.Count; i++)
+            for (int i = 0; i < listSynckTasks.Count; i++)
             {
-                if(listSynckTasks[i]!= synckTasks && listSynckTasks[i].Contains(changedTask))
+                if (listSynckTasks[i] != synckTasks && listSynckTasks[i].Contains(changedTask))
                 {
-                    for (int j=0;j< listSynckTasks[i].Count;j++)
+                    for (int j = 0; j < listSynckTasks[i].Count; j++)
                     {
                         if (changedTask != listSynckTasks[i][j])
                         {
@@ -368,7 +393,7 @@ namespace time_schedule
                                     changedTask.SetPlaceInSynhTask(changedTask.PlaceInSynchTask + 1);
                                     SetPlaceAfterChange(listSynckTasks, listSynckTasks[i], changedTask);
                                 }
-                                    
+
                                 if (changedTask.Priority < listSynckTasks[i][j].Priority)
                                 {
                                     listSynckTasks[i][j].SetPlaceInSynhTask(listSynckTasks[i][j].PlaceInSynchTask + 1);
@@ -383,28 +408,28 @@ namespace time_schedule
         }
         private void downPlaceAfterChange(List<List<Task>> listsSynckTasks)
         {
-            for (int i=0; i<Tasks.Count;i++)
+            for (int i = 0; i < Tasks.Count; i++)
             {
-                
-               if(DownPlaceAfterChange(listsSynckTasks, Tasks[i]))
+
+                if (DownPlaceAfterChange(listsSynckTasks, Tasks[i]))
                 {
                     Tasks[i].SetPlaceInSynhTask(Tasks[i].PlaceInSynchTask - 1);
                     downPlaceAfterChange(listsSynckTasks);
                 }
-                
+
             }
         }
         private bool DownPlaceAfterChange(List<List<Task>> listsSynckTasks, Task task)
         {
             foreach (List<Task> synchTasks in listsSynckTasks)
             {
-                if (synchTasks[0]== task)
+                if (synchTasks[0] == task)
                 {
                     foreach (Task targetTask in synchTasks)
                     {
-                        if(targetTask != task)
+                        if (targetTask != task)
                         {
-                            if ( task.PlaceInSynchTask == 0 || targetTask.PlaceInSynchTask == (task.PlaceInSynchTask - 1))
+                            if (task.PlaceInSynchTask == 0 || targetTask.PlaceInSynchTask == (task.PlaceInSynchTask - 1))
                             {
                                 return false;
                             }
@@ -417,7 +442,7 @@ namespace time_schedule
 
                     }
                 }
-                
+
             }
             return true;
 
@@ -431,7 +456,7 @@ namespace time_schedule
                 {
                     for (int j = i + 1; j < synckTasks.Count; j++)
                     {
-                        if (synckTasks[i].PlaceInSynchTask== synckTasks[j].PlaceInSynchTask)
+                        if (synckTasks[i].PlaceInSynchTask == synckTasks[j].PlaceInSynchTask)
                         {
                             if (synckTasks[i].Priority >= synckTasks[j].Priority)
                             {
@@ -447,7 +472,7 @@ namespace time_schedule
                         }
                     }
                 }
-                
+
             }
             downPlaceAfterChange(listsSynckTasks);
             // прописать метод
@@ -467,7 +492,7 @@ namespace time_schedule
             List<string> listForSave = new List<string>();
             foreach (DateTime dateTime in Holidays)
             {
-                string strForSave =string.Empty;
+                string strForSave = string.Empty;
                 strForSave += dateTime;
                 listForSave.Add(strForSave);
             }
@@ -488,10 +513,10 @@ namespace time_schedule
     {
         public List<DateTime> NonWorkingDays
         { get; private set; } = new List<DateTime>();
-        public void AddNonWorkingDay (DateTime dateTime)
+        public void AddNonWorkingDay(DateTime dateTime)
         {
             if (!NonWorkingDays.Contains(dateTime))
-            NonWorkingDays.Add(dateTime);
+                NonWorkingDays.Add(dateTime);
         }
         public void AddNonWorkingDay(List<DateTime> listDateTime)
         {
@@ -516,7 +541,8 @@ namespace time_schedule
     /// <summary>
     /// Задачи
     /// </summary>
-    public class Task {
+    public class Task
+    {
         public TaskStatus Status { get; private set; }
         public string Name { get; private set; }
         public long Number { get; private set; }
@@ -530,16 +556,18 @@ namespace time_schedule
         public long Priority { get; private set; }
         public int PlaceInSynchTask { get; private set; } = 0;
         public PoolProjects PoolProjects { get; private set; } = new PoolProjects();
-        private TreeProjects TreeProjects  = new TreeProjects();
-        public TreeProjects GetTreeProjects() {
+        private TreeProjects TreeProjects = new TreeProjects();
+        public TreeProjects GetTreeProjects()
+        {
             if (TreeProjects == null)
                 TreeProjects = new TreeProjects();
             return TreeProjects;
         }
-        public void SetTreeProject(TreeProjects treeProjects) {
+        public void SetTreeProject(TreeProjects treeProjects)
+        {
             TreeProjects.SetTreeViewProjects(treeProjects.ListTreeNode);
         }
-        public Task ()
+        public Task()
         { }
         public Task(string allParamTab)
         {
@@ -573,7 +601,7 @@ namespace time_schedule
                 CountWorkingDays = Convert.ToInt32(allParam[COUNT_WORKING_DAYS]);
             if (allParam[TASK_COLOR] != "")
                 Color = Color.FromArgb(Convert.ToInt32(allParam[TASK_COLOR]));
-            if (allParam.Length>10&& allParam[PRIORITY] != "")
+            if (allParam.Length > 10 && allParam[PRIORITY] != "")
                 Priority = Convert.ToInt32(allParam[PRIORITY]);
         }
         public Task(DateTime dateStart, long countWorksDays)
@@ -586,7 +614,8 @@ namespace time_schedule
             SetDateFinish();
 
         }
-        public Task(DateTime dateStart, DateTime dateFinish) {
+        public Task(DateTime dateStart, DateTime dateFinish)
+        {
             dateStart = dateStart.Date;
             dateFinish = dateFinish.Date;
             SetDateStart(dateStart);
@@ -596,12 +625,13 @@ namespace time_schedule
         }
         public Task(
                 TaskStatus taskStatus, string taskName,
-                string personFamaly, long taskNumber, 
-                long taskNumberAfter,DateTime dateStart,
+                string personFamaly, long taskNumber,
+                long taskNumberAfter, DateTime dateStart,
                 DateTime dateFinish, long countDays,
                 long countWorkingDays, Color taskColor,
                 long priority
-            ) {
+            )
+        {
             Status = taskStatus;
             Name = taskName;
             PersonFamaly = personFamaly;
@@ -615,10 +645,12 @@ namespace time_schedule
             Priority = priority;
         }
 
-        public void SetTaskName(string taskName) {
+        public void SetTaskName(string taskName)
+        {
             Name = taskName;
         }
-        public void SetTaskStatus(TaskStatus taskStatus) {
+        public void SetTaskStatus(TaskStatus taskStatus)
+        {
             Status = taskStatus;
         }
         static public DateTime GetDateFinish(DateTime dateStart, int workDayCount)
@@ -635,8 +667,8 @@ namespace time_schedule
             SetCountDays(Program.listNonWorkingDays);
             SetDateFinish();
         }
-       
-       
+
+
         public void SetPersonName(Person person)
         {
             PersonFamaly = person.PersonFamaly;
@@ -645,12 +677,12 @@ namespace time_schedule
         {
             PersonFamaly = personFamaly;
         }
-        
+
         public void SetTaskNumber(ListTasks listTask)
         {
             Number = listTask.Tasks.Count;
         }
-        
+
         public void SetTaskNumberAfter(Task task)
         {
             TaskNumberAfter = task.Number;
@@ -659,12 +691,12 @@ namespace time_schedule
         {
             TaskNumberAfter = number;
         }
-       
+
         public void SetDateStart(DateTime dateStart)
         {
             DateStart = dateStart;
         }
-       
+
         private void SetDateFinish(DateTime dateFinish)
         {
             DateFinish = dateFinish;
@@ -672,12 +704,12 @@ namespace time_schedule
         public void SetDateFinish()
         {
             DateTime dateTime = DateStart;
-            DateFinish = dateTime.AddDays(CountDays-1);
+            DateFinish = dateTime.AddDays(CountDays - 1);
         }
-       
+
         private void SetCountDays()
         {
-            CountDays = (DateFinish - DateStart).Days+1;
+            CountDays = (DateFinish - DateStart).Days + 1;
         }
         public void SetCountDays(long countDays)
         {
@@ -687,7 +719,7 @@ namespace time_schedule
         {
             DateTime dateTime = DateStart;
             CountDays = CountWorkingDays;
-            for(int i=0;i< CountDays; i++)
+            for (int i = 0; i < CountDays; i++)
             {
                 if (listNonWorkingDays.NonWorkingDays.Contains(dateTime.AddDays(i)))
                 {
@@ -699,8 +731,8 @@ namespace time_schedule
                     )
                 {
                     int k = 1;
-                    while(
-                        listNonWorkingDays.NonWorkingDays.Contains(dateTime.AddDays(i+k)))
+                    while (
+                        listNonWorkingDays.NonWorkingDays.Contains(dateTime.AddDays(i + k)))
                     {
                         CountDays++;
                         k++;
@@ -708,7 +740,7 @@ namespace time_schedule
                 }
             }
         }
-       
+
         private void SetCountWorkingDays(long countWorkingDays)
         {
             CountWorkingDays = countWorkingDays;
@@ -721,7 +753,7 @@ namespace time_schedule
             {
                 if (listNonWorkingDays.NonWorkingDays.Contains(date))
                     CountWorkingDays--;
-                date=date.AddDays(1);
+                date = date.AddDays(1);
             }
         }
         public void SetTaskColor(Color taskColor)
@@ -740,7 +772,7 @@ namespace time_schedule
             stringForSave += Status;
             stringForSave += "\t";
             stringForSave += Number;
-            stringForSave += "\t";            
+            stringForSave += "\t";
             stringForSave += TaskNumberAfter;
             stringForSave += "\t";
             stringForSave += DateStart;
@@ -751,7 +783,7 @@ namespace time_schedule
             stringForSave += "\t";
             stringForSave += CountWorkingDays;
             stringForSave += "\t";
-            stringForSave += Color.ToArgb(); 
+            stringForSave += Color.ToArgb();
             stringForSave += "\t";
             stringForSave += Priority;
             return stringForSave;
@@ -786,32 +818,41 @@ namespace time_schedule
                 AddTaskButtons(taskButton);
             }
         }
-        public void SetNewLocationToButtons (int verticalScroll, int horizontalScroll) {
-            foreach (TaskButton taskButton in TaskButtons) {
+        public void SetNewLocationToButtons(int verticalScroll, int horizontalScroll)
+        {
+            foreach (TaskButton taskButton in TaskButtons)
+            {
                 if (taskButton.LoadingStatus == Statuses.LoadingStatus.ReadyToLoad)
-                foreach(Button button in taskButton.Buttons) {
-                    button.Location = new Point(button.Location.X - horizontalScroll, button.Location.Y - verticalScroll);
-                }
+                    foreach (Button button in taskButton.Buttons)
+                    {
+                        button.Location = new Point(button.Location.X - horizontalScroll, button.Location.Y - verticalScroll);
+                    }
             }
         }
-        public void CalculateLoadingStatus(int horizontalScroll, int formWith, DateTime minDateStart) {
+        public void CalculateLoadingStatus(int horizontalScroll, int formWith, DateTime minDateStart)
+        {
             DateTime minLoadDate = CalculateMinLoadDate(horizontalScroll, formWith, minDateStart);
             DateTime maxLoadDate = CalculateMaxLoadDate(formWith, minLoadDate);
-            foreach (TaskButton taskButton in TaskButtons) {
-               if (IsReadyToLoad(minLoadDate, maxLoadDate, taskButton))
+            foreach (TaskButton taskButton in TaskButtons)
+            {
+                if (IsReadyToLoad(minLoadDate, maxLoadDate, taskButton))
                     taskButton.SetLoadingStatus(Statuses.LoadingStatus.ReadyToLoad);
             }
         }
-        private static Boolean IsReadyToLoad(DateTime minLoadDate, DateTime maxLoadDate, TaskButton taskButton) {
-            if (taskButton.LoadingStatus != Statuses.LoadingStatus.NotReady) {
+        private static Boolean IsReadyToLoad(DateTime minLoadDate, DateTime maxLoadDate, TaskButton taskButton)
+        {
+            if (taskButton.LoadingStatus != Statuses.LoadingStatus.NotReady)
+            {
                 return false;
             }
-            if (IsDateExsistInTargetRange(minLoadDate, maxLoadDate, taskButton)) {
+            if (IsDateExsistInTargetRange(minLoadDate, maxLoadDate, taskButton))
+            {
                 return true;
             }
             return false;
         }
-        private static Boolean IsDateExsistInTargetRange (DateTime minLoadDate, DateTime maxLoadDate, TaskButton taskButton) {
+        private static Boolean IsDateExsistInTargetRange(DateTime minLoadDate, DateTime maxLoadDate, TaskButton taskButton)
+        {
             if (taskButton.Task.DateStart >= minLoadDate && taskButton.Task.DateStart <= maxLoadDate)
                 return true;
             if (taskButton.Task.DateFinish >= minLoadDate && taskButton.Task.DateFinish <= maxLoadDate)
@@ -820,14 +861,18 @@ namespace time_schedule
                 return true;
             return false;
         }
-        private DateTime CalculateMinLoadDate(int horizontalScroll, int formWith, DateTime minDateStart) {
+        private DateTime CalculateMinLoadDate(int horizontalScroll, int formWith, DateTime minDateStart)
+        {
             int countDaysBeforScroll = horizontalScroll / Constants.COLUMN_WITH - 1;
-            int reserve = formWith / 2/ Constants.COLUMN_WITH;
+            int reserve = formWith / 2 / Constants.COLUMN_WITH;
             DateTime minLoadDate = minDateStart;
-            try {
-                for (int i = 0; i < countDaysBeforScroll; i++) {
+            try
+            {
+                for (int i = 0; i < countDaysBeforScroll; i++)
+                {
                     minLoadDate = minLoadDate.AddDays(1);
-                    if (IsHolydays(minLoadDate)) {
+                    if (IsHolydays(minLoadDate))
+                    {
                         i--;
                     }
                 }
@@ -836,7 +881,8 @@ namespace time_schedule
             return minLoadDate;
         }
 
-        private static bool IsHolydays(DateTime minLoadDate) {
+        private static bool IsHolydays(DateTime minLoadDate)
+        {
             if (Program.ListHolidays.Holidays.Contains(minLoadDate))
                 return true;
             if (minLoadDate.DayOfWeek == DayOfWeek.Sunday)
@@ -845,16 +891,19 @@ namespace time_schedule
                 return true;
             return false;
         }
-        private DateTime CalculateMaxLoadDate (int formWith, DateTime minLoadDate) {
+        private DateTime CalculateMaxLoadDate(int formWith, DateTime minLoadDate)
+        {
             int reserve = formWith / 2 / Constants.COLUMN_WITH;
             int countDaysAfterScroll = formWith / Constants.COLUMN_WITH;
             DateTime maxLoadDate = minLoadDate;
-            
-            for (int i = 0; i < countDaysAfterScroll; i++) {
+
+            for (int i = 0; i < countDaysAfterScroll; i++)
+            {
                 if (maxLoadDate == DateTime.MaxValue)
                     break;
                 maxLoadDate = maxLoadDate.AddDays(1);
-                if (IsHolydays(maxLoadDate)) {
+                if (IsHolydays(maxLoadDate))
+                {
                     i--;
                 }
             }
@@ -864,55 +913,60 @@ namespace time_schedule
     [Serializable]
     public class TaskButton
     {
-        
+
         public Task Task
         { get; private set; }
-       
+
         public List<Button> Buttons
         { get; private set; } = new List<Button>();
-        public bool isDown {
+        public bool isDown
+        {
             get;
             private set;
         } = false;
-        public Point MouseLocation {
+        public Point MouseLocation
+        {
             get;
             private set;
         }
-        public Statuses.LoadingStatus LoadingStatus {
+        public Statuses.LoadingStatus LoadingStatus
+        {
             get; private set;
         } = Statuses.LoadingStatus.NotReady;
-        public void SetTask(Task task) {
+        public void SetTask(Task task)
+        {
             Task = task;
         }
-        public void SetLoadingStatus (Statuses.LoadingStatus loadingStatus) {
+        public void SetLoadingStatus(Statuses.LoadingStatus loadingStatus)
+        {
             LoadingStatus = loadingStatus;
         }
         public void AddButton(int locationX, int locationY, int with, int height)
         {
             Button button = new Button();
-            button.Location = new Point(locationX+1, locationY+1);
-            button.Width = with-2;
-            button.Height = height-1;
+            button.Location = new Point(locationX + 1, locationY + 1);
+            button.Width = with - 2;
+            button.Height = height - 1;
             button.Text = Task.Name;
             button.BackColor = Task.Color;
             button.FlatStyle = FlatStyle.Flat;
             button.FlatAppearance.BorderSize = 0;
             button.FlatAppearance.BorderColor = Color.DimGray;
             button.Click += Button_Click;
-            
+
             button.MouseHover += Button_MouseHover;
             void Button_MouseHover(object sender, EventArgs e)
             {
-               int scroll = Program.fmMain.SetPlMain().Location.Y;
+                int scroll = Program.fmMain.SetPlMain().Location.Y;
                 ToolTip t = new ToolTip();
                 string numTaskAfter = string.Empty;
                 if (Task.TaskNumberAfter > 0)
                     numTaskAfter = "псоле №" + Task.TaskNumberAfter;
-                t.SetToolTip(button,"№"+ Task.Number + "\n" + Task.Name + "\n" +
-                    "до "+Task.DateFinish.ToString().Split(' ')[0] + "\n"+
-                    "Статус: " + 
+                t.SetToolTip(button, "№" + Task.Number + "\n" + Task.Name + "\n" +
+                    "до " + Task.DateFinish.ToString().Split(' ')[0] + "\n" +
+                    "Статус: " +
                     ((TaskStatusRus)Enum.Parse(typeof(TaskStatus),
-                    Task.Status.ToString(),true)).ToString().Replace("_"," ") + "\n" +
+                    Task.Status.ToString(), true)).ToString().Replace("_", " ") + "\n" +
                     numTaskAfter);
             }
             button.MouseDown += Button_MouseDown;
@@ -922,40 +976,54 @@ namespace time_schedule
                 button.Font = new Font(button.Font.FontFamily, button.Font.Size, FontStyle.Strikeout);
             if (Task.Status == TaskStatus.Active)
                 button.Font = new Font(button.Font.FontFamily, button.Font.Size, FontStyle.Underline);
-            if (Task.Status == TaskStatus.To_approving) {
+            if (Task.Status == TaskStatus.To_approving)
+            {
                 button.Font = new Font(button.Font.FontFamily, button.Font.Size, FontStyle.Italic | FontStyle.Underline);
             }
             if (
-                ((Task.Status == TaskStatus.New) && Task.DateStart.Date<DateTime.Now.Date) ||
+                ((Task.Status == TaskStatus.New) && Task.DateStart.Date < DateTime.Now.Date) ||
                 (Task.DateFinish.Date < DateTime.Now.Date) && (Task.Status != TaskStatus.Closed)
                 )
             {
                 button.Font = new Font(button.Font.FontFamily, button.Font.Size, button.Font.Style);
                 button.ForeColor = System.Drawing.Color.DarkRed;
             }
-            void Button_MouseDown(object sender, MouseEventArgs e) {
-                if (e.Button != MouseButtons.Left) {
+            void Button_MouseDown(object sender, MouseEventArgs e)
+            {
+                if (e.Button != MouseButtons.Left)
+                {
                     return;
                 }
                 Program.fmMain.SetPlForDate().HorizontalScroll.Value = Program.fmMain.SetPlMain().HorizontalScroll.Value;
                 isDown = true;
-                if (Program.UserType == UserType.Admin) {
+                if (Program.UserType == UserType.Admin)
+                {
                     Thread thread = new Thread(CursorAndWidth, 0);
                     thread.Start(button);
-                }   
+                }
             }
             Buttons.Add(button);
         }
-        private void CursorAndWidth(object button) {
+        private void CursorAndWidth(object button)
+        {
             Thread.Sleep(250);
-            if (isDown) {
+            if (isDown)
+            {
                 (button as Button).BeginInvoke(new Action(delegate () { (button as Button).Width = Constants.COLUMN_WITH; }));
                 Program.fmMain.BeginInvoke(new Action(delegate () { Program.fmMain.Cursor = Cursors.NoMove2D; }));
             }
-            
+
         }
-        private void Button_MouseLeave(object sender, EventArgs e) {
-            if (isDown && Program.UserType==UserType.Admin) {
+        /// <summary>
+        /// При зажатии срабатывает после MouseUp!!!
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Button_MouseLeave(object sender, EventArgs e)
+        {
+            if (isDown && Program.UserType == UserType.Admin)
+            {
+
                 Dals.WriteObjectToBackUpPathFile(Constants.TASKS_BIN, Program.ListTasksAllPersonToSave);
                 Program.fmMain.SetPlMain().VerticalScroll.Value = Program.fmMain.SetForm1().VerticalScrollValue;
                 Program.fmMain.SetPlMain().VerticalScroll.Value = Program.fmMain.SetForm1().VerticalScrollValue;
@@ -963,7 +1031,8 @@ namespace time_schedule
                     Program.fmMain.SetPlMain().PointToClient(MouseLocation),
                     Program.ListPersonButton,
                     Program.PoolTextBox);
-                if (PDT.Item1.Person!=null && PDT.Item2 != DateTime.MinValue) {
+                if (PDT.Item1.Person != null && PDT.Item2 != DateTime.MinValue)
+                {
                     string personFamaly = PDT.Item1.Person.PersonFamaly;
                     DateTime newDateStartTask = PDT.Item2;
                     Task.SetPersonFamaly(PDT.Item1.Person.PersonFamaly);
@@ -977,9 +1046,12 @@ namespace time_schedule
             }
             isDown = false;
         }
-        private void ChekTaskAfter(Task task) {
-            for (int i = 0; i < Program.ListTasksAllPersonToSave.Tasks.Count; i++) {
-                if (Program.ListTasksAllPersonToSave.Tasks[i].TaskNumberAfter == task.Number) {
+        private void ChekTaskAfter(Task task)
+        {
+            for (int i = 0; i < Program.ListTasksAllPersonToSave.Tasks.Count; i++)
+            {
+                if (Program.ListTasksAllPersonToSave.Tasks[i].TaskNumberAfter == task.Number)
+                {
                     Program.ListTasksAllPersonToSave.Tasks[i].ChangeDatesAndCountDays(
                         Task.GetDateFinish(task.DateFinish, 2),
                         Program.ListTasksAllPersonToSave.Tasks[i].CountWorkingDays
@@ -988,38 +1060,39 @@ namespace time_schedule
                 }
             }
         }
-        private (PersonButton, DateTime) SetNewDateAndPerson(Point point, ListPersonButton listPersonButton, PoolTextBox poolTextBox) {
+        private (PersonButton, DateTime) SetNewDateAndPerson(Point point, ListPersonButton listPersonButton, PoolTextBox poolTextBox)
+        {
             var targetPersonButton = new PersonButton();
             var dateTime = DateTime.MinValue;
-            foreach (PersonButton personButton in listPersonButton.PersonButtons) {
+            foreach (PersonButton personButton in listPersonButton.PersonButtons)
+            {
                 if (point.Y >= personButton.Button.Location.Y &&
-                    point.Y <= personButton.Button.Location.Y + personButton.Button.Height) {
+                    point.Y <= personButton.Button.Location.Y + personButton.Button.Height)
+                {
                     targetPersonButton = personButton;
                     break;
                 }
             }
             int locX = 0;
-            foreach (DateTextBox dateTextBox in poolTextBox.ListTextBoxes) {
+            foreach (DateTextBox dateTextBox in poolTextBox.ListTextBoxes)
+            {
                 if (point.X >= dateTextBox.TextBox.Location.X &&
-                    (point.X <= dateTextBox.TextBox.Location.X + dateTextBox.TextBox.Width)&&
-                    dateTextBox.LoadingStatus==Statuses.LoadingStatus.Loaded) {
+                    (point.X <= dateTextBox.TextBox.Location.X + dateTextBox.TextBox.Width) &&
+                    dateTextBox.LoadingStatus == Statuses.LoadingStatus.Loaded)
+                {
                     locX = dateTextBox.TextBox.Location.X;
                     dateTime = dateTextBox.Date.Date;
                     break;
                 }
-                
+
             }
             return (targetPersonButton, dateTime);
         }
-        private void Button_MouseUp(object sender, MouseEventArgs e) {
+        private void Button_MouseUp(object sender, MouseEventArgs e)
+        {
             MouseLocation = Control.MousePosition;
             Program.fmMain.Cursor = Cursors.Default;
-            
         }
-
-        
-
-        //LoadRefreshForm loadRefreshForm;
         private void Button_Click(object sender, EventArgs e)
         {
             Program.fmMain.SetPlForDate().AutoScroll = false;
@@ -1032,9 +1105,9 @@ namespace time_schedule
             fmAddTask.ShowDialog();
             Program.fmMain.SetPlForDate().AutoScroll = true;
             Dals.WriteObjectToMainPathFile(Constants.TASKS_BIN, Program.ListTasksAllPersonToSave);
-            
+
         }
-        public TaskButton(Task task, ListPersonButton listPersonButton,DateTime minDateStart, DateTime maxDateFinish)
+        public TaskButton(Task task, ListPersonButton listPersonButton, DateTime minDateStart, DateTime maxDateFinish)
         {
             Task = task;
             int locationY = 0;
@@ -1050,8 +1123,8 @@ namespace time_schedule
                 }
             }
             locationY += Task.PlaceInSynchTask * Constants.ROW_HIGHT;
-            
-            int dateTableLastNumCol = (maxDateFinish- minDateStart).Days;
+
+            int dateTableLastNumCol = (maxDateFinish - minDateStart).Days;
             DateTime dateTime = minDateStart;
             while ((dateTime.Date != Task.DateStart.Date) && (dateTime < maxDateFinish))
             {
@@ -1066,7 +1139,7 @@ namespace time_schedule
             int numberOfDay = 0;
             do
             {
-                
+
                 if (
                     dateTime.DayOfWeek != DayOfWeek.Sunday &&
                     dateTime.DayOfWeek != DayOfWeek.Saturday &&
@@ -1077,8 +1150,8 @@ namespace time_schedule
                     if ((numberOfDay >= 4 &&
                         dateTime.DayOfWeek == DayOfWeek.Friday ||
                         numberOfDay > 13 ||
-                        dateTime.Date == Task.DateFinish.Date)&&
-                        dateTime.AddDays(3).Date!= Task.DateFinish.Date) 
+                        dateTime.Date == Task.DateFinish.Date) &&
+                        dateTime.AddDays(3).Date != Task.DateFinish.Date)
                     {
                         AddButton(locationX, locationY, width, Constants.ROW_HIGHT);
                         locationX += width;
@@ -1086,9 +1159,9 @@ namespace time_schedule
                         numberOfDay = 0;
                     }
                 }
-                
-                dateTime=dateTime.AddDays(1);
-                
+
+                dateTime = dateTime.AddDays(1);
+
             }
             while ((dateTime.Date <= Task.DateFinish.Date) && (dateTime.Date <= maxDateFinish));
         }
@@ -1102,7 +1175,7 @@ namespace time_schedule
         {
             PersonButtons.Add(personButton);
         }
-        public void LoadListPersonButtons(List<Person> persons, ListTasks listTasksAllPerson, int hightRowForTasks,  Form1 form1)
+        public void LoadListPersonButtons(List<Person> persons, ListTasks listTasksAllPerson, int hightRowForTasks, Form1 form1)
         {
             foreach (Person person in persons)
             {
@@ -1114,7 +1187,8 @@ namespace time_schedule
     [Serializable]
     public class PersonButton
     {
-        public PersonButton() {
+        public PersonButton()
+        {
 
         }
         public PersonButton(Person person, ListTasks listTasksAllPerson, int hightRowForTasks, Form1 form1)
@@ -1124,9 +1198,9 @@ namespace time_schedule
             Button.Text = person.PersonFamaly;
             Button.FlatStyle = FlatStyle.Flat;
             Button.FlatAppearance.BorderSize = 0;
-            
-            Button.ForeColor = Color.FromArgb(240,240,240);
-            Button.FlatAppearance.BorderColor = Color.FromArgb(200,200,200);
+
+            Button.ForeColor = Color.FromArgb(240, 240, 240);
+            Button.FlatAppearance.BorderColor = Color.FromArgb(200, 200, 200);
             Button.BackColor = Color.FromArgb(90, 90, 90);
             Button.Height = GetHightBooton(listTasksAllPerson, hightRowForTasks);
             Button.BringToFront();
@@ -1237,7 +1311,7 @@ namespace time_schedule
         {
             Projects.Add(project);
         }
-        public PoolProjects (List<string> listStringFromFile)
+        public PoolProjects(List<string> listStringFromFile)
         {
             foreach (string stringFromFile in listStringFromFile)
             {
@@ -1249,77 +1323,101 @@ namespace time_schedule
         }
     }
     [Serializable]
-    public class TreeProjects {
-        public List<TreeNode> ListTreeNode {
-            get; private set; } = new List<TreeNode>();
-        public TreeProjects() {
+    public class TreeProjects
+    {
+        public List<TreeNode> ListTreeNode
+        {
+            get; private set;
+        } = new List<TreeNode>();
+        public TreeProjects()
+        {
 
         }
         private string Name;
-        public void SetName(string name) {
+        public void SetName(string name)
+        {
             Name = name;
         }
-        public string GetName() {
-            if (Name == null) {
+        public string GetName()
+        {
+            if (Name == null)
+            {
                 Name = string.Empty;
             }
             return Name;
         }
-        private void CloneTreeView(TreeNode ChangeTreeNode, TreeNode CopyTreeNode) {
+        private void CloneTreeView(TreeNode ChangeTreeNode, TreeNode CopyTreeNode)
+        {
             ChangeTreeNode.Nodes.Add(CopyTreeNode.Clone() as TreeNode);
-            foreach (TreeNode chTreeNode in CopyTreeNode.Nodes) {
+            foreach (TreeNode chTreeNode in CopyTreeNode.Nodes)
+            {
                 CloneTreeView(ChangeTreeNode.LastNode, chTreeNode);
             }
         }
-        public void SetTreeViewProjects(TreeView treeView) {
+        public void SetTreeViewProjects(TreeView treeView)
+        {
             ListTreeNode.Clear();
-            foreach (TreeNode treeNode in treeView.Nodes) {
+            foreach (TreeNode treeNode in treeView.Nodes)
+            {
                 ListTreeNode.Add(treeNode.Clone() as TreeNode);
-                if (treeNode.IsExpanded) {
+                if (treeNode.IsExpanded)
+                {
                     ListTreeNode.Last().Tag = true;
-                } 
+                }
             }
         }
-        public void SetTreeViewProjects(List<TreeNode> treeNodes) {
+        public void SetTreeViewProjects(List<TreeNode> treeNodes)
+        {
             ListTreeNode.Clear();
-            foreach (TreeNode treeNode in treeNodes) {
+            foreach (TreeNode treeNode in treeNodes)
+            {
                 ListTreeNode.Add(treeNode.Clone() as TreeNode);
             }
         }
-        public void SaveTree() {
+        public void SaveTree()
+        {
             Dals.WriteObjectToMainPathFile(Constants.PROJECTS_LIST, this);
         }
-        public void SaveSettingsTree() {
+        public void SaveSettingsTree()
+        {
             Dals.WriteObjectToUserPathFile(Constants.PROJECTS_LIST, this);
         }
-        public void GetTreeFromTask(Task task) {
+        public void GetTreeFromTask(Task task)
+        {
             TreeProjects mainTree = GetMainTree();
             TreeProjects settingsTree = GetSettingsTreeFromTask(task);
             TreeProjects resultTree = GetResultTree(mainTree, settingsTree);
             CheckChekedChilde(resultTree);
             this.ListTreeNode = resultTree.ListTreeNode;
         }
-        private TreeProjects GetSettingsTreeFromTask(Task task) {
+        private TreeProjects GetSettingsTreeFromTask(Task task)
+        {
             TreeProjects settingsTree = new TreeProjects();
             settingsTree.SetTreeViewProjects(task.GetTreeProjects().ListTreeNode);
-           
+
             return settingsTree;
         }
-        public void GetTreeFromFile() {
+        public void GetTreeFromFile()
+        {
             TreeProjects mainTree = GetMainTree();
             TreeProjects settingsTree = GetSettingsTreeFromFile();
             TreeProjects resultTree = GetResultTree(mainTree, settingsTree);
             CheckChekedChilde(resultTree);
             this.ListTreeNode = resultTree.ListTreeNode;
         }
-       
-        private static TreeProjects GetResultTree(TreeProjects mainTree, TreeProjects settingsTree) {
+
+        private static TreeProjects GetResultTree(TreeProjects mainTree, TreeProjects settingsTree)
+        {
             TreeProjects resultTree = new TreeProjects();
-            if (mainTree.ListTreeNode != null && settingsTree.ListTreeNode != null) {
-                foreach (TreeNode mainNode in mainTree.ListTreeNode) {
+            if (mainTree.ListTreeNode != null && settingsTree.ListTreeNode != null)
+            {
+                foreach (TreeNode mainNode in mainTree.ListTreeNode)
+                {
                     bool isMainNodeInSettings = false;
-                    foreach (TreeNode settingsNode in settingsTree.ListTreeNode) {
-                        if (mainNode.Text == settingsNode.Text) {
+                    foreach (TreeNode settingsNode in settingsTree.ListTreeNode)
+                    {
+                        if (mainNode.Text == settingsNode.Text)
+                        {
                             resultTree.ListTreeNode.Add(settingsNode.Clone() as TreeNode);
                             resultTree.ListTreeNode.Last().Nodes.Clear();
                             isMainNodeInSettings = true;
@@ -1327,21 +1425,25 @@ namespace time_schedule
                             break;
                         }
                     }
-                    if (!isMainNodeInSettings) {
+                    if (!isMainNodeInSettings)
+                    {
                         resultTree.ListTreeNode.Add(mainNode.Clone() as TreeNode);
                     }
                 }
             }
-            if (mainTree.ListTreeNode != null && settingsTree.ListTreeNode == null) {
+            if (mainTree.ListTreeNode != null && settingsTree.ListTreeNode == null)
+            {
                 resultTree.ListTreeNode = mainTree.ListTreeNode.GetRange(0, mainTree.ListTreeNode.Count);
             }
-                return resultTree;
+            return resultTree;
         }
 
-        private static TreeProjects GetSettingsTreeFromFile() {
+        private static TreeProjects GetSettingsTreeFromFile()
+        {
             TreeProjects settingsTree = new TreeProjects();
             settingsTree.SetTreeViewProjects(Dals.binReadUserPathFileToObject(settingsTree, Constants.PROJECTS_LIST).ListTreeNode);
-            if (settingsTree.ListTreeNode == null || settingsTree.ListTreeNode.Count ==0) {
+            if (settingsTree.ListTreeNode == null || settingsTree.ListTreeNode.Count == 0)
+            {
                 settingsTree.ListTreeNode = new List<TreeNode>();
                 TreeNode treeNode = new TreeNode("Все");
                 treeNode.Checked = true;
@@ -1351,59 +1453,73 @@ namespace time_schedule
             return settingsTree;
         }
 
-        private static TreeProjects GetMainTree() {
+        private static TreeProjects GetMainTree()
+        {
             TreeProjects mainTree = new TreeProjects();
             mainTree.SetTreeViewProjects(Dals.binReadMainPathFileToObject(mainTree, Constants.PROJECTS_LIST).ListTreeNode);
-            if (mainTree.ListTreeNode != null) {
-                foreach (TreeNode treeNode in mainTree.ListTreeNode) {
+            if (mainTree.ListTreeNode != null)
+            {
+                foreach (TreeNode treeNode in mainTree.ListTreeNode)
+                {
                     ClearSettings(treeNode);
                 }
             }
             return mainTree;
         }
 
-        private static void CheckAndCloneTeeNodes(TreeNode resultTree, TreeNode mainNode, TreeNode settingsNode) {
-            foreach (TreeNode chMainNode in mainNode.Nodes) {
+        private static void CheckAndCloneTeeNodes(TreeNode resultTree, TreeNode mainNode, TreeNode settingsNode)
+        {
+            foreach (TreeNode chMainNode in mainNode.Nodes)
+            {
                 bool isChMainNodeInChSetting = false;
-                foreach (TreeNode chSettingsNode in settingsNode.Nodes) {
-                    if (chMainNode.Text == chSettingsNode.Text) {
+                foreach (TreeNode chSettingsNode in settingsNode.Nodes)
+                {
+                    if (chMainNode.Text == chSettingsNode.Text)
+                    {
                         resultTree.Nodes.Add(chSettingsNode.Clone() as TreeNode);
                         resultTree.LastNode.Nodes.Clear();
                         isChMainNodeInChSetting = true;
                         CheckAndCloneTeeNodes(resultTree.LastNode, chMainNode, chSettingsNode);
                         break;
                     }
-                    
+
                 }
-                if (!isChMainNodeInChSetting) {
+                if (!isChMainNodeInChSetting)
+                {
                     resultTree.Nodes.Add(chMainNode.Clone() as TreeNode);
                 }
             }
         }
 
-        private static void ClearSettings(TreeNode treeNode) {
+        private static void ClearSettings(TreeNode treeNode)
+        {
             treeNode.Checked = false;
             treeNode.Tag = null;
             treeNode.ExpandAll();
-            foreach (TreeNode chTreeNode in treeNode.Nodes) {
+            foreach (TreeNode chTreeNode in treeNode.Nodes)
+            {
                 ClearSettings(chTreeNode);
             }
 
         }
-        private void CheckChekedChilde(TreeProjects treeProjects) {
-            foreach (TreeNode node in treeProjects.ListTreeNode) {
+        private void CheckChekedChilde(TreeProjects treeProjects)
+        {
+            foreach (TreeNode node in treeProjects.ListTreeNode)
+            {
                 ApllyCheckedToChilde(node);
             }
         }
-        private void ApllyCheckedToChilde(TreeNode node) {
-             
+        private void ApllyCheckedToChilde(TreeNode node)
+        {
 
-            foreach (TreeNode chNode in node.Nodes) {
+
+            foreach (TreeNode chNode in node.Nodes)
+            {
                 if (node.Checked)
                     chNode.Checked = node.Checked;
                 ApllyCheckedToChilde(chNode);
             }
-            
+
         }
     }
 }
