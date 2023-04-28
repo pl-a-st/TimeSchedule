@@ -1023,31 +1023,57 @@ namespace time_schedule
         {
             if (isDown && Program.UserType == UserType.Admin)
             {
-
                 Dals.WriteObjectToBackUpPathFile(Constants.TASKS_BIN, Program.ListTasksAllPersonToSave);
-                //Dals.ReloadListTaskToSave();
-                Program.fmMain.SetPlMain().VerticalScroll.Value = Program.fmMain.SetForm1().VerticalScrollValue;
-                Program.fmMain.SetPlMain().VerticalScroll.Value = Program.fmMain.SetForm1().VerticalScrollValue;
                 (PersonButton, DateTime) PDT = SetNewDateAndPerson(
                     Program.fmMain.SetPlMain().PointToClient(MouseLocation),
                     Program.ListPersonButton,
                     Program.PoolTextBox);
                 if (PDT.Item1.Person != null && PDT.Item2 != DateTime.MinValue)
                 {
-                    string personFamaly = PDT.Item1.Person.PersonFamaly;
-                    DateTime newDateStartTask = PDT.Item2;
-                    Task.SetPersonFamaly(PDT.Item1.Person.PersonFamaly);
-                    Task.ChangeDatesAndCountDays(PDT.Item2.Date, Task.CountWorkingDays);
-                    Task.SetTaskNumberAfter(0);
-                    ChekTaskAfter(Task);
-                    Dals.WriteObjectToMainPathFile(Constants.TASKS_BIN, Program.ListTasksAllPersonToSave);
-                    Program.fmMain.SetForm1().LoadRefreshForm(Statuses.ProgressBar.Use);
-                    Program.fmMain.SetForm1().SetPlMain().Focus();
+                    for (int i = 0; i < Constants.COUNT_OF_TRIES; i++)
+                    {
+                        Dals.ReloadListTaskToSave();
+                        Task TargetTask = new Task();
+                        TargetTask = GetTaskInNewListTasks(TargetTask);
+                        GhengePersonDatetimeInTask(PDT, TargetTask);
+                        ChekAndChangeTaskAfter(TargetTask);
+                        if (Dals.WriteObjectToMainPathFile(Constants.TASKS_BIN, Program.ListTasksAllPersonToSave) == MethodResultStatus.Ok)
+                        {
+                            Program.fmMain.SetForm1().LoadRefreshForm(Statuses.ProgressBar.Use);
+                            Program.fmMain.SetForm1().SetPlMain().Focus();
+                            isDown = false;
+                            return;
+                        }
+                    }
+                    MessageBox.Show("Не удалось записать файл c задачами");
                 }
             }
             isDown = false;
         }
-        private void ChekTaskAfter(Task task)
+
+        private void GhengePersonDatetimeInTask((PersonButton, DateTime) PDT, Task TargetTask)
+        {
+            string personFamaly = PDT.Item1.Person.PersonFamaly;
+            DateTime newDateStartTask = PDT.Item2;
+            TargetTask.SetPersonFamaly(PDT.Item1.Person.PersonFamaly);
+            TargetTask.ChangeDatesAndCountDays(PDT.Item2.Date, Task.CountWorkingDays);
+            TargetTask.SetTaskNumberAfter(0);
+        }
+
+        private Task GetTaskInNewListTasks(Task TargetTask)
+        {
+            foreach (Task task in Program.ListTasksAllPersonToSave.Tasks)
+            {
+                if (task.Number == Task.Number)
+                {
+                    TargetTask = task;
+                    break;
+                }
+            }
+            return TargetTask;
+        }
+
+        private void ChekAndChangeTaskAfter(Task task)
         {
             for (int i = 0; i < Program.ListTasksAllPersonToSave.Tasks.Count; i++)
             {
@@ -1057,7 +1083,7 @@ namespace time_schedule
                         Task.GetDateFinish(task.DateFinish, 2),
                         Program.ListTasksAllPersonToSave.Tasks[i].CountWorkingDays
                         ); // Magic number 2 to do
-                    ChekTaskAfter(Program.ListTasksAllPersonToSave.Tasks[i]);
+                    ChekAndChangeTaskAfter(Program.ListTasksAllPersonToSave.Tasks[i]);
                 }
             }
         }
