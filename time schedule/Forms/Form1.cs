@@ -242,11 +242,15 @@ namespace time_schedule {
             {
                 plPersonButton.VerticalScroll.Value = VerticalScrollValue;
                 plPersonButton.VerticalScroll.Value = VerticalScrollValue;
+                
+            }
+            catch { }
+            try
+            {
                 plMain.VerticalScroll.Value = VerticalScrollValue;
                 plMain.VerticalScroll.Value = VerticalScrollValue;
             }
             catch { }
-
         }
         public void ScrollToZero() {
             plForDate.HorizontalScroll.Value = 0;
