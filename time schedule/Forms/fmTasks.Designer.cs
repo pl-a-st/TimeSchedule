@@ -47,7 +47,7 @@
             this.label5 = new System.Windows.Forms.Label();
             this.tBxDateStart = new System.Windows.Forms.TextBox();
             this.tBxDateFinish = new System.Windows.Forms.TextBox();
-            this.button1 = new System.Windows.Forms.Button();
+            this.butOpenTaskInExcell = new System.Windows.Forms.Button();
             this.cBxFilterByStatus = new System.Windows.Forms.CheckBox();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
             this.tBxStatusesFilter = new System.Windows.Forms.TextBox();
@@ -59,6 +59,8 @@
             this.groupBox3 = new System.Windows.Forms.GroupBox();
             this.groupBox4 = new System.Windows.Forms.GroupBox();
             this.btnChangeToSelectTasks = new System.Windows.Forms.Button();
+            this.chkMultySelectTask = new System.Windows.Forms.CheckBox();
+            this.butDeleteTaskInlBx = new System.Windows.Forms.Button();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox3.SuspendLayout();
@@ -67,9 +69,9 @@
             // 
             // btnChangeTask
             // 
-            this.btnChangeTask.Location = new System.Drawing.Point(485, 88);
+            this.btnChangeTask.Location = new System.Drawing.Point(481, 54);
             this.btnChangeTask.Name = "btnChangeTask";
-            this.btnChangeTask.Size = new System.Drawing.Size(142, 29);
+            this.btnChangeTask.Size = new System.Drawing.Size(122, 29);
             this.btnChangeTask.TabIndex = 7;
             this.btnChangeTask.Text = "Изменить задачу";
             this.btnChangeTask.UseVisualStyleBackColor = true;
@@ -77,9 +79,9 @@
             // 
             // btnDeleteTask
             // 
-            this.btnDeleteTask.Location = new System.Drawing.Point(485, 53);
+            this.btnDeleteTask.Location = new System.Drawing.Point(480, 169);
             this.btnDeleteTask.Name = "btnDeleteTask";
-            this.btnDeleteTask.Size = new System.Drawing.Size(142, 29);
+            this.btnDeleteTask.Size = new System.Drawing.Size(121, 29);
             this.btnDeleteTask.TabIndex = 6;
             this.btnDeleteTask.Text = "Удалить задачу";
             this.btnDeleteTask.UseVisualStyleBackColor = true;
@@ -87,9 +89,9 @@
             // 
             // btnNewTask
             // 
-            this.btnNewTask.Location = new System.Drawing.Point(485, 18);
+            this.btnNewTask.Location = new System.Drawing.Point(481, 19);
             this.btnNewTask.Name = "btnNewTask";
-            this.btnNewTask.Size = new System.Drawing.Size(142, 29);
+            this.btnNewTask.Size = new System.Drawing.Size(122, 29);
             this.btnNewTask.TabIndex = 5;
             this.btnNewTask.Text = "Создать задачу";
             this.btnNewTask.UseVisualStyleBackColor = true;
@@ -126,9 +128,9 @@
             // 
             // btnGoToDateStartTask
             // 
-            this.btnGoToDateStartTask.Location = new System.Drawing.Point(485, 123);
+            this.btnGoToDateStartTask.Location = new System.Drawing.Point(482, 89);
             this.btnGoToDateStartTask.Name = "btnGoToDateStartTask";
-            this.btnGoToDateStartTask.Size = new System.Drawing.Size(142, 28);
+            this.btnGoToDateStartTask.Size = new System.Drawing.Size(122, 28);
             this.btnGoToDateStartTask.TabIndex = 10;
             this.btnGoToDateStartTask.Text = "Найти в календаре";
             this.btnGoToDateStartTask.UseVisualStyleBackColor = true;
@@ -241,15 +243,15 @@
             this.tBxDateFinish.Size = new System.Drawing.Size(204, 20);
             this.tBxDateFinish.TabIndex = 18;
             // 
-            // button1
+            // butOpenTaskInExcell
             // 
-            this.button1.Location = new System.Drawing.Point(480, 302);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(142, 48);
-            this.button1.TabIndex = 10;
-            this.button1.Text = "Открыть задачи в экселе";
-            this.button1.UseVisualStyleBackColor = true;
-            this.button1.Click += new System.EventHandler(this.button1_Click_1);
+            this.butOpenTaskInExcell.Location = new System.Drawing.Point(480, 338);
+            this.butOpenTaskInExcell.Name = "butOpenTaskInExcell";
+            this.butOpenTaskInExcell.Size = new System.Drawing.Size(121, 48);
+            this.butOpenTaskInExcell.TabIndex = 10;
+            this.butOpenTaskInExcell.Text = "Открыть в Excell все задачи списка";
+            this.butOpenTaskInExcell.UseVisualStyleBackColor = true;
+            this.butOpenTaskInExcell.Click += new System.EventHandler(this.button1_Click_1);
             // 
             // cBxFilterByStatus
             // 
@@ -360,19 +362,40 @@
             // 
             // btnChangeToSelectTasks
             // 
-            this.btnChangeToSelectTasks.Location = new System.Drawing.Point(480, 246);
+            this.btnChangeToSelectTasks.Location = new System.Drawing.Point(480, 284);
             this.btnChangeToSelectTasks.Name = "btnChangeToSelectTasks";
-            this.btnChangeToSelectTasks.Size = new System.Drawing.Size(142, 48);
+            this.btnChangeToSelectTasks.Size = new System.Drawing.Size(121, 48);
             this.btnChangeToSelectTasks.TabIndex = 10;
-            this.btnChangeToSelectTasks.Text = "Изменить выбранные задачи";
+            this.btnChangeToSelectTasks.Text = "Изменить все задачи списка";
             this.btnChangeToSelectTasks.UseVisualStyleBackColor = true;
             this.btnChangeToSelectTasks.Click += new System.EventHandler(this.ChangeSelectTasks_Click);
+            // 
+            // chkMultySelectTask
+            // 
+            this.chkMultySelectTask.Location = new System.Drawing.Point(482, 246);
+            this.chkMultySelectTask.Name = "chkMultySelectTask";
+            this.chkMultySelectTask.Size = new System.Drawing.Size(121, 32);
+            this.chkMultySelectTask.TabIndex = 24;
+            this.chkMultySelectTask.Text = "Выделение  нескольких задач";
+            this.chkMultySelectTask.UseVisualStyleBackColor = true;
+            this.chkMultySelectTask.CheckedChanged += new System.EventHandler(this.chkMultySelectTask_CheckedChanged);
+            // 
+            // butDeleteTaskInlBx
+            // 
+            this.butDeleteTaskInlBx.Location = new System.Drawing.Point(481, 542);
+            this.butDeleteTaskInlBx.Name = "butDeleteTaskInlBx";
+            this.butDeleteTaskInlBx.Size = new System.Drawing.Size(121, 46);
+            this.butDeleteTaskInlBx.TabIndex = 25;
+            this.butDeleteTaskInlBx.Text = "Удалить все задачи списка";
+            this.butDeleteTaskInlBx.UseVisualStyleBackColor = true;
             // 
             // fmTasks
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(635, 687);
+            this.ClientSize = new System.Drawing.Size(619, 687);
+            this.Controls.Add(this.butDeleteTaskInlBx);
+            this.Controls.Add(this.chkMultySelectTask);
             this.Controls.Add(this.groupBox4);
             this.Controls.Add(this.groupBox3);
             this.Controls.Add(this.tBxDateFinish);
@@ -384,7 +407,7 @@
             this.Controls.Add(this.tBxStatus);
             this.Controls.Add(this.tBxPerson);
             this.Controls.Add(this.btnChangeToSelectTasks);
-            this.Controls.Add(this.button1);
+            this.Controls.Add(this.butOpenTaskInExcell);
             this.Controls.Add(this.btnGoToDateStartTask);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.tBxTargetTask);
@@ -430,7 +453,7 @@
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.TextBox tBxDateStart;
         private System.Windows.Forms.TextBox tBxDateFinish;
-        private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.Button butOpenTaskInExcell;
         private System.Windows.Forms.CheckBox cBxFilterByStatus;
         private System.Windows.Forms.GroupBox groupBox2;
         private System.Windows.Forms.Button btnFilter;
@@ -442,5 +465,7 @@
         private System.Windows.Forms.GroupBox groupBox3;
         private System.Windows.Forms.GroupBox groupBox4;
         private System.Windows.Forms.Button btnChangeToSelectTasks;
+        private System.Windows.Forms.CheckBox chkMultySelectTask;
+        private System.Windows.Forms.Button butDeleteTaskInlBx;
     }
 }
