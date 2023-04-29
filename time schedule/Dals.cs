@@ -311,7 +311,6 @@ namespace time_schedule
             Excel.Worksheet worksheet = workbook.Sheets[FIRST_SHEET];
             WorksheetWriteListTasks(worksheet, listTasks);
             excelApp.Visible = true;
-            //workbook.Save();
         }
         private static void ChooseFolderWritePath(string targetFolderName, FolderBrowserDialog folderBrowserDialog)
         {

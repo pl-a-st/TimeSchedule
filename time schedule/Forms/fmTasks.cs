@@ -65,7 +65,6 @@ namespace time_schedule
                 btnChangeToSelectTasks.Enabled = false;
                 btnChangeTask.Enabled = false;
                 butDeleteTaskInlBx.Enabled = false;
-                chkMultySelectTask.Enabled = false;
             }
         }
         public void SetFilterDateStart(DateTime dateTime)
@@ -234,7 +233,7 @@ namespace time_schedule
                 }
 
             }
-            //Dals.WriteObjectToFile(Constants.TASKS, Program.ListTasksAllPerson.GetListForSave());
+            
             Dals.WriteObjectToMainPathFile(Constants.TASKS_BIN, Program.ListTasksAllPersonToSave);
             Form1 form1 = this.Form1Delegat.SetForm1();
             form1.LoadRefreshForm(Statuses.ProgressBar.Use);
@@ -345,6 +344,17 @@ namespace time_schedule
         }
         private void button1_Click_1(object sender, EventArgs e)
         {
+            string[] targetItems = GetTargetItems();
+            fmProgressBar fmProgressBar = new fmProgressBar();
+            fmProgressBar.SetTextMessege("Идет формирование файла Excell");
+            System.Threading.Tasks.Task task = new System.Threading.Tasks.Task
+                (() => DoActionsCloseForm(() => WriteItemsToExcell(targetItems), fmProgressBar));
+            task.Start();
+            fmProgressBar.ShowDialog();
+        }
+
+        private string[] GetTargetItems()
+        {
             string[] targetItems;
             if (chkMultySelectTask.Checked)
             {
@@ -356,14 +366,10 @@ namespace time_schedule
                 targetItems = new string[lBxTasks.Items.Count];
                 lBxTasks.Items.CopyTo(targetItems, 0);
             }
-            fmProgressBar fmProgressBar = new fmProgressBar();
-            fmProgressBar.SetTextMessege("Идет формирование файла Excell");
-            System.Threading.Tasks.Task task = new System.Threading.Tasks.Task
-                (() => WriteItemsToExcellCloseProgressBar(() => WriteItemsToExcell(targetItems), fmProgressBar));
-            task.Start();
-            fmProgressBar.ShowDialog();
+
+            return targetItems;
         }
-        private void WriteItemsToExcellCloseProgressBar(Action action, Form form)
+        private void DoActionsCloseForm(Action action, Form form)
         {
             action.Invoke();
             if (form.InvokeRequired)
@@ -545,13 +551,15 @@ namespace time_schedule
 
         private void ChangeSelectTasks_Click(object sender, EventArgs e)
         {
+            
             fmAddChangeTask fmChangeTask = new fmAddChangeTask(Program.delegatLoadRefreshForm);
             fmChangeTask.GhangeNamebtnCreateTask("Изменить для \n выбранных задач");
             fmChangeTask.SetCreateOrChange(CreateOrChange.ChangeToSelectTasks);
             fmChangeTask.ShowDialog();
             if (fmChangeTask.ClickButton == ClickButton.Aplly)
             {
-                foreach (string itemLbx in lBxTasks.Items)
+                string[] targetItems = GetTargetItems();
+                foreach (string itemLbx in targetItems)
                 {
                     foreach (Task task in Program.ListTasksAllPersonToSave.Tasks)
                     {
