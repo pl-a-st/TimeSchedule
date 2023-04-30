@@ -65,6 +65,7 @@ namespace time_schedule
                 btnChangeToSelectTasks.Enabled = false;
                 btnChangeTask.Enabled = false;
                 butDeleteTaskInlBx.Enabled = false;
+                butAddProjectToSelectTasks.Enabled = false;
             }
         }
         public void SetFilterDateStart(DateTime dateTime)
@@ -618,15 +619,17 @@ namespace time_schedule
                 butDeleteTaskInlBx.Text = "Удалить выделенные задачи в списке";
                 btnChangeToSelectTasks.Text = "Изменить выделенные задачи в списке";
                 butOpenTaskInExcell.Text = "Открыть выделенные задачи в Excell";
+                butAddProjectToSelectTasks.Text = "Добавить проекты выделенным задачам списка";
                 btnChangeTask.Enabled = false;
                 btnDeleteTask.Enabled = false;
                 lBxTasks.SelectionMode = SelectionMode.MultiExtended;
             }
             if (!chkMultySelectTask.Checked)
             {
-                butDeleteTaskInlBx.Text = "Удалить все задачи в списка";
-                btnChangeToSelectTasks.Text = "Изменить все задачи в списка";
+                butDeleteTaskInlBx.Text = "Удалить все задачи из списка";
+                btnChangeToSelectTasks.Text = "Изменить все задачи в списке";
                 butOpenTaskInExcell.Text = "Открыть в Excell все задачи списка";
+                butAddProjectToSelectTasks.Text = "Добавить проекты всем задачам списка";
                 btnChangeTask.Enabled = true;
                 btnDeleteTask.Enabled = true;
                 lBxTasks.SelectionMode = SelectionMode.One;
@@ -665,10 +668,9 @@ namespace time_schedule
         {
             fmProjectTree fmProjectTree = new fmProjectTree();
             fmProjectTree.StartPosition = FormStartPosition.CenterParent;
-            
-            TreeProjects patternTtreeProjects = new TreeProjects();
-            patternTtreeProjects.GetTreeFromFile();
+            TreeProjects patternTtreeProjects = TreeProjects.GetMainTree();
             fmProjectTree.SetTreeView(patternTtreeProjects);
+            fmProjectTree.GetTreeView().Nodes[0].Expand();
             fmProjectTree.SetHasLoad(HasLoad.Yes);
             fmProjectTree.ShowDialog();
             if (fmProjectTree.ClickButton != ClickButton.Aplly)

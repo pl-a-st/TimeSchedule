@@ -397,7 +397,7 @@
             this.butAddProjectToSelectTasks.Name = "butAddProjectToSelectTasks";
             this.butAddProjectToSelectTasks.Size = new System.Drawing.Size(122, 48);
             this.butAddProjectToSelectTasks.TabIndex = 26;
-            this.butAddProjectToSelectTasks.Text = "Назначить проекты всем задачам списка";
+            this.butAddProjectToSelectTasks.Text = "Добавить проекты всем задачам списка";
             this.butAddProjectToSelectTasks.UseVisualStyleBackColor = true;
             this.butAddProjectToSelectTasks.Click += new System.EventHandler(this.butAddProjectToSelectTasks_Click);
             // 
