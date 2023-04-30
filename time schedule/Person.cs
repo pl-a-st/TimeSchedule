@@ -1588,6 +1588,8 @@ namespace time_schedule
                         if (patternTreeNode.Checked)
                         {
                             resultTreeNode.Checked = true;
+                            AddCheckedFromTreeNodeToResultTreeNode(resultTreeNode, patternTreeNode);
+                            break;
                         }
                     }
                     AddCheckedFromTreeNodeToResultTreeNode(resultTreeNode, patternTreeNode);
@@ -1606,6 +1608,8 @@ namespace time_schedule
                         if (patternTreeNode.Checked)
                         {
                             resultTreeNode.Checked = true;
+                            AddCheckedFromTreeNodeToResultTreeNode(resultTreeNode, patternTreeNode);
+                            break;
                         }
                        
                     }
