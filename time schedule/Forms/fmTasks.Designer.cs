@@ -61,6 +61,7 @@
             this.btnChangeToSelectTasks = new System.Windows.Forms.Button();
             this.chkMultySelectTask = new System.Windows.Forms.CheckBox();
             this.butDeleteTaskInlBx = new System.Windows.Forms.Button();
+            this.butAddProjectToSelectTasks = new System.Windows.Forms.Button();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox3.SuspendLayout();
@@ -245,7 +246,7 @@
             // 
             // butOpenTaskInExcell
             // 
-            this.butOpenTaskInExcell.Location = new System.Drawing.Point(480, 338);
+            this.butOpenTaskInExcell.Location = new System.Drawing.Point(480, 343);
             this.butOpenTaskInExcell.Name = "butOpenTaskInExcell";
             this.butOpenTaskInExcell.Size = new System.Drawing.Size(121, 48);
             this.butOpenTaskInExcell.TabIndex = 10;
@@ -390,11 +391,22 @@
             this.butDeleteTaskInlBx.UseVisualStyleBackColor = true;
             this.butDeleteTaskInlBx.Click += new System.EventHandler(this.butDeleteTaskInlBx_Click);
             // 
+            // butAddProjectToSelectTasks
+            // 
+            this.butAddProjectToSelectTasks.Location = new System.Drawing.Point(480, 402);
+            this.butAddProjectToSelectTasks.Name = "butAddProjectToSelectTasks";
+            this.butAddProjectToSelectTasks.Size = new System.Drawing.Size(122, 48);
+            this.butAddProjectToSelectTasks.TabIndex = 26;
+            this.butAddProjectToSelectTasks.Text = "Назначить проекты всем задачам списка";
+            this.butAddProjectToSelectTasks.UseVisualStyleBackColor = true;
+            this.butAddProjectToSelectTasks.Click += new System.EventHandler(this.butAddProjectToSelectTasks_Click);
+            // 
             // fmTasks
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(619, 687);
+            this.Controls.Add(this.butAddProjectToSelectTasks);
             this.Controls.Add(this.butDeleteTaskInlBx);
             this.Controls.Add(this.chkMultySelectTask);
             this.Controls.Add(this.groupBox4);
@@ -468,5 +480,6 @@
         private System.Windows.Forms.Button btnChangeToSelectTasks;
         private System.Windows.Forms.CheckBox chkMultySelectTask;
         private System.Windows.Forms.Button butDeleteTaskInlBx;
+        private System.Windows.Forms.Button butAddProjectToSelectTasks;
     }
 }

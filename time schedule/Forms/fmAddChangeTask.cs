@@ -667,8 +667,7 @@ namespace time_schedule
 
             if (CreateOrChange == CreateOrChange.Change)
             {
-                //TreeProjects.SetTreeViewProjects(Program.Task.TreeProjects.TreeViewProjects);
-                fmProjectTree.SetTreeView(TreeProjects);//2c
+                fmProjectTree.SetTreeView(TreeProjects);
                 fmProjectTree.SetHasLoad(HasLoad.Yes);
                 fmProjectTree.ShowDialog();
                 if (fmProjectTree.ClickButton == ClickButton.Aplly)

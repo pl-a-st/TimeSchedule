@@ -394,7 +394,7 @@ namespace time_schedule
         }
         private void WriteItemsToExcell(string[] targetItems)
         {
-            
+
             var listTaskNumber = new List<long>();
             foreach (string item in targetItems)
             {
@@ -564,7 +564,7 @@ namespace time_schedule
 
         private void ChangeSelectTasks_Click(object sender, EventArgs e)
         {
-            
+
             fmAddChangeTask fmChangeTask = new fmAddChangeTask(Program.delegatLoadRefreshForm);
             fmChangeTask.GhangeNamebtnCreateTask("Изменить для \n выбранных задач");
             fmChangeTask.SetCreateOrChange(CreateOrChange.ChangeToSelectTasks);
@@ -651,7 +651,7 @@ namespace time_schedule
             }
             this.Activate();
             string[] targetItems = GetTargetItems();
-            foreach(string targetItem in targetItems)
+            foreach (string targetItem in targetItems)
             {
                 DeleteTaskFromListToSave(targetItem);
             }
@@ -659,6 +659,39 @@ namespace time_schedule
             Form1 form1 = this.Form1Delegat.SetForm1();
             form1.LoadRefreshForm(Statuses.ProgressBar.Use);
             LoadLBxTasks();
+        }
+
+        private void butAddProjectToSelectTasks_Click(object sender, EventArgs e)
+        {
+            fmProjectTree fmProjectTree = new fmProjectTree();
+            fmProjectTree.StartPosition = FormStartPosition.CenterParent;
+            
+            TreeProjects patternTtreeProjects = new TreeProjects();
+            patternTtreeProjects.GetTreeFromFile();
+            fmProjectTree.SetTreeView(patternTtreeProjects);
+            fmProjectTree.SetHasLoad(HasLoad.Yes);
+            fmProjectTree.ShowDialog();
+            if (fmProjectTree.ClickButton != ClickButton.Aplly)
+            {
+                return; 
+            }
+            patternTtreeProjects.SetTreeViewProjects(fmProjectTree.projectTreeView);
+            string[] targetItems = GetTargetItems();
+            foreach (string itemLbx in targetItems)
+            {
+                foreach (Task task in Program.ListTasksAllPersonToSave.Tasks)
+                {
+                    if (task.Number == Convert.ToInt32(itemLbx.ToString().Split('\t')[0]))
+                    {
+                        task.GetTreeProjects().SetTreeViewProjects(
+                        TreeProjects.AddCheckedFromListNodeToResultListNode(task.GetTreeProjects().ListTreeNode, patternTtreeProjects.ListTreeNode));
+                        break;
+                    }
+                }
+            }
+            Dals.WriteObjectToMainPathFile(Constants.TASKS_BIN, Program.ListTasksAllPersonToSave);
+            LoadLBxTasks();
+            Program.fmMain.SetForm1().LoadRefreshForm(Statuses.ProgressBar.Use);
         }
     }
 }

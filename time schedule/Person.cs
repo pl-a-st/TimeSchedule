@@ -1507,7 +1507,7 @@ namespace time_schedule
             return settingsTree;
         }
 
-        private static TreeProjects GetMainTree()
+        public static TreeProjects GetMainTree()
         {
             TreeProjects mainTree = new TreeProjects();
             mainTree.SetTreeViewProjects(Dals.binReadMainPathFileToObject(mainTree, Constants.PROJECTS_LIST).ListTreeNode);
@@ -1574,6 +1574,44 @@ namespace time_schedule
                 ApllyCheckedToChilde(chNode);
             }
 
+        }
+        public static List<TreeNode> AddCheckedFromListNodeToResultListNode(List<TreeNode> targetTreeView, List<TreeNode> patternTreeView)
+        {
+            List<TreeNode> resultTreeView = new List<TreeNode>();
+            resultTreeView.AddRange(targetTreeView);
+            foreach (TreeNode patternTreeNode in patternTreeView)
+            {
+                foreach (TreeNode resultTreeNode in resultTreeView)
+                {
+                    if (patternTreeNode.Text == resultTreeNode.Text)
+                    {
+                        if (patternTreeNode.Checked)
+                        {
+                            resultTreeNode.Checked = true;
+                        }
+                    }
+                    AddCheckedFromTreeNodeToResultTreeNode(resultTreeNode, patternTreeNode);
+                }
+            }
+            return resultTreeView;
+        }
+        public static void AddCheckedFromTreeNodeToResultTreeNode(TreeNode resultTreeView, TreeNode patternTreeView)
+        {
+            foreach (TreeNode patternTreeNode in patternTreeView.Nodes)
+            {
+                foreach (TreeNode resultTreeNode in resultTreeView.Nodes)
+                {
+                    if (patternTreeNode.Text == resultTreeNode.Text)
+                    {
+                        if (patternTreeNode.Checked)
+                        {
+                            resultTreeNode.Checked = true;
+                        }
+                       
+                    }
+                    AddCheckedFromTreeNodeToResultTreeNode(resultTreeNode, patternTreeNode);
+                }
+            }
         }
     }
 }
