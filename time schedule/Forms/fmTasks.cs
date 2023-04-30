@@ -292,6 +292,15 @@ namespace time_schedule
                 }
             }
             form1.ScrollToDate(Program.Task.DateStart.Date);
+            foreach (TaskButton tButton in Program.ListTaskButtons.TaskButtons)
+            {
+                if (tButton.Task == Program.Task)
+                {
+                    tButton.SelectAllButtons();
+                    break;
+                }
+            }
+            this.Close();
         }
 
         private void lBxTasks_SelectedIndexChanged(object sender, EventArgs e)
