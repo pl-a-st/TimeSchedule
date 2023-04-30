@@ -637,8 +637,8 @@ namespace time_schedule
         {
 
             DialogResult result = MessageBox.Show(
-               "Вы уверены что хотите удалить задачу?",
-               "Сообщение",
+               "Вы уверены что хотите УДАЛИТЬ выбранные задачи?",
+               "ВНИМАНИЕ",
                MessageBoxButtons.YesNo,
                MessageBoxIcon.Warning,
                MessageBoxDefaultButton.Button1,

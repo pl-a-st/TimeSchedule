@@ -1200,20 +1200,21 @@ namespace time_schedule
         private async void SelectButton(Button button)
         {
             Color startBorderColor = button.FlatAppearance.BorderColor;
+            button.BringToFront();
             while (true)
             {
-                button.Height -= 4;
-                button.Width -= 4;
-                button.Location = new Point(button.Location.X + 2, button.Location.Y + 2);
+                button.Height += 8;
+                button.Width += 8;
+                button.Location = new Point(button.Location.X - 4, button.Location.Y - 4);
+                button.FlatAppearance.BorderSize = 2;
+                button.FlatAppearance.BorderColor = Color.FromArgb(184, 6, 6);
+                await System.Threading.Tasks.Task.Delay(280);
+
+                button.Height -= 8;
+                button.Width -= 8;
+                button.Location = new Point(button.Location.X + 4, button.Location.Y + 4);
                 button.FlatAppearance.BorderSize = 1;
                 button.FlatAppearance.BorderColor = startBorderColor;
-                await System.Threading.Tasks.Task.Delay(280);
-                button.Height += 4;
-                button.Width += 4;
-                button.Location = new Point(button.Location.X - 2, button.Location.Y - 2);
-               
-                button.FlatAppearance.BorderSize = 1;
-                button.FlatAppearance.BorderColor = Color.FromArgb(184,6,6);
                 await System.Threading.Tasks.Task.Delay(280);
             }
         }
