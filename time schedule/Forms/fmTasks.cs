@@ -233,12 +233,10 @@ namespace time_schedule
                 }
 
             }
-            
             Dals.WriteObjectToMainPathFile(Constants.TASKS_BIN, Program.ListTasksAllPersonToSave);
             Form1 form1 = this.Form1Delegat.SetForm1();
             form1.LoadRefreshForm(Statuses.ProgressBar.Use);
             LoadLBxTasks();
-
         }
 
         private void btnChangeTask_Click(object sender, EventArgs e)

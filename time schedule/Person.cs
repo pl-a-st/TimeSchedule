@@ -913,10 +913,8 @@ namespace time_schedule
     [Serializable]
     public class TaskButton
     {
-
         public Task Task
         { get; private set; }
-
         public List<Button> Buttons
         { get; private set; } = new List<Button>();
         public bool isDown
