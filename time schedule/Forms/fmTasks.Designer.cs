@@ -388,6 +388,7 @@
             this.butDeleteTaskInlBx.TabIndex = 25;
             this.butDeleteTaskInlBx.Text = "Удалить все задачи списка";
             this.butDeleteTaskInlBx.UseVisualStyleBackColor = true;
+            this.butDeleteTaskInlBx.Click += new System.EventHandler(this.butDeleteTaskInlBx_Click);
             // 
             // fmTasks
             // 

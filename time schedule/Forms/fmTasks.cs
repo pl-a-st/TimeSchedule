@@ -224,19 +224,25 @@ namespace time_schedule
                 return;
             }
             this.Activate();
+            string targetItem = lBxTasks.SelectedItem.ToString();
+            DeleteTaskFromListToSave(targetItem);
+            Dals.WriteObjectToMainPathFile(Constants.TASKS_BIN, Program.ListTasksAllPersonToSave);
+            Form1 form1 = this.Form1Delegat.SetForm1();
+            form1.LoadRefreshForm(Statuses.ProgressBar.Use);
+            LoadLBxTasks();
+        }
+
+        private static void DeleteTaskFromListToSave(string targetItem)
+        {
             foreach (Task task in Program.ListTasksAllPersonToSave.Tasks)
             {
-                if (task.Number == Convert.ToInt32(lBxTasks.SelectedItem.ToString().Split('\t')[0]))
+                if (task.Number == Convert.ToInt32(targetItem.Split('\t')[0]))
                 {
                     Program.ListTasksAllPersonToSave.Tasks.Remove(task);
                     break;
                 }
 
             }
-            Dals.WriteObjectToMainPathFile(Constants.TASKS_BIN, Program.ListTasksAllPersonToSave);
-            Form1 form1 = this.Form1Delegat.SetForm1();
-            form1.LoadRefreshForm(Statuses.ProgressBar.Use);
-            LoadLBxTasks();
         }
 
         private void btnChangeTask_Click(object sender, EventArgs e)
@@ -625,6 +631,34 @@ namespace time_schedule
                 btnDeleteTask.Enabled = true;
                 lBxTasks.SelectionMode = SelectionMode.One;
             }
+        }
+
+        private void butDeleteTaskInlBx_Click(object sender, EventArgs e)
+        {
+
+            DialogResult result = MessageBox.Show(
+               "Вы уверены что хотите удалить задачу?",
+               "Сообщение",
+               MessageBoxButtons.YesNo,
+               MessageBoxIcon.Warning,
+               MessageBoxDefaultButton.Button1,
+               MessageBoxOptions.DefaultDesktopOnly);
+            if (result == DialogResult.No)
+            {
+                Program.fmMain.TopMost = true;
+                this.TopMost = true;
+                return;
+            }
+            this.Activate();
+            string[] targetItems = GetTargetItems();
+            foreach(string targetItem in targetItems)
+            {
+                DeleteTaskFromListToSave(targetItem);
+            }
+            Dals.WriteObjectToMainPathFile(Constants.TASKS_BIN, Program.ListTasksAllPersonToSave);
+            Form1 form1 = this.Form1Delegat.SetForm1();
+            form1.LoadRefreshForm(Statuses.ProgressBar.Use);
+            LoadLBxTasks();
         }
     }
 }
