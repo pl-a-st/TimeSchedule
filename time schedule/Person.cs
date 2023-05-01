@@ -1034,7 +1034,15 @@ namespace time_schedule
                         Task TargetTask = new Task();
                         TargetTask = GetTaskInNewListTasks(TargetTask);
                         GhengePersonDatetimeInTask(PDT, TargetTask);
-                        ChekAndChangeTaskAfter(TargetTask);
+                        StatusToChangeDateAfter statusToChangeDateAfter = StatusToChangeDateAfter.Undefined;
+                        ChekAndChangeTaskAfter(TargetTask, ref statusToChangeDateAfter);
+                        if (statusToChangeDateAfter == StatusToChangeDateAfter.Cancel)
+                        {
+                            Program.fmMain.SetForm1().LoadRefreshForm(Statuses.ProgressBar.Use);
+                            Program.fmMain.SetForm1().SetPlMain().Focus();
+                            isDown = false;
+                            return;
+                        }
                         if (Dals.WriteObjectToMainPathFile(Constants.TASKS_BIN, Program.ListTasksAllPersonToSave) == MethodResultStatus.Ok)
                         {
                             Program.fmMain.SetForm1().LoadRefreshForm(Statuses.ProgressBar.Use);
@@ -1070,19 +1078,58 @@ namespace time_schedule
             }
             return TargetTask;
         }
-
-        private void ChekAndChangeTaskAfter(Task task)
+        enum StatusToChangeDateAfter
         {
+            Undefined,
+            Change,
+            NotChange,
+            Cancel
+        }
+        private void ChekAndChangeTaskAfter(Task task, ref StatusToChangeDateAfter statusToChangeDateAfter)
+        {
+
             for (int i = 0; i < Program.ListTasksAllPersonToSave.Tasks.Count; i++)
             {
-                if (Program.ListTasksAllPersonToSave.Tasks[i].TaskNumberAfter == task.Number)
+                if (Program.ListTasksAllPersonToSave.Tasks[i].TaskNumberAfter != task.Number)
+                {
+                    continue;
+                }
+                if (statusToChangeDateAfter == StatusToChangeDateAfter.Undefined)
+                {
+                    frmWithRadioButton frmWithRadio = new frmWithRadioButton();
+                    frmWithRadio.SetLable("К задаче привязаные дргие задачи. Что нужно сделать:");
+                    frmWithRadio.AddRaioButton("Изменить даты всех связанныхы задач");
+                    frmWithRadio.AddRaioButton("Разорвать связи с задачами");
+                    frmWithRadio.ShowDialog();
+                    if (frmWithRadio.WasClickInfrmWithRadioButton != WasClickInfrmWithRadioButton.Ok)
+                    {
+                        statusToChangeDateAfter = StatusToChangeDateAfter.Cancel;
+                        return;
+                    }
+                    string textRadio = frmWithRadio.GetTextSelectedRadio();
+                    if (textRadio == "Изменить даты всех связанныхы задач")
+                    {
+                        statusToChangeDateAfter = StatusToChangeDateAfter.Change;
+                    }
+                    if (textRadio == "Разорвать связи с задачами")
+                    {
+                        statusToChangeDateAfter = StatusToChangeDateAfter.NotChange;
+                    }
+                }
+                if (statusToChangeDateAfter == StatusToChangeDateAfter.Change)
                 {
                     Program.ListTasksAllPersonToSave.Tasks[i].ChangeDatesAndCountDays(
-                        Task.GetDateFinish(task.DateFinish, 2),
-                        Program.ListTasksAllPersonToSave.Tasks[i].CountWorkingDays
-                        ); // Magic number 2 to do
-                    ChekAndChangeTaskAfter(Program.ListTasksAllPersonToSave.Tasks[i]);
+                                            Task.GetDateFinish(task.DateFinish, 2),
+                                            Program.ListTasksAllPersonToSave.Tasks[i].CountWorkingDays
+                                            ); // Magic number 2 to do
+                    ChekAndChangeTaskAfter(Program.ListTasksAllPersonToSave.Tasks[i], ref statusToChangeDateAfter);
+
                 }
+                if (statusToChangeDateAfter == StatusToChangeDateAfter.NotChange)
+                {
+                    Program.ListTasksAllPersonToSave.Tasks[i].SetTaskNumberAfter(0);
+                }
+
             }
         }
         private (PersonButton, DateTime) SetNewDateAndPerson(Point point, ListPersonButton listPersonButton, PoolTextBox poolTextBox)
@@ -1611,7 +1658,7 @@ namespace time_schedule
                             AddCheckedFromTreeNodeToResultTreeNode(resultTreeNode, patternTreeNode);
                             break;
                         }
-                       
+
                     }
                     AddCheckedFromTreeNodeToResultTreeNode(resultTreeNode, patternTreeNode);
                 }
