@@ -58,6 +58,7 @@
             this.cBxSeetingsProjects = new System.Windows.Forms.ComboBox();
             this.lblProjects = new System.Windows.Forms.Label();
             this.btnSetings = new System.Windows.Forms.Button();
+            this.button2 = new System.Windows.Forms.Button();
             this.plMain.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pBForLine)).BeginInit();
             this.menuStrip1.SuspendLayout();
@@ -338,11 +339,11 @@
             this.button1.UseVisualStyleBackColor = false;
             this.button1.Click += new System.EventHandler(this.Projects_Click_2);
             // 
-            // cBxSeetingsProgects
+            // cBxSeetingsProjects
             // 
             this.cBxSeetingsProjects.FormattingEnabled = true;
             this.cBxSeetingsProjects.Location = new System.Drawing.Point(44, 27);
-            this.cBxSeetingsProjects.Name = "cBxSeetingsProgects";
+            this.cBxSeetingsProjects.Name = "cBxSeetingsProjects";
             this.cBxSeetingsProjects.Size = new System.Drawing.Size(135, 21);
             this.cBxSeetingsProjects.TabIndex = 11;
             this.cBxSeetingsProjects.SelectedIndexChanged += new System.EventHandler(this.cBxSeetingsProgects_SelectedIndexChanged);
@@ -369,12 +370,23 @@
             this.btnSetings.UseVisualStyleBackColor = true;
             this.btnSetings.Click += new System.EventHandler(this.btnSetings_Click);
             // 
+            // button2
+            // 
+            this.button2.Location = new System.Drawing.Point(181, 765);
+            this.button2.Name = "button2";
+            this.button2.Size = new System.Drawing.Size(80, 24);
+            this.button2.TabIndex = 14;
+            this.button2.Text = "button2";
+            this.button2.UseVisualStyleBackColor = true;
+            this.button2.Click += new System.EventHandler(this.button2_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(240)))), ((int)(((byte)(240)))), ((int)(((byte)(240)))));
             this.ClientSize = new System.Drawing.Size(1171, 820);
+            this.Controls.Add(this.button2);
             this.Controls.Add(this.btnSetings);
             this.Controls.Add(this.lblProjects);
             this.Controls.Add(this.cBxSeetingsProjects);
@@ -438,6 +450,7 @@
         private System.Windows.Forms.ToolStripComboBox cBxShowTask;
         private System.Windows.Forms.Button btnSetings;
         private System.Windows.Forms.ToolStripMenuItem восстановлениеЗадачToolStripMenuItem;
+        private System.Windows.Forms.Button button2;
     }
 }
 

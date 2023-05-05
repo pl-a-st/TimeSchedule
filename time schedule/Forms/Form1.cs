@@ -1039,7 +1039,11 @@ namespace time_schedule {
 
         }
 
-
+        private void button2_Click(object sender, EventArgs e)
+        {
+            FrmAddProject addProject = new FrmAddProject();
+            addProject.ShowDialog();
+        }
     }
 
 }

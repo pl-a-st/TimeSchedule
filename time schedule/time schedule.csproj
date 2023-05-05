@@ -67,6 +67,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Forms\FrmAddProject.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\FrmAddProject.Designer.cs">
+      <DependentUpon>FrmAddProject.cs</DependentUpon>
+    </Compile>
     <Compile Include="Forms\frmWithRadioButton.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -165,6 +171,10 @@
       <DependentUpon>fmSelectTask.cs</DependentUpon>
     </Compile>
     <Compile Include="Statuses.cs" />
+    <Compile Include="TaskPanel.cs" />
+    <EmbeddedResource Include="Forms\FrmAddProject.resx">
+      <DependentUpon>FrmAddProject.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Forms\fmChangeList.resx">
       <DependentUpon>fmChangeList.cs</DependentUpon>
     </EmbeddedResource>

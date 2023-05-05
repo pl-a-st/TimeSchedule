@@ -1087,7 +1087,6 @@ namespace time_schedule
         }
         private void ChekAndChangeTaskAfter(Task task, ref StatusToChangeDateAfter statusToChangeDateAfter)
         {
-
             for (int i = 0; i < Program.ListTasksAllPersonToSave.Tasks.Count; i++)
             {
                 if (Program.ListTasksAllPersonToSave.Tasks[i].TaskNumberAfter != task.Number)
@@ -1123,13 +1122,11 @@ namespace time_schedule
                                             Program.ListTasksAllPersonToSave.Tasks[i].CountWorkingDays
                                             ); // Magic number 2 to do
                     ChekAndChangeTaskAfter(Program.ListTasksAllPersonToSave.Tasks[i], ref statusToChangeDateAfter);
-
                 }
                 if (statusToChangeDateAfter == StatusToChangeDateAfter.NotChange)
                 {
                     Program.ListTasksAllPersonToSave.Tasks[i].SetTaskNumberAfter(0);
                 }
-
             }
         }
         private (PersonButton, DateTime) SetNewDateAndPerson(Point point, ListPersonButton listPersonButton, PoolTextBox poolTextBox)
@@ -1177,7 +1174,6 @@ namespace time_schedule
             fmAddTask.ShowDialog();
             Program.fmMain.SetPlForDate().AutoScroll = true;
             Dals.WriteObjectToMainPathFile(Constants.TASKS_BIN, Program.ListTasksAllPersonToSave);
-
         }
         public TaskButton(Task task, ListPersonButton listPersonButton, DateTime minDateStart, DateTime maxDateFinish)
         {
@@ -1256,7 +1252,6 @@ namespace time_schedule
                 button.FlatAppearance.BorderSize = 2;
                 button.FlatAppearance.BorderColor = Color.FromArgb(184, 6, 6);
                 await System.Threading.Tasks.Task.Delay(280);
-
                 button.Height -= 8;
                 button.Width -= 8;
                 button.Location = new Point(button.Location.X + 4, button.Location.Y + 4);
@@ -1265,7 +1260,6 @@ namespace time_schedule
                 await System.Threading.Tasks.Task.Delay(280);
             }
         }
-
     }
     [Serializable]
     public class ListPersonButton
