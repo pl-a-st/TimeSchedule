@@ -14,6 +14,7 @@ namespace time_schedule
         MultyCheck,
         None
     }
+    [Serializable]
     public class TaskPanel
     {
         public static int TaskPanelesCount;
@@ -131,6 +132,24 @@ namespace time_schedule
         {
 
 
+        }
+    }
+    [Serializable]
+    public class PoolTasksPanel
+    {
+        public List<TaskPanel> TaskPanels = new List<TaskPanel>();
+        public void SetNewTaskPanels(ListTasks listTasks)
+        {
+            TaskPanels.Clear();
+            foreach(Task task in listTasks.Tasks)
+            {
+                TaskPanel taskPanel = new TaskPanel(
+                                task.Name,
+                                (int)task.Number,
+                                new Point(x: 3, y: 3 + TaskPanel.TaskPaneleLastHeight * TaskPanels.Count - TaskPanels.Count)
+                                );
+                TaskPanels.Add(taskPanel);
+            }
         }
     }
 }
