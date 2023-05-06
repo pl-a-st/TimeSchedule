@@ -151,5 +151,26 @@ namespace time_schedule
                 TaskPanels.Add(taskPanel);
             }
         }
+        public ListTasks GetListTasks()
+        {
+            ListTasks listTasks = new ListTasks();
+            foreach(TaskPanel taskPanel in TaskPanels)
+            {
+                listTasks.AddTask(new Task(
+                    TaskStatus.New,
+                    taskPanel.TxtTaskName.Text,
+                    taskPanel.CboPersons.Text,
+                    (long)Convert.ToInt32(taskPanel.LblTaskNumber.Text),
+                    (long)taskPanel.NudTaskAfter.Value,
+                    taskPanel.DateStart.Value,
+                    taskPanel.DateFinish.Value,
+                    (new Task(taskPanel.DateStart.Value, taskPanel.DateFinish.Value)).CountDays,
+                    (new Task(taskPanel.DateStart.Value, taskPanel.DateFinish.Value)).CountWorkingDays,
+                    Color.FromArgb(50, 50, 50),
+                    1
+                    ));
+            }
+            return listTasks;
+        }
     }
 }
