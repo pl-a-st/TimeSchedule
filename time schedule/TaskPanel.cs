@@ -121,7 +121,6 @@ namespace time_schedule
 
         private void SetParametersForControls()
         {
-
             ChkNedUse.AutoSize = true;
             ChkNedUse.Checked = true;
             PnlForTask.BorderStyle = BorderStyle.FixedSingle;
@@ -154,8 +153,10 @@ namespace time_schedule
         public ListTasks GetListTasks()
         {
             ListTasks listTasks = new ListTasks();
+            
             foreach(TaskPanel taskPanel in TaskPanels)
             {
+                
                 listTasks.AddTask(new Task(
                     TaskStatus.New,
                     taskPanel.TxtTaskName.Text,
@@ -172,5 +173,6 @@ namespace time_schedule
             }
             return listTasks;
         }
+
     }
 }
