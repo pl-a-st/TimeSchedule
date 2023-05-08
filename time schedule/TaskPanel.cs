@@ -49,8 +49,15 @@ namespace time_schedule
             TaskPanelesCount++;
             PnlForTask.Enter += PnlForTask_Enter;
             PnlForTask.Leave += PnlForTask_Leave;
-            PnlForTask.MouseDown += PnlForTask_MouseDown; ;
+            PnlForTask.MouseDown += PnlForTask_MouseDown;
+            LblTaskNumber.Click += LblTaskNumber_Click;
         }
+
+        private void LblTaskNumber_Click(object sender, EventArgs e)
+        {
+            LblTaskNumber.Focus();
+        }
+
         public TaskPanel()
         {
 
@@ -136,6 +143,7 @@ namespace time_schedule
             ChkNedUse.AutoSize = true;
             ChkNedUse.Checked = true;
             ChkNedUse.Visible = false;
+           
             PnlForTask.BorderStyle = BorderStyle.FixedSingle;
             PnlForTask.BackColor = Color.FromArgb(red: 150, green: 150, blue: 150);
         }
