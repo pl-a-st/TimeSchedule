@@ -12,6 +12,7 @@ namespace time_schedule
 {
     public partial class FrmAddProject : Form
     {
+        PoolTasksPanel PoolTasksPanel = new PoolTasksPanel();
         public FrmAddProject()
         {
             InitializeComponent();
@@ -19,23 +20,23 @@ namespace time_schedule
 
         private void button1_Click(object sender, EventArgs e)
         {
-            TaskPanel taskPanel = new TaskPanel(
-                "Пример",
-                TaskPanel.TaskPanelesCount,
-                new Point(x: 3, y: 3+TaskPanel.TaskPaneleLastHeight* TaskPanel.TaskPanelesCount- TaskPanel.TaskPanelesCount)
-                );
+            PoolTasksPanel.AddTaskPanel();
+            TaskPanel taskPanel = PoolTasksPanel.TaskPanels[PoolTasksPanel.TaskPanels.Count - 1];
+            taskPanel.PnlForTask.Location = new Point(
+                x: taskPanel.PnlForTask.Location.X,
+                y: taskPanel.PnlForTask.Location.Y - pnlMain.VerticalScroll.Value);
             pnlMain.Controls.Add(taskPanel.PnlForTask);
         }
 
         private void groupBox1_Enter(object sender, EventArgs e)
         {
-           
-            
+
+
         }
 
         private void groupBox1_Leave(object sender, EventArgs e)
         {
-           
+
         }
 
         private void panel1_Paint(object sender, PaintEventArgs e)
@@ -45,17 +46,17 @@ namespace time_schedule
 
         private void panel1_Enter(object sender, EventArgs e)
         {
-            
+
         }
 
         private void panel1_MouseClick(object sender, MouseEventArgs e)
         {
-            
+
         }
 
         private void panel1_Leave(object sender, EventArgs e)
         {
-            
+
         }
     }
 }

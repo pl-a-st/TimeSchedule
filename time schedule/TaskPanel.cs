@@ -17,6 +17,9 @@ namespace time_schedule
     [Serializable]
     public class TaskPanel
     {
+        public delegate void AccountHandler();
+        public event AccountHandler Notify;
+
         public static int TaskPanelesCount;
         public static int TaskPaneleLastHeight;
         public CheckStatus CheckStatus = CheckStatus.None;
@@ -48,13 +51,18 @@ namespace time_schedule
             PnlForTask.Leave += PnlForTask_Leave;
             PnlForTask.MouseDown += PnlForTask_MouseDown; ;
         }
+        public TaskPanel()
+        {
 
+
+        }
         private void PnlForTask_MouseDown(object sender, MouseEventArgs e)
         {
-            if (Control.ModifierKeys == Keys.Control)
+            CheckStatus = CheckStatus.Checked;
+            PnlForTask.BackColor = Color.FromArgb(red: 50, green: 50, blue: 50);
+            if (Control.ModifierKeys != Keys.Control)
             {
-                CheckStatus = CheckStatus.MultyCheck;
-                PnlForTask.BackColor = Color.FromArgb(red: 50, green: 50, blue: 50);
+                Notify?.Invoke(); ;
             }
         }
 
@@ -65,14 +73,18 @@ namespace time_schedule
 
         private void PnlForTask_Leave(object sender, EventArgs e)
         {
-            CheckStatus = CheckStatus.None;
-            PnlForTask.BackColor = Color.FromArgb(red: 150, green: 150, blue: 150);
+           
+                
         }
 
         private void PnlForTask_Enter(object sender, EventArgs e)
         {
             CheckStatus = CheckStatus.Checked;
             PnlForTask.BackColor = Color.FromArgb(red: 50, green: 50, blue: 50);
+            if (Control.ModifierKeys != Keys.Control)
+            {
+                Notify?.Invoke();
+            }
         }
 
         private void SetLocationForCOntrols()
@@ -123,20 +135,36 @@ namespace time_schedule
         {
             ChkNedUse.AutoSize = true;
             ChkNedUse.Checked = true;
+            ChkNedUse.Visible = false;
             PnlForTask.BorderStyle = BorderStyle.FixedSingle;
             PnlForTask.BackColor = Color.FromArgb(red: 150, green: 150, blue: 150);
         }
-
-        public TaskPanel()
+        public void SetTaskPanelNotChecked()
         {
-
-
+            CheckStatus = CheckStatus.None;
+            PnlForTask.BackColor = Color.FromArgb(red: 150, green: 150, blue: 150);
         }
+       
     }
     [Serializable]
     public class PoolTasksPanel
     {
         public List<TaskPanel> TaskPanels = new List<TaskPanel>();
+        public void AddTaskPanel()
+        {
+            TaskPanel taskPanel = new TaskPanel(
+                "Пример",
+                TaskPanel.TaskPanelesCount,
+                new Point(x: 3, y: 3 + TaskPanel.TaskPaneleLastHeight * TaskPanels.Count - TaskPanels.Count)
+                );
+            taskPanel.Notify += TaskPanel_Notify;
+            void TaskPanel_Notify()
+            {
+                SetNotCheckedForTaskPaneles(taskPanel);
+            }
+            TaskPanels.Add(taskPanel);
+        }
+
         public void SetNewTaskPanels(ListTasks listTasks)
         {
             TaskPanels.Clear();
@@ -147,9 +175,17 @@ namespace time_schedule
                                 (int)task.Number,
                                 new Point(x: 3, y: 3 + TaskPanel.TaskPaneleLastHeight * TaskPanels.Count - TaskPanels.Count)
                                 );
+                taskPanel.Notify += TaskPanel_Notify;
+                void TaskPanel_Notify()
+                {
+                    SetNotCheckedForTaskPaneles(taskPanel);
+                }
                 TaskPanels.Add(taskPanel);
             }
         }
+
+        
+
         public ListTasks GetListTasks()
         {
             ListTasks listTasks = new ListTasks();
@@ -173,6 +209,16 @@ namespace time_schedule
             }
             return listTasks;
         }
-
+        public void SetNotCheckedForTaskPaneles(TaskPanel SelectedTaskPanel)
+        {
+            foreach(TaskPanel taskPanel in TaskPanels)
+            {
+                if (taskPanel == SelectedTaskPanel)
+                {
+                    continue;
+                }
+                taskPanel.SetTaskPanelNotChecked();
+            }
+        }
     }
 }
