@@ -668,7 +668,6 @@ namespace time_schedule
             SetDateFinish();
         }
 
-
         public void SetPersonName(Person person)
         {
             PersonFamaly = person.PersonFamaly;

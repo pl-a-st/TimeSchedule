@@ -52,6 +52,12 @@ namespace time_schedule
         private int PaddingY = 5;
         private int PaddingX = 3;
         public TaskPanel TaskAfter;
+
+        public TaskPanel()
+        {
+
+
+        }
         public TaskPanel(string name, int num, Point panelLocation)
         {
             TxtTaskName.Text = name;
@@ -73,11 +79,32 @@ namespace time_schedule
             PnlForTask.MouseDown += PnlForTask_MouseDown;
             LblTaskNumber.Click += LblTaskNumber_Click;
             NudTaskAfter.ValueChanged += NudTaskAfter_ValueChanged;
+            NudTaskAfter.KeyUp += NudTaskAfter_KeyUp;
+           
             DateStart.ValueChanged += DateStart_ValueChanged;
             DateFinish.ValueChanged += DateFinish_ValueChanged;
             DateFinish.ValueChanged += DateFinish_ValueChangedInvoke;
             NudWorckworkingDaysCount.ValueChanged += NudWorckworkingDaysCount_ValueChanged;
+            NudWorckworkingDaysCount.KeyUp += NudWorckworkingDaysCount_KeyUp;
         }
+
+        private void NudWorckworkingDaysCount_KeyUp(object sender, KeyEventArgs e)
+        {
+            if (int.TryParse("" + NudWorckworkingDaysCount.Value + e, out int result))
+            {
+                NudWorckworkingDaysCount.Value = (int)result;
+            }
+        }
+
+        private void NudTaskAfter_KeyUp(object sender, KeyEventArgs e)
+        {
+            if(int.TryParse("" + NudTaskAfter.Value + e, out int result))
+            {
+                NudTaskAfter.Value = (int)result;
+            }
+            
+        }
+
         private void DateFinish_ValueChangedInvoke(object sender, EventArgs e)
         {
             DateFinishAfterChange.Invoke();
@@ -123,11 +150,6 @@ namespace time_schedule
         private void LblTaskNumber_Click(object sender, EventArgs e)
         {
             LblTaskNumber.Focus();
-        }
-        public TaskPanel()
-        {
-
-
         }
         private void PnlForTask_MouseDown(object sender, MouseEventArgs e)
         {
@@ -194,7 +216,6 @@ namespace time_schedule
             DateFinish.Value = task.DateFinish;
             NudWorckworkingDaysCount.Minimum = int.MinValue;
             LblTaskNumber.ForeColor = Color.White;
-            
             PnlForTask.BorderStyle = BorderStyle.FixedSingle;
             PnlForTask.BackColor = Color.FromArgb(red: 150, green: 150, blue: 150);
         }
@@ -203,7 +224,6 @@ namespace time_schedule
             CheckStatus = CheckStatus.None;
             PnlForTask.BackColor = Color.FromArgb(red: 150, green: 150, blue: 150);
         }
-
     }
     [Serializable]
     public class PoolTasksPanel

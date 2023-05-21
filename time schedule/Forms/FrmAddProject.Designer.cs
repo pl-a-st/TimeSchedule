@@ -41,12 +41,18 @@ namespace time_schedule
             this.butWorkDaysCount = new System.Windows.Forms.Button();
             this.button1 = new System.Windows.Forms.Button();
             this.button2 = new System.Windows.Forms.Button();
+            this.txtProjectName = new System.Windows.Forms.TextBox();
+            this.lblProjectName = new System.Windows.Forms.Label();
+            this.lblDateFinish = new System.Windows.Forms.Label();
+            this.dateTimePicker1 = new System.Windows.Forms.DateTimePicker();
+            this.lblPatern = new System.Windows.Forms.Label();
+            this.comboBox1 = new System.Windows.Forms.ComboBox();
             this.SuspendLayout();
             // 
             // butAddTask
             // 
             this.butAddTask.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.butAddTask.Location = new System.Drawing.Point(1139, 58);
+            this.butAddTask.Location = new System.Drawing.Point(1109, 115);
             this.butAddTask.Name = "butAddTask";
             this.butAddTask.Size = new System.Drawing.Size(110, 31);
             this.butAddTask.TabIndex = 1;
@@ -61,15 +67,15 @@ namespace time_schedule
             | System.Windows.Forms.AnchorStyles.Right)));
             this.pnlMain.AutoScroll = true;
             this.pnlMain.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.pnlMain.Location = new System.Drawing.Point(25, 58);
+            this.pnlMain.Location = new System.Drawing.Point(19, 117);
             this.pnlMain.Name = "pnlMain";
-            this.pnlMain.Size = new System.Drawing.Size(1047, 584);
+            this.pnlMain.Size = new System.Drawing.Size(1047, 660);
             this.pnlMain.TabIndex = 2;
             // 
             // butDelete
             // 
             this.butDelete.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.butDelete.Location = new System.Drawing.Point(1139, 95);
+            this.butDelete.Location = new System.Drawing.Point(1109, 152);
             this.butDelete.Name = "butDelete";
             this.butDelete.Size = new System.Drawing.Size(110, 31);
             this.butDelete.TabIndex = 1;
@@ -80,7 +86,7 @@ namespace time_schedule
             // butUplift
             // 
             this.butUplift.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.butUplift.Location = new System.Drawing.Point(1087, 319);
+            this.butUplift.Location = new System.Drawing.Point(1072, 409);
             this.butUplift.Name = "butUplift";
             this.butUplift.Size = new System.Drawing.Size(29, 23);
             this.butUplift.TabIndex = 3;
@@ -91,7 +97,7 @@ namespace time_schedule
             // butDown
             // 
             this.butDown.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.butDown.Location = new System.Drawing.Point(1087, 348);
+            this.butDown.Location = new System.Drawing.Point(1072, 464);
             this.butDown.Name = "butDown";
             this.butDown.Size = new System.Drawing.Size(29, 23);
             this.butDown.TabIndex = 3;
@@ -101,7 +107,7 @@ namespace time_schedule
             // 
             // butNum
             // 
-            this.butNum.Location = new System.Drawing.Point(23, 32);
+            this.butNum.Location = new System.Drawing.Point(17, 89);
             this.butNum.Name = "butNum";
             this.butNum.Size = new System.Drawing.Size(40, 23);
             this.butNum.TabIndex = 4;
@@ -110,7 +116,7 @@ namespace time_schedule
             // 
             // butTaskName
             // 
-            this.butTaskName.Location = new System.Drawing.Point(66, 32);
+            this.butTaskName.Location = new System.Drawing.Point(60, 89);
             this.butTaskName.Name = "butTaskName";
             this.butTaskName.Size = new System.Drawing.Size(400, 23);
             this.butTaskName.TabIndex = 4;
@@ -119,7 +125,7 @@ namespace time_schedule
             // 
             // butDateStart
             // 
-            this.butDateStart.Location = new System.Drawing.Point(468, 32);
+            this.butDateStart.Location = new System.Drawing.Point(462, 89);
             this.butDateStart.Name = "butDateStart";
             this.butDateStart.Size = new System.Drawing.Size(134, 23);
             this.butDateStart.TabIndex = 4;
@@ -128,7 +134,7 @@ namespace time_schedule
             // 
             // butDateFinish
             // 
-            this.butDateFinish.Location = new System.Drawing.Point(604, 32);
+            this.butDateFinish.Location = new System.Drawing.Point(598, 89);
             this.butDateFinish.Name = "butDateFinish";
             this.butDateFinish.Size = new System.Drawing.Size(134, 23);
             this.butDateFinish.TabIndex = 4;
@@ -137,7 +143,7 @@ namespace time_schedule
             // 
             // butWorkDaysCount
             // 
-            this.butWorkDaysCount.Location = new System.Drawing.Point(740, 32);
+            this.butWorkDaysCount.Location = new System.Drawing.Point(734, 89);
             this.butWorkDaysCount.Name = "butWorkDaysCount";
             this.butWorkDaysCount.Size = new System.Drawing.Size(72, 23);
             this.butWorkDaysCount.TabIndex = 4;
@@ -146,7 +152,7 @@ namespace time_schedule
             // 
             // button1
             // 
-            this.button1.Location = new System.Drawing.Point(814, 32);
+            this.button1.Location = new System.Drawing.Point(808, 89);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(200, 23);
             this.button1.TabIndex = 4;
@@ -155,18 +161,73 @@ namespace time_schedule
             // 
             // button2
             // 
-            this.button2.Location = new System.Drawing.Point(1016, 32);
+            this.button2.Location = new System.Drawing.Point(1010, 89);
             this.button2.Name = "button2";
             this.button2.Size = new System.Drawing.Size(53, 23);
             this.button2.TabIndex = 4;
             this.button2.Text = "После";
             this.button2.UseVisualStyleBackColor = true;
             // 
+            // txtProjectName
+            // 
+            this.txtProjectName.Location = new System.Drawing.Point(125, 43);
+            this.txtProjectName.Name = "txtProjectName";
+            this.txtProjectName.Size = new System.Drawing.Size(681, 20);
+            this.txtProjectName.TabIndex = 5;
+            // 
+            // lblProjectName
+            // 
+            this.lblProjectName.AutoSize = true;
+            this.lblProjectName.Location = new System.Drawing.Point(18, 46);
+            this.lblProjectName.Name = "lblProjectName";
+            this.lblProjectName.Size = new System.Drawing.Size(101, 13);
+            this.lblProjectName.TabIndex = 6;
+            this.lblProjectName.Text = "Название проекта";
+            // 
+            // lblDateFinish
+            // 
+            this.lblDateFinish.AutoSize = true;
+            this.lblDateFinish.Location = new System.Drawing.Point(817, 46);
+            this.lblDateFinish.Name = "lblDateFinish";
+            this.lblDateFinish.Size = new System.Drawing.Size(98, 13);
+            this.lblDateFinish.TabIndex = 7;
+            this.lblDateFinish.Text = "Дата завершения";
+            // 
+            // dateTimePicker1
+            // 
+            this.dateTimePicker1.Location = new System.Drawing.Point(921, 43);
+            this.dateTimePicker1.Name = "dateTimePicker1";
+            this.dateTimePicker1.Size = new System.Drawing.Size(142, 20);
+            this.dateTimePicker1.TabIndex = 8;
+            // 
+            // lblPatern
+            // 
+            this.lblPatern.AutoSize = true;
+            this.lblPatern.Location = new System.Drawing.Point(17, 15);
+            this.lblPatern.Name = "lblPatern";
+            this.lblPatern.Size = new System.Drawing.Size(100, 13);
+            this.lblPatern.TabIndex = 9;
+            this.lblPatern.Text = "Выбрать прототип";
+            // 
+            // comboBox1
+            // 
+            this.comboBox1.FormattingEnabled = true;
+            this.comboBox1.Location = new System.Drawing.Point(125, 12);
+            this.comboBox1.Name = "comboBox1";
+            this.comboBox1.Size = new System.Drawing.Size(392, 21);
+            this.comboBox1.TabIndex = 10;
+            // 
             // FrmAddProject
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1261, 684);
+            this.ClientSize = new System.Drawing.Size(1261, 789);
+            this.Controls.Add(this.comboBox1);
+            this.Controls.Add(this.lblPatern);
+            this.Controls.Add(this.dateTimePicker1);
+            this.Controls.Add(this.lblDateFinish);
+            this.Controls.Add(this.lblProjectName);
+            this.Controls.Add(this.txtProjectName);
             this.Controls.Add(this.button1);
             this.Controls.Add(this.button2);
             this.Controls.Add(this.butWorkDaysCount);
@@ -183,6 +244,7 @@ namespace time_schedule
             this.Text = "Form2";
             this.Load += new System.EventHandler(this.FrmAddProject_Load);
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
@@ -199,5 +261,11 @@ namespace time_schedule
         private System.Windows.Forms.Button butWorkDaysCount;
         private System.Windows.Forms.Button button1;
         private System.Windows.Forms.Button button2;
+        private System.Windows.Forms.TextBox txtProjectName;
+        private System.Windows.Forms.Label lblProjectName;
+        private System.Windows.Forms.Label lblDateFinish;
+        private System.Windows.Forms.DateTimePicker dateTimePicker1;
+        private System.Windows.Forms.Label lblPatern;
+        private System.Windows.Forms.ComboBox comboBox1;
     }
 }
