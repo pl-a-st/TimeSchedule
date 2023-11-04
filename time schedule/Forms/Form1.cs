@@ -273,7 +273,7 @@ namespace time_schedule {
         public void LoadRefreshFormForDelegat() {
             LoadRefreshForm(Statuses.ProgressBar.Use);
         }
-        public void LoadRefreshForm(Statuses.ProgressBar statusProgressBar) {
+        public async void LoadRefreshForm(Statuses.ProgressBar statusProgressBar) {
             timer1.Interval = 900000;
             if (statusProgressBar == Statuses.ProgressBar.Use) {
                 fmProgressBar fmProgressBar = new fmProgressBar();
@@ -282,20 +282,32 @@ namespace time_schedule {
                 fmProgressBar.Location = new Point(
                     this.Left + this.Width / 2 - fmProgressBar.Width / 2,
                     this.Top + this.Height / 2 - fmProgressBar.Height / 2);
-                fmProgressBar.TopLevel = true;
+                
                 List<Form> listForm = new List<Form>() { this, fmProgressBar };
                 //Thread thread = new Thread(LoadRefreshWithProgressBarr, 0);
-                //thread.Start(listForm);
-                System.Threading.Tasks.Task task = System.Threading.Tasks.Task.Run(() => LoadRefreshWithProgressBarr(listForm));
+               
+                await System.Threading.Tasks.Task.Run(() => LoadRefreshWithProgressBarr(listForm));
                 OpenFormsCount = Application.OpenForms.Count;
-                fmProgressBar.ShowDialog();
+                //thread.Start(listForm);
+                fmProgressBar.TopLevel = true;
+                try
+                {
+                     System.Threading.Tasks.Task.Run(() => fmProgressBar.ShowDialog());
+                }
+                catch
+                {
+
+                }
+
+                //await System.Threading.Tasks.Task.Run(()=>task.Wait());
             }
         }
         public void LoadRefreshForm(fmProgressBar fmProgressBar) {
             LoadRefreshForm(RefreshType.All);
-            fmProgressBar.Close();
+             fmProgressBar.BeginInvoke(new Action(()=>fmProgressBar.Close()));
         }
-        public void LoadRefreshWithProgressBarr(object listForm) {
+        public async void LoadRefreshWithProgressBarr(object listForm) {
+           await System.Threading.Tasks.Task.Delay(50);
             List<Form> result = new List<Form>();
             do {
                 foreach (Form form in Application.OpenForms) {
