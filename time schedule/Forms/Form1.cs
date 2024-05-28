@@ -293,18 +293,7 @@ namespace time_schedule {
                 LoadRefreshWithProgressBarr(listForm);
                 //LoadRefreshWithProgressBarr(listForm);
                 OpenFormsCount = Application.OpenForms.Count;
-                //thread.Start(listForm);
-                
-                //try
-                //{
-                //     fmProgressBar.ShowDialog();
-                //}
-                //catch
-                //{
-
-                //}
-
-                //await System.Threading.Tasks.Task.Run(()=>task.Wait());
+               
             }
         }
         public void LoadRefreshForm(fmProgressBar fmProgressBar) {
@@ -326,7 +315,7 @@ namespace time_schedule {
             fmProgressBar fmProgressBar = (listForm as List<Form>)[1] as fmProgressBar;
             Form1 form1 = (listForm as List<Form>)[0] as Form1;
             LoadRefreshForm(fmProgressBar);
-            Invoke(new Action( ()=>fmProgressBar.Close() ));
+            Invoke(new Action(()=>fmProgressBar.Close()));
         }
         private void LoadAllPools() {
             if (File.Exists(Dals.TakeMainPathFile(Constants.TASKS_BIN))) {
