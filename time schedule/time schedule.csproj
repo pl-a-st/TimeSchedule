@@ -171,7 +171,9 @@
       <DependentUpon>fmSelectTask.cs</DependentUpon>
     </Compile>
     <Compile Include="Statuses.cs" />
-    <Compile Include="TaskPanel.cs" />
+    <Compile Include="TaskPanel.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <EmbeddedResource Include="Forms\FrmAddProject.resx">
       <DependentUpon>FrmAddProject.cs</DependentUpon>
     </EmbeddedResource>

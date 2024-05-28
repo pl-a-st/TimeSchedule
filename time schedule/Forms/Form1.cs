@@ -3,9 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Drawing;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.IO;
 using time_schedule.Forms;
+using System.Runtime.InteropServices;
+using System.Diagnostics;
 
 
 
@@ -273,7 +276,7 @@ namespace time_schedule {
         public void LoadRefreshFormForDelegat() {
             LoadRefreshForm(Statuses.ProgressBar.Use);
         }
-        public async void LoadRefreshForm(Statuses.ProgressBar statusProgressBar) {
+        public void LoadRefreshForm(Statuses.ProgressBar statusProgressBar) {
             timer1.Interval = 900000;
             if (statusProgressBar == Statuses.ProgressBar.Use) {
                 fmProgressBar fmProgressBar = new fmProgressBar();
@@ -285,29 +288,32 @@ namespace time_schedule {
                 
                 List<Form> listForm = new List<Form>() { this, fmProgressBar };
                 //Thread thread = new Thread(LoadRefreshWithProgressBarr, 0);
-               
-                await System.Threading.Tasks.Task.Run(() => LoadRefreshWithProgressBarr(listForm));
+                fmProgressBar.TopLevel = true;
+                System.Threading.Tasks.Task.Run(() => fmProgressBar.ShowDialog());
+                LoadRefreshWithProgressBarr(listForm);
+                //LoadRefreshWithProgressBarr(listForm);
                 OpenFormsCount = Application.OpenForms.Count;
                 //thread.Start(listForm);
-                fmProgressBar.TopLevel = true;
-                try
-                {
-                     System.Threading.Tasks.Task.Run(() => fmProgressBar.ShowDialog());
-                }
-                catch
-                {
+                
+                //try
+                //{
+                //     fmProgressBar.ShowDialog();
+                //}
+                //catch
+                //{
 
-                }
+                //}
 
                 //await System.Threading.Tasks.Task.Run(()=>task.Wait());
             }
         }
         public void LoadRefreshForm(fmProgressBar fmProgressBar) {
             LoadRefreshForm(RefreshType.All);
-             fmProgressBar.BeginInvoke(new Action(()=>fmProgressBar.Close()));
+             //fmProgressBar.BeginInvoke(new Action(()=>fmProgressBar.Close()));
+            //fmProgressBar.Close();
         }
-        public async void LoadRefreshWithProgressBarr(object listForm) {
-           await System.Threading.Tasks.Task.Delay(50);
+        public void LoadRefreshWithProgressBarr(object listForm) {
+           //await System.Threading.Tasks.Task.Delay(50);
             List<Form> result = new List<Form>();
             do {
                 foreach (Form form in Application.OpenForms) {
@@ -319,7 +325,8 @@ namespace time_schedule {
             while (result.Count <= OpenFormsCount);
             fmProgressBar fmProgressBar = (listForm as List<Form>)[1] as fmProgressBar;
             Form1 form1 = (listForm as List<Form>)[0] as Form1;
-            form1.BeginInvoke(new Action(delegate () { LoadRefreshForm(fmProgressBar); }));
+            LoadRefreshForm(fmProgressBar);
+            Invoke(new Action( ()=>fmProgressBar.Close() ));
         }
         private void LoadAllPools() {
             if (File.Exists(Dals.TakeMainPathFile(Constants.TASKS_BIN))) {
@@ -791,7 +798,7 @@ namespace time_schedule {
             LoadRefreshForm(Statuses.ProgressBar.Use);
             ScrollToDate(DateTime.Now.Date);
         }
-        private void ZeroingScrolss() {
+        private async System.Threading.Tasks.Task ZeroingScrolss() {
             plForDate.HorizontalScroll.Value = 0;
             plForDate.HorizontalScroll.Value = 0;
             plMain.HorizontalScroll.Value = 0;
@@ -802,6 +809,11 @@ namespace time_schedule {
             VerticalScrollValue = 0;
             plPersonButton.VerticalScroll.Value = 0;
             plPersonButton.VerticalScroll.Value = 0;
+            PlForDateScrollXSaved = 0;
+            PlMainScrollXSaved = 0;
+            PlMainScrollYSaved = 0;
+            PlPersonButtonYSaved = 0;
+            await System.Threading.Tasks.Task.Delay(100);
         }
         private void SetNewTextForForm() {
             this.Text = Dals.ProjectFolderPath;
@@ -927,7 +939,7 @@ namespace time_schedule {
             }
             cBxSeetingsProjects.Items.AddRange(projectNames.ToArray());
         }
-        private void cBxSeetingsProgects_SelectedIndexChanged(object sender, EventArgs e) {
+        private async void cBxSeetingsProgects_SelectedIndexChanged(object sender, EventArgs e) {
             string fileName = Dals.ProjectFolderPath.Replace('\\', '_');
             fileName = fileName.Replace(':', '+');
             List<TreeProjects> listTreeProject = new List<TreeProjects>();
@@ -940,7 +952,7 @@ namespace time_schedule {
                     treeProjects.SaveSettingsTree();
                 }
             }
-            ZeroingScrolss();
+            await ZeroingScrolss();
             Program.fmMain.LoadRefreshForm(Statuses.ProgressBar.Use);
             Program.fmMain.ScrollToDate(DateTime.Now.Date);
         }
