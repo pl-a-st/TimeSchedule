@@ -710,8 +710,9 @@ namespace time_schedule
         }
         private void WtriteComboBoxThread(object fmAddChangeTask)
         {
-            fmAddChangeTask newFmAddChangeTask = (fmAddChangeTask as fmAddChangeTask);
-            newFmAddChangeTask.BeginInvoke(new Action(delegate () { newFmAddChangeTask.СustomizeСmBxPerson(); }));
+            //fmAddChangeTask newFmAddChangeTask = (fmAddChangeTask as fmAddChangeTask);
+            //newFmAddChangeTask.BeginInvoke(new Action(delegate () { newFmAddChangeTask.СustomizeСmBxPerson(); }));
+            BeginInvoke(new Action(delegate () { (fmAddChangeTask as fmAddChangeTask).СustomizeСmBxPerson(); }));
         }
         private void СustomizeСmBxPerson()
         {
