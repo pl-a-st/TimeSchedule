@@ -67,6 +67,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Controls\ButtonForShedule.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="Forms\FrmAddProject.cs">
       <SubType>Form</SubType>
     </Compile>

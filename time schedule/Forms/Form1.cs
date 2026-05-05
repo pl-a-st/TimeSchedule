@@ -12,45 +12,60 @@ using System.Diagnostics;
 
 
 
-namespace time_schedule {
+namespace time_schedule
+{
     public delegate void LoadRefreshForm();
-    public enum RefreshType {
+    public enum RefreshType
+    {
         All,
         Minimum
     }
-    public partial class Form1 : Form {
+    public partial class Form1 : Form
+    {
         public Statuses.FormReadyToBeAddedControl FormReadyToBeAddedControl { get; private set; } = Statuses.FormReadyToBeAddedControl.NotReady;
         public RefreshType RefreshType { get; private set; } = RefreshType.Minimum;
         public int PlMainScrollYSaved { get; private set; } = 0;
         public int PlMainScrollXSaved { get; private set; } = 0;
         public int PlForDateScrollXSaved { get; private set; } = 0;
+        public int LastMaxHorizonntalScroll { get; private set; } = 0;
+        public int LastLargeChangeHorizonntalScroll { get; private set; } = 0;
         public int PlPersonButtonYSaved { get; private set; } = 0;
         public DateTime MinDateStart { get; private set; } = DateTime.MaxValue;
         public DateTime MaxDateFinish { get; private set; } = DateTime.MinValue;
-        public int DiveDays {
+        public delegate void RefreshFinished();
+        public event RefreshFinished EventRefreshFinished;
+
+        public int DiveDays
+        {
             get; private set;
         }
-        public int VerticalScrollValue {
+        public int VerticalScrollValue
+        {
             get;
             private set;
         }
-        public int HorizontalScrollValue {
+        public int HorizontalScrollValue
+        {
             get;
             private set;
         }
-        public int OpenFormsCount {
+        public int OpenFormsCount
+        {
             get;
             private set;
         }
-        public Bitmap Bmp {
+        public Bitmap Bmp
+        {
             get;
             set;
         } = new Bitmap(1, 1);
-        public Statuses.ProgramWindowState ProgramWindowState {
+        public Statuses.ProgramWindowState ProgramWindowState
+        {
             get;
             private set;
         } = Statuses.ProgramWindowState.Normal;
-        public Form1() {
+        public Form1()
+        {
             Program.fmMain = this;
             InitializeComponent();
             plMain.MouseWheel += CalendarTasks_MouseWheel;
@@ -59,30 +74,35 @@ namespace time_schedule {
 
 
         }
-        public static Form1 SelfRef {
+        public static Form1 SelfRef
+        {
             get;
             set;
         }
-        public Form1(Form form) {
+        public Form1(Form form)
+        {
             SelfRef = this;
         }
-        int CalcDivDays() {
+        int CalcDivDays()
+        {
             DateTime maxDateTime = Program.ListTasksAllPersonToShow.GetMaxDateFinishTasks();
             DateTime minDateTime = Program.ListTasksAllPersonToShow.GetMinDateStartTasks();
             return (maxDateTime - MaxDateFinish).Days;
         }
-        public void LoadRefreshForm() {
+        public void LoadRefreshForm()
+        {
             ChangePanelVisibility(Statuses.Visibility.Invisible);
             SaveScrolls();
-            if (CalcDivDays() < 0) {
+            if (CalcDivDays() < 0)
+            {
                 HorizontalScrollAdd(CalcDivDays());
             }
             FormReadyToBeAddedControl = Statuses.FormReadyToBeAddedControl.NotReady;
             plForDate.Enabled = false;
-            ClearOldExemplars(); 
+            ClearOldExemplars();
             ClearAllPools();
-            LoadAllPools();
-            LoadTextBoxWithDate(); 
+            LoadAllPools();//867
+            LoadTextBoxWithDate();//493
             LoadHorizontLine();
             DrowVerticalLines();
             SaveMinMaxDate();
@@ -92,85 +112,109 @@ namespace time_schedule {
             LoadPersonButtons();
             LoadTaskButtons();
             LoadDateTextBoxes();
-            ChangePanelVisibility(Statuses.Visibility.Visible);
+            ChangePanelVisibility(Statuses.Visibility.Visible);//313
             PushLableProject();
             LoadScrolls();
         }
-        private void PushLableProject() {
+        private void PushLableProject()
+        {
             TreeProjects treeProjects = new TreeProjects();
             treeProjects.GetTreeFromFile();
             lblProjects.Text = "";
-            foreach (TreeNode treeNode in treeProjects.ListTreeNode) {
-                if (treeNode.Checked) {
+            foreach (TreeNode treeNode in treeProjects.ListTreeNode)
+            {
+                if (treeNode.Checked)
+                {
                     lblProjects.Text += "<" + treeNode.Text + ">";
                     break;
                 }
                 PushLableProject(treeNode);
             }
         }
-        private void PushLableProject(TreeNode treeNode) {
-            foreach (TreeNode chTreeNode in treeNode.Nodes) {
-                if (chTreeNode.Checked) {
+        private void PushLableProject(TreeNode treeNode)
+        {
+            foreach (TreeNode chTreeNode in treeNode.Nodes)
+            {
+                if (chTreeNode.Checked)
+                {
                     lblProjects.Text += "<" + chTreeNode.Text + "> ";
                 }
-                else {
+                else
+                {
                     PushLableProject(chTreeNode);
                 }
             }
         }
 
-        public Panel SetPlMain() {
+        public Panel SetPlMain()
+        {
             return plMain;
         }
-        public Panel SetPlForDate() {
+        public Panel SetPlForDate()
+        {
             return plForDate;
         }
-        public Panel SetPlForPerson() {
+        public Panel SetPlForPerson()
+        {
             return plPersonButton;
         }
-        private void PlPersonButton_MouseWheel(object sender, MouseEventArgs e) {
-            try {
+        private void PlPersonButton_MouseWheel(object sender, MouseEventArgs e)
+        {
+            try
+            {
                 plMain.VerticalScroll.Value = plPersonButton.VerticalScroll.Value;
                 plMain.VerticalScroll.Value = plPersonButton.VerticalScroll.Value;
             }
-            catch {
+            catch
+            {
 
             }
 
 
         }
         VScrollBar myScrollBar = new VScrollBar();
-        private void PlMain_ClientSizeChanged(object sender, EventArgs e) {
+        private void PlMain_ClientSizeChanged(object sender, EventArgs e)
+        {
             //plForDate.HorizontalScroll.Value = plMain.HorizontalScroll.Value;
             //plForDate.HorizontalScroll.Value = plMain.HorizontalScroll.Value;
         }
-        private void CalendarTasks_MouseWheel1(object sender, MouseEventArgs e) {
-            try {
+        private void CalendarTasks_MouseWheel1(object sender, MouseEventArgs e)
+        {
+            try
+            {
                 plForDate.HorizontalScroll.Value = plMain.HorizontalScroll.Value;
                 int test = plMain.VerticalScroll.Value;
                 plPersonButton.VerticalScroll.Value = test;
             }
-            catch {
+            catch
+            {
             }
 
         }
-        private void button1_Click(object sender, EventArgs e) {
+        private void button1_Click(object sender, EventArgs e)
+        {
 
         }
-        public int GetPersonButtonWith() {
+        public int GetPersonButtonWith()
+        {
             return plMain.Location.X - plPersonButton.Location.X - 2;
         }
-        private void ClearOldExemplars() {
+        private void ClearOldExemplars()
+        {
 
-            for (int i = 0; i < plMain.Controls.Count; i++) {
-                if (plMain.Controls[i] is Button) {
+            for (int i = 0; i < plMain.Controls.Count; i++)
+            {
+                if (plMain.Controls[i] is Button)
+                {
                     plMain.Controls.Remove(plMain.Controls[i]);
                     i--;
                 }
 
             }
-            for (int i = 0; i < plPersonButton.Controls.Count; i++) {
-                if (plPersonButton.Controls[i] is Button) {
+            for (int i = 0; i < plPersonButton.Controls.Count; i++)
+            {
+                if (plPersonButton.Controls[i] is Button)
+                {
                     plPersonButton.Controls.Remove(this.plPersonButton.Controls[i]);
                     i--;
                 }
@@ -179,62 +223,77 @@ namespace time_schedule {
             pBForLine.CreateGraphics().Clear(Color.White);
             Bmp = new Bitmap(1, 1);
         }
-        private int SetMaxLocationAndAddPersonButton(ref ListPersonButton listPersonButton) {
+        private int SetMaxLocationAndAddPersonButton(ref ListPersonButton listPersonButton)
+        {
             int maxButtonLocationY = 0;
-            foreach (PersonButton personButton in Program.ListPersonButton.PersonButtons) {
-                if (personButton.Person.ListTask.Tasks.Count > 0) {
+            foreach (PersonButton personButton in Program.ListPersonButton.PersonButtons)
+            {
+                if (personButton.Person.ListTask.Tasks.Count > 0)
+                {
                     personButton.SetLocation(0, maxButtonLocationY);
                     maxButtonLocationY += (personButton.Button.Height + Constants.MIN_ROW_HIGHT);
                 }
             }
             return maxButtonLocationY;
         }
-        public void Drow(Pen pen, int pX0, int pY0, int pX1, int pY1) {
+        public void Drow(Pen pen, int pX0, int pY0, int pX1, int pY1)
+        {
             Graphics graphics = Graphics.FromImage(Bmp);
             graphics.DrawLine(pen, pX0, pY0, pX1, pY1);
             pBForLine.Image = Bmp;
             graphics.Dispose();
         }
-        public void LoadHorizontLine() {
-            foreach (PersonButton personButton in Program.ListPersonButton.PersonButtons) {
-                if (personButton.Person.ListTask.Tasks.Count > 0) {
+        public void LoadHorizontLine()
+        {
+            foreach (PersonButton personButton in Program.ListPersonButton.PersonButtons)
+            {
+                if (personButton.Person.ListTask.Tasks.Count > 0)
+                {
                     int locationY = personButton.Button.Location.Y;
-                    Pen pen = new Pen(Color.FromArgb(213, 207, 196), 1);
-
-                    while (locationY < (personButton.Button.Location.Y + personButton.Button.Height)) {
+                    Pen pen = new Pen(Color.FromArgb(225, 225, 230), 1);
+                    while (locationY < (personButton.Button.Location.Y + personButton.Button.Height))
+                    {
                         locationY += Constants.ROW_HIGHT;
                         Drow(pen, 0, locationY, pBForLine.Width, locationY);
 
                     }
 
-                    Pen pen1 = new Pen(Color.FromArgb(240, 240, 240), 2);
+                    Pen pen1 = new Pen(Color.FromArgb(245, 245, 248), 2);
                     Drow(pen1, 0, locationY, pBForLine.Width, locationY + 1);
                 }
             }
         }
-        public void DrowVerticalLines() {
-            Pen penGrey = new Pen(Color.FromArgb(213, 207, 196), 1);
-            Pen penForMonday = new Pen(Color.FromArgb(240, 240, 240), 2);
-            foreach (DateTextBox dateTextBox in Program.PoolTextBox.ListTextBoxes) {
+        public void DrowVerticalLines()
+        {
+            Pen penGrey = new Pen(Color.FromArgb(225, 225, 230), 1);
+            Pen penForMonday = new Pen(Color.FromArgb(245, 245, 248), 2);
+            foreach (DateTextBox dateTextBox in Program.PoolTextBox.ListTextBoxes)
+            {
                 int locationX = dateTextBox.TextBox.Location.X;
-                if (dateTextBox.Date.DayOfWeek == DayOfWeek.Monday) {
+                if (dateTextBox.Date.DayOfWeek == DayOfWeek.Monday)
+                {
                     Drow(penForMonday, locationX, 0, locationX, pBForLine.Height);
                 }
-                else {
+                else
+                {
                     Drow(penGrey, locationX, 0, locationX, pBForLine.Height);
                 }
             }
         }
-        public void SaveScrolls() {
-
+        public void SaveScrolls()
+        {
+            LastMaxHorizonntalScroll = plMain.HorizontalScroll.Maximum;
+            LastLargeChangeHorizonntalScroll = plMain.HorizontalScroll.LargeChange;
             PlForDateScrollXSaved = plForDate.HorizontalScroll.Value;
             PlMainScrollXSaved = plMain.HorizontalScroll.Value;
             PlMainScrollYSaved = plMain.VerticalScroll.Value;
             PlPersonButtonYSaved = plPersonButton.VerticalScroll.Value;
 
         }
-        public void LoadScrolls() {
-            try {
+        public void LoadScrolls()
+        {
+            try
+            {
                 plForDate.HorizontalScroll.Value = HorizontalScrollValue;
                 plForDate.HorizontalScroll.Value = HorizontalScrollValue;
                 plMain.HorizontalScroll.Value = HorizontalScrollValue;
@@ -245,7 +304,7 @@ namespace time_schedule {
             {
                 plPersonButton.VerticalScroll.Value = VerticalScrollValue;
                 plPersonButton.VerticalScroll.Value = VerticalScrollValue;
-                
+
             }
             catch { }
             try
@@ -255,37 +314,45 @@ namespace time_schedule {
             }
             catch { }
         }
-        public void ScrollToZero() {
+        public void ScrollToZero()
+        {
             plForDate.HorizontalScroll.Value = 0;
             plMain.HorizontalScroll.Value = 0;
             plMain.VerticalScroll.Value = 0;
             plPersonButton.VerticalScroll.Value = 0;
         }
-        public void SaveMinMaxDate() {
+        public void SaveMinMaxDate()
+        {
             MaxDateFinish = Program.ListTasksAllPersonToShow.GetMaxDateFinishTasks();
             MinDateStart = Program.ListTasksAllPersonToShow.GetMinDateStartTasks();
         }
-        public void LoadRefreshForm(RefreshType refreshType) {
-            if (refreshType == RefreshType.All) {
+        public void LoadRefreshForm(RefreshType refreshType)
+        {
+
+            if (refreshType == RefreshType.All)
+            {
                 RefreshType refreshTypeToSave = RefreshType;
                 RefreshType = RefreshType.All;
                 LoadRefreshForm();
                 RefreshType = refreshTypeToSave;
             }
         }
-        public void LoadRefreshFormForDelegat() {
+        public void LoadRefreshFormForDelegat()
+        {
             LoadRefreshForm(Statuses.ProgressBar.Use);
         }
-        public void LoadRefreshForm(Statuses.ProgressBar statusProgressBar) {
+        public void LoadRefreshForm(Statuses.ProgressBar statusProgressBar)
+        {
             timer1.Interval = 900000;
-            if (statusProgressBar == Statuses.ProgressBar.Use) {
+            if (statusProgressBar == Statuses.ProgressBar.Use)
+            {
                 fmProgressBar fmProgressBar = new fmProgressBar();
                 fmProgressBar.SetTextMessege("Идет обновление");
                 fmProgressBar.StartPosition = FormStartPosition.Manual;
                 fmProgressBar.Location = new Point(
                     this.Left + this.Width / 2 - fmProgressBar.Width / 2,
                     this.Top + this.Height / 2 - fmProgressBar.Height / 2);
-                
+
                 List<Form> listForm = new List<Form>() { this, fmProgressBar };
                 //Thread thread = new Thread(LoadRefreshWithProgressBarr, 0);
                 fmProgressBar.TopLevel = true;
@@ -293,19 +360,23 @@ namespace time_schedule {
                 LoadRefreshWithProgressBarr(listForm);
                 //LoadRefreshWithProgressBarr(listForm);
                 OpenFormsCount = Application.OpenForms.Count;
-               //Test 2
+                //Test 2
             }
         }
-        public void LoadRefreshForm(fmProgressBar fmProgressBar) {
+        public void LoadRefreshForm(fmProgressBar fmProgressBar)
+        {
             LoadRefreshForm(RefreshType.All);
-             //fmProgressBar.BeginInvoke(new Action(()=>fmProgressBar.Close()));
+            //fmProgressBar.BeginInvoke(new Action(()=>fmProgressBar.Close()));
             //fmProgressBar.Close();
         }
-        public void LoadRefreshWithProgressBarr(object listForm) {
-           //await System.Threading.Tasks.Task.Delay(50);
+        public void LoadRefreshWithProgressBarr(object listForm)
+        {
+            //await System.Threading.Tasks.Task.Delay(50);
             List<Form> result = new List<Form>();
-            do {
-                foreach (Form form in Application.OpenForms) {
+            do
+            {
+                foreach (Form form in Application.OpenForms)
+                {
                     if (form.Visible)
                         result.Add(form);
                 }
@@ -315,15 +386,18 @@ namespace time_schedule {
             fmProgressBar fmProgressBar = (listForm as List<Form>)[1] as fmProgressBar;
             Form1 form1 = (listForm as List<Form>)[0] as Form1;
             LoadRefreshForm(fmProgressBar);
-            Invoke(new Action(()=>fmProgressBar.Close()));
+            Invoke(new Action(() => fmProgressBar.Close()));
         }
-        private void LoadAllPools() {
-            if (File.Exists(Dals.TakeMainPathFile(Constants.TASKS_BIN))) {
+        private void LoadAllPools()
+        {
+            if (File.Exists(Dals.TakeMainPathFile(Constants.TASKS_BIN)))
+            {
                 Program.ListTasksAllPersonToSave = Dals.binReadFileToObject(
                     Program.ListTasksAllPersonToSave,
                     Dals.TakeMainPathFile(Constants.TASKS_BIN));
             }
-            else {
+            else
+            {
                 Program.ListTasksAllPersonToSave.SetTasksFromList(Dals.ReadListFromMainPathFile(Constants.TASKS));
             }
             Program.ListTasksAllPersonToShow.SetTasks(GetProjectEntryTasks(Program.ListTasksAllPersonToSave.Tasks));
@@ -338,12 +412,14 @@ namespace time_schedule {
                 this);
             int maxButtonLocationY = SetMaxLocationAndAddPersonButton(ref Program.ListPersonButton);
             pBForLine.Height = maxButtonLocationY;
-            if (File.Exists(Dals.TakeMainPathFile(Constants.HOLYDAYS_BIN))) {
+            if (File.Exists(Dals.TakeMainPathFile(Constants.HOLYDAYS_BIN)))
+            {
                 Program.ListHolidays = Dals.binReadFileToObject(
                     Program.ListHolidays,
                     Dals.TakeMainPathFile(Constants.HOLYDAYS_BIN));
             }
-            else {
+            else
+            {
                 Program.ListHolidays.SetHolidaysFromList(
                     Dals.ReadListFromMainPathFile(Constants.HOLYDAYS));
             }
@@ -355,36 +431,45 @@ namespace time_schedule {
                 Program.ListPersonButton);
         }
 
-        public void ReReadListPerson() {
-            if (File.Exists(Dals.TakeMainPathFile(Constants.TASKS_BIN))) {
+        public void ReReadListPerson()
+        {
+            if (File.Exists(Dals.TakeMainPathFile(Constants.TASKS_BIN)))
+            {
                 Program.listPersons = Dals.binReadFileToObject(
                     Program.listPersons,
                     Dals.TakeMainPathFile(Constants.PERSONS_BIN));
             }
-            else {
+            else
+            {
                 Program.listPersons.SetPersonsFromList(
                  Dals.ReadListFromMainPathFile(Constants.PERSONS),
                  Program.ListTasksAllPersonToShow.Tasks);
             }
         }
 
-        private List<Task> GetProjectEntryTasks(List<Task> tasks) {
+        private List<Task> GetProjectEntryTasks(List<Task> tasks)
+        {
             var resultListTasks = new List<Task>();
             TreeProjects treeProjects = new TreeProjects();
             treeProjects.GetTreeFromFile();
-            if (treeProjects.ListTreeNode.Count == 0) {
+            if (treeProjects.ListTreeNode.Count == 0)
+            {
                 return resultListTasks = tasks.GetRange(0, tasks.Count);
             }
-            foreach (TreeNode treeNodeProject in treeProjects.ListTreeNode) {
-                if (treeNodeProject.Text == "Все" && treeNodeProject.Checked != false) {
+            foreach (TreeNode treeNodeProject in treeProjects.ListTreeNode)
+            {
+                if (treeNodeProject.Text == "Все" && treeNodeProject.Checked != false)
+                {
                     return resultListTasks = tasks.GetRange(0, tasks.Count);
                 }
             }
-            foreach (Task task in tasks) {
+            foreach (Task task in tasks)
+            {
 
                 TreeProjects treeTask = new TreeProjects();
                 treeTask = task.GetTreeProjects();
-                if (CheckEntryProject(treeProjects, treeTask)) {
+                if (CheckEntryProject(treeProjects, treeTask))
+                {
                     resultListTasks.Add(task);
                 }
 
@@ -392,34 +477,45 @@ namespace time_schedule {
             }
             return resultListTasks;
         }
-        private List<Task> GetRelevantTasks(List<Task> tasks) {
+        private List<Task> GetRelevantTasks(List<Task> tasks)
+        {
             var resultListTasks = new List<Task>();
-            foreach (Task task in tasks) {
-                if (IsDateSuitable(task)) {
+            foreach (Task task in tasks)
+            {
+                if (IsDateSuitable(task))
+                {
                     resultListTasks.Add(task);
                 }
             }
             return resultListTasks;
         }
-        private bool IsDateSuitable(Task task) {
+        private bool IsDateSuitable(Task task)
+        {
             return IsRelevant(task) || IsNotStarted(task) || IsOverdue(task);
         }
-        private static bool IsRelevant(Task task) {
+        private static bool IsRelevant(Task task)
+        {
             return task.DateFinish >= DateTime.Now.Date.AddMonths(-1);
         }
-         private bool IsOverdue(Task task) {
+        private bool IsOverdue(Task task)
+        {
             return (task.DateFinish.Date < DateTime.Now.Date.AddMonths(-1)) && (task.Status != TaskStatus.Closed);
         }
-        private bool IsNotStarted(Task task) {
+        private bool IsNotStarted(Task task)
+        {
             return (task.DateStart.Date < DateTime.Now.Date.AddMonths(-1)) && (task.Status == TaskStatus.New);
         }
-        private static bool CheckEntryProject(TreeProjects treeProjects, TreeProjects treeTask) {
+        private static bool CheckEntryProject(TreeProjects treeProjects, TreeProjects treeTask)
+        {
             bool isEntry = false;
-            foreach (TreeNode taskNode in treeTask.ListTreeNode) {
-                foreach (TreeNode projectNode in treeProjects.ListTreeNode) {
+            foreach (TreeNode taskNode in treeTask.ListTreeNode)
+            {
+                foreach (TreeNode projectNode in treeProjects.ListTreeNode)
+                {
                     if (taskNode.Text == projectNode.Text &&
                         taskNode.Checked == true &&
-                        projectNode.Checked == true) {
+                        projectNode.Checked == true)
+                    {
                         isEntry = true;
                         return isEntry;
                     }
@@ -429,12 +525,16 @@ namespace time_schedule {
             }
             return isEntry;
         }
-        private static bool CheckEntryProject(TreeNode treeProjects, TreeNode treeTask, bool isEntry) {
-            foreach (TreeNode taskNode in treeTask.Nodes) {
-                foreach (TreeNode projectNode in treeProjects.Nodes) {
+        private static bool CheckEntryProject(TreeNode treeProjects, TreeNode treeTask, bool isEntry)
+        {
+            foreach (TreeNode taskNode in treeTask.Nodes)
+            {
+                foreach (TreeNode projectNode in treeProjects.Nodes)
+                {
                     if (taskNode.Text == projectNode.Text &&
                         taskNode.Checked == true &&
-                        projectNode.Checked == true) {
+                        projectNode.Checked == true)
+                    {
                         isEntry = true;
                         return isEntry;
                     }
@@ -444,7 +544,8 @@ namespace time_schedule {
             }
             return isEntry;
         }
-        private static void ClearAllPools() {
+        private static void ClearAllPools()
+        {
             Program.PoolTextBox.ListTextBoxes.Clear();
             Program.ListTaskButtons.TaskButtons.Clear();
             Program.ListTasksAllPersonToSave.Tasks.Clear();
@@ -456,49 +557,86 @@ namespace time_schedule {
             Program.listNonWorkingDays.NonWorkingDays.Clear();
             Program.ListTaskButtons.TaskButtons.Clear();
         }
-        private void ChangePanelVisibility(Statuses.Visibility visibility) {
-            if (visibility == Statuses.Visibility.Visible) {
+        private void ChangePanelVisibility(Statuses.Visibility visibility)
+        {
+            if (visibility == Statuses.Visibility.Visible)
+            {
                 plMain.Visible = true;
                 plForDate.Visible = true;
                 plPersonButton.Visible = true;
             }
-            if (visibility == Statuses.Visibility.Invisible) {
+            if (visibility == Statuses.Visibility.Invisible)
+            {
                 plForDate.Visible = false;
                 plPersonButton.Visible = false;
                 plMain.Visible = false;
             }
         }
-        private void LoadTextBoxWithDate() {
+        private void LoadTextBoxWithDate()
+        {
+            int scrollValue = HorizontalScrollValue;
             DateTime dateToTables = Program.ListTasksAllPersonToShow.GetMinDateStartTasks();
             DateTime dateMaxToTable = Program.ListTasksAllPersonToShow.GetMaxDateFinishTasks();
             int height = plMain.Location.Y - plForDate.Location.Y;
             int locationX = 0;
             plForDate.Controls.Clear();
-            while (dateToTables <= dateMaxToTable) {
-                if (IsNotHolyday(dateToTables)) {
-                    DateTextBox dateTextBox = new DateTextBox(dateToTables, height, locationX);
+            Bitmap bmp = new Bitmap(1, 1);
 
-                    if (dateToTables == Program.ListTasksAllPersonToShow.GetMinDateStartTasks()) {
-                        dateTextBox.TextBox.Location = new Point(
-                            dateTextBox.TextBox.Location.X - HorizontalScrollValue, 0);
-                        plForDate.Controls.Add(dateTextBox.TextBox);
-                        dateTextBox.SetLoadingStatus(Statuses.LoadingStatus.Loaded);
-                    }
-                    if (dateToTables == dateMaxToTable) {
-                        dateTextBox.TextBox.Location = new Point(
-                            dateTextBox.TextBox.Location.X, 0);
-                        plForDate.Controls.Add(dateTextBox.TextBox);
-                        dateTextBox.SetLoadingStatus(Statuses.LoadingStatus.ReadyToLoad);
-                    }
+            PictureBox pb = new PictureBox();
+            pb.Height = 1;
+            pb.Location = new Point(HorizontalScrollValue, 1);
+            plForDate.Controls.Add(pb);
+            pb.Image = bmp;
+
+            DateTextBox dateTextBox = new DateTextBox(dateToTables, height, locationX);
+            while (dateToTables <= dateMaxToTable)
+            {
+                if (IsNotHolyday(dateToTables))
+                {
+                    dateTextBox = new DateTextBox(dateToTables, height, locationX);
+                    dateTextBox.TextBox.BringToFront();
+                    dateTextBox.LocationX = locationX;
+                    dateTextBox.SetLoadingStatus(Statuses.LoadingStatus.NotReady);
                     locationX += Constants.COLUMN_WITH;
                     Program.PoolTextBox.ListTextBoxes.Add(dateTextBox);
                 }
                 dateToTables = dateToTables.AddDays(1);
             }
-            pBForLine.Width = locationX;
-            ResizeImage(new Size(locationX, pBForLine.Height));
+
+            if (LastMaxHorizonntalScroll >= locationX + Constants.COLUMN_WITH && HorizontalScrollValue > LastMaxHorizonntalScroll - LastLargeChangeHorizonntalScroll)
+            {
+                HorizontalScrollValue -= LastMaxHorizonntalScroll - locationX;
+            }
+            ResizePlForTaskes();
+            ResizePlForDate();
+            void ResizePlForDate()
+            {
+                try
+                {
+                    var b = new Bitmap(locationX, bmp.Height);
+                    using (Graphics g = Graphics.FromImage((Image)b))
+                    {
+                        g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
+                        g.DrawImage(bmp, 0, 0, bmp.Width * 4, bmp.Height);
+                    }
+                    bmp = b;
+                    pb.Width = bmp.Width;
+                    pb.Image = bmp;
+                }
+                catch
+                {
+
+                }
+
+            }
+            void ResizePlForTaskes()
+            {
+                pBForLine.Width = locationX;
+                ResizeImage(new Size(locationX, pBForLine.Height));
+            }
         }
-        private static bool IsNotHolyday(DateTime dateToTables) {
+        private static bool IsNotHolyday(DateTime dateToTables)
+        {
             if (dateToTables.DayOfWeek == DayOfWeek.Saturday)
                 return false;
             if (dateToTables.DayOfWeek == DayOfWeek.Sunday)
@@ -507,19 +645,24 @@ namespace time_schedule {
                 return false;
             return true;
         }
-        public Panel GetPlPeraonButton() {
+        public Panel GetPlPeraonButton()
+        {
             return plPersonButton;
         }
-        public Panel GetPlMain() {
+        public Panel GetPlMain()
+        {
             return plMain;
         }
-        public Bitmap GetBmp() {
+        public Bitmap GetBmp()
+        {
             return Bmp;
         }
-        public Form1 SetForm1() {
+        public Form1 SetForm1()
+        {
             return this;
         }
-        private void Form1_Load(object sender, EventArgs e) {
+        private void Form1_Load(object sender, EventArgs e)
+        {
 
             this.DoubleBuffered = true;
             Program.delegatLoadRefreshForm = LoadRefreshFormForDelegat;
@@ -536,8 +679,10 @@ namespace time_schedule {
             btnNewTask.Visible = false;
         }
 
-        private void CalendarTasks_MouseWheel(object sender, MouseEventArgs e) {
-            try {
+        private void CalendarTasks_MouseWheel(object sender, MouseEventArgs e)
+        {
+            try
+            {
                 plMain.Focus();
                 plForDate.HorizontalScroll.Value = plMain.HorizontalScroll.Value;
                 plForDate.HorizontalScroll.Value = plMain.HorizontalScroll.Value;
@@ -545,7 +690,8 @@ namespace time_schedule {
                 plPersonButton.VerticalScroll.Value = test;
                 plPersonButton.VerticalScroll.Value = test;
             }
-            catch {
+            catch
+            {
 
             }
             VerticalScrollValue = plMain.VerticalScroll.Value;
@@ -553,33 +699,40 @@ namespace time_schedule {
             LoadTaskButtons();
             LoadDateTextBoxes();
         }
-        public void ScrollToBottom(Panel p) {
-            using (Control c = new Control() { Parent = p, Dock = DockStyle.Bottom }) {
+        public void ScrollToBottom(Panel p)
+        {
+            using (Control c = new Control() { Parent = p, Dock = DockStyle.Bottom })
+            {
                 p.ScrollControlIntoView(c);
                 c.Parent = null;
             }
         }
-        public void NonWorkDaysWrite(DateTime вeginningPeriod, DateTime endPeriod) {
+        public void NonWorkDaysWrite(DateTime вeginningPeriod, DateTime endPeriod)
+        {
             int i = 0;
             while (вeginningPeriod.AddDays(i) < endPeriod ||
                 вeginningPeriod.AddDays(i).DayOfWeek == DayOfWeek.Sunday ||
                 вeginningPeriod.AddDays(i).DayOfWeek == DayOfWeek.Saturday ||
                 Program.ListHolidays.Holidays.Contains(вeginningPeriod.AddDays(i))
-                ) {
+                )
+            {
                 if (вeginningPeriod.AddDays(i).DayOfWeek == DayOfWeek.Sunday ||
                     вeginningPeriod.AddDays(i).DayOfWeek == DayOfWeek.Saturday)
                     Program.listNonWorkingDays.NonWorkingDays.Add(вeginningPeriod.AddDays(i));
                 i++;
             }
         }
-        private void ScrollChange(object sender, ScrollEventArgs e) {
-            try {
+        private void ScrollChange(object sender, ScrollEventArgs e)
+        {
+            try
+            {
                 plForDate.HorizontalScroll.Value = plMain.HorizontalScroll.Value;
                 plForDate.HorizontalScroll.Value = plMain.HorizontalScroll.Value;
                 plPersonButton.VerticalScroll.Value = plMain.VerticalScroll.Value;
                 plPersonButton.VerticalScroll.Value = plMain.VerticalScroll.Value;
             }
-            catch {
+            catch
+            {
                 //MessageBox.Show("1");
             }
             VerticalScrollValue = plMain.VerticalScroll.Value;
@@ -590,17 +743,20 @@ namespace time_schedule {
             //label2.Text = "максимальное   " + plForDate.HorizontalScroll.Maximum;
 
         }
-        private void toolStripTextBox1_Click(object sender, EventArgs e) {
+        private void toolStripTextBox1_Click(object sender, EventArgs e)
+        {
 
         }
-        private void toolStripMenuItem2_Click(object sender, EventArgs e) {
+        private void toolStripMenuItem2_Click(object sender, EventArgs e)
+        {
             fmWorkWithPersons fmWorkWithPersons = new fmWorkWithPersons(Program.delegatLoadRefreshForm);
             fmWorkWithPersons.ShowDialog();
 
 
         }
 
-        private void btnTask_Click(object sender, EventArgs e) {
+        private void btnTask_Click(object sender, EventArgs e)
+        {
             fmAddChangeTask fmAddTask = new fmAddChangeTask(Program.delegatLoadRefreshForm);
             fmAddTask.StartPosition = FormStartPosition.CenterScreen;
             fmAddTask.SetCreateOrChange(CreateOrChange.Create);
@@ -610,34 +766,43 @@ namespace time_schedule {
             //Dals.WriteObjectToMainPathFile(Constants.PERSONS_BIN, Program.listPersons);
 
         }
-        private void ToolStripMenuProject_Click(object sender, EventArgs e) {
+        private void ToolStripMenuProject_Click(object sender, EventArgs e)
+        {
 
         }
 
 
-        public void ScrollToDate(DateTime targetDateTime) {
-            if (!plForDate.HorizontalScroll.Visible) {
+        public void ScrollToDate(DateTime targetDateTime)
+        {
+            if (!plForDate.HorizontalScroll.Visible)
+            {
                 return;
             }
             int locationX = 0;
-            foreach (DateTextBox DateTextBox in Program.PoolTextBox.ListTextBoxes) {
-                if (DateTextBox.Date.Date < targetDateTime) {
+            foreach (DateTextBox DateTextBox in Program.PoolTextBox.ListTextBoxes)
+            {
+                if (DateTextBox.Date.Date < targetDateTime)
+                {
                     locationX += Constants.COLUMN_WITH;
                 }
-                else {
+                else
+                {
                     break;
                 }
             }
             int NewLocationX = locationX - 5 * Constants.COLUMN_WITH;
-            try {
-                if (NewLocationX > 0) {
+            try
+            {
+                if (NewLocationX > 0)
+                {
                     plMain.HorizontalScroll.Value = NewLocationX;
                     plMain.HorizontalScroll.Value = NewLocationX;
                     plForDate.HorizontalScroll.Value = NewLocationX;
                     plForDate.HorizontalScroll.Value = NewLocationX;
 
                 }
-                else {
+                else
+                {
                     plMain.HorizontalScroll.Value = locationX;
                     plMain.HorizontalScroll.Value = locationX;
                     plForDate.HorizontalScroll.Value = locationX;
@@ -649,145 +814,187 @@ namespace time_schedule {
             LoadTaskButtons();
             LoadDateTextBoxes();
         }
-        private void button3_Click(object sender, EventArgs e) {
+        private void button3_Click(object sender, EventArgs e)
+        {
             ScrollToDate(DateTime.Now.Date);
         }
 
-        private void Form1_Shown(object sender, EventArgs e) {
+        private void Form1_Shown(object sender, EventArgs e)
+        {
             ScrollToDate(DateTime.Now.Date);
         }
-        private void LoadDataGridPersonButton(ref DataGridView dataGridView, ListPersonButton listPersonButton) {
+        private void LoadDataGridPersonButton(ref DataGridView dataGridView, ListPersonButton listPersonButton)
+        {
             //Point startPositionPersonButton;
 
         }
 
-        private void plMain_MouseEnter(object sender, EventArgs e) {
+        private void plMain_MouseEnter(object sender, EventArgs e)
+        {
 
         }
 
-        private void plMain_MouseMove(object sender, MouseEventArgs e) {
+        private void plMain_MouseMove(object sender, MouseEventArgs e)
+        {
 
         }
 
-        private void button3_Click_1(object sender, EventArgs e) {
+        private void button3_Click_1(object sender, EventArgs e)
+        {
             LoadRefreshForm(Statuses.ProgressBar.Use);
         }
-        private void HorizontalScrollAdd(int value) {
-            try {
+        private void HorizontalScrollAdd(int value)
+        {
+            try
+            {
                 plMain.HorizontalScroll.Value += value * Constants.COLUMN_WITH;
                 plMain.HorizontalScroll.Value += value * Constants.COLUMN_WITH;
                 plForDate.HorizontalScroll.Value = plMain.HorizontalScroll.Value;
                 plForDate.HorizontalScroll.Value = plMain.HorizontalScroll.Value;
             }
-            catch {
+            catch
+            {
 
             }
             HorizontalScrollValue = plMain.HorizontalScroll.Value;
         }
-        private void PlusFiveDays(object sender, EventArgs e) {
+        private void PlusFiveDays(object sender, EventArgs e)
+        {
             HorizontalScrollAdd(5);
             LoadTaskButtons();
             LoadDateTextBoxes();
         }
-        public void ResizeImage(Size size) {
-            try {
+        public void ResizeImage(Size size)
+        {
+            try
+            {
                 Bitmap b = new Bitmap(size.Width, size.Height);
-                using (Graphics g = Graphics.FromImage((Image)b)) {
+                using (Graphics g = Graphics.FromImage((Image)b))
+                {
                     g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
-                    g.DrawImage(Bmp, 0, 0, size.Width, size.Height);
+                    g.DrawImage(b, 0, 0, size.Width, size.Height);
                 }
                 Bmp = b;
             }
-            catch {
+            catch
+            {
             }
         }
 
-        private void MinusFiveDays_Click(object sender, EventArgs e) {
+        private void MinusFiveDays_Click(object sender, EventArgs e)
+        {
             HorizontalScrollAdd(-5);
             LoadTaskButtons();
             LoadDateTextBoxes();
 
         }
 
-        private void dateTimePicker1_CloseUp(object sender, EventArgs e) {
+        private void dateTimePicker1_CloseUp(object sender, EventArgs e)
+        {
             ScrollToDate(dateTimePicker1.Value.Date);
         }
 
-        private void dateTimePicker1_Enter(object sender, EventArgs e) {
+        private void dateTimePicker1_Enter(object sender, EventArgs e)
+        {
 
         }
 
-        private void dateTimePicker1_KeyUp(object sender, KeyEventArgs e) {
-            if (e.KeyCode == System.Windows.Forms.Keys.Enter) {
+        private void dateTimePicker1_KeyUp(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == System.Windows.Forms.Keys.Enter)
+            {
                 ScrollToDate(dateTimePicker1.Value.Date);
             }
         }
 
-        private void button1_Click_1(object sender, EventArgs e) {
+        private void button1_Click_1(object sender, EventArgs e)
+        {
             MessageBox.Show("" + plForDate.HorizontalScroll.Value);
         }
         //LoadRefreshForm ThisloadRefreshForm;
-        private void задачиToolStripMenuItem_Click(object sender, EventArgs e) {
+        private void задачиToolStripMenuItem_Click(object sender, EventArgs e)
+        {
 
             fmTasks fmTasks = new fmTasks(this);
 
             fmTasks.ShowDialog();
         }
 
-        private void toolStripMenuItem2_Click_1(object sender, EventArgs e) {
+        private void toolStripMenuItem2_Click_1(object sender, EventArgs e)
+        {
             Program.UserType = UserType.Reader;
             btnNewTask.Visible = false;
         }
 
-        private void adminToolStripMenuItem_Click(object sender, EventArgs e) {
+        private void adminToolStripMenuItem_Click(object sender, EventArgs e)
+        {
             Program.UserType = UserType.Admin;
             btnNewTask.Visible = true;
         }
 
-        private void plPersonButton_Scroll(object sender, ScrollEventArgs e) {
-            try {
+        private void plPersonButton_Scroll(object sender, ScrollEventArgs e)
+        {
+            try
+            {
                 plMain.HorizontalScroll.Value = plForDate.HorizontalScroll.Value;
                 plMain.HorizontalScroll.Value = plForDate.HorizontalScroll.Value;
 
             }
-            catch {
+            catch
+            {
 
             }
         }
 
-        private void нерабочиеДниToolStripMenuItem_Click(object sender, EventArgs e) {
+        private void нерабочиеДниToolStripMenuItem_Click(object sender, EventArgs e)
+        {
             fmHolidays holidays = new fmHolidays(LoadRefreshForm);
             holidays.ShowDialog();
         }
 
-        private void menuStrip1_ItemClicked(object sender, ToolStripItemClickedEventArgs e) {
+        private void menuStrip1_ItemClicked(object sender, ToolStripItemClickedEventArgs e)
+        {
 
         }
 
-        private void timer1_Tick(object sender, EventArgs e) {
-            LoadRefreshForm(Statuses.ProgressBar.Use);
+        private void timer1_Tick(object sender, EventArgs e)
+        {
+            if (Form.ActiveForm == this)
+            {
+                ShowProgressbarAndMakeRefresh();
+            }
+            else
+            {
+                LoadRefreshForm();
+            }
             timer1.Interval = 900000;
         }
 
-        private void btnRefresh_Click(object sender, EventArgs e) {
+        private void btnRefresh_Click(object sender, EventArgs e)
+        {
             LoadRefreshForm(Statuses.ProgressBar.Use);
         }
 
-        private void создатьToolStripMenuItem_Click(object sender, EventArgs e) {
+        private void создатьToolStripMenuItem_Click(object sender, EventArgs e)
+        {
             Dals.WriteMainPathFolder("Проект", Statuses.WorkWithProject.NewProject);
             SetNewTextForForm();
             ZeroingScrolss();
             LoadRefreshForm(Statuses.ProgressBar.Use);
             ScrollToDate(DateTime.Now.Date);
         }
-        private void выбратьToolStripMenuItem_Click(object sender, EventArgs e) {
+        private void выбратьToolStripMenuItem_Click(object sender, EventArgs e)
+        {
             Dals.WriteMainPathFolder("", Statuses.WorkWithProject.LoadProject);
             SetNewTextForForm();
             ZeroingScrolss();
             LoadRefreshForm(Statuses.ProgressBar.Use);
             ScrollToDate(DateTime.Now.Date);
         }
-        private async System.Threading.Tasks.Task ZeroingScrolss() {
+        private void ZeroingScrolss()
+        {
+            HorizontalScrollValue = 0;
+            VerticalScrollValue = 0;
             plForDate.HorizontalScroll.Value = 0;
             plForDate.HorizontalScroll.Value = 0;
             plMain.HorizontalScroll.Value = 0;
@@ -802,25 +1009,30 @@ namespace time_schedule {
             PlMainScrollXSaved = 0;
             PlMainScrollYSaved = 0;
             PlPersonButtonYSaved = 0;
-            await System.Threading.Tasks.Task.Delay(100);
+
         }
-        private void SetNewTextForForm() {
+        private void SetNewTextForForm()
+        {
             this.Text = Dals.ProjectFolderPath;
             this.Text = this.Text.Replace("\\Проект", string.Empty);
             this.Activate();
         }
-        private void LoadPersonButtons() {
+        private void LoadPersonButtons()
+        {
             if (FormReadyToBeAddedControl == Statuses.FormReadyToBeAddedControl.NotReady)
                 return;
-            foreach (PersonButton personButton in Program.ListPersonButton.PersonButtons) {
-                if (personButton.Person.ListTask.Tasks.Count > 0) {
+            foreach (PersonButton personButton in Program.ListPersonButton.PersonButtons)
+            {
+                if (personButton.Person.ListTask.Tasks.Count > 0)
+                {
                     plPersonButton.Controls.Add(personButton.Button);
                     personButton.Button.BringToFront();
                 }
 
             }
         }
-        private void LoadTaskButtons() {
+        private void LoadTaskButtons()
+        {
             if (FormReadyToBeAddedControl == Statuses.FormReadyToBeAddedControl.NotReady)
                 return;
             Program.ListTaskButtons.CalculateLoadingStatus(
@@ -830,9 +1042,12 @@ namespace time_schedule {
             Program.ListTaskButtons.SetNewLocationToButtons(
                 VerticalScrollValue,
                 HorizontalScrollValue);
-            foreach (TaskButton taskButton in Program.ListTaskButtons.TaskButtons) {
-                if (taskButton.LoadingStatus == Statuses.LoadingStatus.ReadyToLoad) {
-                    foreach (Button button in taskButton.Buttons) {
+            foreach (TaskButton taskButton in Program.ListTaskButtons.TaskButtons)
+            {
+                if (taskButton.LoadingStatus == Statuses.LoadingStatus.ReadyToLoad)
+                {
+                    foreach (Button button in taskButton.Buttons)
+                    {
                         plMain.Controls.Add(button);
                         button.BringToFront();
                     }
@@ -840,7 +1055,8 @@ namespace time_schedule {
                 }
             }
         }
-        private void LoadDateTextBoxes() {
+        private void LoadDateTextBoxes()
+        {
             if (FormReadyToBeAddedControl == Statuses.FormReadyToBeAddedControl.NotReady)
                 return;
             Program.PoolTextBox.CalculateLoadingStatus(
@@ -849,8 +1065,10 @@ namespace time_schedule {
                 Program.ListTasksAllPersonToShow.GetMinDateStartTasks());
             Program.PoolTextBox.SetNewLocationToButtons(
             plMain.HorizontalScroll.Value);
-            foreach (DateTextBox dateTextBox in Program.PoolTextBox.ListTextBoxes) {
-                if (dateTextBox.LoadingStatus == Statuses.LoadingStatus.ReadyToLoad) {
+            foreach (DateTextBox dateTextBox in Program.PoolTextBox.ListTextBoxes)
+            {
+                if (dateTextBox.LoadingStatus == Statuses.LoadingStatus.ReadyToLoad)
+                {
                     plForDate.Controls.Add(dateTextBox.TextBox);
                     dateTextBox.TextBox.BringToFront();
                     dateTextBox.SetLoadingStatus(Statuses.LoadingStatus.Loaded);
@@ -858,28 +1076,33 @@ namespace time_schedule {
             }
 
         }
-        private void Form1_SizeChanged(object sender, EventArgs e) {
+        private void Form1_SizeChanged(object sender, EventArgs e)
+        {
             LoadTaskButtons();
             LoadDateTextBoxes();
             this.VerticalScrollValue = this.plMain.VerticalScroll.Value;
-            if (this.WindowState == FormWindowState.Minimized) {
+            if (this.WindowState == FormWindowState.Minimized)
+            {
                 ProgramWindowState = Statuses.ProgramWindowState.Minimized;
                 timer1.Interval = 100;
                 timer1.Enabled = false;
                 return;
             }
-            if (ProgramWindowState == Statuses.ProgramWindowState.Minimized) {
+            if (this.WindowState == FormWindowState.Normal || this.WindowState == FormWindowState.Maximized)
+            {
                 ProgramWindowState = Statuses.ProgramWindowState.Normal;
                 timer1.Enabled = true;
             }
 
         }
 
-        private void dateTimePicker1_ValueChanged(object sender, EventArgs e) {
+        private void dateTimePicker1_ValueChanged(object sender, EventArgs e)
+        {
 
         }
 
-        private void Projects_Click_2(object sender, EventArgs e) {
+        private void Projects_Click_2(object sender, EventArgs e)
+        {
             fmProjectTree fmProjectTree = new fmProjectTree();
             fmProjectTree.StartPosition = FormStartPosition.CenterParent;
             //fmProjectTree.SetTreeView(Dals.binReadMainPathFileToObject(
@@ -892,30 +1115,42 @@ namespace time_schedule {
             fmProjectTree.ShowDialog();
             TreeProjects treeProjects = new TreeProjects();
             treeProjects.SetTreeViewProjects(fmProjectTree.projectTreeView);
-            if (fmProjectTree.ClickButton == ClickButton.Aplly) {
+            if (fmProjectTree.ClickButton == ClickButton.Aplly)
+            {
                 cBxSeetingsProjects.Items.Clear();
                 cBxSeetingsProjects.Text = "";
                 treeProjects.SaveTree();
                 treeProjects.SaveSettingsTree();
                 ZeroingScrolss();
-                Program.fmMain.LoadRefreshForm(Statuses.ProgressBar.Use);
-                Program.fmMain.ScrollToDate(DateTime.Now.Date);
+                EventRefreshFinished += Form1_EventRefreshFinished;
+                ShowProgressbarAndMakeRefresh();
+
                 //Dals.WriteObjectToMainPathFile(Constants.PROJECTS_LIST, treeProjects);
             }
-
+            void Form1_EventRefreshFinished()
+            {
+                Program.fmMain.ScrollToDate(DateTime.Now.Date);
+                EventRefreshFinished -= Form1_EventRefreshFinished;
+            }
 
         }
 
-        private void plMain_Resize(object sender, EventArgs e) {
-            if (plMain.VerticalScroll.Visible == true) {
+
+
+        private void plMain_Resize(object sender, EventArgs e)
+        {
+            if (plMain.VerticalScroll.Visible == true)
+            {
                 plForDate.Width = plMain.Width - 18;
             }
-            if (plMain.VerticalScroll.Visible == false) {
+            if (plMain.VerticalScroll.Visible == false)
+            {
                 plForDate.Width = plMain.Width;
             }
         }
 
-        private void comboBox1_Click(object sender, EventArgs e) {
+        private void comboBox1_Click(object sender, EventArgs e)
+        {
             cBxSeetingsProjects.Items.Clear();
             cBxSeetingsProjects.Text = "";
             string fileName = Dals.ProjectFolderPath.Replace('\\', '_');
@@ -923,36 +1158,52 @@ namespace time_schedule {
             List<TreeProjects> listTreeProject = new List<TreeProjects>();
             listTreeProject = Dals.binReadUserPathFileToObject(listTreeProject, fileName);
             List<string> projectNames = new List<string>();
-            foreach (TreeProjects treeProjects in listTreeProject) {
+            foreach (TreeProjects treeProjects in listTreeProject)
+            {
                 projectNames.Add(treeProjects.GetName());
             }
             cBxSeetingsProjects.Items.AddRange(projectNames.ToArray());
         }
-        private async void cBxSeetingsProgects_SelectedIndexChanged(object sender, EventArgs e) {
+        private void cBxSeetingsProgects_SelectedIndexChanged(object sender, EventArgs e)
+        {
             string fileName = Dals.ProjectFolderPath.Replace('\\', '_');
             fileName = fileName.Replace(':', '+');
             List<TreeProjects> listTreeProject = new List<TreeProjects>();
             listTreeProject = Dals.binReadUserPathFileToObject(listTreeProject, fileName);
-            foreach (TreeProjects treeProjects in listTreeProject) {
-                if (cBxSeetingsProjects.SelectedItem == null) {
+            foreach (TreeProjects treeProjects in listTreeProject)
+            {
+                if (cBxSeetingsProjects.SelectedItem == null)
+                {
                     break;
                 }
-                if (treeProjects.GetName() == cBxSeetingsProjects.SelectedItem.ToString()) {
+                if (treeProjects.GetName() == cBxSeetingsProjects.SelectedItem.ToString())
+                {
                     treeProjects.SaveSettingsTree();
                 }
             }
-            await ZeroingScrolss();
-            Program.fmMain.LoadRefreshForm(Statuses.ProgressBar.Use);
-            Program.fmMain.ScrollToDate(DateTime.Now.Date);
-        }
-
-        private void cBxShowTask_SelectedIndexChanged(object sender, EventArgs e) {
             ZeroingScrolss();
-            Program.fmMain.LoadRefreshForm(Statuses.ProgressBar.Use);
+            EventRefreshFinished += Form1_EventRefreshFinished;
+            ShowProgressbarAndMakeRefresh();
+
+            //Dals.WriteObjectToMainPathFile(Constants.PROJECTS_LIST, treeProjects);
+
+            void Form1_EventRefreshFinished()
+            {
+                Program.fmMain.ScrollToDate(DateTime.Now.Date);
+                EventRefreshFinished -= Form1_EventRefreshFinished;
+            }
+
+        }
+
+        private void cBxShowTask_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            ZeroingScrolss();
+            ShowProgressbarAndMakeRefresh();
             Program.fmMain.ScrollToDate(DateTime.Now.Date);
         }
 
-        private void btnSetings_Click(object sender, EventArgs e) {
+        private void btnSetings_Click(object sender, EventArgs e)
+        {
             fmChangeList fm = new fmChangeList();
             fm.Text = "Сохраненные настройки";
             fm.StartPosition = FormStartPosition.CenterParent;
@@ -968,23 +1219,30 @@ namespace time_schedule {
             var listStr = new List<string>();
 
             fm.ShowDialog();
-            if (fm.BtnClick == BtnClick.aplly) {
+            if (fm.BtnClick == BtnClick.aplly)
+            {
                 SaveListProjects(fm, fileName);
             }
         }
 
-        private static void SaveListProjects(fmChangeList fm, string fileName) {
+        private static void SaveListProjects(fmChangeList fm, string fileName)
+        {
             List<TreeProjects> listTreeForChange = new List<TreeProjects>();
             List<TreeProjects> listTreeForSave = new List<TreeProjects>();
-            if (File.Exists(Dals.TakeUserPath(fileName))) {
+            if (File.Exists(Dals.TakeUserPath(fileName)))
+            {
                 listTreeForChange = Dals.binReadUserPathFileToObject(listTreeForChange, fileName);
             }
-            foreach (StringNumChange stringNumChange in fm.ListStringNumChange) {
+            foreach (StringNumChange stringNumChange in fm.ListStringNumChange)
+            {
                 listTreeForChange[stringNumChange.Num].SetName(stringNumChange.Str);
             }
-            foreach (string str in fm.LBx.Items) {
-                foreach (TreeProjects tree in listTreeForChange) {
-                    if (tree.GetName() == str) {
+            foreach (string str in fm.LBx.Items)
+            {
+                foreach (TreeProjects tree in listTreeForChange)
+                {
+                    if (tree.GetName() == str)
+                    {
                         listTreeForSave.Add(tree);
                         break;
                     }
@@ -993,19 +1251,23 @@ namespace time_schedule {
             Dals.WriteObjectToUserPathFile(fileName, listTreeForSave);
         }
 
-        private static void SetLbx(fmChangeList fm, string fileName) {
+        private static void SetLbx(fmChangeList fm, string fileName)
+        {
             List<TreeProjects> listTreeProjects = new List<TreeProjects>();
-            if (File.Exists(Dals.TakeUserPath(fileName))) {
+            if (File.Exists(Dals.TakeUserPath(fileName)))
+            {
                 listTreeProjects = Dals.binReadUserPathFileToObject(listTreeProjects, fileName);
             }
             List<string> listString = new List<string>();
-            foreach (TreeProjects targetTreeProjects in listTreeProjects) {
+            foreach (TreeProjects targetTreeProjects in listTreeProjects)
+            {
                 listString.Add(targetTreeProjects.GetName());
             }
             fm.LBx.Items.AddRange(listString.ToArray());
         }
 
-        private void восстановлениеЗадачToolStripMenuItem_Click(object sender, EventArgs e) {
+        private void восстановлениеЗадачToolStripMenuItem_Click(object sender, EventArgs e)
+        {
             fmChangeList fm = new fmChangeList();
             fm.Text = "Файлы";
             fm.StartPosition = FormStartPosition.CenterParent;
@@ -1024,22 +1286,27 @@ namespace time_schedule {
             FileSystemInfo[] backUpsFiles = new DirectoryInfo(Dals.TakeBackUpPathDirectory(Constants.TASKS_BIN)).GetFileSystemInfos();
             backUpsFiles = backUpsFiles.OrderBy(fi => fi.CreationTime).ToArray();
 
-            foreach (FileSystemInfo backUp in backUpsFiles) {
+            foreach (FileSystemInfo backUp in backUpsFiles)
+            {
                 stringsToShow.Add(backUp.Name.Replace('_', ':'));
             }
             stringsToShow.Reverse();
             fm.LBx.Items.AddRange(stringsToShow.ToArray());
             fm.LBx.Click += LBx_Click;
-            void LBx_Click(object newSender, EventArgs newE) {
-                if (fm.LBx.SelectedIndex != -1) {
+            void LBx_Click(object newSender, EventArgs newE)
+            {
+                if (fm.LBx.SelectedIndex != -1)
+                {
                     fm.BtnApply.Enabled = true;
                 }
-                if (fm.LBx.SelectedIndex == -1) {
+                if (fm.LBx.SelectedIndex == -1)
+                {
                     fm.BtnApply.Enabled = false;
                 }
             }
             fm.ShowDialog();
-            if (fm.BtnClick == BtnClick.aplly) {
+            if (fm.BtnClick == BtnClick.aplly)
+            {
                 string fileName = Dals.TakeBackUpPathDirectory(Constants.TASKS_BIN);
                 fileName += "\\" + fm.LBx.SelectedItem.ToString().Replace(':', '_');
 
@@ -1056,6 +1323,51 @@ namespace time_schedule {
         {
             FrmAddProject addProject = new FrmAddProject();
             addProject.ShowDialog();
+        }
+
+        private void NewRefresh_Click(object sender, EventArgs e)
+        {
+            ShowProgressbarAndMakeRefresh();
+        }
+
+        public void ShowProgressbarAndMakeRefresh()
+        {
+            fmProgressBar frm = new fmProgressBar();
+            frm.SetTextMessege("Идет обновление");
+            frm.StartPosition = FormStartPosition.Manual;
+            frm.Location = new Point(
+                this.Left + this.Width / 2 - frm.Width / 2,
+                this.Top + this.Height / 2 - frm.Height / 2);
+            System.Threading.Tasks.Task tsk = new System.Threading.Tasks.Task(() =>
+            {
+                Invoke(new Action(() =>
+                {
+                    LoadRefreshForm(RefreshType.All);
+                    EventRefreshFinished?.Invoke();
+                }));
+                Thread.Sleep(10);
+                frm.Invoke(new Action(() => frm.Close()));
+            });
+            frm.Load += Frm_EventLoadFinished;
+            System.Threading.Tasks.Task.Run(()=>frm.ShowDialog());
+             void Frm_EventLoadFinished(object s, EventArgs ev)
+            {
+                tsk.Start();
+                
+            }
+
+        }
+
+        private void butTest_Click(object sender, EventArgs e)
+        {
+            var txtbox = Program.PoolTextBox.ListTextBoxes[Program.PoolTextBox.ListTextBoxes.Count - 1].TextBox;
+            txtbox.Location = new Point(plForDate.ClientSize.Width - Constants.COLUMN_WITH, txtbox.Location.Y);
+            plForDate.Controls.Add(txtbox);
+        }
+
+        private void cBxShowTask_Click(object sender, EventArgs e)
+        {
+
         }
     }
 

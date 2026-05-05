@@ -49,6 +49,12 @@ namespace time_schedule
             InitializeComponent();
             thisloadRefreshForm = loadRefreshForm;
         }
+        public fmAddChangeTask()
+        {
+
+            InitializeComponent();
+            
+        }
         public NumericUpDown GetPriority()
         {
             return nUpDnPrioirity;
@@ -181,6 +187,7 @@ namespace time_schedule
                     btnCreateTask.Enabled = true;
                     btnCancel.Enabled = true;
                 }
+                
             }
             Thread thread = new Thread(WtriteComboBoxThread);
             thread.Start(this);
@@ -201,7 +208,7 @@ namespace time_schedule
                 btnCopyAnotherProject.Enabled = false;
             }
             PushTBxProjects();
-            this.TopMost = true;
+            this.TopLevel = true;
         }
         delegate void WriteCmBx();
         private void WriteToCmBxPerson(ComboBox comboBox, string[] stringArray)
@@ -421,26 +428,19 @@ namespace time_schedule
         }
         private void btnCreateChangeTask_Click(object sender, EventArgs e)
         {
-            this.TopMost = false;
             ClickButton = ClickButton.Aplly;
             if (IsTBxTaskNameEmpty())
             {
                 return;
             }
-            Dals.ReloadListTaskToSave();
             Dals.WriteObjectToBackUpPathFile(Constants.TASKS_BIN, Program.ListTasksAllPersonToSave);
-            for (int i = 0; i < Constants.COUNT_OF_TRIES; i++)
+            if(Program.SaveProgramData(PushNewTaskInListTasks) == Result.Sucess)
             {
-                Dals.ReloadListTaskToSave();
-                PushNewTaskInListTasks();
-                if (Dals.WriteObjectToMainPathFile(Constants.TASKS_BIN, Program.ListTasksAllPersonToSave) == MethodResultStatus.Ok)
-                {
-                    Program.fmMain.LoadRefreshForm(Statuses.ProgressBar.Use);
-                    this.Close();
-                    return;
-                }
+                Program.fmMain.ShowProgressbarAndMakeRefresh();
+                this.Close();
+                return;
             }
-            MessageBox.Show("Не удалось записать файл Constants.TASKS_BIN");
+            MessageBox.Show("Не удалось сохранить вносимые изменения, попробуйте позже.");
         }
 
         private void PushNewTaskInListTasks()

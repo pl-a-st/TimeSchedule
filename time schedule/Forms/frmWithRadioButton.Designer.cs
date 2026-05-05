@@ -29,8 +29,8 @@ namespace time_schedule
         /// </summary>
         private void InitializeComponent()
         {
-            this.butOk = new System.Windows.Forms.Button();
-            this.butCancel = new System.Windows.Forms.Button();
+            this.butOk = new ButtonForShedule();
+            this.butCancel = new ButtonForShedule();
             this.label1 = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 

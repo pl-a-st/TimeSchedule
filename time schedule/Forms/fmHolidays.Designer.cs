@@ -29,26 +29,26 @@
         private void InitializeComponent()
         {
             this.LBxHolidays = new System.Windows.Forms.ListBox();
-            this.btnSetListDays = new System.Windows.Forms.Button();
+            this.btnSetListDays = new ButtonForShedule();
             this.dTPListDays = new System.Windows.Forms.DateTimePicker();
             this.tXBListDays = new System.Windows.Forms.TextBox();
-            this.btnSetIntervalDays = new System.Windows.Forms.Button();
+            this.btnSetIntervalDays = new ButtonForShedule();
             this.dTPFirstInTheInterval = new System.Windows.Forms.DateTimePicker();
             this.dTPSecondInTheInterval = new System.Windows.Forms.DateTimePicker();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.dTPOnceDay = new System.Windows.Forms.DateTimePicker();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
-            this.button2 = new System.Windows.Forms.Button();
-            this.button1 = new System.Windows.Forms.Button();
+            this.button2 = new ButtonForShedule();
+            this.button1 = new ButtonForShedule();
             this.label1 = new System.Windows.Forms.Label();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
             this.label3 = new System.Windows.Forms.Label();
-            this.RemoveDay = new System.Windows.Forms.Button();
+            this.RemoveDay = new ButtonForShedule();
             this.label2 = new System.Windows.Forms.Label();
-            this.btnApply = new System.Windows.Forms.Button();
+            this.btnApply = new ButtonForShedule();
             this.groupBox4 = new System.Windows.Forms.GroupBox();
-            this.btnCancel = new System.Windows.Forms.Button();
-            this.btnSort = new System.Windows.Forms.Button();
+            this.btnCancel = new ButtonForShedule();
+            this.btnSort = new ButtonForShedule();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox3.SuspendLayout();

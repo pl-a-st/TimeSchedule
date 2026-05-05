@@ -30,8 +30,8 @@
         {
             this.label1 = new System.Windows.Forms.Label();
             this.tbxInpootText = new System.Windows.Forms.TextBox();
-            this.btnYes = new System.Windows.Forms.Button();
-            this.btnCancel = new System.Windows.Forms.Button();
+            this.btnYes = new ButtonForShedule();
+            this.btnCancel = new ButtonForShedule();
             this.SuspendLayout();
             // 
             // label1

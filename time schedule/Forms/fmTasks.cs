@@ -225,12 +225,25 @@ namespace time_schedule
                 return;
             }
             this.Activate();
-            string targetItem = lBxTasks.SelectedItem.ToString();
-            DeleteTaskFromListToSave(targetItem);
-            Dals.WriteObjectToMainPathFile(Constants.TASKS_BIN, Program.ListTasksAllPersonToSave);
-            Form1 form1 = this.Form1Delegat.SetForm1();
-            form1.LoadRefreshForm(Statuses.ProgressBar.Use);
-            LoadLBxTasks();
+            FindTaskAndDelete();
+            if(Program.SaveProgramData(FindTaskAndDelete) != Result.Sucess)
+            {
+                MessageBox.Show("Не удалось сохранить вносимые изменения"); 
+                return;
+            }
+            Program.fmMain.ShowProgressbarAndMakeRefresh();
+            Program.fmMain.EventRefreshFinished += ActionEventRefreshFinished;
+            
+            void ActionEventRefreshFinished()
+            {
+                LoadLBxTasks();
+                Program.fmMain.EventRefreshFinished -= ActionEventRefreshFinished;
+            }
+            void FindTaskAndDelete()
+            {
+                string targetItem = lBxTasks.SelectedItem.ToString();
+                DeleteTaskFromListToSave(targetItem);
+            }
         }
 
         private static void DeleteTaskFromListToSave(string targetItem)
@@ -253,7 +266,7 @@ namespace time_schedule
                 MessageBox.Show("Не выбрана задача.");
                 return;
             }
-            fmAddChangeTask fmAddTask = new fmAddChangeTask(Program.delegatLoadRefreshForm);
+            fmAddChangeTask fmAddTask = new fmAddChangeTask();
             fmAddTask.GhangeNamebtnCreateTask("Изменить");
             fmAddTask.SetCreateOrChange(CreateOrChange.Change);
             foreach (Task task in Program.ListTasksAllPersonToSave.Tasks)
@@ -265,7 +278,7 @@ namespace time_schedule
                 }
             }
             fmAddTask.ShowDialog();
-            Dals.WriteObjectToMainPathFile(Constants.TASKS_BIN, Program.ListTasksAllPersonToSave);
+            //Dals.WriteObjectToMainPathFile(Constants.TASKS_BIN, Program.ListTasksAllPersonToSave);
             LoadLBxTasks();
         }
 
@@ -572,6 +585,18 @@ namespace time_schedule
             fmChangeTask.ShowDialog();
             if (fmChangeTask.ClickButton == ClickButton.Aplly)
             {
+                if (Program.SaveProgramData(ChangeTasks) != Result.Sucess)
+                {
+                    MessageBox.Show("Не удалось сохранить вносимые изменения");
+                    fmChangeTask.ShowDialog();
+                    return;
+                }
+                LoadLBxTasks();
+                Program.fmMain.ShowProgressbarAndMakeRefresh();
+            }
+
+            void ChangeTasks()
+            {
                 string[] targetItems = GetTargetItems();
                 foreach (string itemLbx in targetItems)
                 {
@@ -605,11 +630,7 @@ namespace time_schedule
                         }
                     }
                 }
-                Dals.WriteObjectToMainPathFile(Constants.TASKS_BIN, Program.ListTasksAllPersonToSave);
-                LoadLBxTasks();
-                Program.fmMain.SetForm1().LoadRefreshForm(Statuses.ProgressBar.Use);
             }
-
         }
 
         private void chkMultySelectTask_CheckedChanged(object sender, EventArgs e)

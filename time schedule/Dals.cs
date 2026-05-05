@@ -188,7 +188,7 @@ namespace time_schedule
             try
             {
                 BinaryFormatter bf = new BinaryFormatter();
-                using (FileStream stream = new FileStream(fileName, FileMode.Create))
+                using (FileStream stream = new FileStream(fileName, FileMode.Create, FileAccess.ReadWrite, FileShare.None))
                 {
                     bf.Serialize(stream, serObject);
                 }
@@ -244,10 +244,31 @@ namespace time_schedule
                 }
                 catch
                 {
+                    System.Threading.Thread.Sleep(100);
                 }
             }
             MessageAboutProblem(fullPathFileName);
             return serObject;
+        }
+        public static (Type, Result) GetObjectFromFile<Type>(Type serObject, string fullPathFileName)
+        {
+            BinaryFormatter bf = new BinaryFormatter();
+            for (int i = 0; i < Constants.COUNT_OF_TRIES; i++)
+            {
+                try
+                {
+                    using (FileStream stream = new FileStream(fullPathFileName, FileMode.Open, FileAccess.ReadWrite, FileShare.None))
+                    {
+                        serObject = (Type)bf.Deserialize(stream);
+                    }
+                    return (serObject, Result.Sucess);
+                }
+                catch (Exception ex)
+                {
+                    System.Threading.Thread.Sleep(100);
+                }
+            }
+            return (serObject, Result.Error);
         }
         private static void MessageAboutProblem(string fileName)
         {
@@ -260,14 +281,12 @@ namespace time_schedule
             if (fileName.Contains(Constants.TASKS) ||
                 fileName.Contains(Constants.TASKS_BIN))
             {
-                MessageBox.Show("В текущем проекте не создано ни одной задачи!", "");
+                MessageBox.Show("Не удалось зачитать задачи!", "");
                 return;
             }
             if (fileName.Contains(Constants.HOLYDAYS) ||
                 fileName.Contains(Constants.HOLYDAYS_BIN))
             {
-
-
                 MessageBox.Show("В текущем проекте не занесены праздничные дни!", "");
                 return;
             }

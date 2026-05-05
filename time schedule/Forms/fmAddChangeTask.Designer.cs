@@ -43,24 +43,24 @@
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.rBnDayStart = new System.Windows.Forms.RadioButton();
             this.rBnPreviousTask = new System.Windows.Forms.RadioButton();
-            this.btnPreviousTask = new System.Windows.Forms.Button();
+            this.btnPreviousTask = new time_schedule.ButtonForShedule();
             this.tBxPreviousTask = new System.Windows.Forms.TextBox();
             this.label6 = new System.Windows.Forms.Label();
             this.nUpDnPreviousTask = new System.Windows.Forms.NumericUpDown();
-            this.btnCreateTask = new System.Windows.Forms.Button();
+            this.btnCreateTask = new time_schedule.ButtonForShedule();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
-            this.btnCancel = new System.Windows.Forms.Button();
-            this.bTnColor = new System.Windows.Forms.Button();
+            this.btnCancel = new time_schedule.ButtonForShedule();
+            this.bTnColor = new time_schedule.ButtonForShedule();
             this.cmBxTaskStatus = new System.Windows.Forms.ComboBox();
             this.label7 = new System.Windows.Forms.Label();
             this.nUpDnTaskNumber = new System.Windows.Forms.NumericUpDown();
             this.lBlTaskNum = new System.Windows.Forms.Label();
             this.label8 = new System.Windows.Forms.Label();
             this.nUpDnPrioirity = new System.Windows.Forms.NumericUpDown();
-            this.addPerson = new System.Windows.Forms.Button();
-            this.btnCopyAnotherProject = new System.Windows.Forms.Button();
+            this.addPerson = new time_schedule.ButtonForShedule();
+            this.btnCopyAnotherProject = new time_schedule.ButtonForShedule();
             this.label9 = new System.Windows.Forms.Label();
-            this.button2 = new System.Windows.Forms.Button();
+            this.button2 = new time_schedule.ButtonForShedule();
             this.tBxProjects = new System.Windows.Forms.TextBox();
             ((System.ComponentModel.ISupportInitialize)(this.nUpDnCounWorkDay)).BeginInit();
             this.groupBox1.SuspendLayout();
@@ -240,13 +240,17 @@
             // 
             // btnPreviousTask
             // 
+            this.btnPreviousTask.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(90)))), ((int)(((byte)(90)))), ((int)(((byte)(90)))));
             this.btnPreviousTask.Enabled = false;
+            this.btnPreviousTask.FlatAppearance.BorderSize = 0;
+            this.btnPreviousTask.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnPreviousTask.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(240)))), ((int)(((byte)(240)))), ((int)(((byte)(240)))));
             this.btnPreviousTask.Location = new System.Drawing.Point(235, 74);
             this.btnPreviousTask.Name = "btnPreviousTask";
             this.btnPreviousTask.Size = new System.Drawing.Size(28, 20);
             this.btnPreviousTask.TabIndex = 15;
-            this.btnPreviousTask.Text = "...";
-            this.btnPreviousTask.UseVisualStyleBackColor = true;
+            this.btnPreviousTask.Text = "....";
+            this.btnPreviousTask.UseVisualStyleBackColor = false;
             this.btnPreviousTask.Click += new System.EventHandler(this.btnPreviousTask_Click);
             // 
             // tBxPreviousTask
@@ -284,12 +288,16 @@
             // 
             // btnCreateTask
             // 
+            this.btnCreateTask.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(90)))), ((int)(((byte)(90)))), ((int)(((byte)(90)))));
+            this.btnCreateTask.FlatAppearance.BorderSize = 0;
+            this.btnCreateTask.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnCreateTask.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(240)))), ((int)(((byte)(240)))), ((int)(((byte)(240)))));
             this.btnCreateTask.Location = new System.Drawing.Point(478, 60);
             this.btnCreateTask.Name = "btnCreateTask";
             this.btnCreateTask.Size = new System.Drawing.Size(95, 35);
             this.btnCreateTask.TabIndex = 14;
             this.btnCreateTask.Text = "Создать";
-            this.btnCreateTask.UseVisualStyleBackColor = true;
+            this.btnCreateTask.UseVisualStyleBackColor = false;
             this.btnCreateTask.Click += new System.EventHandler(this.btnCreateChangeTask_Click);
             // 
             // groupBox2
@@ -309,22 +317,30 @@
             // 
             // btnCancel
             // 
+            this.btnCancel.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(90)))), ((int)(((byte)(90)))), ((int)(((byte)(90)))));
+            this.btnCancel.FlatAppearance.BorderSize = 0;
+            this.btnCancel.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnCancel.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(240)))), ((int)(((byte)(240)))), ((int)(((byte)(240)))));
             this.btnCancel.Location = new System.Drawing.Point(478, 101);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(95, 36);
             this.btnCancel.TabIndex = 14;
             this.btnCancel.Text = "Отмена";
-            this.btnCancel.UseVisualStyleBackColor = true;
+            this.btnCancel.UseVisualStyleBackColor = false;
             this.btnCancel.Click += new System.EventHandler(this.button1_Click);
             // 
             // bTnColor
             // 
+            this.bTnColor.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(90)))), ((int)(((byte)(90)))), ((int)(((byte)(90)))));
+            this.bTnColor.FlatAppearance.BorderSize = 0;
+            this.bTnColor.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.bTnColor.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(240)))), ((int)(((byte)(240)))), ((int)(((byte)(240)))));
             this.bTnColor.Location = new System.Drawing.Point(418, 60);
             this.bTnColor.Name = "bTnColor";
             this.bTnColor.Size = new System.Drawing.Size(54, 77);
             this.bTnColor.TabIndex = 16;
             this.bTnColor.Text = "Цвет";
-            this.bTnColor.UseVisualStyleBackColor = true;
+            this.bTnColor.UseVisualStyleBackColor = false;
             this.bTnColor.Click += new System.EventHandler(this.bTnColor_Click);
             // 
             // cmBxTaskStatus
@@ -398,22 +414,30 @@
             // 
             // addPerson
             // 
+            this.addPerson.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(90)))), ((int)(((byte)(90)))), ((int)(((byte)(90)))));
+            this.addPerson.FlatAppearance.BorderSize = 0;
+            this.addPerson.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.addPerson.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(240)))), ((int)(((byte)(240)))), ((int)(((byte)(240)))));
             this.addPerson.Location = new System.Drawing.Point(257, 106);
             this.addPerson.Name = "addPerson";
             this.addPerson.Size = new System.Drawing.Size(21, 23);
             this.addPerson.TabIndex = 24;
             this.addPerson.Text = "+";
-            this.addPerson.UseVisualStyleBackColor = true;
+            this.addPerson.UseVisualStyleBackColor = false;
             this.addPerson.Click += new System.EventHandler(this.addPerson_Click);
             // 
             // btnCopyAnotherProject
             // 
+            this.btnCopyAnotherProject.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(90)))), ((int)(((byte)(90)))), ((int)(((byte)(90)))));
+            this.btnCopyAnotherProject.FlatAppearance.BorderSize = 0;
+            this.btnCopyAnotherProject.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnCopyAnotherProject.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(240)))), ((int)(((byte)(240)))), ((int)(((byte)(240)))));
             this.btnCopyAnotherProject.Location = new System.Drawing.Point(203, 297);
             this.btnCopyAnotherProject.Name = "btnCopyAnotherProject";
             this.btnCopyAnotherProject.Size = new System.Drawing.Size(171, 23);
             this.btnCopyAnotherProject.TabIndex = 25;
             this.btnCopyAnotherProject.Text = " Копировать в другой файл";
-            this.btnCopyAnotherProject.UseVisualStyleBackColor = true;
+            this.btnCopyAnotherProject.UseVisualStyleBackColor = false;
             this.btnCopyAnotherProject.Click += new System.EventHandler(this.btnCopyAnotherMainPath_Click);
             // 
             // label9
@@ -427,12 +451,16 @@
             // 
             // button2
             // 
+            this.button2.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(90)))), ((int)(((byte)(90)))), ((int)(((byte)(90)))));
+            this.button2.FlatAppearance.BorderSize = 0;
+            this.button2.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.button2.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(240)))), ((int)(((byte)(240)))), ((int)(((byte)(240)))));
             this.button2.Location = new System.Drawing.Point(543, 27);
             this.button2.Name = "button2";
             this.button2.Size = new System.Drawing.Size(28, 20);
             this.button2.TabIndex = 19;
             this.button2.Text = "...";
-            this.button2.UseVisualStyleBackColor = true;
+            this.button2.UseVisualStyleBackColor = false;
             this.button2.Click += new System.EventHandler(this.button2_Click);
             // 
             // tBxProjects
@@ -508,28 +536,28 @@
         private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.RadioButton rBnDayStart;
         private System.Windows.Forms.RadioButton rBnPreviousTask;
-        private System.Windows.Forms.Button btnPreviousTask;
         private System.Windows.Forms.TextBox tBxPreviousTask;
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.NumericUpDown nUpDnPreviousTask;
-        private System.Windows.Forms.Button btnCreateTask;
         public void GhangeNamebtnCreateTask(string name)
         {
             btnCreateTask.Text = name;
         }
         private System.Windows.Forms.GroupBox groupBox2;
-        private System.Windows.Forms.Button btnCancel;
-        private System.Windows.Forms.Button bTnColor;
         private System.Windows.Forms.ComboBox cmBxTaskStatus;
         private System.Windows.Forms.Label label7;
         private System.Windows.Forms.NumericUpDown nUpDnTaskNumber;
         private System.Windows.Forms.Label lBlTaskNum;
         private System.Windows.Forms.Label label8;
         private System.Windows.Forms.NumericUpDown nUpDnPrioirity;
-        private System.Windows.Forms.Button addPerson;
-        private System.Windows.Forms.Button btnCopyAnotherProject;
         private System.Windows.Forms.Label label9;
-        private System.Windows.Forms.Button button2;
         private System.Windows.Forms.TextBox tBxProjects;
+        private ButtonForShedule btnPreviousTask;
+        private ButtonForShedule btnCreateTask;
+        private ButtonForShedule btnCancel;
+        private ButtonForShedule bTnColor;
+        private ButtonForShedule addPerson;
+        private ButtonForShedule btnCopyAnotherProject;
+        private ButtonForShedule button2;
     }
 }

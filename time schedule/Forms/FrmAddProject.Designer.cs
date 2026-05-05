@@ -29,18 +29,18 @@ namespace time_schedule
         /// </summary>
         private void InitializeComponent()
         {
-            this.butAddTask = new System.Windows.Forms.Button();
+            this.butAddTask = new ButtonForShedule();
             this.pnlMain = new System.Windows.Forms.Panel();
-            this.butDelete = new System.Windows.Forms.Button();
-            this.butUplift = new System.Windows.Forms.Button();
-            this.butDown = new System.Windows.Forms.Button();
-            this.butNum = new System.Windows.Forms.Button();
-            this.butTaskName = new System.Windows.Forms.Button();
-            this.butDateStart = new System.Windows.Forms.Button();
-            this.butDateFinish = new System.Windows.Forms.Button();
-            this.butWorkDaysCount = new System.Windows.Forms.Button();
-            this.button1 = new System.Windows.Forms.Button();
-            this.button2 = new System.Windows.Forms.Button();
+            this.butDelete = new ButtonForShedule();
+            this.butUplift = new ButtonForShedule();
+            this.butDown = new ButtonForShedule();
+            this.butNum = new ButtonForShedule();
+            this.butTaskName = new ButtonForShedule();
+            this.butDateStart = new ButtonForShedule();
+            this.butDateFinish = new ButtonForShedule();
+            this.butWorkDaysCount = new ButtonForShedule();
+            this.button1 = new ButtonForShedule();
+            this.button2 = new ButtonForShedule();
             this.txtProjectName = new System.Windows.Forms.TextBox();
             this.lblProjectName = new System.Windows.Forms.Label();
             this.lblDateFinish = new System.Windows.Forms.Label();

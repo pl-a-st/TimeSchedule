@@ -24,12 +24,12 @@
         /// </summary>
         private void InitializeComponent() {
             this.lBxProject = new System.Windows.Forms.ListBox();
-            this.btnSelect = new System.Windows.Forms.Button();
+            this.btnSelect = new ButtonForShedule();
             this.tBxAddress = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
-            this.Cancel = new System.Windows.Forms.Button();
-            this.btnDelete = new System.Windows.Forms.Button();
-            this.btnAdd = new System.Windows.Forms.Button();
+            this.Cancel = new ButtonForShedule();
+            this.btnDelete = new ButtonForShedule();
+            this.btnAdd = new ButtonForShedule();
             this.SuspendLayout();
             // 
             // lBxProject

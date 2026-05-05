@@ -41,6 +41,7 @@ namespace time_schedule
     {
         public DateTime Date { get; private set; }
         public TextBox TextBox { get; private set; } = new TextBox();
+        public int LocationX { get; set; } = 0;
         public Statuses.LoadingStatus LoadingStatus { get; private set; } = Statuses.LoadingStatus.NotReady;
         public DateTextBox(DateTime dateTime, int TextBoxHight, int locationX)
         {
@@ -53,7 +54,7 @@ namespace time_schedule
             TextBox.Size = new Size(Constants.COLUMN_WITH, TextBoxHight);
             TextBox.Multiline = true;
             TextBox.Text = dateTime.ToShortDateString() + "\n" + GetDayOfWeekRus(dateTime.DayOfWeek);
-            TextBox.BackColor = Color.FromArgb(90, 90, 90);
+            TextBox.BackColor = Color.FromArgb(80, 80, 85);
             TextBox.ForeColor = Color.FromArgb(240, 240, 240);
             TextBox.TextAlign = HorizontalAlignment.Center;
             TextBox.ReadOnly = true;
@@ -63,6 +64,7 @@ namespace time_schedule
                 TextBox.ForeColor = Color.FromArgb(45, 45, 45);
             }
             TextBox.Location = new Point(locationX, 0);
+            
         }
         public void SetLoadingStatus(Statuses.LoadingStatus loadingStatus)
         {
@@ -86,7 +88,7 @@ namespace time_schedule
                 if (dateTextBox.LoadingStatus == Statuses.LoadingStatus.ReadyToLoad)
                 {
                     dateTextBox.TextBox.Location = new Point(
-                        dateTextBox.TextBox.Location.X - horizontalScroll, dateTextBox.TextBox.Location.Y);
+                        dateTextBox.LocationX - horizontalScroll, dateTextBox.TextBox.Location.Y);
                 }
             }
         }
@@ -151,7 +153,7 @@ namespace time_schedule
         private DateTime CalculateMaxLoadDate(int formWith, DateTime minLoadDate)
         {
             int reserve = formWith / 2 / Constants.COLUMN_WITH;
-            int countDaysAfterScroll = formWith / Constants.COLUMN_WITH + 2;
+            int countDaysAfterScroll = formWith / Constants.COLUMN_WITH + 2 * Constants.COLUMN_WITH;
             DateTime maxLoadDate = minLoadDate;
             for (int i = 0; i < countDaysAfterScroll; i++)
             {
@@ -1027,33 +1029,69 @@ namespace time_schedule
                     Program.PoolTextBox);
                 if (PDT.Item1.Person != null && PDT.Item2 != DateTime.MinValue)
                 {
-                    for (int i = 0; i < Constants.COUNT_OF_TRIES; i++)
+                    //for (int i = 0; i < Constants.COUNT_OF_TRIES; i++)
+                    //{
+                    //    Dals.ReloadListTaskToSave();
+                    //    Task TargetTask = new Task();
+                    //    TargetTask = GetTaskInNewListTasks(TargetTask);
+                    //    GhengePersonDatetimeInTask(PDT, TargetTask);
+                    //    StatusToChangeDateAfter statusToChangeDateAfter = StatusToChangeDateAfter.Undefined;
+                    //    ChekAndChangeTaskAfter(TargetTask, ref statusToChangeDateAfter);
+                    //    if (statusToChangeDateAfter == StatusToChangeDateAfter.Cancel)
+                    //    {
+                    //        Program.fmMain.LoadRefreshForm(Statuses.ProgressBar.Use);
+                    //        Program.fmMain.SetPlMain().Focus();
+                    //        isDown = false;
+                    //        return;
+                    //    }
+                    //    if (Dals.WriteObjectToMainPathFile(Constants.TASKS_BIN, Program.ListTasksAllPersonToSave) == MethodResultStatus.Ok)
+                    //    {
+                    //        Program.fmMain.ShowProgressbarAndMakeRefresh();
+                    //        Program.fmMain.SetPlMain().Focus();
+                    //        isDown = false;
+                    //        return;
+                    //    }
+                    //}
+
+                    Result resultOfSaving = Program.SaveProgramData(ChangeTaskes);
+                    if (resultOfSaving == Result.Sucess)
                     {
-                        Dals.ReloadListTaskToSave();
+                        Program.fmMain.ShowProgressbarAndMakeRefresh();
+                        Program.fmMain.SetPlMain().Focus();
+                        isDown = false;
+                        return;
+                    }
+                    if (resultOfSaving == Result.Canceled)
+                    {
+                        Program.fmMain.SetPlMain().Focus();
+                        isDown = false;
+                        Program.fmMain.ShowProgressbarAndMakeRefresh();
+                        return;
+                    }
+                    MessageBox.Show("Не удалось записать изменения");
+                    Program.fmMain.SetPlMain().Focus();
+                    isDown = false;
+
+                    void ChangeTaskes()
+                    {
                         Task TargetTask = new Task();
                         TargetTask = GetTaskInNewListTasks(TargetTask);
                         GhengePersonDatetimeInTask(PDT, TargetTask);
-                        StatusToChangeDateAfter statusToChangeDateAfter = StatusToChangeDateAfter.Undefined;
-                        ChekAndChangeTaskAfter(TargetTask, ref statusToChangeDateAfter);
-                        if (statusToChangeDateAfter == StatusToChangeDateAfter.Cancel)
+                        StatusToChangeDateAfter status = StatusToChangeDateAfter.Undefined;
+                        ChekAndChangeTaskAfter(TargetTask, ref status);
+                        if (status == StatusToChangeDateAfter.Cancel)
                         {
-                            Program.fmMain.SetForm1().LoadRefreshForm(Statuses.ProgressBar.Use);
-                            Program.fmMain.SetForm1().SetPlMain().Focus();
+                            Program.fmMain.LoadRefreshForm(Statuses.ProgressBar.Use);
+                            Program.fmMain.SetPlMain().Focus();
                             isDown = false;
-                            return;
-                        }
-                        if (Dals.WriteObjectToMainPathFile(Constants.TASKS_BIN, Program.ListTasksAllPersonToSave) == MethodResultStatus.Ok)
-                        {
-                            Program.fmMain.SetForm1().LoadRefreshForm(Statuses.ProgressBar.Use);
-                            Program.fmMain.SetForm1().SetPlMain().Focus();
-                            isDown = false;
-                            return;
+                            throw new EarlyExitException();
                         }
                     }
-                    MessageBox.Show("Не удалось записать файл c задачами");
                 }
             }
             isDown = false;
+
+           
         }
 
         private void GhengePersonDatetimeInTask((PersonButton, DateTime) PDT, Task TargetTask)
@@ -1163,16 +1201,18 @@ namespace time_schedule
         }
         private void Button_Click(object sender, EventArgs e)
         {
-            Program.fmMain.SetPlForDate().AutoScroll = false;
+            //Program.fmMain.SetPlForDate().AutoScroll = false;
             isDown = false;
-            fmAddChangeTask fmAddTask = new fmAddChangeTask(Program.delegatLoadRefreshForm);
+            fmAddChangeTask fmAddTask = new fmAddChangeTask();
+            Program.fmMain.ShowProgressbarAndMakeRefresh();
             fmAddTask.GhangeNamebtnCreateTask("Изменить");
             fmAddTask.SetCreateOrChange(CreateOrChange.Change);
             fmAddTask.StartPosition = FormStartPosition.CenterScreen;
             Program.Task = Task;
-            fmAddTask.ShowDialog();
-            Program.fmMain.SetPlForDate().AutoScroll = true;
-            Dals.WriteObjectToMainPathFile(Constants.TASKS_BIN, Program.ListTasksAllPersonToSave);
+            Program.fmMain.TopLevel = true;
+            fmAddTask.Show(Program.fmMain);
+            //Program.fmMain.SetPlForDate().AutoScroll = true;
+            //Dals.WriteObjectToMainPathFile(Constants.TASKS_BIN, Program.ListTasksAllPersonToSave);
         }
         public TaskButton(Task task, ListPersonButton listPersonButton, DateTime minDateStart, DateTime maxDateFinish)
         {
@@ -1293,9 +1333,9 @@ namespace time_schedule
             Button.FlatStyle = FlatStyle.Flat;
             Button.FlatAppearance.BorderSize = 0;
 
-            Button.ForeColor = Color.FromArgb(240, 240, 240);
+            Button.ForeColor = Color.FromArgb(240, 240, 245);
             Button.FlatAppearance.BorderColor = Color.FromArgb(200, 200, 200);
-            Button.BackColor = Color.FromArgb(90, 90, 90);
+            Button.BackColor = Color.FromArgb(80, 80, 85);
             Button.Height = GetHightBooton(listTasksAllPerson, hightRowForTasks);
             Button.BringToFront();
             Button.Click += PersonButton_Click;

@@ -29,9 +29,9 @@
         private void InitializeComponent()
         {
             this.tBxNameProject = new System.Windows.Forms.TextBox();
-            this.btnChosePath = new System.Windows.Forms.Button();
+            this.btnChosePath = new ButtonForShedule();
             this.label1 = new System.Windows.Forms.Label();
-            this.Cancel = new System.Windows.Forms.Button();
+            this.Cancel = new ButtonForShedule();
             this.SuspendLayout();
             // 
             // tBxNameProject

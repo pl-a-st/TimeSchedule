@@ -33,7 +33,6 @@
             this.plMain = new System.Windows.Forms.Panel();
             this.pBForLine = new System.Windows.Forms.PictureBox();
             this.plForDate = new System.Windows.Forms.Panel();
-            this.btnNewTask = new System.Windows.Forms.Button();
             this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.сенитьПользователяToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem2 = new System.Windows.Forms.ToolStripMenuItem();
@@ -48,17 +47,18 @@
             this.cBxShowTask = new System.Windows.Forms.ToolStripComboBox();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.plPersonButton = new System.Windows.Forms.Panel();
-            this.bTnToDay = new System.Windows.Forms.Button();
-            this.addFiveDays = new System.Windows.Forms.Button();
             this.dateTimePicker1 = new System.Windows.Forms.DateTimePicker();
-            this.minusFiveDay = new System.Windows.Forms.Button();
             this.timer1 = new System.Windows.Forms.Timer(this.components);
-            this.btnRefresh = new System.Windows.Forms.Button();
-            this.button1 = new System.Windows.Forms.Button();
             this.cBxSeetingsProjects = new System.Windows.Forms.ComboBox();
             this.lblProjects = new System.Windows.Forms.Label();
-            this.btnSetings = new System.Windows.Forms.Button();
-            this.button2 = new System.Windows.Forms.Button();
+            this.button2 = new time_schedule.ButtonForShedule();
+            this.btnSetings = new time_schedule.ButtonForShedule();
+            this.button1 = new time_schedule.ButtonForShedule();
+            this.minusFiveDay = new time_schedule.ButtonForShedule();
+            this.addFiveDays = new time_schedule.ButtonForShedule();
+            this.bTnToDay = new time_schedule.ButtonForShedule();
+            this.NewRefresh = new time_schedule.ButtonForShedule();
+            this.btnNewTask = new time_schedule.ButtonForShedule();
             this.plMain.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pBForLine)).BeginInit();
             this.menuStrip1.SuspendLayout();
@@ -70,7 +70,7 @@
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.plMain.AutoScroll = true;
-            this.plMain.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(240)))), ((int)(((byte)(240)))), ((int)(((byte)(240)))));
+            this.plMain.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(245)))), ((int)(((byte)(245)))), ((int)(((byte)(248)))));
             this.plMain.Controls.Add(this.pBForLine);
             this.plMain.Location = new System.Drawing.Point(181, 85);
             this.plMain.Name = "plMain";
@@ -83,7 +83,7 @@
             // 
             // pBForLine
             // 
-            this.pBForLine.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(200)))), ((int)(((byte)(194)))), ((int)(((byte)(183)))));
+            this.pBForLine.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(200)))), ((int)(((byte)(200)))), ((int)(((byte)(210)))));
             this.pBForLine.Location = new System.Drawing.Point(0, 0);
             this.pBForLine.Name = "pBForLine";
             this.pBForLine.Size = new System.Drawing.Size(100, 51);
@@ -102,25 +102,9 @@
             this.plForDate.Size = new System.Drawing.Size(977, 50);
             this.plForDate.TabIndex = 1;
             // 
-            // btnNewTask
-            // 
-            this.btnNewTask.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
-            this.btnNewTask.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(90)))), ((int)(((byte)(90)))), ((int)(((byte)(90)))));
-            this.btnNewTask.Cursor = System.Windows.Forms.Cursors.Default;
-            this.btnNewTask.FlatAppearance.BorderSize = 0;
-            this.btnNewTask.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnNewTask.ForeColor = System.Drawing.SystemColors.Control;
-            this.btnNewTask.Location = new System.Drawing.Point(654, 736);
-            this.btnNewTask.Name = "btnNewTask";
-            this.btnNewTask.Size = new System.Drawing.Size(110, 49);
-            this.btnNewTask.TabIndex = 3;
-            this.btnNewTask.Text = "Новая задача";
-            this.btnNewTask.UseVisualStyleBackColor = false;
-            this.btnNewTask.Click += new System.EventHandler(this.btnTask_Click);
-            // 
             // toolStripMenuItem1
             // 
-            this.toolStripMenuItem1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(240)))), ((int)(((byte)(240)))), ((int)(((byte)(240)))));
+            this.toolStripMenuItem1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(245)))), ((int)(((byte)(245)))), ((int)(((byte)(250)))));
             this.toolStripMenuItem1.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.сенитьПользователяToolStripMenuItem,
             this.проектToolStripMenuItem,
@@ -129,7 +113,7 @@
             this.нерабочиеДниToolStripMenuItem,
             this.восстановлениеЗадачToolStripMenuItem,
             this.cBxShowTask});
-            this.toolStripMenuItem1.ForeColor = System.Drawing.SystemColors.ActiveCaptionText;
+            this.toolStripMenuItem1.ForeColor = System.Drawing.Color.Black;
             this.toolStripMenuItem1.Name = "toolStripMenuItem1";
             this.toolStripMenuItem1.Size = new System.Drawing.Size(53, 20);
             this.toolStripMenuItem1.Text = "Меню";
@@ -220,10 +204,11 @@
             this.cBxShowTask.Size = new System.Drawing.Size(121, 23);
             this.cBxShowTask.Text = "Актуальные задачи";
             this.cBxShowTask.SelectedIndexChanged += new System.EventHandler(this.cBxShowTask_SelectedIndexChanged);
+            this.cBxShowTask.Click += new System.EventHandler(this.cBxShowTask_Click);
             // 
             // menuStrip1
             // 
-            this.menuStrip1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(240)))), ((int)(((byte)(240)))), ((int)(((byte)(240)))));
+            this.menuStrip1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(245)))), ((int)(((byte)(245)))), ((int)(((byte)(250)))));
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripMenuItem1});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
@@ -238,42 +223,12 @@
             this.plPersonButton.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left)));
             this.plPersonButton.AutoScroll = true;
-            this.plPersonButton.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(240)))), ((int)(((byte)(240)))), ((int)(((byte)(240)))));
+            this.plPersonButton.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(245)))), ((int)(((byte)(245)))), ((int)(((byte)(248)))));
             this.plPersonButton.Location = new System.Drawing.Point(11, 85);
             this.plPersonButton.Name = "plPersonButton";
             this.plPersonButton.Size = new System.Drawing.Size(200, 624);
             this.plPersonButton.TabIndex = 4;
             this.plPersonButton.Scroll += new System.Windows.Forms.ScrollEventHandler(this.plPersonButton_Scroll);
-            // 
-            // bTnToDay
-            // 
-            this.bTnToDay.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
-            this.bTnToDay.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(90)))), ((int)(((byte)(90)))), ((int)(((byte)(90)))));
-            this.bTnToDay.FlatAppearance.BorderSize = 0;
-            this.bTnToDay.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.bTnToDay.ForeColor = System.Drawing.SystemColors.Control;
-            this.bTnToDay.Location = new System.Drawing.Point(525, 736);
-            this.bTnToDay.Name = "bTnToDay";
-            this.bTnToDay.Size = new System.Drawing.Size(75, 23);
-            this.bTnToDay.TabIndex = 5;
-            this.bTnToDay.Text = "Сегодня";
-            this.bTnToDay.UseVisualStyleBackColor = false;
-            this.bTnToDay.Click += new System.EventHandler(this.button3_Click);
-            // 
-            // addFiveDays
-            // 
-            this.addFiveDays.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
-            this.addFiveDays.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(90)))), ((int)(((byte)(90)))), ((int)(((byte)(90)))));
-            this.addFiveDays.FlatAppearance.BorderSize = 0;
-            this.addFiveDays.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.addFiveDays.ForeColor = System.Drawing.SystemColors.Control;
-            this.addFiveDays.Location = new System.Drawing.Point(606, 736);
-            this.addFiveDays.Name = "addFiveDays";
-            this.addFiveDays.Size = new System.Drawing.Size(42, 23);
-            this.addFiveDays.TabIndex = 7;
-            this.addFiveDays.Text = "+5";
-            this.addFiveDays.UseVisualStyleBackColor = false;
-            this.addFiveDays.Click += new System.EventHandler(this.PlusFiveDays);
             // 
             // dateTimePicker1
             // 
@@ -288,56 +243,11 @@
             this.dateTimePicker1.Enter += new System.EventHandler(this.dateTimePicker1_Enter);
             this.dateTimePicker1.KeyUp += new System.Windows.Forms.KeyEventHandler(this.dateTimePicker1_KeyUp);
             // 
-            // minusFiveDay
-            // 
-            this.minusFiveDay.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
-            this.minusFiveDay.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(90)))), ((int)(((byte)(90)))), ((int)(((byte)(90)))));
-            this.minusFiveDay.FlatAppearance.BorderSize = 0;
-            this.minusFiveDay.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.minusFiveDay.ForeColor = System.Drawing.SystemColors.Control;
-            this.minusFiveDay.Location = new System.Drawing.Point(476, 736);
-            this.minusFiveDay.Name = "minusFiveDay";
-            this.minusFiveDay.Size = new System.Drawing.Size(43, 23);
-            this.minusFiveDay.TabIndex = 9;
-            this.minusFiveDay.Text = "-5 ";
-            this.minusFiveDay.UseVisualStyleBackColor = false;
-            this.minusFiveDay.Click += new System.EventHandler(this.MinusFiveDays_Click);
-            // 
             // timer1
             // 
             this.timer1.Enabled = true;
             this.timer1.Interval = 900000;
             this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
-            // 
-            // btnRefresh
-            // 
-            this.btnRefresh.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
-            this.btnRefresh.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(90)))), ((int)(((byte)(90)))), ((int)(((byte)(90)))));
-            this.btnRefresh.Cursor = System.Windows.Forms.Cursors.Default;
-            this.btnRefresh.FlatAppearance.BorderSize = 0;
-            this.btnRefresh.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnRefresh.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(240)))), ((int)(((byte)(240)))), ((int)(((byte)(240)))));
-            this.btnRefresh.Location = new System.Drawing.Point(360, 736);
-            this.btnRefresh.Name = "btnRefresh";
-            this.btnRefresh.Size = new System.Drawing.Size(110, 49);
-            this.btnRefresh.TabIndex = 3;
-            this.btnRefresh.Text = "Обновить";
-            this.btnRefresh.UseVisualStyleBackColor = false;
-            this.btnRefresh.Click += new System.EventHandler(this.btnRefresh_Click);
-            // 
-            // button1
-            // 
-            this.button1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(90)))), ((int)(((byte)(90)))), ((int)(((byte)(90)))));
-            this.button1.FlatAppearance.BorderSize = 0;
-            this.button1.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.button1.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(240)))), ((int)(((byte)(240)))), ((int)(((byte)(240)))));
-            this.button1.Location = new System.Drawing.Point(11, 53);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(168, 30);
-            this.button1.TabIndex = 10;
-            this.button1.Text = "Проекты";
-            this.button1.UseVisualStyleBackColor = false;
-            this.button1.Click += new System.EventHandler(this.Projects_Click_2);
             // 
             // cBxSeetingsProjects
             // 
@@ -353,39 +263,138 @@
             // 
             this.lblProjects.AutoSize = true;
             this.lblProjects.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.lblProjects.ForeColor = System.Drawing.SystemColors.ActiveCaptionText;
+            this.lblProjects.ForeColor = System.Drawing.Color.Black;
             this.lblProjects.Location = new System.Drawing.Point(187, 27);
             this.lblProjects.Name = "lblProjects";
             this.lblProjects.Size = new System.Drawing.Size(46, 17);
             this.lblProjects.TabIndex = 12;
             this.lblProjects.Text = "label1";
             // 
-            // btnSetings
-            // 
-            this.btnSetings.Location = new System.Drawing.Point(11, 27);
-            this.btnSetings.Name = "btnSetings";
-            this.btnSetings.Size = new System.Drawing.Size(30, 21);
-            this.btnSetings.TabIndex = 13;
-            this.btnSetings.Text = "...";
-            this.btnSetings.UseVisualStyleBackColor = true;
-            this.btnSetings.Click += new System.EventHandler(this.btnSetings_Click);
-            // 
             // button2
             // 
+            this.button2.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(80)))), ((int)(((byte)(80)))), ((int)(((byte)(85)))));
+            this.button2.FlatAppearance.BorderSize = 0;
+            this.button2.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.button2.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(240)))), ((int)(((byte)(240)))), ((int)(((byte)(240)))));
             this.button2.Location = new System.Drawing.Point(181, 765);
             this.button2.Name = "button2";
             this.button2.Size = new System.Drawing.Size(80, 24);
             this.button2.TabIndex = 14;
             this.button2.Text = "button2";
-            this.button2.UseVisualStyleBackColor = true;
+            this.button2.UseVisualStyleBackColor = false;
             this.button2.Visible = false;
             this.button2.Click += new System.EventHandler(this.button2_Click);
+            // 
+            // btnSetings
+            // 
+            this.btnSetings.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(80)))), ((int)(((byte)(80)))), ((int)(((byte)(85)))));
+            this.btnSetings.FlatAppearance.BorderSize = 0;
+            this.btnSetings.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnSetings.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(240)))), ((int)(((byte)(240)))), ((int)(((byte)(240)))));
+            this.btnSetings.Location = new System.Drawing.Point(11, 27);
+            this.btnSetings.Name = "btnSetings";
+            this.btnSetings.Size = new System.Drawing.Size(30, 21);
+            this.btnSetings.TabIndex = 13;
+            this.btnSetings.Text = "...";
+            this.btnSetings.UseVisualStyleBackColor = false;
+            this.btnSetings.Click += new System.EventHandler(this.btnSetings_Click);
+            // 
+            // button1
+            // 
+            this.button1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(80)))), ((int)(((byte)(80)))), ((int)(((byte)(85)))));
+            this.button1.FlatAppearance.BorderSize = 0;
+            this.button1.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.button1.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(240)))), ((int)(((byte)(240)))), ((int)(((byte)(240)))));
+            this.button1.Location = new System.Drawing.Point(11, 53);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(168, 30);
+            this.button1.TabIndex = 10;
+            this.button1.Text = "Проекты";
+            this.button1.UseVisualStyleBackColor = false;
+            this.button1.Click += new System.EventHandler(this.Projects_Click_2);
+            // 
+            // minusFiveDay
+            // 
+            this.minusFiveDay.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
+            this.minusFiveDay.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(80)))), ((int)(((byte)(80)))), ((int)(((byte)(85)))));
+            this.minusFiveDay.FlatAppearance.BorderSize = 0;
+            this.minusFiveDay.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.minusFiveDay.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(240)))), ((int)(((byte)(240)))), ((int)(((byte)(240)))));
+            this.minusFiveDay.Location = new System.Drawing.Point(476, 736);
+            this.minusFiveDay.Name = "minusFiveDay";
+            this.minusFiveDay.Size = new System.Drawing.Size(43, 23);
+            this.minusFiveDay.TabIndex = 9;
+            this.minusFiveDay.Text = "-5 ";
+            this.minusFiveDay.UseVisualStyleBackColor = false;
+            this.minusFiveDay.Click += new System.EventHandler(this.MinusFiveDays_Click);
+            // 
+            // addFiveDays
+            // 
+            this.addFiveDays.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
+            this.addFiveDays.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(80)))), ((int)(((byte)(80)))), ((int)(((byte)(85)))));
+            this.addFiveDays.FlatAppearance.BorderSize = 0;
+            this.addFiveDays.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.addFiveDays.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(240)))), ((int)(((byte)(240)))), ((int)(((byte)(240)))));
+            this.addFiveDays.Location = new System.Drawing.Point(606, 736);
+            this.addFiveDays.Name = "addFiveDays";
+            this.addFiveDays.Size = new System.Drawing.Size(42, 23);
+            this.addFiveDays.TabIndex = 7;
+            this.addFiveDays.Text = "+5";
+            this.addFiveDays.UseVisualStyleBackColor = false;
+            this.addFiveDays.Click += new System.EventHandler(this.PlusFiveDays);
+            // 
+            // bTnToDay
+            // 
+            this.bTnToDay.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
+            this.bTnToDay.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(80)))), ((int)(((byte)(80)))), ((int)(((byte)(85)))));
+            this.bTnToDay.FlatAppearance.BorderSize = 0;
+            this.bTnToDay.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.bTnToDay.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(240)))), ((int)(((byte)(240)))), ((int)(((byte)(240)))));
+            this.bTnToDay.Location = new System.Drawing.Point(525, 736);
+            this.bTnToDay.Name = "bTnToDay";
+            this.bTnToDay.Size = new System.Drawing.Size(75, 23);
+            this.bTnToDay.TabIndex = 5;
+            this.bTnToDay.Text = "Сегодня";
+            this.bTnToDay.UseVisualStyleBackColor = false;
+            this.bTnToDay.Click += new System.EventHandler(this.button3_Click);
+            // 
+            // NewRefresh
+            // 
+            this.NewRefresh.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
+            this.NewRefresh.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(80)))), ((int)(((byte)(80)))), ((int)(((byte)(85)))));
+            this.NewRefresh.Cursor = System.Windows.Forms.Cursors.Default;
+            this.NewRefresh.FlatAppearance.BorderSize = 0;
+            this.NewRefresh.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.NewRefresh.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(240)))), ((int)(((byte)(240)))), ((int)(((byte)(240)))));
+            this.NewRefresh.Location = new System.Drawing.Point(360, 736);
+            this.NewRefresh.Name = "NewRefresh";
+            this.NewRefresh.Size = new System.Drawing.Size(110, 49);
+            this.NewRefresh.TabIndex = 3;
+            this.NewRefresh.Text = "Обновить";
+            this.NewRefresh.UseVisualStyleBackColor = false;
+            this.NewRefresh.Click += new System.EventHandler(this.NewRefresh_Click);
+            // 
+            // btnNewTask
+            // 
+            this.btnNewTask.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
+            this.btnNewTask.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(80)))), ((int)(((byte)(80)))), ((int)(((byte)(85)))));
+            this.btnNewTask.Cursor = System.Windows.Forms.Cursors.Default;
+            this.btnNewTask.FlatAppearance.BorderSize = 0;
+            this.btnNewTask.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnNewTask.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(240)))), ((int)(((byte)(240)))), ((int)(((byte)(240)))));
+            this.btnNewTask.Location = new System.Drawing.Point(654, 736);
+            this.btnNewTask.Name = "btnNewTask";
+            this.btnNewTask.Size = new System.Drawing.Size(110, 49);
+            this.btnNewTask.TabIndex = 3;
+            this.btnNewTask.Text = "Новая задача";
+            this.btnNewTask.UseVisualStyleBackColor = false;
+            this.btnNewTask.Click += new System.EventHandler(this.btnTask_Click);
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(240)))), ((int)(((byte)(240)))), ((int)(((byte)(240)))));
+            this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(245)))), ((int)(((byte)(245)))), ((int)(((byte)(248)))));
             this.ClientSize = new System.Drawing.Size(1171, 820);
             this.Controls.Add(this.button2);
             this.Controls.Add(this.btnSetings);
@@ -396,7 +405,7 @@
             this.Controls.Add(this.dateTimePicker1);
             this.Controls.Add(this.addFiveDays);
             this.Controls.Add(this.bTnToDay);
-            this.Controls.Add(this.btnRefresh);
+            this.Controls.Add(this.NewRefresh);
             this.Controls.Add(this.btnNewTask);
             this.Controls.Add(this.plMain);
             this.Controls.Add(this.plForDate);
@@ -425,7 +434,7 @@
 
         private System.Windows.Forms.Panel plMain;
         private System.Windows.Forms.Panel plForDate;
-        private System.Windows.Forms.Button btnNewTask;
+        private ButtonForShedule btnNewTask;
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem1;
         private System.Windows.Forms.ToolStripMenuItem сенитьПользователяToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem проектToolStripMenuItem;
@@ -433,25 +442,25 @@
         private System.Windows.Forms.ToolStripMenuItem нерабочиеДниToolStripMenuItem;
         private System.Windows.Forms.MenuStrip menuStrip1;
         private System.Windows.Forms.Panel plPersonButton;
-        private System.Windows.Forms.Button bTnToDay;
-        private System.Windows.Forms.Button addFiveDays;
         private System.Windows.Forms.PictureBox pBForLine;
         private System.Windows.Forms.DateTimePicker dateTimePicker1;
-        private System.Windows.Forms.Button minusFiveDay;
         private System.Windows.Forms.ToolStripMenuItem задачиToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem2;
         private System.Windows.Forms.ToolStripMenuItem adminToolStripMenuItem;
         private System.Windows.Forms.Timer timer1;
-        private System.Windows.Forms.Button btnRefresh;
         private System.Windows.Forms.ToolStripMenuItem выбратьToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem создатьToolStripMenuItem;
-        private System.Windows.Forms.Button button1;
         private System.Windows.Forms.ComboBox cBxSeetingsProjects;
         private System.Windows.Forms.Label lblProjects;
         private System.Windows.Forms.ToolStripComboBox cBxShowTask;
-        private System.Windows.Forms.Button btnSetings;
         private System.Windows.Forms.ToolStripMenuItem восстановлениеЗадачToolStripMenuItem;
-        private System.Windows.Forms.Button button2;
+        private ButtonForShedule bTnToDay;
+        private ButtonForShedule addFiveDays;
+        private ButtonForShedule minusFiveDay;
+        private ButtonForShedule button1;
+        private ButtonForShedule btnSetings;
+        private ButtonForShedule button2;
+        private ButtonForShedule NewRefresh;
     }
 }
 

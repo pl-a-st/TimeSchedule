@@ -26,13 +26,13 @@ namespace time_schedule {
         /// </summary>
         private void InitializeComponent() {
             this.projectTreeView = new System.Windows.Forms.TreeView();
-            this.button1 = new System.Windows.Forms.Button();
-            this.button2 = new System.Windows.Forms.Button();
-            this.button3 = new System.Windows.Forms.Button();
-            this.button4 = new System.Windows.Forms.Button();
-            this.button5 = new System.Windows.Forms.Button();
-            this.button6 = new System.Windows.Forms.Button();
-            this.btnSave = new System.Windows.Forms.Button();
+            this.button1 = new ButtonForShedule();
+            this.button2 = new ButtonForShedule();
+            this.button3 = new ButtonForShedule();
+            this.button4 = new ButtonForShedule();
+            this.button5 = new ButtonForShedule();
+            this.button6 = new ButtonForShedule();
+            this.btnSave = new ButtonForShedule();
             this.SuspendLayout();
             // 
             // projectTreeView

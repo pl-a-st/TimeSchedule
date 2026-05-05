@@ -29,12 +29,12 @@
         private void InitializeComponent()
         {
             this.lBxPersons = new System.Windows.Forms.ListBox();
-            this.btnNewPerson = new System.Windows.Forms.Button();
-            this.btnDelete = new System.Windows.Forms.Button();
-            this.btnChangePerson = new System.Windows.Forms.Button();
-            this.button1 = new System.Windows.Forms.Button();
+            this.btnNewPerson = new ButtonForShedule();
+            this.btnDelete = new ButtonForShedule();
+            this.btnChangePerson = new ButtonForShedule();
+            this.button1 = new ButtonForShedule();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
-            this.button2 = new System.Windows.Forms.Button();
+            this.button2 = new ButtonForShedule();
             this.lblPersonPlace = new System.Windows.Forms.Label();
             this.groupBox1.SuspendLayout();
             this.SuspendLayout();

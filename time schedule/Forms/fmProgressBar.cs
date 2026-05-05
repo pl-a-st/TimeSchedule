@@ -6,30 +6,42 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Threading;
 using System.Windows.Forms;
 
-namespace time_schedule {
-    public delegate void ForControl ();
-    public partial class fmProgressBar : Form {
-        public fmProgressBar() {
+namespace time_schedule
+{
+    public delegate void ForControl();
+    public partial class fmProgressBar : Form
+    {
+        public delegate void LoadFinished();
+        public event LoadFinished EventLoadFinished;
+        public Action ActionForDoing { get; set; }
+        public fmProgressBar()
+        {
             InitializeComponent();
         }
-        public void SetTextMessege(string textToMessege) {
+        public void SetTextMessege(string textToMessege)
+        {
             label1.Text = textToMessege;
         }
-        public Form GetForm () {
+        public Form GetForm()
+        {
             return this;
         }
-        public Statuses.FormLoad StatusLoad {get;private set;} = Statuses.FormLoad.UnLoad;
+        public Statuses.FormLoad StatusLoad { get; private set; } = Statuses.FormLoad.UnLoad;
         //ForControl ForControl = new ForControl(GetForm);
-        private void fmProgressBar_Load(object sender, EventArgs e) {
+        private void fmProgressBar_Load(object sender, EventArgs e)
+        {
+                
             StatusLoad = Statuses.FormLoad.Load;
             progressBar.MarqueeAnimationSpeed = 10;
             progressBar.Style = ProgressBarStyle.Marquee;
-            //Program.delegatForControl = GetForm;
+            EventLoadFinished?.Invoke();
         }
 
-        private void label1_Click(object sender, EventArgs e) {
+        private void label1_Click(object sender, EventArgs e)
+        {
 
         }
     }

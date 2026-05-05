@@ -26,16 +26,16 @@ namespace time_schedule.Forms {
         /// the contents of this method with the code editor.
         /// </summary>
         private void InitializeComponent() {
-            this.btnChange = new System.Windows.Forms.Button();
-            this.btnDelete = new System.Windows.Forms.Button();
-            this.btnNew = new System.Windows.Forms.Button();
+            this.btnChange = new ButtonForShedule();
+            this.btnDelete = new ButtonForShedule();
+            this.btnNew = new ButtonForShedule();
             this.lBx = new System.Windows.Forms.ListBox();
-            this.btnUp = new System.Windows.Forms.Button();
+            this.btnUp = new ButtonForShedule();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.lblReplace = new System.Windows.Forms.Label();
-            this.btnDown = new System.Windows.Forms.Button();
-            this.btnApply = new System.Windows.Forms.Button();
-            this.btnCancel = new System.Windows.Forms.Button();
+            this.btnDown = new ButtonForShedule();
+            this.btnApply = new ButtonForShedule();
+            this.btnCancel = new ButtonForShedule();
             this.groupBox1.SuspendLayout();
             this.SuspendLayout();
             // 

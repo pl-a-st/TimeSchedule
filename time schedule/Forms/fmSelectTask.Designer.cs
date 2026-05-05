@@ -29,10 +29,10 @@
         private void InitializeComponent()
         {
             this.lBxTasks = new System.Windows.Forms.ListBox();
-            this.btnSelectTask = new System.Windows.Forms.Button();
+            this.btnSelectTask = new ButtonForShedule();
             this.tBxTargetTask = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
-            this.bTnCacel = new System.Windows.Forms.Button();
+            this.bTnCacel = new ButtonForShedule();
             this.SuspendLayout();
             // 
             // lBxTasks

@@ -25,8 +25,8 @@ namespace time_schedule {
         /// </summary>
         private void InitializeComponent() {
             this.treeView1 = new System.Windows.Forms.TreeView();
-            this.btnOk = new System.Windows.Forms.Button();
-            this.btnCancel = new System.Windows.Forms.Button();
+            this.btnOk = new ButtonForShedule();
+            this.btnCancel = new ButtonForShedule();
             this.SuspendLayout();
             // 
             // treeView1

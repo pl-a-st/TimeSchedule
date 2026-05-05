@@ -28,13 +28,13 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.btnChangeTask = new System.Windows.Forms.Button();
-            this.btnDeleteTask = new System.Windows.Forms.Button();
-            this.btnNewTask = new System.Windows.Forms.Button();
+            this.btnChangeTask = new ButtonForShedule();
+            this.btnDeleteTask = new ButtonForShedule();
+            this.btnNewTask = new ButtonForShedule();
             this.lBxTasks = new System.Windows.Forms.ListBox();
             this.tBxTargetTask = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
-            this.btnGoToDateStartTask = new System.Windows.Forms.Button();
+            this.btnGoToDateStartTask = new ButtonForShedule();
             this.dTPFilterDateStart = new System.Windows.Forms.DateTimePicker();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.dTPFilterDateFinish = new System.Windows.Forms.DateTimePicker();
@@ -47,21 +47,21 @@
             this.label5 = new System.Windows.Forms.Label();
             this.tBxDateStart = new System.Windows.Forms.TextBox();
             this.tBxDateFinish = new System.Windows.Forms.TextBox();
-            this.butOpenTaskInExcell = new System.Windows.Forms.Button();
+            this.butOpenTaskInExcell = new ButtonForShedule();
             this.cBxFilterByStatus = new System.Windows.Forms.CheckBox();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
             this.tBxStatusesFilter = new System.Windows.Forms.TextBox();
-            this.btnFilter = new System.Windows.Forms.Button();
+            this.btnFilter = new ButtonForShedule();
             this.cBxOverdue = new System.Windows.Forms.CheckBox();
             this.label6 = new System.Windows.Forms.Label();
             this.cBxNotStarted = new System.Windows.Forms.CheckBox();
             this.label7 = new System.Windows.Forms.Label();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
             this.groupBox4 = new System.Windows.Forms.GroupBox();
-            this.btnChangeToSelectTasks = new System.Windows.Forms.Button();
+            this.btnChangeToSelectTasks = new ButtonForShedule();
             this.chkMultySelectTask = new System.Windows.Forms.CheckBox();
-            this.butDeleteTaskInlBx = new System.Windows.Forms.Button();
-            this.butAddProjectToSelectTasks = new System.Windows.Forms.Button();
+            this.butDeleteTaskInlBx = new ButtonForShedule();
+            this.butAddProjectToSelectTasks = new ButtonForShedule();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox3.SuspendLayout();

@@ -29,7 +29,7 @@
         private void InitializeComponent()
         {
             this.personName = new System.Windows.Forms.TextBox();
-            this.btnAddPerson = new System.Windows.Forms.Button();
+            this.btnAddPerson = new ButtonForShedule();
             this.label1 = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
