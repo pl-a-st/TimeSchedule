@@ -1013,47 +1013,42 @@ namespace time_schedule
             }
 
         }
-        /// <summary>
-        /// При зажатии срабатывает после MouseUp!!!
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
+        /// <summary>Переносит задачу после внешнего пользовательского решения и проверки зависимостей.</summary>
+        /// <param name="sender">Источник события мыши.</param>
+        /// <param name="e">Аргументы события.</param>
         private void Button_MouseLeave(object sender, EventArgs e)
         {
             if (isDown && Program.UserType == UserType.Admin)
             {
-                Dals.WriteObjectToBackUpPathFile(Constants.TASKS_BIN, Program.ListTasksAllPersonToSave);
                 (PersonButton, DateTime) PDT = SetNewDateAndPerson(
                     Program.fmMain.SetPlMain().PointToClient(MouseLocation),
                     Program.ListPersonButton,
                     Program.PoolTextBox);
                 if (PDT.Item1.Person != null && PDT.Item2 != DateTime.MinValue)
                 {
-                    //for (int i = 0; i < Constants.COUNT_OF_TRIES; i++)
-                    //{
-                    //    Dals.ReloadListTaskToSave();
-                    //    Task TargetTask = new Task();
-                    //    TargetTask = GetTaskInNewListTasks(TargetTask);
-                    //    GhengePersonDatetimeInTask(PDT, TargetTask);
-                    //    StatusToChangeDateAfter statusToChangeDateAfter = StatusToChangeDateAfter.Undefined;
-                    //    ChekAndChangeTaskAfter(TargetTask, ref statusToChangeDateAfter);
-                    //    if (statusToChangeDateAfter == StatusToChangeDateAfter.Cancel)
-                    //    {
-                    //        Program.fmMain.LoadRefreshForm(Statuses.ProgressBar.Use);
-                    //        Program.fmMain.SetPlMain().Focus();
-                    //        isDown = false;
-                    //        return;
-                    //    }
-                    //    if (Dals.WriteObjectToMainPathFile(Constants.TASKS_BIN, Program.ListTasksAllPersonToSave) == MethodResultStatus.Ok)
-                    //    {
-                    //        Program.fmMain.ShowProgressbarAndMakeRefresh();
-                    //        Program.fmMain.SetPlMain().Focus();
-                    //        isDown = false;
-                    //        return;
-                    //    }
-                    //}
-
-                    Result resultOfSaving = Program.SaveProgramData(ChangeTaskes);
+                    Dictionary<long, string> expected;
+                    try
+                    {
+                        expected = TaskStore.CaptureWithDependents(Program.ListTasksAllPersonToSave, Task.Number);
+                        expected[Task.Number] = TaskStore.Fingerprint(Task);
+                    }
+                    catch (TaskConflictException ex)
+                    {
+                        MessageBox.Show(ex.Message);
+                        isDown = false;
+                        return;
+                    }
+                    StatusToChangeDateAfter dependencyDecision = StatusToChangeDateAfter.Undefined;
+                    if (expected.Count > 1)
+                    {
+                        dependencyDecision = AskDependencyDecision();
+                        if (dependencyDecision == StatusToChangeDateAfter.Cancel)
+                        {
+                            isDown = false;
+                            return;
+                        }
+                    }
+                    Result resultOfSaving = Program.SaveProgramData(ChangeTaskes, expected);
                     if (resultOfSaving == Result.Sucess)
                     {
                         Program.fmMain.ShowProgressbarAndMakeRefresh();
@@ -1068,24 +1063,16 @@ namespace time_schedule
                         Program.fmMain.ShowProgressbarAndMakeRefresh();
                         return;
                     }
-                    MessageBox.Show("Не удалось записать изменения");
+                    MessageBox.Show(Program.SaveFailureMessage);
                     Program.fmMain.SetPlMain().Focus();
                     isDown = false;
 
                     void ChangeTaskes()
                     {
-                        Task TargetTask = new Task();
-                        TargetTask = GetTaskInNewListTasks(TargetTask);
+                        Task TargetTask = GetTaskInNewListTasks(new Task());
                         GhengePersonDatetimeInTask(PDT, TargetTask);
-                        StatusToChangeDateAfter status = StatusToChangeDateAfter.Undefined;
+                        StatusToChangeDateAfter status = dependencyDecision;
                         ChekAndChangeTaskAfter(TargetTask, ref status);
-                        if (status == StatusToChangeDateAfter.Cancel)
-                        {
-                            Program.fmMain.LoadRefreshForm(Statuses.ProgressBar.Use);
-                            Program.fmMain.SetPlMain().Focus();
-                            isDown = false;
-                            throw new EarlyExitException();
-                        }
                     }
                 }
             }
@@ -1103,17 +1090,15 @@ namespace time_schedule
             TargetTask.SetTaskNumberAfter(0);
         }
 
+        /// <summary>Находит перетаскиваемую задачу в свежем списке или сообщает о конфликте.</summary>
         private Task GetTaskInNewListTasks(Task TargetTask)
         {
             foreach (Task task in Program.ListTasksAllPersonToSave.Tasks)
             {
                 if (task.Number == Task.Number)
-                {
-                    TargetTask = task;
-                    break;
-                }
+                    return task;
             }
-            return TargetTask;
+            throw new TaskConflictException("Перемещаемая задача удалена другим пользователем.");
         }
         enum StatusToChangeDateAfter
         {
@@ -1122,6 +1107,23 @@ namespace time_schedule
             NotChange,
             Cancel
         }
+        /// <summary>Запрашивает выбор пользователя до захвата сетевой блокировки.</summary>
+        private StatusToChangeDateAfter AskDependencyDecision()
+        {
+            using (var dialog = new frmWithRadioButton())
+            {
+                dialog.SetLable("К задаче привязаны другие задачи. Что сделать?");
+                dialog.AddRaioButton("Изменить даты всех связанныхы задач");
+                dialog.AddRaioButton("Разорвать связи с задачами");
+                dialog.ShowDialog();
+                if (dialog.WasClickInfrmWithRadioButton != WasClickInfrmWithRadioButton.Ok)
+                    return StatusToChangeDateAfter.Cancel;
+                return dialog.GetTextSelectedRadio() == "Изменить даты всех связанныхы задач"
+                    ? StatusToChangeDateAfter.Change : StatusToChangeDateAfter.NotChange;
+            }
+        }
+
+        /// <summary>Изменяет зависимые задачи только согласно уже принятому пользователем решению.</summary>
         private void ChekAndChangeTaskAfter(Task task, ref StatusToChangeDateAfter statusToChangeDateAfter)
         {
             for (int i = 0; i < Program.ListTasksAllPersonToSave.Tasks.Count; i++)
@@ -1131,27 +1133,7 @@ namespace time_schedule
                     continue;
                 }
                 if (statusToChangeDateAfter == StatusToChangeDateAfter.Undefined)
-                {
-                    frmWithRadioButton frmWithRadio = new frmWithRadioButton();
-                    frmWithRadio.SetLable("К задаче привязаные дргие задачи. Что нужно сделать:");
-                    frmWithRadio.AddRaioButton("Изменить даты всех связанныхы задач");
-                    frmWithRadio.AddRaioButton("Разорвать связи с задачами");
-                    frmWithRadio.ShowDialog();
-                    if (frmWithRadio.WasClickInfrmWithRadioButton != WasClickInfrmWithRadioButton.Ok)
-                    {
-                        statusToChangeDateAfter = StatusToChangeDateAfter.Cancel;
-                        return;
-                    }
-                    string textRadio = frmWithRadio.GetTextSelectedRadio();
-                    if (textRadio == "Изменить даты всех связанныхы задач")
-                    {
-                        statusToChangeDateAfter = StatusToChangeDateAfter.Change;
-                    }
-                    if (textRadio == "Разорвать связи с задачами")
-                    {
-                        statusToChangeDateAfter = StatusToChangeDateAfter.NotChange;
-                    }
-                }
+                    throw new TaskConflictException("Появились новые зависимые задачи. Повторите перенос после обновления календаря.");
                 if (statusToChangeDateAfter == StatusToChangeDateAfter.Change)
                 {
                     Program.ListTasksAllPersonToSave.Tasks[i].ChangeDatesAndCountDays(

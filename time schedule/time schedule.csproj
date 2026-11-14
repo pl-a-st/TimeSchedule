@@ -86,6 +86,9 @@
     <Compile Include="enums.cs" />
     <Compile Include="Constants.cs" />
     <Compile Include="Dals.cs" />
+    <Compile Include="TaskStore.cs" />
+    <Compile Include="CompactTaskCodec.cs" />
+    <Compile Include="CompactTaskStore.cs" />
     <Compile Include="Forms\fmChangeList.cs">
       <SubType>Form</SubType>
     </Compile>

@@ -24,22 +24,27 @@ namespace time_schedule {
         public string GetPersonName() {
             return personName.Text;
         }
+        /// <summary>Добавляет исполнителя в актуальный согласованный список без потери чужих записей.</summary>
         private void btnAddPerson_Click(object sender, EventArgs e) {
             if (personName.Text == "") {
                 MessageBox.Show("Не указанно имя испонителя!");
                 return;
             }
-            Person person = new Person(personName.Text);
-            for(int i = 0; i < Constants.COUNT_OF_TRIES; i++) {
-                Program.fmMain.ReReadListPerson();
-                Program.listPersons.AddPerson(person);
-                if(Dals.WriteObjectToMainPathFile(Constants.PERSONS_BIN, Program.listPersons) == MethodResultStatus.Ok) {
-                    CreatePerson = CreatePerson.yes;
-                    this.Close();
-                    return;
-                }
+            try {
+                Program.listPersons = TaskStore.UpdatePersons(Dals.TakeMainPathFile(Constants.PERSONS_BIN), people => {
+                    if (people.Persons.Any(p => p.PersonFamaly == personName.Text))
+                        throw new TaskConflictException("Исполнитель с таким именем уже существует.");
+                    people.AddPerson(new Person(personName.Text));
+                });
+                CreatePerson = CreatePerson.yes;
+                this.Close();
             }
-            MessageBox.Show($"Не удалось записать нового исполнителя в файл{Constants.PERSONS_BIN}!");
+            catch (System.IO.IOException ex) {
+                MessageBox.Show("Не удалось записать нового исполнителя: " + ex.Message);
+            }
+            catch (UnauthorizedAccessException ex) {
+                MessageBox.Show("Нет доступа к файлу исполнителей: " + ex.Message);
+            }
         }
 
         private void fmAddPerson_Load(object sender, EventArgs e) {

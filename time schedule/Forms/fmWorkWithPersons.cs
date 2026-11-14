@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Linq;
+using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -19,12 +20,15 @@ namespace time_schedule {
             thisloadRefreshForm = loadRefreshForm;
         }
         LoadRefreshForm thisloadRefreshForm;
+        /// <summary>Версия списка исполнителей, показанного в данном окне.</summary>
+        private string personRevision;
         public Form setForm() {
             return this;
         }
         private void btnNewPerson_Click(object sender, EventArgs e) {
             fmAddPerson fmAddPerson = new fmAddPerson();
             fmAddPerson.ShowDialog();
+            personRevision = TaskStore.Revision(Dals.TakeMainPathFile(Constants.PERSONS_BIN));
             LisBoxRefresh();
 
         }
@@ -35,11 +39,25 @@ namespace time_schedule {
             }
         }
 
+        /// <summary>Загружает актуальный список исполнителей и его версию.</summary>
         private void fmWorkWithPersons_Load(object sender, EventArgs e) {
+            try
+            {
+                Program.listPersons = TaskStore.ReadPersonsWithRevision(
+                    Dals.TakeMainPathFile(Constants.PERSONS_BIN), out personRevision);
+            }
+            catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException ||
+                ex is System.Runtime.Serialization.SerializationException)
+            {
+                MessageBox.Show("Не удалось прочитать список исполнителей: " + ex.Message);
+                this.Close();
+                return;
+            }
             LisBoxRefresh();
             lblPersonPlace.Text = "Порядок " + "\n" + "исполнителя";
         }
 
+        /// <summary>Переименовывает исполнителя и связанные задачи в двухфайловой транзакции.</summary>
         private void btnChangePerson_Click(object sender, EventArgs e) {
             fmInpootText fmInpootText = new fmInpootText();
             if (lBxPersons.SelectedIndex == -1) {
@@ -53,27 +71,37 @@ namespace time_schedule {
             fmInpootText.ShowDialog();
             if (fmInpootText.ChoiceIsMade == ChoiceIsMade.no)
                 return;
-            foreach (Person person in Program.listPersons.Persons) {
-                if (person.PersonFamaly == lBxPersons.Items[lBxPersons.SelectedIndex].ToString())
-                    person.SetPersonFamaly(fmInpootText.GetTextBox().Text);
+            string originalName = lBxPersons.Items[lBxPersons.SelectedIndex].ToString();
+            string renamed = fmInpootText.GetTextBox().Text;
+            var expected = TaskStore.Capture(Program.ListTasksAllPersonToSave,
+                Program.ListTasksAllPersonToSave.Tasks.Where(t => t.PersonFamaly == originalName).Select(t => t.Number));
+            try
+            {
+                Program.ListTasksAllPersonToSave = TaskStore.UpdatePersonsAndTasks(
+                    Dals.TakeMainPathFile(Constants.TASKS_BIN), (people, tasks) =>
+                    {
+                        Person old = people.Persons.FirstOrDefault(p => p.PersonFamaly == originalName);
+                        if (old == null) throw new TaskConflictException("Исполнитель уже изменён или удалён другим пользователем.");
+                        if (people.Persons.Any(p => p.PersonFamaly == renamed && p != old))
+                            throw new TaskConflictException("Исполнитель с таким именем уже существует.");
+                        old.SetPersonFamaly(renamed);
+                        foreach (Task task in tasks.Tasks)
+                            if (task.PersonFamaly == originalName) task.SetPersonFamaly(renamed);
+                    }, expected, personRevision);
+                Program.listPersons = TaskStore.ReadPersons(Dals.TakeMainPathFile(Constants.PERSONS_BIN));
+                personRevision = TaskStore.Revision(Dals.TakeMainPathFile(Constants.PERSONS_BIN));
             }
-            foreach (Task task in Program.ListTasksAllPersonToSave.Tasks) {
-                if (task.PersonFamaly == lBxPersons.Items[lBxPersons.SelectedIndex].ToString())
-                    task.SetPersonFamaly(fmInpootText.GetTextBox().Text);
+            catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException ||
+                ex is System.Runtime.Serialization.SerializationException)
+            {
+                MessageBox.Show("Переименование не завершено: " + ex.Message);
+                return;
             }
-
-            //Dals.WriteObjectToFile(
-            //    Constants.PERSONS, 
-            //    Program.listPersons.GetListForSave());
-            Dals.WriteObjectToMainPathFile(Constants.PERSONS_BIN, Program.listPersons);
-            //Dals.WriteObjectToFile(
-            //    Constants.TASKS,
-            //    Program.ListTasksAllPerson.GetListForSave());
-            Dals.WriteObjectToMainPathFile(Constants.TASKS_BIN, Program.ListTasksAllPersonToSave);
             LisBoxRefresh();
             thisloadRefreshForm?.Invoke();
         }
 
+        /// <summary>Удаляет исполнителя после проверки версии списка.</summary>
         private void btnDelete_Click(object sender, EventArgs e) {
             if (lBxPersons.SelectedIndex == -1) {
                 MessageBox.Show("Не выбран исполнитель.");
@@ -92,22 +120,23 @@ namespace time_schedule {
                 return;
             }
             this.Activate();
-            for(int j = 0; j < Constants.COUNT_OF_TRIES; j++) {
-                Program.fmMain.ReReadListPerson();
-                for (int i = 0; i < Program.listPersons.Persons.Count; i++) {
-                    Person person = Program.listPersons.Persons[i];
-                    if (person.PersonFamaly == lBxPersons.SelectedItem.ToString()) {
-                        Program.listPersons.Persons.RemoveAt(i);
-                        break;
-                    }
-                }
-                if (Dals.WriteObjectToMainPathFile(Constants.PERSONS_BIN, Program.listPersons) == MethodResultStatus.Ok) {
-                    LisBoxRefresh();
-                    thisloadRefreshForm?.Invoke();
-                    return;
-                }
+            string selected = lBxPersons.SelectedItem.ToString();
+            try
+            {
+                Program.listPersons = TaskStore.UpdatePersons(Dals.TakeMainPathFile(Constants.PERSONS_BIN), people =>
+                {
+                    Person person = people.Persons.FirstOrDefault(p => p.PersonFamaly == selected);
+                    if (person == null) throw new TaskConflictException("Исполнитель уже удалён или переименован.");
+                    people.Persons.Remove(person);
+                }, personRevision);
+                personRevision = TaskStore.Revision(Dals.TakeMainPathFile(Constants.PERSONS_BIN));
+                LisBoxRefresh();
+                thisloadRefreshForm?.Invoke();
             }
-            MessageBox.Show("Не удалось удалить из файла исполнителя!");
+            catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException)
+            {
+                MessageBox.Show("Не удалось удалить исполнителя: " + ex.Message);
+            }
         }
 
         private void button1_Click(object sender, EventArgs e) {
@@ -122,18 +151,34 @@ namespace time_schedule {
                 }
             }
         }
+        /// <summary>Сохраняет порядок без перезаписи списка, изменённого другим пользователем.</summary>
         private void ReloadListPerson() {
-            List<Person> listPerson = new List<Person>();
-            foreach (object item in lBxPersons.Items) {
-                foreach (Person person in Program.listPersons.Persons) {
-                    if (item.ToString() == person.PersonFamaly) {
-                        listPerson.Add(person);
+            string[] order = lBxPersons.Items.Cast<object>().Select(x => x.ToString()).ToArray();
+            try
+            {
+                Program.listPersons = TaskStore.UpdatePersons(Dals.TakeMainPathFile(Constants.PERSONS_BIN), people =>
+                {
+                    if (people.Persons.Count != order.Length)
+                        throw new TaskConflictException("Состав исполнителей изменён другим пользователем.");
+                    var ordered = new List<Person>();
+                    foreach (string name in order)
+                    {
+                        Person person = people.Persons.FirstOrDefault(p => p.PersonFamaly == name);
+                        if (person == null || ordered.Contains(person))
+                            throw new TaskConflictException("Состав исполнителей изменён другим пользователем.");
+                        ordered.Add(person);
                     }
-                }
+                    people.SetPersonList(ordered);
+                }, personRevision);
+                personRevision = TaskStore.Revision(Dals.TakeMainPathFile(Constants.PERSONS_BIN));
             }
-            Program.listPersons.SetPersonList(listPerson);
-            //Dals.WriteObjectToFile(Constants.PERSONS, Program.listPersons.GetListForSave());
-            Dals.WriteObjectToMainPathFile(Constants.PERSONS_BIN, Program.listPersons);
+            catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException)
+            {
+                MessageBox.Show("Не удалось сохранить порядок исполнителей: " + ex.Message);
+                Program.listPersons = TaskStore.ReadPersons(Dals.TakeMainPathFile(Constants.PERSONS_BIN));
+                personRevision = TaskStore.Revision(Dals.TakeMainPathFile(Constants.PERSONS_BIN));
+                LisBoxRefresh();
+            }
         }
         private void RemovePersonPlace(PersonPlaceUpDowm personPlaceUpDowm) {
             if (lBxPersons.SelectedIndex == -1) {

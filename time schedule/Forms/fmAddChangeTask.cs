@@ -28,6 +28,8 @@ namespace time_schedule
     {
         Task thisTask = new Task();
         private DateTime FinishDateBeforeChange;
+        /// <summary>Версии исходной задачи и зависимых задач на момент открытия редактора.</summary>
+        private Dictionary<long, string> expectedTaskVersions = new Dictionary<long, string>();
         LoadRefreshForm thisloadRefreshForm;
         public TreeProjects TreeProjects
         {
@@ -287,6 +289,7 @@ namespace time_schedule
             TreeProjects.GetTreeFromFile();
 
         }
+        /// <summary>Заполняет редактор и фиксирует версии задачи и зависимостей для проверки конфликта.</summary>
         private void LoadFmAddTaskToCangeTask()
         {
             nUpDnTaskNumber.Visible = true;
@@ -319,6 +322,18 @@ namespace time_schedule
             dTmTaskDateStart.Value = Program.Task.DateStart.Date;
             dTmTaskDateFinish.Value = Program.Task.DateFinish.Date;
             TreeProjects.GetTreeFromTask(Program.Task);
+            try
+            {
+                expectedTaskVersions = TaskStore.CaptureWithDependents(
+                    Program.ListTasksAllPersonToSave, Program.Task.Number);
+                // Program.Task относится к состоянию, на основании которого открывалась форма.
+                expectedTaskVersions[Program.Task.Number] = TaskStore.Fingerprint(Program.Task);
+            }
+            catch (TaskConflictException ex)
+            {
+                btnCreateTask.Enabled = false;
+                MessageBox.Show(ex.Message);
+            }
         }
         public void WorkDaysDatesCalculate()
         {
@@ -426,23 +441,31 @@ namespace time_schedule
                 Program.listNonWorkingDays.NonWorkingDays[lastIndex].AddDays(newCountDaysAfterChange);
             Program.listNonWorkingDays.NonWorkDaysWrite(FinishDateBeforeChange, newMaxDateFinish);
         }
+        /// <summary>Сохраняет одну задачу либо возвращает массовый выбор вызывающей форме.</summary>
         private void btnCreateChangeTask_Click(object sender, EventArgs e)
         {
             ClickButton = ClickButton.Aplly;
+            if (CreateOrChange == CreateOrChange.ChangeToSelectTasks)
+            {
+                this.Close(); // массовое изменение сохраняет вызывающая форма одной транзакцией
+                return;
+            }
             if (IsTBxTaskNameEmpty())
             {
                 return;
             }
-            Dals.WriteObjectToBackUpPathFile(Constants.TASKS_BIN, Program.ListTasksAllPersonToSave);
-            if(Program.SaveProgramData(PushNewTaskInListTasks) == Result.Sucess)
+            if (CreateOrChange == CreateOrChange.Change)
+                WriteNewNonWorkigDays(); // не выполняем работу с календарём внутри файловой блокировки
+            if(Program.SaveProgramData(PushNewTaskInListTasks, expectedTaskVersions) == Result.Sucess)
             {
                 Program.fmMain.ShowProgressbarAndMakeRefresh();
                 this.Close();
                 return;
             }
-            MessageBox.Show("Не удалось сохранить вносимые изменения, попробуйте позже.");
+            MessageBox.Show(Program.SaveFailureMessage);
         }
 
+        /// <summary>Создаёт задачу с номером из текущего заблокированного списка либо изменяет выбранную.</summary>
         private void PushNewTaskInListTasks()
         {
             Task task = new Task();
@@ -454,15 +477,16 @@ namespace time_schedule
             }
             if (CreateOrChange == CreateOrChange.Change)
             {
-                WriteNewNonWorkigDays();
                 RewriteTasks();
             }
         }
 
+        /// <summary>Заменяет выбранную задачу, сообщая о её исчезновении вместо мнимого успеха.</summary>
         private void RewriteTasks()
         {
             Task task = GetTaskForCreateChange(Convert.ToInt32(nUpDnTaskNumber.Value));
             task.GetTreeProjects().SetTreeViewProjects(TreeProjects.ListTreeNode);
+            bool found = false;
             for (int i = 0; i < Program.ListTasksAllPersonToSave.Tasks.Count; i++)
             {
                 if (Program.ListTasksAllPersonToSave.Tasks[i].Number == nUpDnTaskNumber.Value)
@@ -472,9 +496,11 @@ namespace time_schedule
                         ChekTaskAfter(task);
                     }
                     Program.ListTasksAllPersonToSave.Tasks[i] = task;
+                    found = true;
                     break;
                 }
             }
+            if (!found) throw new TaskConflictException("Редактируемая задача удалена другим пользователем.");
         }
 
         private Boolean IsTBxTaskNameEmpty()
@@ -580,6 +606,7 @@ namespace time_schedule
 
         }
 
+        /// <summary>Копирует задачу в другой проект под файловыми блокировками целевого проекта.</summary>
         private void btnCopyAnotherMainPath_Click(object sender, EventArgs e)
         {
             fmMainPathChoise fmMainPathCopy = new fmMainPathChoise();
@@ -595,67 +622,27 @@ namespace time_schedule
             try
             {
                 Task task = new Task();
-                ListTasks listTasks = new ListTasks();
-                string textForError = "Не удалось записать задачу в файл проекта.";
-                if (File.Exists(folderName + "\\" + Constants.TASKS_BIN))
+                string targetTasksFile = System.IO.Path.Combine(folderName, Constants.TASKS_BIN);
+                TaskStore.UpdatePersonsAndTasks(targetTasksFile, (listPersons, listTasks) =>
                 {
-                    listTasks = Dals.binReadFileToObject(listTasks, folderName + "\\" + Constants.TASKS_BIN);
-                }
-                else
-                {
-                    listTasks.SetTasksFromList(Dals.ReadListFromFile(folderName + "\\" + Constants.TASKS, textForError));
-                }
-                textForError = "Не создано ни одного исполнителя.";
-                task = GetTaskForCreateChange(listTasks.GetNextNumForTask());
-                task.SetTreeProject(TreeProjects);
-                ListPersons listPersons = new ListPersons();
-                if (File.Exists(folderName + "\\" + Constants.TASKS_BIN))
-                {
-                    listPersons = Dals.binReadFileToObject(listPersons, folderName + "\\" + Constants.PERSONS_BIN);
-                }
-                else
-                {
-                    listPersons.SetPersonsFromList(
-                        Dals.ReadListFromFile(folderName + "\\" + Constants.PERSONS, textForError),
-                        listTasks.Tasks);
-                }
-                string personFamaly = "Нераспределено";
-                bool isPersonHas = false;
-                foreach (Person person in listPersons.Persons)
-                {
-                    if (person.PersonFamaly == personFamaly)
-                    {
-                        isPersonHas = true;
-                        break;
-                    }
-                }
-                if (!isPersonHas)
-                {
-                    Person person = new Person(personFamaly);
-                    listPersons.Persons.Add(person);
-                }
-                foreach (Person person in listPersons.Persons)
-                {
-                    if (person.PersonFamaly == task.PersonFamaly)
-                    {
+                    task = GetTaskForCreateChange(listTasks.GetNextNumForTask());
+                    task.SetTreeProject(TreeProjects);
+                    string personFamaly = "Нераспределено";
+                    if (!listPersons.Persons.Any(p => p.PersonFamaly == personFamaly))
+                        listPersons.Persons.Add(new Person(personFamaly));
+                    if (listPersons.Persons.Any(p => p.PersonFamaly == task.PersonFamaly))
                         personFamaly = task.PersonFamaly;
-                        break;
-                    }
-                }
-                Dals.binWriteObjectToFile(
-                    listPersons,
-                    folderName + "\\" + Constants.PERSONS_BIN);
-                task.SetPersonFamaly(personFamaly);
-                const int NUBER_AFTER_FOR_COPY = 0;
-                task.SetTaskNumberAfter(NUBER_AFTER_FOR_COPY);
-                listTasks.AddTask(task);
-                Dals.binWriteObjectToFile(listTasks, folderName + "\\" + Constants.TASKS_BIN);
+                    task.SetPersonFamaly(personFamaly);
+                    task.SetTaskNumberAfter(0);
+                    listTasks.AddTask(task);
+                }, new Dictionary<long, string>());
                 MessageBox.Show("Задача успешно скопирована.");
                 Program.fmMain.LoadRefreshForm(Statuses.ProgressBar.Use);
             }
-            catch
+            catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException ||
+                ex is System.Runtime.Serialization.SerializationException)
             {
-                MessageBox.Show("Не удалось произвести запись в файл: " + folderName + "\\" + Constants.TASKS);
+                MessageBox.Show("Не удалось скопировать задачу: " + ex.Message);
             }
         }
 
@@ -663,6 +650,7 @@ namespace time_schedule
         {
             fmProjectTree fmProjectTree = new fmProjectTree();
             fmProjectTree.StartPosition = FormStartPosition.CenterParent;
+
 
 
             if (CreateOrChange == CreateOrChange.Change)

@@ -49,89 +49,80 @@ namespace time_schedule
         public static TreeView ProjetTree;
         public static UserType UserType = UserType.Reader;
 
+        /// <summary>Описание последнего отказа сохранения для интерфейса; не скрывает конфликты.</summary>
+        public static string LastSaveError { get; private set; }
+
+        /// <summary>Загружает целый согласованный снимок задач, не очищая память до успеха.</summary>
         public static Result ReadProgramData()
         {
-            Program.ListTasksAllPersonToSave.Tasks.Clear();
-            string fullFileName = Dals.TakeMainPathFile(Constants.TASKS_BIN);
-            ListTasks tasks = new ListTasks();
-            Result result = Result.Unknown;
-            if (File.Exists(fullFileName))
+            string file = Dals.TakeMainPathFile(Constants.TASKS_BIN);
+            if (!File.Exists(file)) return Result.Unknown;
+            try
             {
-                (tasks, result) = Dals.GetObjectFromFile(Program.ListTasksAllPersonToSave, fullFileName);
-                if (result == Result.Sucess)
-                {
-                    Program.ListTasksAllPersonToSave = tasks;
-                }
-                return result;
+                ListTasksAllPersonToSave = TaskStore.Read(file);
+                return Result.Sucess;
             }
-            return Result.Unknown;
+            catch (Exception ex) when (ex is IOException || ex is System.Runtime.Serialization.SerializationException || ex is UnauthorizedAccessException)
+            {
+                LastSaveError = ex.Message;
+                return Result.Error;
+            }
         }
-        public static Result SaveProgramData(Action actionWithListTasksAllPersonToSave)
+
+        /// <summary>Сохраняет только добавление новой задачи; существующие записи менять без снимка запрещено.</summary>
+        public static Result SaveProgramData(Action action)
         {
-            for (int i = 0; i < Constants.COUNT_OF_TRIES; i++)
-            {
-                ListTasks tasks = new ListTasks();
-                BinaryFormatter bf = new BinaryFormatter();
-                string path = Dals.TakeMainPathFile(Constants.TASKS_BIN);
-                try
-                {
-
-                    using (FileStream stream = new FileStream(path, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None))
-                    {
-                        if (stream.Length>0)
-                        {
-                            tasks = (ListTasks)bf.Deserialize(stream);
-                        }
-                        Program.ListTasksAllPersonToSave = tasks;
-                        actionWithListTasksAllPersonToSave();
-                    }
-                    using (FileStream stream = new FileStream(path, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None))
-                    {
-                        bf.Serialize(stream, Program.ListTasksAllPersonToSave);
-                    }
-                    return Result.Sucess;
-
-                }
-                catch (Exception ex)
-                {
-                    if (ex is EarlyExitException)
-                    {
-                        return Result.Canceled;
-                    }
-                    System.Threading.Thread.Sleep(300);
-                    continue;
-                }
-
-                //if (ReadProgramData() == Result.Sucess)
-                //{
-                //    try
-                //    {
-                //        action();
-                //    }
-                //    catch (Exception ex)
-                //    {
-                //        if(ex is EarlyExitException)
-                //        {
-                //            return Result.Canceled;
-                //        }
-                //        return Result.Error;
-                //    }
-
-                //}
-                //else
-                //{
-                //    System.Threading.Thread.Sleep(100);
-                //    continue;
-                //}
-                //string fullFileName = Dals.TakeMainPathFile(Constants.TASKS_BIN);
-                //if (Dals.binWriteObjectToFile(ListTasksAllPersonToSave, fullFileName) == MethodResultStatus.Ok)
-                //{
-                //    return Result.Sucess;
-                //}
-                //System.Threading.Thread.Sleep(100);
-            }
-            return Result.Failure;
+            return SaveProgramData(action, new Dictionary<long, string>());
         }
+
+        /// <summary>Выполняет callback ровно один раз над свежим снимком под общей файловой блокировкой.</summary>
+        /// <param name="action">Мутация текущего снимка; без модальных окон и блокирующей работы UI.</param>
+        /// <param name="expected">Отпечатки всех допускаемых к изменению существующих задач.</param>
+        public static Result SaveProgramData(Action action, IDictionary<long, string> expected)
+        {
+            LastSaveError = null;
+            ListTasks previous = ListTasksAllPersonToSave;
+            try
+            {
+                ListTasks result = TaskStore.Update(Dals.TakeMainPathFile(Constants.TASKS_BIN), current =>
+                {
+                    ListTasksAllPersonToSave = current;
+                    action();
+                }, expected);
+                ListTasksAllPersonToSave = result;
+                return Result.Sucess;
+            }
+            catch (EarlyExitException)
+            {
+                ListTasksAllPersonToSave = previous;
+                return Result.Canceled;
+            }
+            catch (TaskConflictException ex)
+            {
+                ListTasksAllPersonToSave = previous;
+                LastSaveError = ex.Message;
+                return Result.Failure;
+            }
+            catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException ||
+                ex is System.Runtime.Serialization.SerializationException || ex is InvalidOperationException)
+            {
+                ListTasksAllPersonToSave = previous;
+                LastSaveError = "Сохранение не подтверждено: " + ex.Message +
+                    ". Не повторяйте операцию до проверки данных в общей папке.";
+                return Result.Error;
+            }
+            catch (Exception ex) when (!(ex is OutOfMemoryException) &&
+                !(ex is System.Threading.ThreadAbortException) && !(ex is AccessViolationException))
+            {
+                ListTasksAllPersonToSave = previous;
+                LastSaveError = "Сохранение не выполнено: " + ex.Message;
+                return Result.Error;
+            }
+        }
+
+        /// <summary>Выводит конкретную причину, а не необоснованное сообщение об успешной записи.</summary>
+        public static string SaveFailureMessage => LastSaveError ?? "Изменения не сохранены.";
+
         public static bool IsFileLocked(FileInfo file)
         {
             try
@@ -147,12 +138,49 @@ namespace time_schedule
             }
             return false;
         }
+        
+
+        /// <summary>
+        /// Запускает приложение и подключает измерения по умолчанию
+        /// в Debug, а в Release — по параметру --timing.
+        /// </summary>
         [STAThread]
-        static void Main()
+        static void Main(string[] args)
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
+
+#if DEBUG
+            bool timingEnabled = true;
+#else
+            bool timingEnabled = args != null && args.Any(arg =>
+            string.Equals(arg, "--timing",
+            StringComparison.OrdinalIgnoreCase));
+#endif
+
+            timingEnabled |=
+                Environment.GetEnvironmentVariable("TS01_TIMING") == "1";
+
+            if (timingEnabled)
+            {
+                string logPath = Path.Combine(
+                    Path.GetTempPath(),
+                    "TimeSchedule-TS01-" +
+                    System.Diagnostics.Process.GetCurrentProcess().Id +
+                    ".log");
+
+                System.Diagnostics.Trace.Listeners.Add(
+                    new System.Diagnostics.TextWriterTraceListener(logPath));
+
+                System.Diagnostics.Trace.AutoFlush = true;
+
+                TaskStore.TimingSink = message =>
+                    System.Diagnostics.Trace.WriteLine(
+                        "TimeSchedule store: " + message);
+            }
+
             Application.Run(new Form1());
         }
+
     }
 }

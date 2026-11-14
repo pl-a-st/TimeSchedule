@@ -1,0 +1,20 @@
+PASS file exists time schedule.csproj
+PASS file exists CompactTaskCodec.cs
+PASS file exists CompactTaskStore.cs
+PASS file exists CompactStorePreviewTests.cs
+PASS csproj compiles TaskStore.cs
+PASS csproj compiles CompactTaskCodec.cs
+PASS csproj compiles CompactTaskStore.cs
+PASS balanced braces CompactTaskCodec.cs
+PASS xml summaries CompactTaskCodec.cs
+PASS new codec types do not alter legacy binary serialization CompactTaskCodec.cs
+PASS balanced braces CompactTaskStore.cs
+PASS xml summaries CompactTaskStore.cs
+PASS new codec types do not alter legacy binary serialization CompactTaskStore.cs
+PASS new codec preserves old task numbers
+PASS manifest atomic replacement
+PASS snapshot manifest readers permit replace
+PASS parallel segment loading
+PASS legacy source is read-only in new repository
+PASS PowerShell copies source before testing
+SUMMARY 19 / 19 PASS

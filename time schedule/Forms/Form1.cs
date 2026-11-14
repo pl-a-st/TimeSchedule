@@ -89,8 +89,28 @@ namespace time_schedule
             DateTime minDateTime = Program.ListTasksAllPersonToShow.GetMinDateStartTasks();
             return (maxDateTime - MaxDateFinish).Days;
         }
+        /// <summary>Дерево отбора проектов для текущего цикла обновления; повторное чтение с диска не требуется.</summary>
+        private TreeProjects selectionTreeForRefresh;
+
+        /// <summary>Обновляет интерфейс только из согласованно загруженных данных.</summary>
         public void LoadRefreshForm()
         {
+            Stopwatch timing = Stopwatch.StartNew();
+            ListTasks loadedTasks = null;
+            ListPersons loadedPersons = null;
+            string tasksPath = Dals.TakeMainPathFile(Constants.TASKS_BIN);
+            try
+            {
+                if (File.Exists(tasksPath))
+                    loadedTasks = TaskStore.ReadProject(tasksPath, out loadedPersons);
+            }
+            catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException ||
+                ex is System.Runtime.Serialization.SerializationException || ex is InvalidCastException)
+            {
+                MessageBox.Show("Не удалось получить актуальные задачи. Существующий календарь сохранён. " + ex.Message);
+                return;
+            }
+            long readMs = timing.ElapsedMilliseconds;
             ChangePanelVisibility(Statuses.Visibility.Invisible);
             SaveScrolls();
             if (CalcDivDays() < 0)
@@ -101,7 +121,19 @@ namespace time_schedule
             plForDate.Enabled = false;
             ClearOldExemplars();
             ClearAllPools();
-            LoadAllPools();//867
+            try
+            {
+                LoadAllPools(loadedTasks, loadedPersons);//867
+            }
+            catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException ||
+                ex is System.Runtime.Serialization.SerializationException || ex is InvalidCastException)
+            {
+                plForDate.Enabled = true;
+                ChangePanelVisibility(Statuses.Visibility.Visible);
+                MessageBox.Show("Не удалось построить календарь из актуальных данных. " + ex.Message);
+                return;
+            }
+            long modelMs = timing.ElapsedMilliseconds - readMs;
             LoadTextBoxWithDate();//493
             LoadHorizontLine();
             DrowVerticalLines();
@@ -115,11 +147,19 @@ namespace time_schedule
             ChangePanelVisibility(Statuses.Visibility.Visible);//313
             PushLableProject();
             LoadScrolls();
+            Trace.WriteLine("TimeSchedule refresh: disk-read-ms=" + readMs +
+                " model-and-layout-ms=" + modelMs + " controls-ms=" +
+                (timing.ElapsedMilliseconds - readMs - modelMs) +
+                " total-ms=" + timing.ElapsedMilliseconds);
         }
         private void PushLableProject()
         {
-            TreeProjects treeProjects = new TreeProjects();
-            treeProjects.GetTreeFromFile();
+            TreeProjects treeProjects = selectionTreeForRefresh;
+            if (treeProjects == null)
+            {
+                treeProjects = new TreeProjects();
+                treeProjects.GetTreeFromFile();
+            }
             lblProjects.Text = "";
             foreach (TreeNode treeNode in treeProjects.ListTreeNode)
             {
@@ -388,13 +428,18 @@ namespace time_schedule
             LoadRefreshForm(fmProgressBar);
             Invoke(new Action(() => fmProgressBar.Close()));
         }
-        private void LoadAllPools()
+        /// <summary>Строит элементы календаря из уже прочитанного согласованного снимка.</summary>
+        private void LoadAllPools(ListTasks loadedTasks, ListPersons loadedPersons)
         {
-            if (File.Exists(Dals.TakeMainPathFile(Constants.TASKS_BIN)))
+            if (loadedTasks != null)
             {
-                Program.ListTasksAllPersonToSave = Dals.binReadFileToObject(
-                    Program.ListTasksAllPersonToSave,
-                    Dals.TakeMainPathFile(Constants.TASKS_BIN));
+                Program.ListTasksAllPersonToSave = loadedTasks;
+                Program.listPersons = loadedPersons;
+            }
+            else if (File.Exists(Dals.TakeMainPathFile(Constants.TASKS_BIN)))
+            {
+                Program.ListTasksAllPersonToSave = TaskStore.ReadProject(
+                    Dals.TakeMainPathFile(Constants.TASKS_BIN), out Program.listPersons);
             }
             else
             {
@@ -403,7 +448,8 @@ namespace time_schedule
             Program.ListTasksAllPersonToShow.SetTasks(GetProjectEntryTasks(Program.ListTasksAllPersonToSave.Tasks));
             if (cBxShowTask.Text == cBxShowTask.Items[0].ToString())
                 Program.ListTasksAllPersonToShow.SetTasks(GetRelevantTasks(Program.ListTasksAllPersonToShow.Tasks));
-            ReReadListPerson();
+            if (!File.Exists(Dals.TakeMainPathFile(Constants.TASKS_BIN)))
+                ReReadListPerson();
 
             Program.ListPersonButton.LoadListPersonButtons(
                 Program.listPersons.Persons,
@@ -431,12 +477,12 @@ namespace time_schedule
                 Program.ListPersonButton);
         }
 
+        /// <summary>Читает согласованную версию списка исполнителей.</summary>
         public void ReReadListPerson()
         {
             if (File.Exists(Dals.TakeMainPathFile(Constants.TASKS_BIN)))
             {
-                Program.listPersons = Dals.binReadFileToObject(
-                    Program.listPersons,
+                Program.listPersons = TaskStore.ReadPersons(
                     Dals.TakeMainPathFile(Constants.PERSONS_BIN));
             }
             else
@@ -452,6 +498,7 @@ namespace time_schedule
             var resultListTasks = new List<Task>();
             TreeProjects treeProjects = new TreeProjects();
             treeProjects.GetTreeFromFile();
+            selectionTreeForRefresh = treeProjects;
             if (treeProjects.ListTreeNode.Count == 0)
             {
                 return resultListTasks = tasks.GetRange(0, tasks.Count);
@@ -1266,6 +1313,7 @@ namespace time_schedule
             fm.LBx.Items.AddRange(listString.ToArray());
         }
 
+        /// <summary>Восстанавливает резервную копию с защитой от параллельной записи.</summary>
         private void восстановлениеЗадачToolStripMenuItem_Click(object sender, EventArgs e)
         {
             fmChangeList fm = new fmChangeList();
@@ -1304,17 +1352,32 @@ namespace time_schedule
                     fm.BtnApply.Enabled = false;
                 }
             }
+            string tasksPath = Dals.TakeMainPathFile(Constants.TASKS_BIN);
+            string openedRevision;
+            try { openedRevision = TaskStore.Revision(tasksPath); }
+            catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException)
+            {
+                MessageBox.Show("Не удалось проверить состояние Tasks.bin: " + ex.Message);
+                return;
+            }
             fm.ShowDialog();
-            if (fm.BtnClick == BtnClick.aplly)
+            if (fm.BtnClick == BtnClick.aplly && fm.LBx.SelectedItem != null)
             {
                 string fileName = Dals.TakeBackUpPathDirectory(Constants.TASKS_BIN);
                 fileName += "\\" + fm.LBx.SelectedItem.ToString().Replace(':', '_');
-
-                Program.ListTasksAllPersonToSave = Dals.binReadFileToObject(
-                    Program.ListTasksAllPersonToSave,
-                    fileName);
-                Dals.WriteObjectToMainPathFile(Constants.TASKS_BIN, Program.ListTasksAllPersonToSave);
-                Program.fmMain.LoadRefreshForm(Statuses.ProgressBar.Use);
+                if (MessageBox.Show("Заменить все текущие задачи выбранной копией? Текущее состояние будет сохранено в резервной копии.",
+                    "Подтверждение восстановления", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) != DialogResult.Yes)
+                    return;
+                try
+                {
+                    Program.ListTasksAllPersonToSave = TaskStore.Restore(tasksPath, fileName, openedRevision);
+                    Program.fmMain.LoadRefreshForm(Statuses.ProgressBar.Use);
+                }
+                catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException ||
+                    ex is System.Runtime.Serialization.SerializationException)
+                {
+                    MessageBox.Show("Восстановление не выполнено: " + ex.Message);
+                }
             }
 
         }

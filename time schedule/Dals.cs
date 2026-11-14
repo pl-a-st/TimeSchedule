@@ -116,13 +116,19 @@ namespace time_schedule
             fileName = TakeMainPathFile(fileName);
             WriteListtFileAppend(fileName, listForWrite);
         }
+        /// <summary>Записывает прочие файлы; обход согласованного Tasks.bin запрещён.</summary>
         public static MethodResultStatus WriteObjectToMainPathFile<Type>(string fileName, Type serObject)
         {
+            if (fileName == Constants.TASKS_BIN || fileName == Constants.PERSONS_BIN)
+                throw new InvalidOperationException("Для Tasks.bin и Persons.bin обязателен TaskStore.");
             fileName = TakeMainPathFile(fileName);
             return binWriteObjectToFile(serObject, fileName);
         }
+        /// <summary>Создаёт резервную копию вспомогательного файла; для задач копию делает TaskStore.</summary>
         public static void WriteObjectToBackUpPathFile<Type>(string DirectoryName, Type serObject)
         {
+            if (DirectoryName == Constants.TASKS_BIN)
+                throw new InvalidOperationException("Резервная копия задач создаётся только из опубликованного файла TaskStore.");
             string fileNameToSave = TakeBackUpPathFile(DirectoryName);
             binWriteObjectToFile(serObject, fileNameToSave);
             while (new DirectoryInfo(TakeBackUpPathDirectory(DirectoryName)).GetFileSystemInfos().Length > Constants.MAX_BACKUP_FILESES)
@@ -183,8 +189,12 @@ namespace time_schedule
             }
             return path + fileName;
         }
+        /// <summary>Записывает вспомогательные бинарные файлы, но не Tasks.bin.</summary>
         public static MethodResultStatus binWriteObjectToFile<Type>(Type serObject, string fileName)
         {
+            if (string.Equals(Path.GetFileName(fileName), Constants.TASKS_BIN, StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(Path.GetFileName(fileName), Constants.PERSONS_BIN, StringComparison.OrdinalIgnoreCase))
+                throw new InvalidOperationException("Прямая запись Tasks.bin/Persons.bin запрещена; используйте TaskStore.");
             try
             {
                 BinaryFormatter bf = new BinaryFormatter();
@@ -228,8 +238,11 @@ namespace time_schedule
         {
             return binReadFileToObject(serObject, Dals.TakeUserPath(fileName));
         }
+        /// <summary>Читает прочие файлы и согласованный Tasks.bin без возврата устаревших данных при ошибке.</summary>
         public static Type binReadFileToObject<Type>(Type serObject, string fullPathFileName)
         {
+            if (string.Equals(Path.GetFileName(fullPathFileName), Constants.TASKS_BIN, StringComparison.OrdinalIgnoreCase))
+                return (Type)(object)TaskStore.Read(fullPathFileName);
             BinaryFormatter bf = new BinaryFormatter();
             //serObject = default(Type);
             for (int i = 0; i < Constants.COUNT_OF_TRIES; i++)
@@ -250,8 +263,15 @@ namespace time_schedule
             MessageAboutProblem(fullPathFileName);
             return serObject;
         }
+        /// <summary>Читает Tasks.bin под общим файловым протоколом, сохраняя статус результата.</summary>
         public static (Type, Result) GetObjectFromFile<Type>(Type serObject, string fullPathFileName)
         {
+            if (string.Equals(Path.GetFileName(fullPathFileName), Constants.TASKS_BIN, StringComparison.OrdinalIgnoreCase))
+            {
+                try { return ((Type)(object)TaskStore.Read(fullPathFileName), Result.Sucess); }
+                catch (IOException) { return (serObject, Result.Error); }
+                catch (System.Runtime.Serialization.SerializationException) { return (serObject, Result.Error); }
+            }
             BinaryFormatter bf = new BinaryFormatter();
             for (int i = 0; i < Constants.COUNT_OF_TRIES; i++)
             {
@@ -425,18 +445,17 @@ namespace time_schedule
                 i++;
             }
         }
+        /// <summary>Обновляет список из целого снимка; прежний список сохраняется при ошибке чтения.</summary>
         public static void ReloadListTaskToSave()
         {
-            Program.ListTasksAllPersonToSave.Tasks.Clear();
             string fullFileName = Dals.TakeMainPathFile(Constants.TASKS_BIN);
             if (File.Exists(fullFileName))
-            {
-                Program.ListTasksAllPersonToSave = Dals.binReadFileToObject(
-                    Program.ListTasksAllPersonToSave, fullFileName);
-            }
+                Program.ListTasksAllPersonToSave = TaskStore.Read(fullFileName);
             else
             {
-                Program.ListTasksAllPersonToSave.SetTasksFromList(Dals.ReadListFromMainPathFile(Constants.TASKS));
+                var legacy = new ListTasks();
+                legacy.SetTasksFromList(Dals.ReadListFromMainPathFile(Constants.TASKS));
+                Program.ListTasksAllPersonToSave = legacy;
             }
         }
     }

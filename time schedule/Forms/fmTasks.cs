@@ -203,6 +203,14 @@ namespace time_schedule
         {
             return btnNewTask;
         }
+        /// <summary>Проверяет, что выбранные номера присутствуют в показанном снимке.</summary>
+        private Dictionary<long, string> CaptureTargets(string[] items)
+        {
+            return TaskStore.Capture(Program.ListTasksAllPersonToSave,
+                items.Select(x => Convert.ToInt64(x.Split('\t')[0])));
+        }
+
+        /// <summary>Удаляет выбранную задачу только при совпадении версии, показанной пользователю.</summary>
         private void btnDeleteTask_Click(object sender, EventArgs e)
         {
             if (lBxTasks.SelectedIndex == -1)
@@ -225,10 +233,13 @@ namespace time_schedule
                 return;
             }
             this.Activate();
-            FindTaskAndDelete();
-            if(Program.SaveProgramData(FindTaskAndDelete) != Result.Sucess)
+            string selected = lBxTasks.SelectedItem.ToString();
+            Dictionary<long, string> expected;
+            try { expected = CaptureTargets(new[] { selected }); }
+            catch (TaskConflictException ex) { MessageBox.Show(ex.Message); return; }
+            if(Program.SaveProgramData(FindTaskAndDelete, expected) != Result.Sucess)
             {
-                MessageBox.Show("Не удалось сохранить вносимые изменения"); 
+                MessageBox.Show(Program.SaveFailureMessage); 
                 return;
             }
             Program.fmMain.ShowProgressbarAndMakeRefresh();
@@ -241,8 +252,7 @@ namespace time_schedule
             }
             void FindTaskAndDelete()
             {
-                string targetItem = lBxTasks.SelectedItem.ToString();
-                DeleteTaskFromListToSave(targetItem);
+                DeleteTaskFromListToSave(selected);
             }
         }
 
@@ -576,18 +586,23 @@ namespace time_schedule
             LoadLBxTasks();
         }
 
+        /// <summary>Применяет массовые изменения к проверенному набору задач одной транзакцией.</summary>
         private void ChangeSelectTasks_Click(object sender, EventArgs e)
         {
 
+            string[] selected = GetTargetItems();
+            Dictionary<long, string> expected;
+            try { expected = CaptureTargets(selected); }
+            catch (TaskConflictException ex) { MessageBox.Show(ex.Message); return; }
             fmAddChangeTask fmChangeTask = new fmAddChangeTask(Program.delegatLoadRefreshForm);
             fmChangeTask.GhangeNamebtnCreateTask("Изменить для \n выбранных задач");
             fmChangeTask.SetCreateOrChange(CreateOrChange.ChangeToSelectTasks);
             fmChangeTask.ShowDialog();
             if (fmChangeTask.ClickButton == ClickButton.Aplly)
             {
-                if (Program.SaveProgramData(ChangeTasks) != Result.Sucess)
+                if (Program.SaveProgramData(ChangeTasks, expected) != Result.Sucess)
                 {
-                    MessageBox.Show("Не удалось сохранить вносимые изменения");
+                    MessageBox.Show(Program.SaveFailureMessage);
                     fmChangeTask.ShowDialog();
                     return;
                 }
@@ -597,8 +612,7 @@ namespace time_schedule
 
             void ChangeTasks()
             {
-                string[] targetItems = GetTargetItems();
-                foreach (string itemLbx in targetItems)
+                foreach (string itemLbx in selected)
                 {
                     foreach (Task task in Program.ListTasksAllPersonToSave.Tasks)
                     {
@@ -657,6 +671,7 @@ namespace time_schedule
             }
         }
 
+        /// <summary>Удаляет выбранные задачи атомарно по проверенным версиям.</summary>
         private void butDeleteTaskInlBx_Click(object sender, EventArgs e)
         {
 
@@ -675,18 +690,30 @@ namespace time_schedule
             }
             this.Activate();
             string[] targetItems = GetTargetItems();
-            foreach (string targetItem in targetItems)
+            Dictionary<long, string> expected;
+            try { expected = CaptureTargets(targetItems); }
+            catch (TaskConflictException ex) { MessageBox.Show(ex.Message); return; }
+            if (Program.SaveProgramData(() =>
+                {
+                    foreach (string targetItem in targetItems)
+                        DeleteTaskFromListToSave(targetItem);
+                }, expected) != Result.Sucess)
             {
-                DeleteTaskFromListToSave(targetItem);
+                MessageBox.Show(Program.SaveFailureMessage);
+                return;
             }
-            Dals.WriteObjectToMainPathFile(Constants.TASKS_BIN, Program.ListTasksAllPersonToSave);
             Form1 form1 = this.Form1Delegat.SetForm1();
             form1.LoadRefreshForm(Statuses.ProgressBar.Use);
             LoadLBxTasks();
         }
 
+        /// <summary>Добавляет проекты выбранным задачам без перезаписи чужих изменений.</summary>
         private void butAddProjectToSelectTasks_Click(object sender, EventArgs e)
         {
+            string[] targetItems = GetTargetItems();
+            Dictionary<long, string> expected;
+            try { expected = CaptureTargets(targetItems); }
+            catch (TaskConflictException ex) { MessageBox.Show(ex.Message); return; }
             fmProjectTree fmProjectTree = new fmProjectTree();
             fmProjectTree.StartPosition = FormStartPosition.CenterParent;
             TreeProjects patternTtreeProjects = TreeProjects.GetMainTree();
@@ -699,10 +726,11 @@ namespace time_schedule
                 return; 
             }
             patternTtreeProjects.SetTreeViewProjects(fmProjectTree.projectTreeView);
-            string[] targetItems = GetTargetItems();
-            foreach (string itemLbx in targetItems)
+            if (Program.SaveProgramData(() =>
             {
-                foreach (Task task in Program.ListTasksAllPersonToSave.Tasks)
+                foreach (string itemLbx in targetItems)
+                {
+                    foreach (Task task in Program.ListTasksAllPersonToSave.Tasks)
                 {
                     if (task.Number == Convert.ToInt32(itemLbx.ToString().Split('\t')[0]))
                     {
@@ -711,8 +739,12 @@ namespace time_schedule
                         break;
                     }
                 }
+                }
+            }, expected) != Result.Sucess)
+            {
+                MessageBox.Show(Program.SaveFailureMessage);
+                return;
             }
-            Dals.WriteObjectToMainPathFile(Constants.TASKS_BIN, Program.ListTasksAllPersonToSave);
             LoadLBxTasks();
             Program.fmMain.SetForm1().LoadRefreshForm(Statuses.ProgressBar.Use);
         }
