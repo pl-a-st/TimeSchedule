@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -10,6 +10,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace time_schedule
 {
@@ -39,8 +40,8 @@ namespace time_schedule
     }
 
     /// <summary>
-    /// Изолированная реализация сегментированного хранилища TS-01.
-    /// Используется для испытаний на копии проекта; в рабочий TaskStore пока не подключена.
+    /// Сегментированное хранилище TS-01. В Debug используется автоматически
+    /// на тестовом проекте; прежний Tasks.bin не изменяется.
     /// </summary>
     public static class CompactTaskStore
     {
@@ -76,6 +77,130 @@ namespace time_schedule
 
             /// <summary>Непустые опубликованные сегменты по номеру диапазона.</summary>
             internal SortedDictionary<long, string> Segments = new SortedDictionary<long, string>();
+        }
+
+        /// <summary>Имя изолированного каталога компактного хранилища рядом с исходным Tasks.bin.</summary>
+        private const string StoreDirectoryName = "Tasks.compact";
+
+        /// <summary>Определяет место компактного хранилища без доступа к данным пользователя.</summary>
+        internal static string StoreDirectory(string legacyFile)
+        {
+            return Path.Combine(Path.GetDirectoryName(Path.GetFullPath(legacyFile)), StoreDirectoryName);
+        }
+
+        /// <summary>Признак опубликованного компактного хранилища для выбранного проекта.</summary>
+        internal static bool Exists(string legacyFile)
+        {
+            return File.Exists(HeadPath(StoreDirectory(legacyFile)));
+        }
+
+        /// <summary>Возвращает версию опубликованного HEAD, не трогая исходный Tasks.bin.</summary>
+        internal static string CurrentRevision(string legacyFile)
+        {
+            string path = HeadPath(StoreDirectory(legacyFile));
+            return File.Exists(path) ? Sha(path) : "absent";
+        }
+
+        /// <summary>
+        /// Под блокировкой Tasks.bin.lock безопасно создаёт первое компактное состояние.
+        /// Вызывающий код отвечает за сетевую блокировку и разрешение тестового режима.
+        /// </summary>
+        internal static void InitializeLocked(string legacyFile)
+        {
+            if (Exists(legacyFile)) return;
+            string root = StoreDirectory(legacyFile);
+            string baseline = LegacyRevision(legacyFile);
+            ListTasks old;
+            if (File.Exists(legacyFile))
+            {
+                using (var input = new FileStream(legacyFile, FileMode.Open, FileAccess.Read, FileShare.Read))
+                    old = (ListTasks)new BinaryFormatter().Deserialize(input);
+            }
+            else
+            {
+                // Новый проект: допускается создание компактной базы без пустого Tasks.bin.
+                old = new ListTasks();
+                string textFile = Path.Combine(Path.GetDirectoryName(legacyFile), Constants.TASKS);
+                if (File.Exists(textFile))
+                    old.SetTasksFromList(File.ReadAllLines(textFile).Where(x => !string.IsNullOrWhiteSpace(x)).ToList());
+            }
+            var head = new Head { Generation = 1, LegacyHash = baseline, RangeSize = SegmentSize };
+            WriteChangedSegments(root, old, head);
+            // Публикация возможна только после проверки обратного преобразования.
+            ListTasks converted = ReadSegments(root, head);
+            VerifyEquivalent(old, converted);
+            if (LegacyRevision(legacyFile) != baseline)
+                throw new IOException("Исходный Tasks.bin изменён во время преобразования");
+            WriteHead(root, head);
+        }
+
+        /// <summary>
+        /// Читает актуальную компактную версию, сохраняя защиту от записи старого клиента.
+        /// Требует удержания внешней блокировки Tasks.bin.lock при миграции.
+        /// </summary>
+        internal static ListTasks ReadLocked(string legacyFile)
+        {
+            InitializeLocked(legacyFile);
+            return ReadPreview(legacyFile, StoreDirectory(legacyFile));
+        }
+
+        /// <summary>
+        /// Публикует изменённые сегменты под внешней файловой блокировкой.
+        /// Сравнение готовых байтов учитывает все поля, которые сериализует компактный кодек.
+        /// </summary>
+        internal static void CommitLocked(string legacyFile, ListTasks changed)
+        {
+            string root = StoreDirectory(legacyFile);
+            Head previous = ReadHead(root);
+            Stopwatch timing = TaskStore.TimingSink == null ? null : Stopwatch.StartNew();
+
+            // FileShare.Read запрещает запись и удаление Tasks.bin другим Windows/SMB-клиентом
+            // до завершения публикации HEAD. Поэтому для существующего файла хватает одного SHA-256.
+            using (FileStream legacyGuard = File.Exists(legacyFile)
+                ? new FileStream(legacyFile, FileMode.Open, FileAccess.Read, FileShare.Read)
+                : null)
+            {
+                string legacyRevision = legacyGuard == null ? "absent" : Sha(legacyGuard);
+                if (!string.Equals(legacyRevision, previous.LegacyHash, StringComparison.Ordinal))
+                    throw new TaskConflictException(
+                        "Старый клиент изменил Tasks.bin после миграции. Запись компактного хранилища отменена.");
+                long legacyCheckMs = timing == null ? 0 : timing.ElapsedMilliseconds;
+                var next = new Head {
+                    Generation = checked(previous.Generation + 1),
+                    LegacyHash = previous.LegacyHash,
+                    RangeSize = previous.RangeSize
+                };
+                foreach (var entry in previous.Segments) next.Segments.Add(entry.Key, entry.Value);
+                int changedSegments;
+                long changedBytes;
+                bool changedContent = WriteChangedSegments(root, changed, next, out changedSegments, out changedBytes);
+                long segmentsMs = timing == null ? 0 : timing.ElapsedMilliseconds - legacyCheckMs;
+
+                // Отсутствующий файл нельзя защитить открытым дескриптором.
+                // Сохраняем проверку появления Tasks.bin перед выходом или фиксацией.
+                long secondCheckMs = 0;
+                if (legacyGuard == null)
+                {
+                    long checkStartMs = timing == null ? 0 : timing.ElapsedMilliseconds;
+                    if (LegacyRevision(legacyFile) != previous.LegacyHash)
+                        throw new TaskConflictException("Старый клиент создал Tasks.bin после миграции.");
+                    secondCheckMs = timing == null ? 0 : timing.ElapsedMilliseconds - checkStartMs;
+                }
+                if (!changedContent)
+                {
+                    if (timing != null)
+                        TaskStore.ReportCompactTiming("commit no-change legacy-check-ms=" + legacyCheckMs +
+                            " compare-segments-ms=" + segmentsMs +
+                            " second-legacy-check-ms=" + secondCheckMs + " published-segments=0");
+                    return;
+                }
+                WriteHead(root, next);
+                if (timing != null)
+                    TaskStore.ReportCompactTiming("commit legacy-check-ms=" + legacyCheckMs +
+                        " compare-segments-ms=" + segmentsMs + " second-legacy-check-ms=" + secondCheckMs +
+                        " publish-head-ms=" + (timing.ElapsedMilliseconds - legacyCheckMs - segmentsMs - secondCheckMs) +
+                        " published-segments=" + changedSegments + " published-bytes=" + changedBytes);
+            }
         }
 
         /// <summary>Получает номер сегмента из устойчивого номера задачи.</summary>
@@ -139,7 +264,7 @@ namespace time_schedule
             result.LegacyReadMs = watch.ElapsedMilliseconds;
             watch.Restart();
             var current = new Head { Generation = 1, LegacyHash = baseline, RangeSize = segmentSize };
-            WriteChangedSegments(testStoreDirectory, source, current, null, null);
+            WriteChangedSegments(testStoreDirectory, source, current);
             WriteHead(testStoreDirectory, current);
             result.MigrationMs = watch.ElapsedMilliseconds;
             result.TaskCount = source.Tasks.Count;
@@ -156,18 +281,24 @@ namespace time_schedule
         public static ListTasks ReadPreview(string legacyFile, string storeDirectory)
         {
             Head current = ReadHead(storeDirectory);
-            if (!string.Equals(Sha(legacyFile), current.LegacyHash, StringComparison.Ordinal))
+            if (!string.Equals(LegacyRevision(legacyFile), current.LegacyHash, StringComparison.Ordinal))
                 throw new IOException("После миграции исходный Tasks.bin изменён старым клиентом. Данные нельзя безопасно объединить автоматически.");
+            return ReadSegments(storeDirectory, current);
+        }
+
+        /// <summary>Собирает один согласованный снимок по опубликованному или подготавливаемому HEAD.</summary>
+        private static ListTasks ReadSegments(string root, Head head)
+        {
             var records = new ConcurrentBag<CompactTaskRecord>();
             var options = new ParallelOptions { MaxDegreeOfParallelism = Math.Min(MaxReaders, Environment.ProcessorCount) };
-            Parallel.ForEach(current.Segments, options, entry =>
+            Parallel.ForEach(head.Segments, options, entry =>
             {
-                string path = SegmentPath(storeDirectory, entry.Key, entry.Value);
+                string path = SegmentPath(root, entry.Key, entry.Value);
                 if (!string.Equals(Sha(path), entry.Value, StringComparison.OrdinalIgnoreCase))
                     throw new InvalidDataException("Повреждён сегмент задач: " + path);
-                foreach (CompactTaskRecord record in CompactTaskCodec.Read(path, current.RangeSize))
+                foreach (CompactTaskRecord record in CompactTaskCodec.Read(path, head.RangeSize))
                 {
-                    if (SegmentId(record.Item.Number, current.RangeSize) != entry.Key)
+                    if (SegmentId(record.Item.Number, head.RangeSize) != entry.Key)
                         throw new InvalidDataException("Задача находится не в своём сегменте");
                     records.Add(record);
                 }
@@ -205,7 +336,6 @@ namespace time_schedule
                     if (!oldHashes.TryGetValue(pair.Key, out hash) || hash != pair.Value)
                         throw new TaskConflictException("Задача № " + pair.Key + " была изменена другим пользователем");
                 }
-                var beforeRecords = RecordHashes(before);
                 change(before);
                 var newHashes = Fingerprints(before);
                 foreach (KeyValuePair<long, string> pair in oldHashes)
@@ -214,13 +344,10 @@ namespace time_schedule
                     if ((!newHashes.TryGetValue(pair.Key, out hash) || hash != pair.Value) && !expected.ContainsKey(pair.Key))
                         throw new TaskConflictException("Изменение затронуло неподтверждённую задачу № " + pair.Key);
                 }
-                var afterRecords = RecordHashes(before);
-                if (beforeRecords.Count == afterRecords.Count && beforeRecords.All(x =>
-                    afterRecords.ContainsKey(x.Key) && afterRecords[x.Key] == x.Value)) return before;
                 var next = new Head { Generation = checked(oldHead.Generation + 1), LegacyHash = oldHead.LegacyHash, RangeSize = oldHead.RangeSize };
                 foreach (var entry in oldHead.Segments) next.Segments.Add(entry.Key, entry.Value);
-                WriteChangedSegments(storeDirectory, before, next, beforeRecords, afterRecords);
-                WriteHead(storeDirectory, next);
+                if (WriteChangedSegments(storeDirectory, before, next))
+                    WriteHead(storeDirectory, next);
                 return before;
             }
         }
@@ -235,60 +362,105 @@ namespace time_schedule
             return result;
         }
 
-        /// <summary>Формирует полный отпечаток компактной записи вместе с порядком задачи.</summary>
-        private static Dictionary<long, string> RecordHashes(ListTasks tasks)
+        /// <summary>
+        /// Подготовленное неизменяемое содержимое сегмента и его контрольная сумма.
+        /// </summary>
+        private sealed class PreparedSegment
         {
-            var result = new Dictionary<long, string>();
-            for (int i = 0; i < tasks.Tasks.Count; i++)
-            {
-                Task t = tasks.Tasks[i];
-                if (!result.TryAddCompat(t.Number, CompactTaskCodec.RecordHash(t, i)))
-                    throw new InvalidDataException("Повторяющийся номер задачи: " + t.Number);
-            }
-            return result;
+            /// <summary>Сериализованные байты сегмента для проверки и публикации.</summary>
+            internal byte[] Payload;
+
+            /// <summary>SHA-256 сериализованных байтов сегмента.</summary>
+            internal string Hash;
         }
 
-        /// <summary>Создаёт новые версии только изменённых групп номеров и сохраняет нетронутые ссылки.</summary>
-        private static void WriteChangedSegments(string root, ListTasks tasks, Head head,
-            IDictionary<long, string> previousRecordHashes, IDictionary<long, string> newRecordHashes)
+        /// <summary>Готовит новые версии только для сегментов, чьи сериализованные байты изменились.</summary>
+        private static bool WriteChangedSegments(string root, ListTasks tasks, Head head)
         {
-            Directory.CreateDirectory(Path.Combine(root, "segments"));
-            var all = tasks.Tasks.Select((t, index) => new CompactTaskRecord { Item = t, Ordinal = index })
-                .GroupBy(x => SegmentId(x.Item.Number, head.RangeSize)).ToDictionary(x => x.Key, x => x.ToList());
-            var changed = new HashSet<long>();
-            if (previousRecordHashes == null)
+            int count;
+            long size;
+            return WriteChangedSegments(root, tasks, head, out count, out size);
+        }
+
+        /// <summary>
+        /// Сравнивает SHA-256 готового сегмента с HEAD; полный отпечаток каждой задачи
+        /// повторно не вычисляется. Публикуются только отличающиеся файлы сегментов.
+        /// </summary>
+        private static bool WriteChangedSegments(string root, ListTasks tasks, Head head,
+            out int publishedSegments, out long publishedBytes)
+        {
+            string segmentsPath = Path.Combine(root, "segments");
+            Directory.CreateDirectory(segmentsPath);
+            var all = tasks.Tasks.Select((task, index) => new CompactTaskRecord { Item = task, Ordinal = index })
+                .GroupBy(x => SegmentId(x.Item.Number, head.RangeSize))
+                .ToDictionary(x => x.Key, x => x.ToList());
+            publishedSegments = 0;
+            publishedBytes = 0;
+            bool changed = false;
+            foreach (long removed in head.Segments.Keys.Where(id => !all.ContainsKey(id)).ToList())
             {
-                foreach (long group in all.Keys) changed.Add(group);
+                head.Segments.Remove(removed);
+                changed = true;
             }
-            else
+            // Каждая группа содержит собственные задачи текущего снимка; после callback
+            // этот снимок больше не изменяется до завершения публикации HEAD.
+            // Готовим байты параллельно, но публикуем файлы и HEAD последовательно.
+            var prepared = new ConcurrentDictionary<long, PreparedSegment>();
+            var options = new ParallelOptions {
+                MaxDegreeOfParallelism = Math.Min(MaxReaders, Environment.ProcessorCount)
+            };
+            try
             {
-                foreach (var group in all)
-                    foreach (CompactTaskRecord item in group.Value)
-                    {
-                        string oldHash;
-                        if (!previousRecordHashes.TryGetValue(item.Item.Number, out oldHash) ||
-                            oldHash != newRecordHashes[item.Item.Number])
-                            changed.Add(group.Key);
-                    }
-                foreach (long deleted in previousRecordHashes.Keys.Where(x => !newRecordHashes.ContainsKey(x)))
-                    changed.Add(SegmentId(deleted, head.RangeSize));
-            }
-            foreach (long id in changed)
-            {
-                List<CompactTaskRecord> segment;
-                if (!all.TryGetValue(id, out segment)) { head.Segments.Remove(id); continue; }
-                string temporary = Path.Combine(root, "segments", ".pending-" + Guid.NewGuid().ToString("N"));
-                try
+                Parallel.ForEach(all, options, group =>
                 {
-                    CompactTaskCodec.Write(temporary, segment);
-                    string hash = Sha(temporary);
-                    string target = SegmentPath(root, id, hash);
-                    if (!File.Exists(target)) File.Move(temporary, target);
-                    else if (Sha(target) != hash) throw new InvalidDataException("Нарушена целостность сегмента: " + target);
-                    head.Segments[id] = hash;
-                }
-                finally { TryDelete(temporary); }
+                    byte[] bytes = CompactTaskCodec.Encode(group.Value);
+                    string digest = Sha(bytes);
+                    if (!prepared.TryAdd(group.Key, new PreparedSegment { Payload = bytes, Hash = digest }))
+                        throw new InvalidDataException("Повторяющийся номер сегмента");
+                });
             }
+            catch (AggregateException error)
+            {
+                AggregateException flattened = error.Flatten();
+                if (flattened.InnerExceptions.Count == 1)
+                    System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(flattened.InnerExceptions[0]).Throw();
+                throw;
+            }
+            foreach (var group in all)
+            {
+                PreparedSegment encoded = prepared[group.Key];
+                byte[] payload = encoded.Payload;
+                string hash = encoded.Hash;
+                string oldHash;
+                if (head.Segments.TryGetValue(group.Key, out oldHash) &&
+                    string.Equals(oldHash, hash, StringComparison.OrdinalIgnoreCase))
+                    continue;
+
+                string target = SegmentPath(root, group.Key, hash);
+                if (!File.Exists(target))
+                {
+                    string temporary = Path.Combine(segmentsPath, ".pending-" + Guid.NewGuid().ToString("N"));
+                    try
+                    {
+                        using (var output = new FileStream(temporary, FileMode.CreateNew,
+                            FileAccess.Write, FileShare.None))
+                        {
+                            output.Write(payload, 0, payload.Length);
+                            output.Flush(true);
+                        }
+                        File.Move(temporary, target);
+                    }
+                    finally { TryDelete(temporary); }
+                }
+                else if (!string.Equals(Sha(target), hash, StringComparison.OrdinalIgnoreCase))
+                    throw new InvalidDataException("Нарушена целостность сегмента: " + target);
+
+                head.Segments[group.Key] = hash;
+                publishedSegments++;
+                publishedBytes += payload.Length;
+                changed = true;
+            }
+            return changed;
         }
 
         /// <summary>Публикует манифест с контрольной суммой, сохраняя предыдущий для отката.</summary>
@@ -388,7 +560,10 @@ namespace time_schedule
             }
         }
 
-        /// <summary>Проверяет равенство полей исходных и восстановленных задач, включая порядок.</summary>
+        /// <summary>
+        /// Независимо от кодека сверяет все поля модели Task и значимое состояние дерева.
+        /// Неизвестные метки и нестандартные параметры TreeNode блокируют миграцию.
+        /// </summary>
         private static void VerifyEquivalent(ListTasks original, ListTasks restored)
         {
             if (original.Tasks.Count != restored.Tasks.Count)
@@ -397,16 +572,87 @@ namespace time_schedule
             {
                 Task a = original.Tasks[i];
                 Task b = restored.Tasks[i];
-                if (a.Number != b.Number ||
-                    CompactTaskCodec.RecordHash(a, i) != CompactTaskCodec.RecordHash(b, i))
-                    throw new InvalidDataException("После преобразования изменена задача № " + a.Number);
+                if (a.Number != b.Number || a.Status != b.Status ||
+                    a.Name != b.Name || a.PersonFamaly != b.PersonFamaly ||
+                    a.TaskNumberAfter != b.TaskNumberAfter ||
+                    a.DateStart.Ticks != b.DateStart.Ticks || a.DateStart.Kind != b.DateStart.Kind ||
+                    a.DateFinish.Ticks != b.DateFinish.Ticks || a.DateFinish.Kind != b.DateFinish.Kind ||
+                    a.CountDays != b.CountDays || a.CountWorkingDays != b.CountWorkingDays ||
+                    a.Priority != b.Priority || a.PlaceInSynchTask != b.PlaceInSynchTask ||
+                    a.Color != b.Color)
+                    throw new InvalidDataException("Отличаются основные поля задачи № " + a.Number);
+                var ap = a.PoolProjects == null ? null : a.PoolProjects.Projects;
+                var bp = b.PoolProjects == null ? null : b.PoolProjects.Projects;
+                if ((ap == null) != (bp == null) || (ap != null && ap.Count != bp.Count))
+                    throw new InvalidDataException("Отличается список проектов задачи № " + a.Number);
+                if (ap != null)
+                    for (int j = 0; j < ap.Count; j++)
+                        if ((ap[j] == null) != (bp[j] == null) ||
+                            (ap[j] != null && (ap[j].Name != bp[j].Name || ap[j].Address != bp[j].Address)))
+                            throw new InvalidDataException("Отличается проект задачи № " + a.Number);
+                TreeProjects at = a.GetTreeProjects();
+                TreeProjects bt = b.GetTreeProjects();
+                if (at.GetName() != bt.GetName() ||
+                    (at.ListTreeNode == null) != (bt.ListTreeNode == null) ||
+                    (at.ListTreeNode != null && at.ListTreeNode.Count != bt.ListTreeNode.Count))
+                    throw new InvalidDataException("Отличается дерево задачи № " + a.Number);
+                if (at.ListTreeNode != null)
+                    for (int j = 0; j < at.ListTreeNode.Count; j++)
+                        VerifyNode(at.ListTreeNode[j], bt.ListTreeNode[j], a.Number);
             }
+        }
+
+        /// <summary>Сравнивает содержимое и иерархию узлов, отказывая при непереносимых свойствах.</summary>
+        private static void VerifyNode(TreeNode a, TreeNode b, long taskNumber)
+        {
+            if (a == null || b == null || a.Text != b.Text || a.Name != b.Name ||
+                a.ToolTipText != b.ToolTipText || a.Checked != b.Checked ||
+                a.ImageIndex != b.ImageIndex || a.ImageKey != b.ImageKey ||
+                a.SelectedImageIndex != b.SelectedImageIndex ||
+                a.SelectedImageKey != b.SelectedImageKey ||
+                a.StateImageIndex != b.StateImageIndex || a.StateImageKey != b.StateImageKey ||
+                a.ForeColor != b.ForeColor || a.BackColor != b.BackColor ||
+                !object.Equals(a.NodeFont, b.NodeFont) || !TagsEqual(a.Tag, b.Tag) ||
+                a.Nodes.Count != b.Nodes.Count)
+                throw new InvalidDataException("При миграции изменилось дерево задачи № " + taskNumber);
+            for (int i = 0; i < a.Nodes.Count; i++)
+                VerifyNode(a.Nodes[i], b.Nodes[i], taskNumber);
+        }
+
+        /// <summary>Проверяет точное равенство поддерживаемых значений метки проекта.</summary>
+        private static bool TagsEqual(object a, object b)
+        {
+            if (a == null || b == null) return a == b;
+            if (a.GetType() != b.GetType()) return false;
+            if (a is bool || a is string || a is int || a is long)
+                return a.Equals(b);
+            throw new InvalidDataException("Для TreeNode.Tag типа " + a.GetType().FullName +
+                " требуется отдельная проверка совместимости перед миграцией");
+        }
+
+        /// <summary>Контрольная сумма старого Tasks.bin либо однозначная метка его отсутствия.</summary>
+        private static string LegacyRevision(string file)
+        {
+            return File.Exists(file) ? Sha(file) : "absent";
+        }
+
+        /// <summary>SHA-256 готового сегмента в памяти, без повторной записи на диск.</summary>
+        private static string Sha(byte[] payload)
+        {
+            using (var sha = SHA256.Create())
+                return BitConverter.ToString(sha.ComputeHash(payload)).Replace("-", "");
         }
 
         /// <summary>SHA-256 опубликованного файла без модификации его содержимого.</summary>
         private static string Sha(string file)
         {
             using (var stream = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read))
+                return Sha(stream);
+        }
+
+        /// <summary>SHA-256 уже открытого файла; вызывающий код управляет временем закрытия дескриптора.</summary>
+        private static string Sha(Stream stream)
+        {
             using (var sha = SHA256.Create())
                 return BitConverter.ToString(sha.ComputeHash(stream)).Replace("-", "");
         }

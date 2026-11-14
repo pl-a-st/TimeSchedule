@@ -101,7 +101,7 @@ namespace time_schedule
             string tasksPath = Dals.TakeMainPathFile(Constants.TASKS_BIN);
             try
             {
-                if (File.Exists(tasksPath))
+                if (TaskStore.HasTaskData(tasksPath))
                     loadedTasks = TaskStore.ReadProject(tasksPath, out loadedPersons);
             }
             catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException ||
@@ -436,7 +436,7 @@ namespace time_schedule
                 Program.ListTasksAllPersonToSave = loadedTasks;
                 Program.listPersons = loadedPersons;
             }
-            else if (File.Exists(Dals.TakeMainPathFile(Constants.TASKS_BIN)))
+            else if (TaskStore.HasTaskData(Dals.TakeMainPathFile(Constants.TASKS_BIN)))
             {
                 Program.ListTasksAllPersonToSave = TaskStore.ReadProject(
                     Dals.TakeMainPathFile(Constants.TASKS_BIN), out Program.listPersons);
@@ -448,7 +448,7 @@ namespace time_schedule
             Program.ListTasksAllPersonToShow.SetTasks(GetProjectEntryTasks(Program.ListTasksAllPersonToSave.Tasks));
             if (cBxShowTask.Text == cBxShowTask.Items[0].ToString())
                 Program.ListTasksAllPersonToShow.SetTasks(GetRelevantTasks(Program.ListTasksAllPersonToShow.Tasks));
-            if (!File.Exists(Dals.TakeMainPathFile(Constants.TASKS_BIN)))
+            if (!TaskStore.HasTaskData(Dals.TakeMainPathFile(Constants.TASKS_BIN)))
                 ReReadListPerson();
 
             Program.ListPersonButton.LoadListPersonButtons(
@@ -480,7 +480,7 @@ namespace time_schedule
         /// <summary>Читает согласованную версию списка исполнителей.</summary>
         public void ReReadListPerson()
         {
-            if (File.Exists(Dals.TakeMainPathFile(Constants.TASKS_BIN)))
+            if (TaskStore.HasTaskData(Dals.TakeMainPathFile(Constants.TASKS_BIN)))
             {
                 Program.listPersons = TaskStore.ReadPersons(
                     Dals.TakeMainPathFile(Constants.PERSONS_BIN));
@@ -718,9 +718,7 @@ namespace time_schedule
             myScrollBar.Top = 0;
             myScrollBar.Enabled = false;
             Dals.WriteProjectFolder(Statuses.WorkWithProject.ProgramStarted);
-            this.Text = Dals.ProjectFolderPath;
-            this.Text = this.Text.Replace("\\Проект", string.Empty);
-            this.Activate();
+            SetNewTextForForm();
             LoadRefreshForm();
             plForDate.Enabled = true;
             btnNewTask.Visible = false;
@@ -1058,10 +1056,12 @@ namespace time_schedule
             PlPersonButtonYSaved = 0;
 
         }
+        /// <summary>Показывает текущий проект и диагностическую отметку компактного хранилища.</summary>
         private void SetNewTextForForm()
         {
-            this.Text = Dals.ProjectFolderPath;
-            this.Text = this.Text.Replace("\\Проект", string.Empty);
+            this.Text = Dals.ProjectFolderPath.Replace("\\Проект", string.Empty);
+            if (TaskStore.UseCompactStore)
+                this.Text = "[TS-01 COMPACT TEST] " + this.Text;
             this.Activate();
         }
         private void LoadPersonButtons()

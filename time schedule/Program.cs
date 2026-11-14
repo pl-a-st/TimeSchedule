@@ -56,7 +56,7 @@ namespace time_schedule
         public static Result ReadProgramData()
         {
             string file = Dals.TakeMainPathFile(Constants.TASKS_BIN);
-            if (!File.Exists(file)) return Result.Unknown;
+            if (!TaskStore.HasTaskData(file)) return Result.Unknown;
             try
             {
                 ListTasksAllPersonToSave = TaskStore.Read(file);
@@ -138,49 +138,41 @@ namespace time_schedule
             }
             return false;
         }
-        
-
         /// <summary>
-        /// Запускает приложение и подключает измерения по умолчанию
-        /// в Debug, а в Release — по параметру --timing.
+        /// Запускает приложение: в Debug компактное хранилище включено автоматически,
+        /// в Release остаётся прежний формат, пока не закончена проверка миграции.
         /// </summary>
         [STAThread]
         static void Main(string[] args)
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-
 #if DEBUG
+            TaskStore.UseCompactStore = !args.Any(arg =>
+                string.Equals(arg, "--legacy-store", StringComparison.OrdinalIgnoreCase));
             bool timingEnabled = true;
 #else
-            bool timingEnabled = args != null && args.Any(arg =>
-            string.Equals(arg, "--timing",
-            StringComparison.OrdinalIgnoreCase));
+            TaskStore.UseCompactStore = args.Any(arg =>
+                string.Equals(arg, "--compact-test", StringComparison.OrdinalIgnoreCase));
+            bool timingEnabled = args.Any(arg =>
+                string.Equals(arg, "--timing", StringComparison.OrdinalIgnoreCase));
 #endif
-
-            timingEnabled |=
-                Environment.GetEnvironmentVariable("TS01_TIMING") == "1";
-
+            timingEnabled |= Environment.GetEnvironmentVariable("TS01_TIMING") == "1";
             if (timingEnabled)
             {
-                string logPath = Path.Combine(
-                    Path.GetTempPath(),
-                    "TimeSchedule-TS01-" +
-                    System.Diagnostics.Process.GetCurrentProcess().Id +
-                    ".log");
-
+                string logPath = Path.Combine(Path.GetTempPath(),
+                    "TimeSchedule-TS01-" + System.Diagnostics.Process.GetCurrentProcess().Id + ".log");
                 System.Diagnostics.Trace.Listeners.Add(
                     new System.Diagnostics.TextWriterTraceListener(logPath));
-
                 System.Diagnostics.Trace.AutoFlush = true;
-
-                TaskStore.TimingSink = message =>
-                    System.Diagnostics.Trace.WriteLine(
-                        "TimeSchedule store: " + message);
+                TaskStore.TimingSink = message => System.Diagnostics.Trace.WriteLine("TimeSchedule store: " + message);
+                System.Diagnostics.Trace.WriteLine("TimeSchedule storage-mode=" +
+                    (TaskStore.UseCompactStore ? "compact-debug" : "legacy"));
             }
-
-            Application.Run(new Form1());
+            Form1 mainForm = new Form1();
+            if (TaskStore.UseCompactStore)
+                mainForm.Text = "[TS-01 COMPACT TEST] " + mainForm.Text;
+            Application.Run(mainForm);
         }
-
     }
 }

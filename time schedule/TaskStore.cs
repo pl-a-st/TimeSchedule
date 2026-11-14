@@ -25,6 +25,22 @@ namespace time_schedule
     /// </summary>
     public static class TaskStore
     {
+        /// <summary>Включает испытательный компактный формат; задаётся один раз при запуске приложения.</summary>
+        public static bool UseCompactStore { get; set; }
+
+        /// <summary>Проверяет наличие данных текущего режима, не изменяя содержимое проекта.</summary>
+        public static bool HasTaskData(string file)
+        {
+            return (UseCompactStore && CompactTaskStore.Exists(file)) || File.Exists(file);
+        }
+
+        /// <summary>Определяет принадлежность файла к основному списку задач.</summary>
+        private static bool IsTaskFile(string file)
+        {
+            return string.Equals(Path.GetFileName(file), Constants.TASKS_BIN,
+                StringComparison.OrdinalIgnoreCase);
+        }
+
         /// <summary>Число попыток открытия сетевого файла блокировки.</summary>
         private const int LockAttempts = 40;
         /// <summary>Пауза между попытками при занятости файла блокировки (мс).</summary>
@@ -49,6 +65,12 @@ namespace time_schedule
                 // Диагностический получатель не вправе превращать уже выполненный commit в отказ.
                 Debug.WriteLine("Ошибка получателя замеров TS-01: " + ex.Message);
             }
+        }
+
+        /// <summary>Записывает детали компактной публикации через общий безопасный диагностический канал.</summary>
+        internal static void ReportCompactTiming(string data)
+        {
+            ReportTiming("compact " + data);
         }
 
         /// <summary>Захватывает файловую блокировку на SMB/другой общей файловой системе.</summary>
@@ -81,10 +103,11 @@ namespace time_schedule
             using (Acquire(file))
             {
                 waitMs = sw.ElapsedMilliseconds;
-                result = ReadExisting<ListTasks>(file);
+                result = UseCompactStore ? CompactTaskStore.ReadLocked(file) : ReadExisting<ListTasks>(file);
             }
             if (TimingSink != null)
-                ReportTiming("read tasks=" + result.Tasks.Count + " lock-wait-ms=" + waitMs +
+                ReportTiming("read tasks=" + result.Tasks.Count + " storage=" +
+                    (UseCompactStore ? "compact" : "legacy") + " lock-wait-ms=" + waitMs +
                     " deserialize-ms=" + (sw.ElapsedMilliseconds - waitMs));
             return result;
         }
@@ -100,12 +123,13 @@ namespace time_schedule
             using (Acquire(taskFile))
             {
                 waitMs = sw.ElapsedMilliseconds;
-                tasks = ReadExisting<ListTasks>(taskFile);
+                tasks = UseCompactStore ? CompactTaskStore.ReadLocked(taskFile) : ReadExisting<ListTasks>(taskFile);
                 tasksMs = sw.ElapsedMilliseconds - waitMs;
                 people = ReadOrImportPersons(personFile);
             }
             if (TimingSink != null)
-                ReportTiming("read-project tasks=" + tasks.Tasks.Count + " lock-wait-ms=" + waitMs +
+                ReportTiming("read-project tasks=" + tasks.Tasks.Count + " storage=" +
+                    (UseCompactStore ? "compact" : "legacy") + " lock-wait-ms=" + waitMs +
                     " tasks-deserialize-ms=" + tasksMs + " persons-deserialize-ms=" +
                     (sw.ElapsedMilliseconds - waitMs - tasksMs));
             return tasks;
@@ -115,7 +139,14 @@ namespace time_schedule
         public static string Revision(string file)
         {
             using (Acquire(file))
+            {
+                if (UseCompactStore && IsTaskFile(file))
+                {
+                    CompactTaskStore.InitializeLocked(file); // миграция только под межмашинной блокировкой
+                    return CompactTaskStore.CurrentRevision(file);
+                }
                 return RevisionUnsafe(file);
+            }
         }
 
         /// <summary>Сохраняет изменение поверх актуального снимка с проверкой ранее показанных задач.</summary>
@@ -131,7 +162,7 @@ namespace time_schedule
             using (Acquire(file))
             {
                 waitMs = sw.ElapsedMilliseconds;
-                current = ReadOrImport(file);
+                current = UseCompactStore ? CompactTaskStore.ReadLocked(file) : ReadOrImport(file);
                 readMs = sw.ElapsedMilliseconds - waitMs;
                 Dictionary<long, string> original = Fingerprints(current);
                 ValidateExpected(original, expected);
@@ -140,11 +171,15 @@ namespace time_schedule
                 changeMs = sw.ElapsedMilliseconds - waitMs - readMs - checkMs;
                 ValidateChanges(original, current, expected);
                 verifyMs = sw.ElapsedMilliseconds - waitMs - readMs - checkMs - changeMs;
-                Publish(file, current);
+                if (UseCompactStore)
+                    CompactTaskStore.CommitLocked(file, current);
+                else
+                    Publish(file, current);
                 writeMs = sw.ElapsedMilliseconds - waitMs - readMs - checkMs - changeMs - verifyMs;
             }
             if (TimingSink != null)
-                ReportTiming("save tasks=" + current.Tasks.Count + " lock-wait-ms=" + waitMs +
+                ReportTiming("save tasks=" + current.Tasks.Count + " storage=" +
+                    (UseCompactStore ? "compact" : "legacy") + " lock-wait-ms=" + waitMs +
                     " deserialize-ms=" + readMs + " check-ms=" + checkMs +
                     " change-ms=" + changeMs + " verify-ms=" + verifyMs +
                     " serialize-publish-backup-ms=" + writeMs);
@@ -156,11 +191,17 @@ namespace time_schedule
         {
             using (Acquire(file))
             {
-                if (RevisionUnsafe(file) != expectedRevision)
+                // До восстановления проверяем целостность опубликованного компактного снимка.
+                if (UseCompactStore) CompactTaskStore.ReadLocked(file);
+                string actualRevision = UseCompactStore ? CompactTaskStore.CurrentRevision(file) : RevisionUnsafe(file);
+                if (actualRevision != expectedRevision)
                     throw new TaskConflictException("За время выбора резервной копии задачи были изменены. Обновите список и повторите восстановление.");
                 ListTasks backup = ReadExisting<ListTasks>(backupFile);
                 Fingerprints(backup); // проверяем номера и отсутствие дублей до публикации
-                Publish(file, backup); // File.Replace сохраняет предыдущее состояние как новую резервную копию
+                if (UseCompactStore)
+                    CompactTaskStore.CommitLocked(file, backup);
+                else
+                    Publish(file, backup); // исходный механизм резервной копии
                 return backup;
             }
         }
@@ -179,7 +220,7 @@ namespace time_schedule
                 if (expectedPersonsRevision != null && RevisionUnsafe(personFile) != expectedPersonsRevision)
                     throw new TaskConflictException("Список исполнителей изменён другим пользователем. Обновите список.");
                 ListPersons people = ReadOrImportPersons(personFile);
-                ListTasks tasks = ReadOrImport(taskFile);
+                ListTasks tasks = UseCompactStore ? CompactTaskStore.ReadLocked(taskFile) : ReadOrImport(taskFile);
                 Dictionary<long, string> before = Fingerprints(tasks);
                 ValidateExpected(before, expected);
                 change(people, tasks);
@@ -192,9 +233,12 @@ namespace time_schedule
                 bool publishedTasks = false;
                 try
                 {
-                    taskTemp = Stage(taskFile, tasks);
+                    if (!UseCompactStore)
+                        taskTemp = Stage(taskFile, tasks);
                     string stagedPeopleHash = RevisionUnsafe(personTemp);
-                    string stagedTasksHash = RevisionUnsafe(taskTemp);
+                    string stagedTasksHash = UseCompactStore ? null : RevisionUnsafe(taskTemp);
+                    string compactRevisionBefore = UseCompactStore
+                        ? CompactTaskStore.CurrentRevision(taskFile) : null;
                     try { PublishStaged(personFile, personTemp); }
                     catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException)
                     {
@@ -204,15 +248,34 @@ namespace time_schedule
                     }
                     publishedPeople = true;
                     personTemp = null;
-                    try { PublishStaged(taskFile, taskTemp); }
-                    catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException)
+                    if (UseCompactStore)
                     {
-                        if (RevisionUnsafe(taskFile) != stagedTasksHash) throw;
+                        try
+                        {
+                            CompactTaskStore.CommitLocked(taskFile, tasks);
+                            publishedTasks = true;
+                        }
+                        catch
+                        {
+                            // Не откатываем исполнителей, если запись манифеста могла завершиться.
+                            // Проверка не превращает неоднозначный исход в успешную операцию.
+                            if (CompactTaskStore.CurrentRevision(taskFile) != compactRevisionBefore)
+                                publishedTasks = true;
+                            throw;
+                        }
                     }
-                    publishedTasks = true;
-                    taskTemp = null;
+                    else
+                    {
+                        try { PublishStaged(taskFile, taskTemp); }
+                        catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException)
+                        {
+                            if (RevisionUnsafe(taskFile) != stagedTasksHash) throw;
+                        }
+                        publishedTasks = true;
+                        taskTemp = null;
+                    }
                     Prune(personFile);
-                    Prune(taskFile);
+                    if (!UseCompactStore) Prune(taskFile);
                     return tasks;
                 }
                 catch
@@ -413,33 +476,17 @@ namespace time_schedule
             return people;
         }
 
-        /// <summary>
-        /// Строго десериализует существующий файл.
-        /// Пустой или повреждённый файл не заменяет пустым списком.
-        /// </summary>
+        /// <summary>Строго десериализует файл; пустота, порча и недоступность являются ошибкой.</summary>
         private static T ReadExisting<T>(string file)
         {
-            using (var stream = new FileStream(
-                file,
-                FileMode.Open,
-                FileAccess.Read,
-                FileShare.Read))
+            using (var stream = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read))
             {
-                if (stream.Length == 0)
-                    throw new InvalidDataException("Файл пуст: " + file);
-
-                var value = (T)new BinaryFormatter()
-                    .Deserialize(stream);
-
-                if (value == null)
-                    throw new InvalidDataException(
-                        "Файл не содержит объекта: " + file);
-
+                if (stream.Length == 0) throw new InvalidDataException("Файл пуст: " + file);
+                var value = (T)new BinaryFormatter().Deserialize(stream);
+                if (value == null) throw new InvalidDataException("Файл не содержит объекта: " + file);
                 return value;
             }
         }
-
-
 
         /// <summary>Получает хеш текущей публикации только внутри файловой блокировки.</summary>
         private static string RevisionUnsafe(string file)
@@ -479,48 +526,26 @@ namespace time_schedule
             catch { TryDelete(temp); throw; }
         }
 
-
         /// <summary>
-        /// Публикует готовую сериализацию и измеряет этапы
-        /// записи, замены и очистки резервных копий.
+        /// Публикует готовую сериализацию, при диагностике отдельно измеряет стадии,
+        /// а временный файл удаляет при любом исходе операции.
         /// </summary>
         private static void Publish<T>(string file, T obj)
         {
-            Stopwatch timing = TimingSink == null
-                ? null
-                : Stopwatch.StartNew();
-
+            Stopwatch timing = TimingSink == null ? null : Stopwatch.StartNew();
             string temp = Stage(file, obj);
-
-            long stageMs = timing == null
-                ? 0
-                : timing.ElapsedMilliseconds;
-
+            long stageMs = timing == null ? 0 : timing.ElapsedMilliseconds;
             try
             {
                 PublishStaged(file, temp);
-
-                long replaceMs = timing == null
-                    ? 0
-                    : timing.ElapsedMilliseconds - stageMs;
-
+                long replaceMs = timing == null ? 0 : timing.ElapsedMilliseconds - stageMs;
                 Prune(file);
-
                 if (timing != null)
-                {
-                    ReportTiming(
-                        "publish stage-ms=" + stageMs +
-                        " replace-ms=" + replaceMs +
-                        " prune-ms=" +
-                        (timing.ElapsedMilliseconds - stageMs - replaceMs));
-                }
+                    ReportTiming("publish stage-ms=" + stageMs + " replace-ms=" + replaceMs +
+                        " prune-ms=" + (timing.ElapsedMilliseconds - stageMs - replaceMs));
             }
-            finally
-            {
-                TryDelete(temp);
-            }
+            finally { TryDelete(temp); }
         }
-
 
         /// <summary>
         /// Публикует только через атомарную замену на поддерживающей её ФС.

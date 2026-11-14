@@ -47,22 +47,41 @@ namespace time_schedule
         {
             using (var output = new FileStream(path, FileMode.CreateNew, FileAccess.Write, FileShare.None))
             {
-                using (var header = new BinaryWriter(output, System.Text.Encoding.UTF8, true))
-                {
-                    header.Write(Magic);
-                    header.Write(Version);
-                }
-                using (var compression = new DeflateStream(output, CompressionLevel.Fastest, true))
-                using (var writer = new BinaryWriter(compression, System.Text.Encoding.UTF8, true))
-                {
-                    writer.Write(records.Count);
-                    foreach (CompactTaskRecord record in records)
-                    {
-                        writer.Write(record.Ordinal);
-                        WriteTask(writer, record.Item);
-                    }
-                }
+                WriteStream(output, records);
                 output.Flush(true);
+            }
+        }
+
+        /// <summary>
+        /// Готовит те же байты сегмента в памяти для сравнения с опубликованной контрольной суммой.
+        /// Диск затрагивается только при фактическом изменении содержимого сегмента.
+        /// </summary>
+        internal static byte[] Encode(IList<CompactTaskRecord> records)
+        {
+            using (var output = new MemoryStream())
+            {
+                WriteStream(output, records);
+                return output.ToArray();
+            }
+        }
+
+        /// <summary>Формирует единое представление сегмента для файла и проверки изменений.</summary>
+        private static void WriteStream(Stream output, IList<CompactTaskRecord> records)
+        {
+            using (var header = new BinaryWriter(output, System.Text.Encoding.UTF8, true))
+            {
+                header.Write(Magic);
+                header.Write(Version);
+            }
+            using (var compression = new DeflateStream(output, CompressionLevel.Fastest, true))
+            using (var writer = new BinaryWriter(compression, System.Text.Encoding.UTF8, true))
+            {
+                writer.Write(records.Count);
+                foreach (CompactTaskRecord record in records)
+                {
+                    writer.Write(record.Ordinal);
+                    WriteTask(writer, record.Item);
+                }
             }
         }
 

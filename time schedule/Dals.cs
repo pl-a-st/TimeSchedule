@@ -449,7 +449,7 @@ namespace time_schedule
         public static void ReloadListTaskToSave()
         {
             string fullFileName = Dals.TakeMainPathFile(Constants.TASKS_BIN);
-            if (File.Exists(fullFileName))
+            if (TaskStore.HasTaskData(fullFileName))
                 Program.ListTasksAllPersonToSave = TaskStore.Read(fullFileName);
             else
             {
