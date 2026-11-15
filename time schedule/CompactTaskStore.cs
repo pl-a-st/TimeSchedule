@@ -119,6 +119,163 @@ namespace time_schedule
             return File.Exists(HeadPath(StoreDirectory(legacyFile)));
         }
 
+        /// <summary>Каталог независимых резервных снимков компактного хранилища задач.</summary>
+        internal static string BackupDirectory(string legacyFile)
+        {
+            return Path.Combine(Path.GetDirectoryName(legacyFile), "BackUp", StoreDirectoryName);
+        }
+
+        /// <summary>
+        /// Создаёт самодостаточную резервную копию текущего HEAD и всех его сегментов.
+        /// Вызывается под общей блокировкой задач; временный каталог не считается готовой копией.
+        /// </summary>
+        internal static string CreateBackupLocked(string legacyFile)
+        {
+            InitializeLocked(legacyFile);
+            string root = StoreDirectory(legacyFile);
+            Head current = ReadHead(root);
+            if (current.Generation <= 0 || current.Generation == long.MaxValue)
+                throw new InvalidDataException("Некорректная ревизия HEAD для резервного копирования");
+            string backups = BackupDirectory(legacyFile);
+            Directory.CreateDirectory(backups);
+            string pending = Path.Combine(backups, ".pending-" + Guid.NewGuid().ToString("N"));
+            string final = Path.Combine(backups,
+                DateTime.UtcNow.ToString("yyyyMMdd-HHmmss-fffffff", CultureInfo.InvariantCulture) +
+                "-" + Guid.NewGuid().ToString("N") + ".snapshot");
+            Stopwatch elapsed = TaskStore.TimingSink == null ? null : Stopwatch.StartNew();
+            try
+            {
+                Directory.CreateDirectory(Path.Combine(pending, "segments"));
+                File.Copy(HeadPath(root), HeadPath(pending));
+                foreach (var segment in current.Segments)
+                {
+                    string destination = SegmentPath(pending, segment.Key, segment.Value);
+                    File.Copy(SegmentPath(root, segment.Key, segment.Value), destination);
+                    if (!string.Equals(Sha(destination), segment.Value, StringComparison.OrdinalIgnoreCase))
+                        throw new InvalidDataException("Резервный сегмент не прошёл проверку SHA-256: " +
+                            Path.GetFileName(destination));
+                }
+                Head copied = ReadHead(pending);
+                if (copied.Generation != current.Generation || copied.Segments.Count != current.Segments.Count)
+                    throw new InvalidDataException("Резервный манифест не соответствует исходному");
+                Directory.Move(pending, final);
+            }
+            finally
+            {
+                if (Directory.Exists(pending))
+                {
+                    try { Directory.Delete(pending, true); }
+                    catch (IOException) { }
+                    catch (UnauthorizedAccessException) { }
+                }
+            }
+            PruneBackups(backups);
+            if (elapsed != null)
+                TaskStore.ReportCompactTiming("snapshot-backup generation=" + current.Generation +
+                    " segments=" + current.Segments.Count + " ms=" + elapsed.ElapsedMilliseconds);
+            return final;
+        }
+
+        /// <summary>Ограничивает число независимых архивов, не влияя на успешность создания новой копии.</summary>
+        private static void PruneBackups(string backupDirectory)
+        {
+            try
+            {
+                foreach (DirectoryInfo older in new DirectoryInfo(backupDirectory)
+                    .GetDirectories("*.snapshot")
+                    .OrderByDescending(d => d.Name, StringComparer.Ordinal)
+                    .Skip(Constants.MAX_BACKUP_FILESES))
+                    older.Delete(true);
+            }
+            catch (IOException) { }
+            catch (UnauthorizedAccessException) { }
+        }
+
+        /// <summary>
+        /// Под общей блокировкой восстанавливает независимый компактный снимок.
+        /// Не принимает устаревшую ревизию и сохраняет прежнее состояние перед публикацией.
+        /// </summary>
+        internal static ListTasks RestoreBackupLocked(string legacyFile, string backupPath,
+            string expectedRevision)
+        {
+            string archive = Path.GetFullPath(backupPath);
+            string parent = Path.GetFullPath(BackupDirectory(legacyFile));
+            if (!string.Equals(Path.GetDirectoryName(archive), parent, StringComparison.OrdinalIgnoreCase) ||
+                !Path.GetFileName(archive).EndsWith(".snapshot", StringComparison.OrdinalIgnoreCase))
+                throw new InvalidDataException("Выбранная резервная копия не принадлежит проекту");
+            if (!Directory.Exists(archive))
+                throw new DirectoryNotFoundException("Резервная копия задач не найдена: " + archive);
+
+            Head archived = ReadHead(archive);
+            if (archived.Generation <= 0 || archived.Generation == long.MaxValue)
+                throw new InvalidDataException("Некорректная ревизия резервного HEAD");
+            ListTasks backup = ReadSegments(archive, archived);
+            if (!string.Equals(CurrentRevision(legacyFile), expectedRevision, StringComparison.OrdinalIgnoreCase))
+                throw new TaskConflictException("Задачи изменены после выбора резервной копии. Повторите восстановление.");
+
+            string root = StoreDirectory(legacyFile);
+            Head current = null;
+            bool damaged = false;
+            try
+            {
+                current = ReadHead(root);
+                ReadSegments(root, current);
+            }
+            catch (Exception ex) when (IsDamagedRecoveryCandidate(ex))
+            {
+                damaged = true;
+            }
+            if (!damaged)
+                CreateBackupLocked(legacyFile);
+
+            if (current != null && current.Generation == long.MaxValue)
+                throw new InvalidDataException("Невозможно создать новую ревизию HEAD");
+            Directory.CreateDirectory(Path.Combine(root, "segments"));
+            foreach (var segment in archived.Segments)
+                RestoreArchivedSegment(archive, root, segment.Key, segment.Value);
+            var published = new Head {
+                Generation = checked(Math.Max(current == null ? 0 : current.Generation,
+                    archived.Generation) + 1),
+                RangeSize = archived.RangeSize,
+                LegacyHash = archived.LegacyHash
+            };
+            foreach (var segment in archived.Segments)
+                published.Segments.Add(segment.Key, segment.Value);
+            ReadSegments(root, published);
+            WriteHead(root, published, damaged);
+            TaskStore.ReportCompactTiming("snapshot-restore generation=" + published.Generation +
+                " tasks=" + backup.Tasks.Count + " segments=" + published.Segments.Count);
+            return backup;
+        }
+
+        /// <summary>
+        /// Восстанавливает один неизменяемый сегмент из независимого снимка.
+        /// При замене повреждённого файла сохраняет его исходные байты для диагностики.
+        /// </summary>
+        private static void RestoreArchivedSegment(string archive, string root, long id, string hash)
+        {
+            string target = SegmentPath(root, id, hash);
+            if (File.Exists(target) && string.Equals(Sha(target), hash, StringComparison.OrdinalIgnoreCase))
+                return;
+            string temp = Path.Combine(root, "segments", ".restore-" + Guid.NewGuid().ToString("N"));
+            try
+            {
+                File.Copy(SegmentPath(archive, id, hash), temp);
+                if (!string.Equals(Sha(temp), hash, StringComparison.OrdinalIgnoreCase))
+                    throw new InvalidDataException("Не пройдена проверка восстановленного сегмента: " + id);
+                if (File.Exists(target))
+                {
+                    string diagnostics = Path.Combine(root, "history");
+                    Directory.CreateDirectory(diagnostics);
+                    File.Replace(temp, target, Path.Combine(diagnostics,
+                        "damaged-part-" + id.ToString(CultureInfo.InvariantCulture) +
+                        "-" + Guid.NewGuid().ToString("N") + ".tseg"));
+                }
+                else File.Move(temp, target);
+            }
+            finally { TryDelete(temp); }
+        }
+
         /// <summary>Возвращает версию опубликованного HEAD, не трогая исходный Tasks.bin.</summary>
         internal static string CurrentRevision(string legacyFile)
         {
@@ -296,9 +453,9 @@ namespace time_schedule
         }
 
         /// <summary>
-        /// Для обычного изменения вычисляет полные отпечатки текущих записей и
-        /// кодирует только изменённые сегменты. При отсутствии исходных отпечатков
-        /// сохраняет прежний полный алгоритм публикации.
+        /// Для обычного изменения кодирует только затронутые сегменты, создаёт
+        /// независимую резервную копию предыдущей ревизии и последним публикует HEAD.
+        /// При отсутствии исходных отпечатков проверяет все сегменты.
         /// </summary>
         internal static void CommitLocked(string legacyFile, ListTasks changed,
             IDictionary<long, string> sourceHashes)
@@ -329,6 +486,7 @@ namespace time_schedule
                         selectionInfo + " second-legacy-check-ms=0 published-segments=0");
                 return;
             }
+            CreateBackupLocked(legacyFile);
             WriteHead(root, next);
             if (timing != null)
                 TaskStore.ReportCompactTiming("commit legacy-check-ms=0 compare-segments-ms=" + segmentsMs +

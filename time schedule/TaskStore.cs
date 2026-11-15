@@ -140,6 +140,17 @@ namespace time_schedule
             return tasks;
         }
 
+        /// <summary>
+        /// Получает ревизию для явного восстановления, даже если текущий HEAD повреждён.
+        /// Не запускает миграцию или чтение повреждённых сегментов.
+        /// </summary>
+        public static string RevisionForRestore(string file)
+        {
+            using (Acquire(file))
+                return UseCompactStore && IsTaskFile(file)
+                    ? CompactTaskStore.CurrentRevision(file) : RevisionUnsafe(file);
+        }
+
         /// <summary>Получает версию файла для проверки перед подтверждённым восстановлением.</summary>
         public static string Revision(string file)
         {
@@ -210,22 +221,52 @@ namespace time_schedule
             return current;
         }
 
-        /// <summary>Восстанавливает проверенный снимок, не затрагивая чужой commit после открытия диалога.</summary>
+        /// <summary>
+        /// Создаёт резервную копию только опубликованного состояния под общей файловой блокировкой.
+        /// Не использует потенциально устаревший список задач из интерфейса.
+        /// </summary>
+        public static string CreateBackup(string file)
+        {
+            using (Acquire(file))
+            {
+                if (UseCompactStore)
+                    return CompactTaskStore.CreateBackupLocked(file);
+                ReadExisting<ListTasks>(file);
+                string backups = Path.Combine(Path.GetDirectoryName(file), "BackUp", Path.GetFileName(file));
+                Directory.CreateDirectory(backups);
+                string name = DateTime.UtcNow.ToString("yyyyMMdd-HHmmss-fffffff", CultureInfo.InvariantCulture) +
+                    "-" + Guid.NewGuid().ToString("N");
+                string temp = Path.Combine(backups, ".pending-" + Guid.NewGuid().ToString("N"));
+                string target = Path.Combine(backups, name);
+                try
+                {
+                    File.Copy(file, temp);
+                    File.Move(temp, target);
+                }
+                finally { TryDelete(temp); }
+                Prune(file);
+                return target;
+            }
+        }
+
+        /// <summary>Восстанавливает компактный либо исторический архив с проверкой актуальной ревизии.</summary>
         public static ListTasks Restore(string file, string backupFile, string expectedRevision)
         {
             using (Acquire(file))
             {
-                // До восстановления проверяем целостность опубликованного компактного снимка.
+                if (UseCompactStore && Directory.Exists(backupFile))
+                    return CompactTaskStore.RestoreBackupLocked(file, backupFile, expectedRevision);
+
                 if (UseCompactStore) CompactTaskStore.ReadLocked(file);
                 string actualRevision = UseCompactStore ? CompactTaskStore.CurrentRevision(file) : RevisionUnsafe(file);
                 if (actualRevision != expectedRevision)
                     throw new TaskConflictException("За время выбора резервной копии задачи были изменены. Обновите список и повторите восстановление.");
                 ListTasks backup = ReadExisting<ListTasks>(backupFile);
-                Fingerprints(backup); // проверяем номера и отсутствие дублей до публикации
+                Fingerprints(backup);
                 if (UseCompactStore)
                     CompactTaskStore.CommitLocked(file, backup);
                 else
-                    Publish(file, backup); // исходный механизм резервной копии
+                    Publish(file, backup);
                 return backup;
             }
         }

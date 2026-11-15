@@ -124,11 +124,17 @@ namespace time_schedule
             fileName = TakeMainPathFile(fileName);
             return binWriteObjectToFile(serObject, fileName);
         }
-        /// <summary>Создаёт резервную копию вспомогательного файла; для задач копию делает TaskStore.</summary>
+        /// <summary>
+        /// Создаёт резервную копию; для задач читает только опубликованное состояние через TaskStore,
+        /// для вспомогательных файлов сохраняет прежний механизм сериализации.
+        /// </summary>
         public static void WriteObjectToBackUpPathFile<Type>(string DirectoryName, Type serObject)
         {
             if (DirectoryName == Constants.TASKS_BIN)
-                throw new InvalidOperationException("Резервная копия задач создаётся только из опубликованного файла TaskStore.");
+            {
+                TaskStore.CreateBackup(TakeMainPathFile(Constants.TASKS_BIN));
+                return;
+            }
             string fileNameToSave = TakeBackUpPathFile(DirectoryName);
             binWriteObjectToFile(serObject, fileNameToSave);
             while (new DirectoryInfo(TakeBackUpPathDirectory(DirectoryName)).GetFileSystemInfos().Length > Constants.MAX_BACKUP_FILESES)

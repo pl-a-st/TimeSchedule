@@ -1013,9 +1013,9 @@ namespace time_schedule
             }
 
         }
-        /// <summary>Переносит задачу после внешнего пользовательского решения и проверки зависимостей.</summary>
-        /// <param name="sender">Источник события мыши.</param>
-        /// <param name="e">Аргументы события.</param>
+        /// <summary>Переносит задачу после подтверждения исходной версии и решения по зависимостям.</summary>
+        /// <param name="sender">Кнопка перемещаемой задачи.</param>
+        /// <param name="e">Аргументы события ухода указателя.</param>
         private void Button_MouseLeave(object sender, EventArgs e)
         {
             if (isDown && Program.UserType == UserType.Admin)
@@ -1069,16 +1069,14 @@ namespace time_schedule
 
                     void ChangeTaskes()
                     {
-                        Task TargetTask = GetTaskInNewListTasks(new Task());
-                        GhengePersonDatetimeInTask(PDT, TargetTask);
+                        Task targetTask = GetTaskInNewListTasks(new Task());
+                        GhengePersonDatetimeInTask(PDT, targetTask);
                         StatusToChangeDateAfter status = dependencyDecision;
-                        ChekAndChangeTaskAfter(TargetTask, ref status);
+                        ChekAndChangeTaskAfter(targetTask, ref status);
                     }
                 }
             }
             isDown = false;
-
-           
         }
 
         private void GhengePersonDatetimeInTask((PersonButton, DateTime) PDT, Task TargetTask)
@@ -1090,14 +1088,12 @@ namespace time_schedule
             TargetTask.SetTaskNumberAfter(0);
         }
 
-        /// <summary>Находит перетаскиваемую задачу в свежем списке или сообщает о конфликте.</summary>
-        private Task GetTaskInNewListTasks(Task TargetTask)
+        /// <summary>Находит переносимую задачу в свежем списке или сообщает о конфликте.</summary>
+        private Task GetTaskInNewListTasks(Task targetTask)
         {
             foreach (Task task in Program.ListTasksAllPersonToSave.Tasks)
-            {
                 if (task.Number == Task.Number)
                     return task;
-            }
             throw new TaskConflictException("Перемещаемая задача удалена другим пользователем.");
         }
         enum StatusToChangeDateAfter
@@ -1107,7 +1103,7 @@ namespace time_schedule
             NotChange,
             Cancel
         }
-        /// <summary>Запрашивает выбор пользователя до захвата сетевой блокировки.</summary>
+        /// <summary>Запрашивает решение о связанных задачах до захвата общей файловой блокировки.</summary>
         private StatusToChangeDateAfter AskDependencyDecision()
         {
             using (var dialog = new frmWithRadioButton())
@@ -1123,31 +1119,28 @@ namespace time_schedule
             }
         }
 
-        /// <summary>Изменяет зависимые задачи только согласно уже принятому пользователем решению.</summary>
+        /// <summary>Изменяет только те зависимые задачи, версии которых вошли в подтверждённый снимок.</summary>
         private void ChekAndChangeTaskAfter(Task task, ref StatusToChangeDateAfter statusToChangeDateAfter)
         {
             for (int i = 0; i < Program.ListTasksAllPersonToSave.Tasks.Count; i++)
             {
                 if (Program.ListTasksAllPersonToSave.Tasks[i].TaskNumberAfter != task.Number)
-                {
                     continue;
-                }
                 if (statusToChangeDateAfter == StatusToChangeDateAfter.Undefined)
                     throw new TaskConflictException("Появились новые зависимые задачи. Повторите перенос после обновления календаря.");
                 if (statusToChangeDateAfter == StatusToChangeDateAfter.Change)
                 {
                     Program.ListTasksAllPersonToSave.Tasks[i].ChangeDatesAndCountDays(
-                                            Task.GetDateFinish(task.DateFinish, 2),
-                                            Program.ListTasksAllPersonToSave.Tasks[i].CountWorkingDays
-                                            ); // Magic number 2 to do
+                        Task.GetDateFinish(task.DateFinish, 2),
+                        Program.ListTasksAllPersonToSave.Tasks[i].CountWorkingDays
+                        ); // Magic number 2 to do
                     ChekAndChangeTaskAfter(Program.ListTasksAllPersonToSave.Tasks[i], ref statusToChangeDateAfter);
                 }
                 if (statusToChangeDateAfter == StatusToChangeDateAfter.NotChange)
-                {
                     Program.ListTasksAllPersonToSave.Tasks[i].SetTaskNumberAfter(0);
-                }
             }
         }
+
         private (PersonButton, DateTime) SetNewDateAndPerson(Point point, ListPersonButton listPersonButton, PoolTextBox poolTextBox)
         {
             var targetPersonButton = new PersonButton();

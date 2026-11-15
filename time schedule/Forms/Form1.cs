@@ -1480,7 +1480,7 @@ namespace time_schedule
             fm.LBx.Items.AddRange(listString.ToArray());
         }
 
-        /// <summary>Восстанавливает резервную копию с защитой от параллельной записи.</summary>
+        /// <summary>Восстанавливает повреждённый HEAD или выбранную независимую копию задач.</summary>
         private void восстановлениеЗадачToolStripMenuItem_Click(object sender, EventArgs e)
         {
             string tasksPath = Dals.TakeMainPathFile(Constants.TASKS_BIN);
@@ -1492,9 +1492,10 @@ namespace time_schedule
                     ex is InvalidDataException || ex is System.Runtime.Serialization.SerializationException ||
                     ex is AggregateException || ex is ArgumentException || ex is FormatException)
                 {
-                    MessageBox.Show("Не удалось подобрать резервный HEAD. Данные не изменены.\n\n" + ex.Message,
-                        "Восстановление задач", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    return;
+                    MessageBox.Show("Восстановление HEAD из history недоступно. " +
+                        "Можно выбрать независимую резервную копию задач.\n\n" + ex.Message,
+                        "Восстановление задач", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    candidate = null;
                 }
                 if (candidate != null)
                 {
@@ -1505,22 +1506,27 @@ namespace time_schedule
                         "Сегментов: " + candidate.SegmentCount + "\n\n" +
                         "Изменения, выполненные после этой ревизии, могут быть утрачены.\n" +
                         "Восстановить этот снимок?";
-                    if (MessageBox.Show(message, "Подтверждение восстановления HEAD",
-                        MessageBoxButtons.YesNo, MessageBoxIcon.Warning) != DialogResult.Yes)
+                    DialogResult choice = MessageBox.Show(message +
+                        "\n\nНет — выбрать независимую резервную копию задач.",
+                        "Подтверждение восстановления HEAD", MessageBoxButtons.YesNoCancel,
+                        MessageBoxIcon.Warning);
+                    if (choice == DialogResult.Cancel) return;
+                    if (choice == DialogResult.Yes)
+                    {
+                        try
+                        {
+                            Program.ListTasksAllPersonToSave = TaskStore.RestoreCompactHead(tasksPath, candidate);
+                            LoadRefreshForm(Statuses.ProgressBar.Use);
+                        }
+                        catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException ||
+                            ex is InvalidDataException || ex is System.Runtime.Serialization.SerializationException ||
+                            ex is AggregateException || ex is ArgumentException || ex is FormatException)
+                        {
+                            MessageBox.Show("Восстановление HEAD не выполнено.\n\n" + ex.Message,
+                                "Ошибка восстановления", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        }
                         return;
-                    try
-                    {
-                        Program.ListTasksAllPersonToSave = TaskStore.RestoreCompactHead(tasksPath, candidate);
-                        LoadRefreshForm(Statuses.ProgressBar.Use);
                     }
-                    catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException ||
-                        ex is InvalidDataException || ex is System.Runtime.Serialization.SerializationException ||
-                    ex is AggregateException || ex is ArgumentException || ex is FormatException)
-                    {
-                        MessageBox.Show("Восстановление HEAD не выполнено.\n\n" + ex.Message,
-                            "Ошибка восстановления", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    }
-                    return;
                 }
             }
             fmChangeList fm = new fmChangeList();
@@ -1537,16 +1543,29 @@ namespace time_schedule
             fm.BtnApply.Enabled = false;
             fm.GroupBox1.Visible = false;
             fm.LBx.Width = fm.Width - fm.LBx.Location.X * 3;
-            List<string> stringsToShow = new List<string>();
-            FileSystemInfo[] backUpsFiles = new DirectoryInfo(Dals.TakeBackUpPathDirectory(Constants.TASKS_BIN)).GetFileSystemInfos();
-            backUpsFiles = backUpsFiles.OrderBy(fi => fi.CreationTime).ToArray();
-
-            foreach (FileSystemInfo backUp in backUpsFiles)
+            var availableBackups = new List<KeyValuePair<string, string>>();
+            if (TaskStore.UseCompactStore)
             {
-                stringsToShow.Add(backUp.Name.Replace('_', ':'));
+                string compactBackups = CompactTaskStore.BackupDirectory(tasksPath);
+                if (Directory.Exists(compactBackups))
+                    foreach (DirectoryInfo snapshot in new DirectoryInfo(compactBackups)
+                        .GetDirectories("*.snapshot").OrderByDescending(d => d.Name))
+                        availableBackups.Add(new KeyValuePair<string, string>(
+                            "Компактная копия: " + snapshot.Name, snapshot.FullName));
             }
-            stringsToShow.Reverse();
-            fm.LBx.Items.AddRange(stringsToShow.ToArray());
+            string oldBackups = Dals.TakeBackUpPathDirectory(Constants.TASKS_BIN);
+            foreach (FileInfo oldFile in new DirectoryInfo(oldBackups)
+                .GetFiles().OrderByDescending(f => f.CreationTimeUtc))
+                availableBackups.Add(new KeyValuePair<string, string>(
+                    TaskStore.UseCompactStore ? "Архив Tasks.bin: " + oldFile.Name :
+                        oldFile.Name.Replace('_', ':'), oldFile.FullName));
+            if (availableBackups.Count == 0)
+            {
+                MessageBox.Show("Резервные копии задач для этого проекта не найдены.",
+                    "Восстановление задач", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+            fm.LBx.Items.AddRange(availableBackups.Select(x => x.Key).ToArray());
             fm.LBx.Click += LBx_Click;
             void LBx_Click(object newSender, EventArgs newE)
             {
@@ -1560,18 +1579,20 @@ namespace time_schedule
                 }
             }
             string openedRevision;
-            try { openedRevision = TaskStore.Revision(tasksPath); }
-            catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException)
+            try { openedRevision = TaskStore.RevisionForRestore(tasksPath); }
+            catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException ||
+                ex is InvalidDataException || ex is System.Runtime.Serialization.SerializationException)
             {
-                MessageBox.Show("Не удалось проверить состояние Tasks.bin: " + ex.Message);
+                MessageBox.Show("Не удалось проверить состояние задач: " + ex.Message);
                 return;
             }
             fm.ShowDialog();
             if (fm.BtnClick == BtnClick.aplly && fm.LBx.SelectedItem != null)
             {
-                string fileName = Dals.TakeBackUpPathDirectory(Constants.TASKS_BIN);
-                fileName += "\\" + fm.LBx.SelectedItem.ToString().Replace(':', '_');
-                if (MessageBox.Show("Заменить все текущие задачи выбранной копией? Текущее состояние будет сохранено в резервной копии.",
+                string fileName = availableBackups[fm.LBx.SelectedIndex].Value;
+                if (MessageBox.Show("Заменить все текущие задачи выбранной копией? " +
+                    "Если текущее хранилище исправно, его состояние будет сохранено в резервной копии. " +
+                    "Повреждённые файлы, когда возможно, сохраняются для диагностики.",
                     "Подтверждение восстановления", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) != DialogResult.Yes)
                     return;
                 try
@@ -1580,7 +1601,8 @@ namespace time_schedule
                     Program.fmMain.LoadRefreshForm(Statuses.ProgressBar.Use);
                 }
                 catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException ||
-                    ex is System.Runtime.Serialization.SerializationException)
+                    ex is InvalidDataException || ex is System.Runtime.Serialization.SerializationException ||
+                    ex is AggregateException || ex is ArgumentException || ex is FormatException)
                 {
                     MessageBox.Show("Восстановление не выполнено: " + ex.Message);
                 }
