@@ -28,10 +28,15 @@ namespace time_schedule
         /// <summary>Включает испытательный компактный формат; задаётся один раз при запуске приложения.</summary>
         public static bool UseCompactStore { get; set; }
 
-        /// <summary>Проверяет наличие данных текущего режима, не изменяя содержимое проекта.</summary>
+        /// <summary>
+        /// Проверяет наличие задач; каталог компактного хранилища без HEAD
+        /// также требует попытки чтения, чтобы сообщить об ошибке, а не скрыть её.
+        /// </summary>
         public static bool HasTaskData(string file)
         {
-            return (UseCompactStore && CompactTaskStore.Exists(file)) || File.Exists(file);
+            return UseCompactStore
+                ? Directory.Exists(CompactTaskStore.StoreDirectory(file)) || File.Exists(file)
+                : File.Exists(file);
         }
 
         /// <summary>Определяет принадлежность файла к основному списку задач.</summary>
@@ -149,6 +154,23 @@ namespace time_schedule
             }
         }
 
+        /// <summary>Под межмашинной блокировкой выбирает проверенную резервную ревизию HEAD без записи данных.</summary>
+        internal static CompactHeadRecoveryInfo FindCompactHeadRecovery(string taskFile)
+        {
+            if (!UseCompactStore) return null;
+            using (Acquire(taskFile))
+                return CompactTaskStore.FindHeadRecoveryLocked(taskFile);
+        }
+
+        /// <summary>Явно восстанавливает выбранную ревизию HEAD с защитой от конкурирующих изменений.</summary>
+        internal static ListTasks RestoreCompactHead(string taskFile, CompactHeadRecoveryInfo approved)
+        {
+            if (!UseCompactStore)
+                throw new InvalidOperationException("Восстановление HEAD доступно только для компактного хранилища");
+            using (Acquire(taskFile))
+                return CompactTaskStore.RestoreHeadLocked(taskFile, approved);
+        }
+
         /// <summary>Сохраняет изменение поверх актуального снимка с проверкой ранее показанных задач.</summary>
         /// <param name="file">Полный путь Tasks.bin выбранного проекта.</param>
         /// <param name="change">Изменение текущего списка; вызывается ровно один раз.</param>
@@ -158,11 +180,13 @@ namespace time_schedule
             if (change == null) throw new ArgumentNullException(nameof(change));
             Stopwatch sw = Stopwatch.StartNew();
             ListTasks current;
+            Dictionary<long, string> compactSourceHashes = null;
             long waitMs, readMs, checkMs, changeMs, verifyMs, writeMs;
             using (Acquire(file))
             {
                 waitMs = sw.ElapsedMilliseconds;
-                current = UseCompactStore ? CompactTaskStore.ReadLocked(file) : ReadOrImport(file);
+                current = UseCompactStore
+                    ? CompactTaskStore.ReadLocked(file, out compactSourceHashes) : ReadOrImport(file);
                 readMs = sw.ElapsedMilliseconds - waitMs;
                 Dictionary<long, string> original = Fingerprints(current);
                 ValidateExpected(original, expected);
@@ -172,7 +196,7 @@ namespace time_schedule
                 ValidateChanges(original, current, expected);
                 verifyMs = sw.ElapsedMilliseconds - waitMs - readMs - checkMs - changeMs;
                 if (UseCompactStore)
-                    CompactTaskStore.CommitLocked(file, current);
+                    CompactTaskStore.CommitLocked(file, current, compactSourceHashes);
                 else
                     Publish(file, current);
                 writeMs = sw.ElapsedMilliseconds - waitMs - readMs - checkMs - changeMs - verifyMs;

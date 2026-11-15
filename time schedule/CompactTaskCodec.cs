@@ -4,6 +4,7 @@ using System.Drawing;
 using System.IO;
 using System.IO.Compression;
 using System.Runtime.Serialization.Formatters.Binary;
+using System.Security.Cryptography;
 using System.Windows.Forms;
 
 namespace time_schedule
@@ -16,6 +17,9 @@ namespace time_schedule
 
         /// <summary>Задача, восстановленная без изменения сериализуемой модели приложения.</summary>
         internal Task Item { get; set; }
+
+        /// <summary>SHA-256 исходной компактной записи, включая позицию; только для выборочного сохранения.</summary>
+        internal string SourceHash { get; set; }
     }
 
     /// <summary>
@@ -47,46 +51,68 @@ namespace time_schedule
         {
             using (var output = new FileStream(path, FileMode.CreateNew, FileAccess.Write, FileShare.None))
             {
-                WriteStream(output, records);
+                using (var header = new BinaryWriter(output, System.Text.Encoding.UTF8, true))
+                {
+                    header.Write(Magic);
+                    header.Write(Version);
+                }
+                using (var compression = new DeflateStream(output, CompressionLevel.Fastest, true))
+                using (var writer = new BinaryWriter(compression, System.Text.Encoding.UTF8, true))
+                {
+                    writer.Write(records.Count);
+                    foreach (CompactTaskRecord record in records)
+                    {
+                        writer.Write(record.Ordinal);
+                        WriteTask(writer, record.Item);
+                    }
+                }
                 output.Flush(true);
             }
         }
-
         /// <summary>
-        /// Готовит те же байты сегмента в памяти для сравнения с опубликованной контрольной суммой.
-        /// Диск затрагивается только при фактическом изменении содержимого сегмента.
+        /// Сериализует сегмент в память в том же компактном формате,
+        /// который используется при записи сегмента в файл.
         /// </summary>
         internal static byte[] Encode(IList<CompactTaskRecord> records)
         {
             using (var output = new MemoryStream())
             {
-                WriteStream(output, records);
+                using (var header = new BinaryWriter(
+                    output, System.Text.Encoding.UTF8, true))
+                {
+                    header.Write(Magic);
+                    header.Write(Version);
+                }
+
+                using (var compression = new DeflateStream(
+                    output, CompressionLevel.Fastest, true))
+                using (var writer = new BinaryWriter(
+                    compression, System.Text.Encoding.UTF8, true))
+                {
+                    writer.Write(records.Count);
+
+                    foreach (CompactTaskRecord record in records)
+                    {
+                        writer.Write(record.Ordinal);
+                        WriteTask(writer, record.Item);
+                    }
+                }
+
                 return output.ToArray();
             }
         }
 
-        /// <summary>Формирует единое представление сегмента для файла и проверки изменений.</summary>
-        private static void WriteStream(Stream output, IList<CompactTaskRecord> records)
+        /// <summary>Читает компактный сегмент в штатном режиме, без дополнительных отпечатков записей.</summary>
+        internal static List<CompactTaskRecord> Read(string path, int maximumTasks)
         {
-            using (var header = new BinaryWriter(output, System.Text.Encoding.UTF8, true))
-            {
-                header.Write(Magic);
-                header.Write(Version);
-            }
-            using (var compression = new DeflateStream(output, CompressionLevel.Fastest, true))
-            using (var writer = new BinaryWriter(compression, System.Text.Encoding.UTF8, true))
-            {
-                writer.Write(records.Count);
-                foreach (CompactTaskRecord record in records)
-                {
-                    writer.Write(record.Ordinal);
-                    WriteTask(writer, record.Item);
-                }
-            }
+            return Read(path, maximumTasks, false);
         }
 
-        /// <summary>Читает сегмент, отказывая при повреждении, неподдерживаемой версии или несогласованном содержимом.</summary>
-        internal static List<CompactTaskRecord> Read(string path, int maximumTasks)
+        /// <summary>
+        /// При выборочном сохранении вместе с задачами получает SHA-256 исходных
+        /// распакованных записей. Дополнительной сериализации при чтении нет.
+        /// </summary>
+        internal static List<CompactTaskRecord> Read(string path, int maximumTasks, bool captureSourceHashes)
         {
             using (var input = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
             using (var header = new BinaryReader(input, System.Text.Encoding.UTF8, true))
@@ -94,7 +120,9 @@ namespace time_schedule
                 if (header.ReadInt32() != Magic || header.ReadInt32() != Version)
                     throw new InvalidDataException("Неподдерживаемый формат сегмента: " + path);
                 using (var compression = new DeflateStream(input, CompressionMode.Decompress, true))
-                using (var reader = new BinaryReader(compression, System.Text.Encoding.UTF8, true))
+                using (var hashing = captureSourceHashes ? new RecordHashingStream(compression) : null)
+                using (var reader = new BinaryReader(captureSourceHashes ? (Stream)hashing : compression,
+                    System.Text.Encoding.UTF8, true))
                 {
                     int count = reader.ReadInt32();
                     if (count < 0 || count > maximumTasks)
@@ -102,15 +130,114 @@ namespace time_schedule
                     var result = new List<CompactTaskRecord>(count);
                     for (int i = 0; i < count; i++)
                     {
+                        if (hashing != null) hashing.BeginRecord();
                         int ordinal = reader.ReadInt32();
                         if (ordinal < 0)
                             throw new InvalidDataException("Отрицательный индекс задачи: " + path);
-                        result.Add(new CompactTaskRecord { Ordinal = ordinal, Item = ReadTask(reader) });
+                        Task task = ReadTask(reader);
+                        result.Add(new CompactTaskRecord {
+                            Ordinal = ordinal,
+                            Item = task,
+                            SourceHash = hashing == null ? null : hashing.EndRecord()
+                        });
                     }
-                    if (compression.ReadByte() != -1)
+                    if ((hashing == null ? compression : (Stream)hashing).ReadByte() != -1)
                         throw new InvalidDataException("Лишние данные в сегменте: " + path);
                     return result;
                 }
+            }
+        }
+
+        /// <summary>
+        /// Вычисляет SHA-256 точно по байтам, прочитанным BinaryReader из потока
+        /// отдельной записи. Не буферизует целый сегмент и не изменяет его формат.
+        /// </summary>
+        private sealed class RecordHashingStream : Stream
+        {
+            /// <summary>Распакованный поток сегмента, доступный только для чтения.</summary>
+            private readonly Stream source;
+
+            /// <summary>Инкрементальный SHA-256 для текущей записи.</summary>
+            private readonly IncrementalHash recordHash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
+
+            /// <summary>Буфер для хеширования одиночного байта.</summary>
+            private readonly byte[] singleByte = new byte[1];
+
+            /// <summary>Признак чтения текущей записи, а не заголовка сегмента.</summary>
+            private bool active;
+
+            /// <summary>Оборачивает поток без передачи права владения его дескриптором.</summary>
+            internal RecordHashingStream(Stream source) { this.source = source; }
+
+            /// <summary>Начинает фиксацию байтов следующей записи.</summary>
+            internal void BeginRecord() { active = true; }
+
+            /// <summary>Завершает запись и возвращает её SHA-256.</summary>
+            internal string EndRecord()
+            {
+                active = false;
+                return BitConverter.ToString(recordHash.GetHashAndReset()).Replace("-", "");
+            }
+
+            /// <summary>Разрешает чтение из базового потока.</summary>
+            public override bool CanRead { get { return source.CanRead; } }
+
+            /// <summary>Произвольное позиционирование не поддерживается DeflateStream.</summary>
+            public override bool CanSeek { get { return false; } }
+
+            /// <summary>Запись в поток чтения запрещена.</summary>
+            public override bool CanWrite { get { return false; } }
+
+            /// <summary>Длина распакованного потока заранее неизвестна.</summary>
+            public override long Length { get { throw new NotSupportedException(); } }
+
+            /// <summary>Позиционирование распакованного потока не поддерживается.</summary>
+            public override long Position
+            {
+                get { throw new NotSupportedException(); }
+                set { throw new NotSupportedException(); }
+            }
+
+            /// <summary>Читает и учитывает байты текущей записи.</summary>
+            public override int Read(byte[] buffer, int offset, int count)
+            {
+                int read = source.Read(buffer, offset, count);
+                if (active && read > 0) recordHash.AppendData(buffer, offset, read);
+                return read;
+            }
+
+            /// <summary>Читает один байт и учитывает его в SHA-256 текущей записи.</summary>
+            public override int ReadByte()
+            {
+                int value = source.ReadByte();
+                if (active && value >= 0)
+                {
+                    singleByte[0] = (byte)value;
+                    recordHash.AppendData(singleByte);
+                }
+                return value;
+            }
+
+            /// <summary>Запись запрещена.</summary>
+            public override void Write(byte[] buffer, int offset, int count)
+            {
+                throw new NotSupportedException();
+            }
+
+            /// <summary>Позиционирование запрещено.</summary>
+            public override long Seek(long offset, SeekOrigin origin) { throw new NotSupportedException(); }
+
+            /// <summary>Изменение длины запрещено.</summary>
+            public override void SetLength(long value) { throw new NotSupportedException(); }
+
+            /// <summary>Сброс записи неприменим к потоку чтения.</summary>
+            public override void Flush() { throw new NotSupportedException(); }
+
+            /// <summary>Освобождает SHA-256; базовый DeflateStream закрывает вызывающий код.</summary>
+            protected override void Dispose(bool disposing)
+            {
+                if (disposing) recordHash.Dispose();
+                base.Dispose(disposing);
             }
         }
 

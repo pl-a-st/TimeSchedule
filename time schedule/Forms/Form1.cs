@@ -64,10 +64,15 @@ namespace time_schedule
             get;
             private set;
         } = Statuses.ProgramWindowState.Normal;
+        /// <summary>Инициализирует главное окно и диагностическое наблюдение за Paint без изменения отрисовки.</summary>
         public Form1()
         {
             Program.fmMain = this;
             InitializeComponent();
+            plMain.Paint += ObserveCalendarPaint;
+            plForDate.Paint += ObserveCalendarPaint;
+            pBForLine.Paint += ObserveCalendarPaint;
+            FormClosed += (sender, e) => CancelPendingPaintDiagnostics();
             plMain.MouseWheel += CalendarTasks_MouseWheel;
             plMain.ClientSizeChanged += PlMain_ClientSizeChanged;
             plPersonButton.MouseWheel += PlPersonButton_MouseWheel;
@@ -89,12 +94,93 @@ namespace time_schedule
             DateTime minDateTime = Program.ListTasksAllPersonToShow.GetMinDateStartTasks();
             return (maxDateTime - MaxDateFinish).Days;
         }
+        /// <summary>Временные и количественные показатели одного обновления календаря.</summary>
+        private sealed class CalendarRefreshMetrics
+        {
+            /// <summary>Количество задач в загруженном проекте.</summary>
+            public int TotalTasks { get; set; }
+            /// <summary>Количество задач, оставшихся после фильтров календаря.</summary>
+            public int FilteredTasks { get; set; }
+            /// <summary>Количество созданных моделей TaskButton.</summary>
+            public int TaskModels { get; set; }
+            /// <summary>Количество созданных WinForms-кнопок задач, включая пока не показанные.</summary>
+            public int CreatedTaskButtons { get; set; }
+            /// <summary>Количество кнопок задач, добавленных в plMain за это обновление.</summary>
+            public int AttachedTaskButtons { get; set; }
+            /// <summary>Количество моделей исполнителей в календаре.</summary>
+            public int PersonModels { get; set; }
+            /// <summary>Время очистки прежних элементов и списков.</summary>
+            public long ClearMs { get; set; }
+            /// <summary>Время отбора задач по выбранным проектам.</summary>
+            public long ProjectFilterMs { get; set; }
+            /// <summary>Время отбора задач по актуальности.</summary>
+            public long RelevanceFilterMs { get; set; }
+            /// <summary>Время создания кнопок исполнителей.</summary>
+            public long BuildPersonButtonsMs { get; set; }
+            /// <summary>Время создания всех объектов TaskButton и их WinForms-кнопок.</summary>
+            public long BuildTaskButtonsMs { get; set; }
+            /// <summary>Время построения календарной шкалы дат.</summary>
+            public long BuildDatesMs { get; set; }
+            /// <summary>Время формирования горизонтальных и вертикальных линий.</summary>
+            public long BuildLinesMs { get; set; }
+            /// <summary>Время добавления кнопок исполнителей в панель.</summary>
+            public long AttachPersonsMs { get; set; }
+            /// <summary>Время расчёта видимости, размещения и добавления кнопок задач.</summary>
+            public long AttachTasksMs { get; set; }
+            /// <summary>Время добавления элементов шкалы дат.</summary>
+            public long AttachDatesMs { get; set; }
+            /// <summary>Количество событий Paint у прикреплённых кнопок задач.</summary>
+            public int TaskPaintEvents { get; set; }
+            /// <summary>Количество событий Paint у основных панелей календаря.</summary>
+            public int CalendarPaintEvents { get; set; }
+            /// <summary>Кнопки с временной подпиской Paint, снимаемой при завершении замера.</summary>
+            public List<Button> ObservedButtons { get; } = new List<Button>();
+        }
+
+        /// <summary>Показатели обновления, ожидающего следующего простоя очереди UI.</summary>
+        private CalendarRefreshMetrics activePaintMetrics;
+
+        /// <summary>Обработчик очереди UI, ожидающий завершения ближайшего цикла Paint.</summary>
+        private EventHandler pendingRefreshIdleHandler;
+
+        /// <summary>Считает события Paint кнопок задач без вмешательства в их рисование.</summary>
+        private void ObserveTaskButtonPaint(object sender, PaintEventArgs e)
+        {
+            if (activePaintMetrics != null)
+                activePaintMetrics.TaskPaintEvents++;
+        }
+
+        /// <summary>Считает события Paint панелей календаря.</summary>
+        private void ObserveCalendarPaint(object sender, PaintEventArgs e)
+        {
+            if (activePaintMetrics != null)
+                activePaintMetrics.CalendarPaintEvents++;
+        }
+
+        /// <summary>Убирает отложенную диагностику предыдущего обновления.</summary>
+        private void CancelPendingPaintDiagnostics()
+        {
+            if (pendingRefreshIdleHandler != null)
+            {
+                Application.Idle -= pendingRefreshIdleHandler;
+                pendingRefreshIdleHandler = null;
+            }
+            if (activePaintMetrics != null)
+            {
+                foreach (Button button in activePaintMetrics.ObservedButtons)
+                    button.Paint -= ObserveTaskButtonPaint;
+                activePaintMetrics = null;
+            }
+        }
+
         /// <summary>Дерево отбора проектов для текущего цикла обновления; повторное чтение с диска не требуется.</summary>
         private TreeProjects selectionTreeForRefresh;
 
         /// <summary>Обновляет интерфейс только из согласованно загруженных данных.</summary>
         public void LoadRefreshForm()
         {
+            CancelPendingPaintDiagnostics();
+            CalendarRefreshMetrics metrics = new CalendarRefreshMetrics();
             Stopwatch timing = Stopwatch.StartNew();
             ListTasks loadedTasks = null;
             ListPersons loadedPersons = null;
@@ -105,9 +191,12 @@ namespace time_schedule
                     loadedTasks = TaskStore.ReadProject(tasksPath, out loadedPersons);
             }
             catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException ||
-                ex is System.Runtime.Serialization.SerializationException || ex is InvalidCastException)
+                ex is System.Runtime.Serialization.SerializationException || ex is InvalidCastException ||
+                ex is InvalidDataException)
             {
-                MessageBox.Show("Не удалось получить актуальные задачи. Существующий календарь сохранён. " + ex.Message);
+                MessageBox.Show(
+                    "Не удалось загрузить задачи проекта. Данные не изменены.\n\n" + ex.Message,
+                    "Ошибка хранилища задач", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
             long readMs = timing.ElapsedMilliseconds;
@@ -119,11 +208,13 @@ namespace time_schedule
             }
             FormReadyToBeAddedControl = Statuses.FormReadyToBeAddedControl.NotReady;
             plForDate.Enabled = false;
+            Stopwatch phase = Stopwatch.StartNew();
             ClearOldExemplars();
             ClearAllPools();
+            metrics.ClearMs = phase.ElapsedMilliseconds;
             try
             {
-                LoadAllPools(loadedTasks, loadedPersons);//867
+                LoadAllPools(loadedTasks, loadedPersons, metrics);
             }
             catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException ||
                 ex is System.Runtime.Serialization.SerializationException || ex is InvalidCastException)
@@ -134,23 +225,75 @@ namespace time_schedule
                 return;
             }
             long modelMs = timing.ElapsedMilliseconds - readMs;
+            phase.Restart();
             LoadTextBoxWithDate();//493
+            metrics.BuildDatesMs = phase.ElapsedMilliseconds;
+            phase.Restart();
             LoadHorizontLine();
             DrowVerticalLines();
+            metrics.BuildLinesMs = phase.ElapsedMilliseconds;
             SaveMinMaxDate();
             plForDate.Enabled = true;
             LoadScrolls();
             FormReadyToBeAddedControl = Statuses.FormReadyToBeAddedControl.Ready;
+            activePaintMetrics = metrics;
+            phase.Restart();
             LoadPersonButtons();
-            LoadTaskButtons();
+            metrics.AttachPersonsMs = phase.ElapsedMilliseconds;
+            phase.Restart();
+            LoadTaskButtons(metrics);
+            metrics.AttachTasksMs = phase.ElapsedMilliseconds;
+            phase.Restart();
             LoadDateTextBoxes();
+            metrics.AttachDatesMs = phase.ElapsedMilliseconds;
             ChangePanelVisibility(Statuses.Visibility.Visible);//313
             PushLableProject();
             LoadScrolls();
+            long totalMs = timing.ElapsedMilliseconds;
+            long controlsMs = totalMs - readMs - modelMs;
             Trace.WriteLine("TimeSchedule refresh: disk-read-ms=" + readMs +
                 " model-and-layout-ms=" + modelMs + " controls-ms=" +
-                (timing.ElapsedMilliseconds - readMs - modelMs) +
-                " total-ms=" + timing.ElapsedMilliseconds);
+                controlsMs + " total-ms=" + totalMs);
+            Trace.WriteLine("TimeSchedule refresh-detail: tasks-total=" + metrics.TotalTasks +
+                " tasks-filtered=" + metrics.FilteredTasks +
+                " task-models=" + metrics.TaskModels +
+                " task-buttons-created=" + metrics.CreatedTaskButtons +
+                " task-buttons-attached=" + metrics.AttachedTaskButtons +
+                " persons=" + metrics.PersonModels +
+                " clear-ms=" + metrics.ClearMs +
+                " project-filter-ms=" + metrics.ProjectFilterMs +
+                " relevance-filter-ms=" + metrics.RelevanceFilterMs +
+                " build-person-buttons-ms=" + metrics.BuildPersonButtonsMs +
+                " build-task-buttons-ms=" + metrics.BuildTaskButtonsMs +
+                " build-dates-ms=" + metrics.BuildDatesMs +
+                " build-lines-ms=" + metrics.BuildLinesMs +
+                " attach-persons-ms=" + metrics.AttachPersonsMs +
+                " attach-tasks-ms=" + metrics.AttachTasksMs +
+                " attach-dates-ms=" + metrics.AttachDatesMs +
+                " other-model-ms=" + (modelMs - metrics.ClearMs -
+                    metrics.ProjectFilterMs - metrics.RelevanceFilterMs -
+                    metrics.BuildPersonButtonsMs - metrics.BuildTaskButtonsMs) +
+                " other-controls-ms=" + (controlsMs - metrics.BuildDatesMs -
+                    metrics.BuildLinesMs - metrics.AttachPersonsMs -
+                    metrics.AttachTasksMs - metrics.AttachDatesMs));
+            // Отложенный Paint может выполниться только после выхода из LoadRefreshForm.
+            Stopwatch idleWait = Stopwatch.StartNew();
+            EventHandler idleHandler = null;
+            idleHandler = (sender, e) =>
+            {
+                Application.Idle -= idleHandler;
+                if (ReferenceEquals(pendingRefreshIdleHandler, idleHandler))
+                    pendingRefreshIdleHandler = null;
+                if (ReferenceEquals(activePaintMetrics, metrics))
+                    CancelPendingPaintDiagnostics();
+                Trace.WriteLine("TimeSchedule refresh-paint: idle-after-refresh-ms=" +
+                    idleWait.ElapsedMilliseconds +
+                    " task-paint-events=" + metrics.TaskPaintEvents +
+                    " calendar-paint-events=" + metrics.CalendarPaintEvents +
+                    " note=idle-latency-is-not-pure-paint-time");
+            };
+            pendingRefreshIdleHandler = idleHandler;
+            Application.Idle += idleHandler;
         }
         private void PushLableProject()
         {
@@ -429,8 +572,9 @@ namespace time_schedule
             Invoke(new Action(() => fmProgressBar.Close()));
         }
         /// <summary>Строит элементы календаря из уже прочитанного согласованного снимка.</summary>
-        private void LoadAllPools(ListTasks loadedTasks, ListPersons loadedPersons)
+        private void LoadAllPools(ListTasks loadedTasks, ListPersons loadedPersons, CalendarRefreshMetrics metrics)
         {
+            Stopwatch phase = Stopwatch.StartNew();
             if (loadedTasks != null)
             {
                 Program.ListTasksAllPersonToSave = loadedTasks;
@@ -445,12 +589,19 @@ namespace time_schedule
             {
                 Program.ListTasksAllPersonToSave.SetTasksFromList(Dals.ReadListFromMainPathFile(Constants.TASKS));
             }
+            metrics.TotalTasks = Program.ListTasksAllPersonToSave.Tasks.Count;
+            phase.Restart();
             Program.ListTasksAllPersonToShow.SetTasks(GetProjectEntryTasks(Program.ListTasksAllPersonToSave.Tasks));
+            metrics.ProjectFilterMs = phase.ElapsedMilliseconds;
+            phase.Restart();
             if (cBxShowTask.Text == cBxShowTask.Items[0].ToString())
                 Program.ListTasksAllPersonToShow.SetTasks(GetRelevantTasks(Program.ListTasksAllPersonToShow.Tasks));
+            metrics.RelevanceFilterMs = phase.ElapsedMilliseconds;
+            metrics.FilteredTasks = Program.ListTasksAllPersonToShow.Tasks.Count;
             if (!TaskStore.HasTaskData(Dals.TakeMainPathFile(Constants.TASKS_BIN)))
                 ReReadListPerson();
 
+            phase.Restart();
             Program.ListPersonButton.LoadListPersonButtons(
                 Program.listPersons.Persons,
                 Program.ListTasksAllPersonToShow,
@@ -458,6 +609,8 @@ namespace time_schedule
                 this);
             int maxButtonLocationY = SetMaxLocationAndAddPersonButton(ref Program.ListPersonButton);
             pBForLine.Height = maxButtonLocationY;
+            metrics.BuildPersonButtonsMs = phase.ElapsedMilliseconds;
+            metrics.PersonModels = Program.ListPersonButton.PersonButtons.Count;
             if (File.Exists(Dals.TakeMainPathFile(Constants.HOLYDAYS_BIN)))
             {
                 Program.ListHolidays = Dals.binReadFileToObject(
@@ -472,9 +625,13 @@ namespace time_schedule
 
             NonWorkDaysWrite(Program.ListTasksAllPersonToShow.GetMinDateStartTasks(), Program.ListTasksAllPersonToShow.GetMaxDateFinishTasks());
             Program.listNonWorkingDays.NonWorkingDays.AddRange(Program.ListHolidays.Holidays);
+            phase.Restart();
             Program.ListTaskButtons.AddTaskButtons(
                 Program.ListTasksAllPersonToShow,
                 Program.ListPersonButton);
+            metrics.BuildTaskButtonsMs = phase.ElapsedMilliseconds;
+            metrics.TaskModels = Program.ListTaskButtons.TaskButtons.Count;
+            metrics.CreatedTaskButtons = Program.ListTaskButtons.TaskButtons.Sum(task => task.Buttons.Count);
         }
 
         /// <summary>Читает согласованную версию списка исполнителей.</summary>
@@ -1078,8 +1235,11 @@ namespace time_schedule
 
             }
         }
-        private void LoadTaskButtons()
+        /// <summary>Присоединяет готовые кнопки задач; при диагностике отдельно считает их количество.</summary>
+        private void LoadTaskButtons(CalendarRefreshMetrics metrics = null)
         {
+            // События Scroll/SizeChanged могут добавить кнопки во время текущего обновления.
+            metrics = metrics ?? activePaintMetrics;
             if (FormReadyToBeAddedControl == Statuses.FormReadyToBeAddedControl.NotReady)
                 return;
             Program.ListTaskButtons.CalculateLoadingStatus(
@@ -1095,8 +1255,15 @@ namespace time_schedule
                 {
                     foreach (Button button in taskButton.Buttons)
                     {
+                        if (metrics != null)
+                        {
+                            button.Paint += ObserveTaskButtonPaint;
+                            metrics.ObservedButtons.Add(button);
+                        }
                         plMain.Controls.Add(button);
                         button.BringToFront();
+                        if (metrics != null)
+                            metrics.AttachedTaskButtons++;
                     }
                     taskButton.SetLoadingStatus(Statuses.LoadingStatus.Loaded);
                 }
@@ -1316,6 +1483,46 @@ namespace time_schedule
         /// <summary>Восстанавливает резервную копию с защитой от параллельной записи.</summary>
         private void восстановлениеЗадачToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            string tasksPath = Dals.TakeMainPathFile(Constants.TASKS_BIN);
+            if (TaskStore.UseCompactStore)
+            {
+                CompactHeadRecoveryInfo candidate;
+                try { candidate = TaskStore.FindCompactHeadRecovery(tasksPath); }
+                catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException ||
+                    ex is InvalidDataException || ex is System.Runtime.Serialization.SerializationException ||
+                    ex is AggregateException || ex is ArgumentException || ex is FormatException)
+                {
+                    MessageBox.Show("Не удалось подобрать резервный HEAD. Данные не изменены.\n\n" + ex.Message,
+                        "Восстановление задач", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+                if (candidate != null)
+                {
+                    string message = "Основной манифест задач отсутствует или повреждён.\n\n" +
+                        "Проверен резервный снимок из history:\n" +
+                        "Ревизия: " + candidate.Generation + "\n" +
+                        "Задач: " + candidate.TaskCount + "\n" +
+                        "Сегментов: " + candidate.SegmentCount + "\n\n" +
+                        "Изменения, выполненные после этой ревизии, могут быть утрачены.\n" +
+                        "Восстановить этот снимок?";
+                    if (MessageBox.Show(message, "Подтверждение восстановления HEAD",
+                        MessageBoxButtons.YesNo, MessageBoxIcon.Warning) != DialogResult.Yes)
+                        return;
+                    try
+                    {
+                        Program.ListTasksAllPersonToSave = TaskStore.RestoreCompactHead(tasksPath, candidate);
+                        LoadRefreshForm(Statuses.ProgressBar.Use);
+                    }
+                    catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException ||
+                        ex is InvalidDataException || ex is System.Runtime.Serialization.SerializationException ||
+                    ex is AggregateException || ex is ArgumentException || ex is FormatException)
+                    {
+                        MessageBox.Show("Восстановление HEAD не выполнено.\n\n" + ex.Message,
+                            "Ошибка восстановления", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                    return;
+                }
+            }
             fmChangeList fm = new fmChangeList();
             fm.Text = "Файлы";
             fm.StartPosition = FormStartPosition.CenterParent;
@@ -1352,7 +1559,6 @@ namespace time_schedule
                     fm.BtnApply.Enabled = false;
                 }
             }
-            string tasksPath = Dals.TakeMainPathFile(Constants.TASKS_BIN);
             string openedRevision;
             try { openedRevision = TaskStore.Revision(tasksPath); }
             catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException)

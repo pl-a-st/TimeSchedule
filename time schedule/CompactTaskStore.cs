@@ -39,6 +39,28 @@ namespace time_schedule
         public long ParallelReadMs { get; internal set; }
     }
 
+    /// <summary>Подтверждённый для явного восстановления резервный манифест компактного хранилища.</summary>
+    internal sealed class CompactHeadRecoveryInfo
+    {
+        /// <summary>Полный путь резервного манифеста в каталоге history.</summary>
+        internal string BackupPath { get; set; }
+
+        /// <summary>SHA-256 резервного манифеста на момент предварительной проверки.</summary>
+        internal string BackupRevision { get; set; }
+
+        /// <summary>Ревизия текущего HEAD либо метка отсутствующего файла на момент выбора.</summary>
+        internal string ExpectedCurrentRevision { get; set; }
+
+        /// <summary>Номер проверенной резервной ревизии.</summary>
+        internal long Generation { get; set; }
+
+        /// <summary>Число задач в проверенном резервном снимке.</summary>
+        internal int TaskCount { get; set; }
+
+        /// <summary>Число сегментов в проверенном резервном снимке.</summary>
+        internal int SegmentCount { get; set; }
+    }
+
     /// <summary>
     /// Сегментированное хранилище TS-01. В Debug используется автоматически
     /// на тестовом проекте; прежний Tasks.bin не изменяется.
@@ -48,8 +70,11 @@ namespace time_schedule
         /// <summary>Фиксированный диапазон номеров задач в сегменте.</summary>
         public const int SegmentSize = 128;
 
-        /// <summary>Максимальное количество потоков загрузки.</summary>
+        /// <summary>Максимальное количество потоков загрузки и кодирования сегментов.</summary>
         private const int MaxReaders = 8;
+
+        /// <summary>Ограничение числа одновременных операций записи независимых файлов сегментов.</summary>
+        private const int MaxParallelWrites = 4;
 
         /// <summary>Формат манифеста: 1-я версия.</summary>
         private const int HeadVersion = 1;
@@ -72,7 +97,7 @@ namespace time_schedule
             /// <summary>Размер числового диапазона сегмента в этой опубликованной версии.</summary>
             internal int RangeSize;
 
-            /// <summary>Хеш старого Tasks.bin на момент миграции; используется для выявления старого клиента.</summary>
+            /// <summary>Контрольная сумма исходного Tasks.bin, записанная при однократной миграции; только метаданные.</summary>
             internal string LegacyHash;
 
             /// <summary>Непустые опубликованные сегменты по номеру диапазона.</summary>
@@ -102,6 +127,106 @@ namespace time_schedule
         }
 
         /// <summary>
+        /// Под общей блокировкой находит самый поздний доступный и полностью проверенный
+        /// резервный HEAD. Не изменяет файлы и не запускает повторную миграцию.
+        /// </summary>
+        internal static CompactHeadRecoveryInfo FindHeadRecoveryLocked(string legacyFile)
+        {
+            string root = StoreDirectory(legacyFile);
+            if (!Directory.Exists(root) || !HeadNeedsRecovery(root)) return null;
+            string history = Path.Combine(root, "history");
+            if (!Directory.Exists(history))
+                throw new InvalidDataException("Каталог history не найден. Восстановление HEAD невозможно.");
+
+            string originalRevision = CurrentRevision(legacyFile);
+            foreach (string backup in Directory.GetFiles(history, "HEAD-*").OrderByDescending(name => Path.GetFileName(name), StringComparer.Ordinal))
+            {
+                try
+                {
+                    Head candidate = ReadHeadFile(backup);
+                    if (candidate.Generation <= 0 || candidate.Generation == long.MaxValue)
+                        throw new InvalidDataException("Некорректная ревизия резервного HEAD");
+                    ListTasks tasks = ReadSegments(root, candidate);
+                    return new CompactHeadRecoveryInfo {
+                        BackupPath = backup,
+                        BackupRevision = Sha(backup),
+                        ExpectedCurrentRevision = originalRevision,
+                        Generation = candidate.Generation,
+                        TaskCount = tasks.Tasks.Count,
+                        SegmentCount = candidate.Segments.Count
+                    };
+                }
+                catch (Exception ex) when (IsDamagedRecoveryCandidate(ex))
+                {
+                    continue;
+                }
+            }
+            throw new InvalidDataException("В history нет резервного HEAD с целыми сегментами. Данные не изменены.");
+        }
+
+        /// <summary>
+        /// После явного подтверждения публикует резервный снимок как новую ревизию.
+        /// Перед заменой повторно проверяет исходное состояние, кандидата и все сегменты.
+        /// </summary>
+        internal static ListTasks RestoreHeadLocked(string legacyFile, CompactHeadRecoveryInfo approved)
+        {
+            if (approved == null) throw new ArgumentNullException(nameof(approved));
+            string root = StoreDirectory(legacyFile);
+            string history = Path.GetFullPath(Path.Combine(root, "history"));
+            string backup = Path.GetFullPath(approved.BackupPath);
+            if (!string.Equals(Path.GetDirectoryName(backup), history, StringComparison.OrdinalIgnoreCase) ||
+                !Path.GetFileName(backup).StartsWith("HEAD-", StringComparison.Ordinal))
+                throw new InvalidDataException("Резервный манифест не принадлежит выбранному проекту");
+            if (!string.Equals(CurrentRevision(legacyFile), approved.ExpectedCurrentRevision, StringComparison.OrdinalIgnoreCase) ||
+                !HeadNeedsRecovery(root))
+                throw new TaskConflictException("HEAD изменился после подтверждения восстановления. Повторите выбор резервной копии.");
+            if (!string.Equals(Sha(backup), approved.BackupRevision, StringComparison.OrdinalIgnoreCase))
+                throw new TaskConflictException("Резервный HEAD изменился после выбора. Повторите восстановление.");
+
+            Head candidate = ReadHeadFile(backup);
+            ListTasks tasks = ReadSegments(root, candidate);
+            if (candidate.Generation != approved.Generation ||
+                candidate.Segments.Count != approved.SegmentCount || tasks.Tasks.Count != approved.TaskCount)
+                throw new TaskConflictException("Состав резервного снимка изменился. Повторите выбор.");
+            var published = new Head {
+                Generation = checked(candidate.Generation + 1),
+                RangeSize = candidate.RangeSize,
+                LegacyHash = candidate.LegacyHash
+            };
+            foreach (var entry in candidate.Segments)
+                published.Segments.Add(entry.Key, entry.Value);
+            WriteHead(root, published, true);
+            TaskStore.ReportCompactTiming("head-recovery generation=" + published.Generation +
+                " tasks=" + tasks.Tasks.Count + " segments=" + published.Segments.Count);
+            return tasks;
+        }
+
+        /// <summary>Проверяет только HEAD, отличая повреждение манифеста от повреждения сегмента.</summary>
+        private static bool HeadNeedsRecovery(string root)
+        {
+            if (!File.Exists(HeadPath(root))) return true;
+            try { ReadHead(root); return false; }
+            catch (Exception ex) when (IsInvalidHeadException(ex)) { return true; }
+        }
+
+        /// <summary>Определяет ожидаемые повреждения формата манифеста, не скрывая ошибок доступа.</summary>
+        private static bool IsInvalidHeadException(Exception ex)
+        {
+            return ex is InvalidDataException || ex is EndOfStreamException ||
+                ex is FormatException || ex is ArgumentException || ex is OverflowException;
+        }
+
+        /// <summary>Определяет ошибки целостности архивного снимка, включая ошибки в параллельных читателях.</summary>
+        private static bool IsDamagedRecoveryCandidate(Exception ex)
+        {
+            if (IsInvalidHeadException(ex) || ex is FileNotFoundException || ex is DirectoryNotFoundException ||
+                ex is System.Runtime.Serialization.SerializationException)
+                return true;
+            AggregateException aggregate = ex as AggregateException;
+            return aggregate != null && aggregate.Flatten().InnerExceptions.All(IsDamagedRecoveryCandidate);
+        }
+
+        /// <summary>
         /// Под блокировкой Tasks.bin.lock безопасно создаёт первое компактное состояние.
         /// Вызывающий код отвечает за сетевую блокировку и разрешение тестового режима.
         /// </summary>
@@ -109,6 +234,13 @@ namespace time_schedule
         {
             if (Exists(legacyFile)) return;
             string root = StoreDirectory(legacyFile);
+            // Отсутствие HEAD в уже созданном каталоге может означать утрату
+            // опубликованного манифеста. Нельзя молча заменить актуальные задачи
+            // архивным Tasks.bin, даже если он сохранился после миграции.
+            if (Directory.Exists(root))
+                throw new InvalidDataException(
+                    "Найден каталог Tasks.compact без HEAD. Автоматическая миграция отменена; " +
+                    "проверьте целостность хранилища и восстановите манифест из резервной копии.");
             string baseline = LegacyRevision(legacyFile);
             ListTasks old;
             if (File.Exists(legacyFile))
@@ -135,72 +267,116 @@ namespace time_schedule
         }
 
         /// <summary>
-        /// Читает актуальную компактную версию, сохраняя защиту от записи старого клиента.
+        /// Читает актуальную компактную версию из HEAD и сегментов.
+        /// К старому Tasks.bin обращается только при самой первой миграции.
         /// Требует удержания внешней блокировки Tasks.bin.lock при миграции.
         /// </summary>
         internal static ListTasks ReadLocked(string legacyFile)
         {
             InitializeLocked(legacyFile);
-            return ReadPreview(legacyFile, StoreDirectory(legacyFile));
+            string root = StoreDirectory(legacyFile);
+            return ReadSegments(root, ReadHead(root));
         }
 
         /// <summary>
-        /// Публикует изменённые сегменты под внешней файловой блокировкой.
-        /// Сравнение готовых байтов учитывает все поля, которые сериализует компактный кодек.
+        /// Читает тот же согласованный снимок с отпечатками исходных записей.
+        /// Вызывается только перед изменением для последующего выбора сегментов.
         /// </summary>
+        internal static ListTasks ReadLocked(string legacyFile, out Dictionary<long, string> sourceHashes)
+        {
+            InitializeLocked(legacyFile);
+            string root = StoreDirectory(legacyFile);
+            return ReadSegments(root, ReadHead(root), true, out sourceHashes);
+        }
+
+        /// <summary>Публикует полный снимок в сценариях без исходных отпечатков (например, восстановление).</summary>
         internal static void CommitLocked(string legacyFile, ListTasks changed)
+        {
+            CommitLocked(legacyFile, changed, null);
+        }
+
+        /// <summary>
+        /// Для обычного изменения вычисляет полные отпечатки текущих записей и
+        /// кодирует только изменённые сегменты. При отсутствии исходных отпечатков
+        /// сохраняет прежний полный алгоритм публикации.
+        /// </summary>
+        internal static void CommitLocked(string legacyFile, ListTasks changed,
+            IDictionary<long, string> sourceHashes)
         {
             string root = StoreDirectory(legacyFile);
             Head previous = ReadHead(root);
             Stopwatch timing = TaskStore.TimingSink == null ? null : Stopwatch.StartNew();
-
-            // FileShare.Read запрещает запись и удаление Tasks.bin другим Windows/SMB-клиентом
-            // до завершения публикации HEAD. Поэтому для существующего файла хватает одного SHA-256.
-            using (FileStream legacyGuard = File.Exists(legacyFile)
-                ? new FileStream(legacyFile, FileMode.Open, FileAccess.Read, FileShare.Read)
-                : null)
+            var next = new Head {
+                Generation = checked(previous.Generation + 1),
+                LegacyHash = previous.LegacyHash,
+                RangeSize = previous.RangeSize
+            };
+            foreach (var entry in previous.Segments) next.Segments.Add(entry.Key, entry.Value);
+            HashSet<long> candidates = sourceHashes == null
+                ? null : FindChangedSegments(changed, sourceHashes, previous.RangeSize);
+            long selectionMs = timing == null ? 0 : timing.ElapsedMilliseconds;
+            int changedSegments;
+            long changedBytes;
+            bool changedContent = WriteChangedSegments(root, changed, next, candidates,
+                out changedSegments, out changedBytes);
+            long segmentsMs = timing == null ? 0 : timing.ElapsedMilliseconds - selectionMs;
+            string selectionInfo = " select-segments-ms=" + selectionMs +
+                " candidate-segments=" + (candidates == null ? "all" : candidates.Count.ToString(CultureInfo.InvariantCulture));
+            if (!changedContent)
             {
-                string legacyRevision = legacyGuard == null ? "absent" : Sha(legacyGuard);
-                if (!string.Equals(legacyRevision, previous.LegacyHash, StringComparison.Ordinal))
-                    throw new TaskConflictException(
-                        "Старый клиент изменил Tasks.bin после миграции. Запись компактного хранилища отменена.");
-                long legacyCheckMs = timing == null ? 0 : timing.ElapsedMilliseconds;
-                var next = new Head {
-                    Generation = checked(previous.Generation + 1),
-                    LegacyHash = previous.LegacyHash,
-                    RangeSize = previous.RangeSize
-                };
-                foreach (var entry in previous.Segments) next.Segments.Add(entry.Key, entry.Value);
-                int changedSegments;
-                long changedBytes;
-                bool changedContent = WriteChangedSegments(root, changed, next, out changedSegments, out changedBytes);
-                long segmentsMs = timing == null ? 0 : timing.ElapsedMilliseconds - legacyCheckMs;
-
-                // Отсутствующий файл нельзя защитить открытым дескриптором.
-                // Сохраняем проверку появления Tasks.bin перед выходом или фиксацией.
-                long secondCheckMs = 0;
-                if (legacyGuard == null)
-                {
-                    long checkStartMs = timing == null ? 0 : timing.ElapsedMilliseconds;
-                    if (LegacyRevision(legacyFile) != previous.LegacyHash)
-                        throw new TaskConflictException("Старый клиент создал Tasks.bin после миграции.");
-                    secondCheckMs = timing == null ? 0 : timing.ElapsedMilliseconds - checkStartMs;
-                }
-                if (!changedContent)
-                {
-                    if (timing != null)
-                        TaskStore.ReportCompactTiming("commit no-change legacy-check-ms=" + legacyCheckMs +
-                            " compare-segments-ms=" + segmentsMs +
-                            " second-legacy-check-ms=" + secondCheckMs + " published-segments=0");
-                    return;
-                }
-                WriteHead(root, next);
                 if (timing != null)
-                    TaskStore.ReportCompactTiming("commit legacy-check-ms=" + legacyCheckMs +
-                        " compare-segments-ms=" + segmentsMs + " second-legacy-check-ms=" + secondCheckMs +
-                        " publish-head-ms=" + (timing.ElapsedMilliseconds - legacyCheckMs - segmentsMs - secondCheckMs) +
-                        " published-segments=" + changedSegments + " published-bytes=" + changedBytes);
+                    TaskStore.ReportCompactTiming("commit legacy-check-ms=0 compare-segments-ms=" + segmentsMs +
+                        selectionInfo + " second-legacy-check-ms=0 published-segments=0");
+                return;
             }
+            WriteHead(root, next);
+            if (timing != null)
+                TaskStore.ReportCompactTiming("commit legacy-check-ms=0 compare-segments-ms=" + segmentsMs +
+                    selectionInfo + " second-legacy-check-ms=0 publish-head-ms=" +
+                    (timing.ElapsedMilliseconds - selectionMs - segmentsMs) +
+                    " published-segments=" + changedSegments + " published-bytes=" + changedBytes);
+        }
+
+        /// <summary>
+        /// Находит сегменты по изменению полного компактного представления задачи,
+        /// её исходному/новому номеру и позиции. Учитывает поля, отсутствующие
+        /// в отпечатках TaskStore, удаление, добавление и перестановку записей.
+        /// </summary>
+        private static HashSet<long> FindChangedSegments(ListTasks changed,
+            IDictionary<long, string> sourceHashes, int segmentSize)
+        {
+            var touched = new ConcurrentDictionary<long, byte>();
+            var currentNumbers = new ConcurrentDictionary<long, byte>();
+            var entries = changed.Tasks.Select((task, index) =>
+                new CompactTaskRecord { Item = task, Ordinal = index }).ToArray();
+            var options = new ParallelOptions {
+                MaxDegreeOfParallelism = Math.Min(MaxReaders, Environment.ProcessorCount)
+            };
+            try
+            {
+                Parallel.ForEach(entries, options, record =>
+                {
+                    long number = record.Item.Number;
+                    if (!currentNumbers.TryAdd(number, 0))
+                        throw new InvalidDataException("Повторяющийся номер задачи: " + number);
+                    string initial;
+                    string actual = CompactTaskCodec.RecordHash(record.Item, record.Ordinal);
+                    if (!sourceHashes.TryGetValue(number, out initial) ||
+                        !string.Equals(initial, actual, StringComparison.OrdinalIgnoreCase))
+                        touched.TryAdd(SegmentId(number, segmentSize), 0);
+                });
+            }
+            catch (AggregateException error)
+            {
+                AggregateException flattened = error.Flatten();
+                if (flattened.InnerExceptions.Count == 1)
+                    System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(flattened.InnerExceptions[0]).Throw();
+                throw;
+            }
+            foreach (long removed in sourceHashes.Keys)
+                if (!currentNumbers.ContainsKey(removed))
+                    touched.TryAdd(SegmentId(removed, segmentSize), 0);
+            return new HashSet<long>(touched.Keys);
         }
 
         /// <summary>Получает номер сегмента из устойчивого номера задачи.</summary>
@@ -286,23 +462,43 @@ namespace time_schedule
             return ReadSegments(storeDirectory, current);
         }
 
-        /// <summary>Собирает один согласованный снимок по опубликованному или подготавливаемому HEAD.</summary>
+        /// <summary>Читает сегменты без дополнительных отпечатков для обычного просмотра.</summary>
         private static ListTasks ReadSegments(string root, Head head)
+        {
+            Dictionary<long, string> ignored;
+            return ReadSegments(root, head, false, out ignored);
+        }
+
+        /// <summary>Читает валидированные сегменты, при необходимости сохраняя SHA-256 исходных записей.</summary>
+        private static ListTasks ReadSegments(string root, Head head, bool captureSourceHashes,
+            out Dictionary<long, string> sourceHashes)
         {
             var records = new ConcurrentBag<CompactTaskRecord>();
             var options = new ParallelOptions { MaxDegreeOfParallelism = Math.Min(MaxReaders, Environment.ProcessorCount) };
-            Parallel.ForEach(head.Segments, options, entry =>
+            try
             {
-                string path = SegmentPath(root, entry.Key, entry.Value);
-                if (!string.Equals(Sha(path), entry.Value, StringComparison.OrdinalIgnoreCase))
-                    throw new InvalidDataException("Повреждён сегмент задач: " + path);
-                foreach (CompactTaskRecord record in CompactTaskCodec.Read(path, head.RangeSize))
+                Parallel.ForEach(head.Segments, options, entry =>
                 {
-                    if (SegmentId(record.Item.Number, head.RangeSize) != entry.Key)
-                        throw new InvalidDataException("Задача находится не в своём сегменте");
-                    records.Add(record);
-                }
-            });
+                    string path = SegmentPath(root, entry.Key, entry.Value);
+                    if (!string.Equals(Sha(path), entry.Value, StringComparison.OrdinalIgnoreCase))
+                        throw new InvalidDataException("Повреждён сегмент задач: " + path);
+                    foreach (CompactTaskRecord record in CompactTaskCodec.Read(path, head.RangeSize, captureSourceHashes))
+                    {
+                        if (SegmentId(record.Item.Number, head.RangeSize) != entry.Key)
+                            throw new InvalidDataException("Задача находится не в своём сегменте");
+                        records.Add(record);
+                    }
+                });
+            }
+            catch (AggregateException error)
+            {
+                AggregateException flattened = error.Flatten();
+                if (flattened.InnerExceptions.Count == 1)
+                    System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(flattened.InnerExceptions[0]).Throw();
+                if (flattened.InnerExceptions.All(IsDamagedRecoveryCandidate))
+                    throw new InvalidDataException("Повреждены сегменты компактного хранилища", error);
+                throw;
+            }
             var ordered = records.OrderBy(x => x.Ordinal).ToList();
             for (int i = 0; i < ordered.Count; i++)
                 if (ordered[i].Ordinal != i)
@@ -311,6 +507,9 @@ namespace time_schedule
             foreach (CompactTaskRecord r in ordered)
                 if (!numbers.Add(r.Item.Number))
                     throw new InvalidDataException("Повторяющийся номер задачи: " + r.Item.Number);
+            sourceHashes = captureSourceHashes
+                ? ordered.ToDictionary(x => x.Item.Number, x => x.SourceHash)
+                : null;
             var tasks = new ListTasks();
             tasks.SetTasks(ordered.Select(x => x.Item).ToList());
             return tasks;
@@ -379,15 +578,16 @@ namespace time_schedule
         {
             int count;
             long size;
-            return WriteChangedSegments(root, tasks, head, out count, out size);
+            return WriteChangedSegments(root, tasks, head, null, out count, out size);
         }
 
         /// <summary>
-        /// Сравнивает SHA-256 готового сегмента с HEAD; полный отпечаток каждой задачи
-        /// повторно не вычисляется. Публикуются только отличающиеся файлы сегментов.
+        /// Сравнивает SHA-256 готовых сегментов с HEAD и записывает независимые изменённые
+        /// файлы параллельно при наличии нескольких изменений. HEAD публикуется
+        /// вызывающим методом только после успешной подготовки всех файлов.
         /// </summary>
         private static bool WriteChangedSegments(string root, ListTasks tasks, Head head,
-            out int publishedSegments, out long publishedBytes)
+            HashSet<long> candidates, out int publishedSegments, out long publishedBytes)
         {
             string segmentsPath = Path.Combine(root, "segments");
             Directory.CreateDirectory(segmentsPath);
@@ -402,16 +602,18 @@ namespace time_schedule
                 head.Segments.Remove(removed);
                 changed = true;
             }
-            // Каждая группа содержит собственные задачи текущего снимка; после callback
-            // этот снимок больше не изменяется до завершения публикации HEAD.
-            // Готовим байты параллельно, но публикуем файлы и HEAD последовательно.
+            // Без исходного снимка кодируем все сегменты (миграция, восстановление).
+            // В обычном сохранении кодируем только сегменты с изменёнными записями.
+            // Каждый файл сегмента неизменяем; HEAD публикуется отдельно и последним.
+            var selected = candidates == null ? all :
+                all.Where(x => candidates.Contains(x.Key)).ToDictionary(x => x.Key, x => x.Value);
             var prepared = new ConcurrentDictionary<long, PreparedSegment>();
             var options = new ParallelOptions {
                 MaxDegreeOfParallelism = Math.Min(MaxReaders, Environment.ProcessorCount)
             };
             try
             {
-                Parallel.ForEach(all, options, group =>
+                Parallel.ForEach(selected, options, group =>
                 {
                     byte[] bytes = CompactTaskCodec.Encode(group.Value);
                     string digest = Sha(bytes);
@@ -426,17 +628,26 @@ namespace time_schedule
                     System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(flattened.InnerExceptions[0]).Throw();
                 throw;
             }
-            foreach (var group in all)
+            // Определяем новые версии до обращения к диску: HEAD пока не изменяется.
+            var changes = new List<KeyValuePair<long, PreparedSegment>>();
+            foreach (var group in selected)
             {
                 PreparedSegment encoded = prepared[group.Key];
-                byte[] payload = encoded.Payload;
-                string hash = encoded.Hash;
                 string oldHash;
                 if (head.Segments.TryGetValue(group.Key, out oldHash) &&
-                    string.Equals(oldHash, hash, StringComparison.OrdinalIgnoreCase))
+                    string.Equals(oldHash, encoded.Hash, StringComparison.OrdinalIgnoreCase))
                     continue;
+                changes.Add(new KeyValuePair<long, PreparedSegment>(group.Key, encoded));
+            }
 
-                string target = SegmentPath(root, group.Key, hash);
+            int newFiles = 0;
+            bool parallelWrite = changes.Count > 1 && Environment.ProcessorCount > 1;
+            Stopwatch writeTimer = TaskStore.TimingSink == null ? null : Stopwatch.StartNew();
+            Action<KeyValuePair<long, PreparedSegment>> writeOne = entry =>
+            {
+                byte[] payload = entry.Value.Payload;
+                string hash = entry.Value.Hash;
+                string target = SegmentPath(root, entry.Key, hash);
                 if (!File.Exists(target))
                 {
                     string temporary = Path.Combine(segmentsPath, ".pending-" + Guid.NewGuid().ToString("N"));
@@ -449,22 +660,59 @@ namespace time_schedule
                             output.Flush(true);
                         }
                         File.Move(temporary, target);
+                        Interlocked.Increment(ref newFiles);
                     }
                     finally { TryDelete(temporary); }
                 }
                 else if (!string.Equals(Sha(target), hash, StringComparison.OrdinalIgnoreCase))
                     throw new InvalidDataException("Нарушена целостность сегмента: " + target);
+            };
 
-                head.Segments[group.Key] = hash;
+            // Записываются только независимые файлы; изменять общий HEAD из потоков нельзя.
+            try
+            {
+                if (parallelWrite)
+                {
+                    var writeOptions = new ParallelOptions {
+                        MaxDegreeOfParallelism = Math.Min(MaxParallelWrites, Environment.ProcessorCount)
+                    };
+                    Parallel.ForEach(changes, writeOptions, writeOne);
+                }
+                else
+                    foreach (var entry in changes) writeOne(entry);
+            }
+            catch (AggregateException error)
+            {
+                AggregateException flattened = error.Flatten();
+                if (flattened.InnerExceptions.Count == 1)
+                    System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(flattened.InnerExceptions[0]).Throw();
+                throw;
+            }
+
+            // ТОЛЬКО после успешной записи всех файлов обновляем снимок HEAD в памяти.
+            // Если хотя бы один поток завершился ошибкой, вызывающий код HEAD не публикует.
+            foreach (var entry in changes)
+            {
+                head.Segments[entry.Key] = entry.Value.Hash;
                 publishedSegments++;
-                publishedBytes += payload.Length;
+                publishedBytes += entry.Value.Payload.Length;
                 changed = true;
             }
+            if (writeTimer != null)
+                TaskStore.ReportCompactTiming("segment-write changed-segments=" + changes.Count +
+                    " new-files=" + newFiles + " parallel=" + (parallelWrite ? 1 : 0) +
+                    " write-ms=" + writeTimer.ElapsedMilliseconds);
             return changed;
         }
 
         /// <summary>Публикует манифест с контрольной суммой, сохраняя предыдущий для отката.</summary>
         private static void WriteHead(string root, Head head)
+        {
+            WriteHead(root, head, false);
+        }
+
+        /// <summary>Публикует HEAD и при восстановлении отдельно сохраняет повреждённый исходник.</summary>
+        private static void WriteHead(string root, Head head, bool recovering)
         {
             Directory.CreateDirectory(root);
             string destination = HeadPath(root);
@@ -506,7 +754,7 @@ namespace time_schedule
                     string backups = Path.Combine(root, "history");
                     Directory.CreateDirectory(backups);
                     File.Replace(temporary, destination, Path.Combine(backups,
-                        "HEAD-" + DateTime.UtcNow.ToString("yyyyMMddHHmmssfffffff", CultureInfo.InvariantCulture) +
+                        (recovering ? "damaged-HEAD-" : "HEAD-") + DateTime.UtcNow.ToString("yyyyMMddHHmmssfffffff", CultureInfo.InvariantCulture) +
                         "-" + Guid.NewGuid().ToString("N")));
                 }
                 else File.Move(temporary, destination);
@@ -514,11 +762,17 @@ namespace time_schedule
             finally { TryDelete(temporary); }
         }
 
-        /// <summary>Проверяет полный манифест до обращения к его сегментам.</summary>
+        /// <summary>Читает текущий HEAD, применяя общую проверку формата и контрольной суммы.</summary>
         private static Head ReadHead(string root)
         {
+            return ReadHeadFile(HeadPath(root));
+        }
+
+        /// <summary>Читает текущий или резервный манифест с одинаковой полной проверкой.</summary>
+        private static Head ReadHeadFile(string path)
+        {
             byte[] bytes;
-            using (var file = new FileStream(HeadPath(root), FileMode.Open, FileAccess.Read,
+            using (var file = new FileStream(path, FileMode.Open, FileAccess.Read,
                 FileShare.ReadWrite | FileShare.Delete))
             {
                 if (file.Length < 60 || file.Length > 10000000)
