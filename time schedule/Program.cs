@@ -139,21 +139,18 @@ namespace time_schedule
             return false;
         }
         /// <summary>
-        /// Запускает приложение: в Debug компактное хранилище включено автоматически,
-        /// в Release остаётся прежний формат, пока не закончена проверка миграции.
+        /// Запускает приложение со штатным компактным хранилищем задач.
+        /// Диагностика времени включена в Debug и доступна по запросу в Release.
         /// </summary>
         [STAThread]
         static void Main(string[] args)
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
+            TaskStore.UseCompactStore = true;
 #if DEBUG
-            TaskStore.UseCompactStore = !args.Any(arg =>
-                string.Equals(arg, "--legacy-store", StringComparison.OrdinalIgnoreCase));
             bool timingEnabled = true;
 #else
-            TaskStore.UseCompactStore = args.Any(arg =>
-                string.Equals(arg, "--compact-test", StringComparison.OrdinalIgnoreCase));
             bool timingEnabled = args.Any(arg =>
                 string.Equals(arg, "--timing", StringComparison.OrdinalIgnoreCase));
 #endif
@@ -166,12 +163,9 @@ namespace time_schedule
                     new System.Diagnostics.TextWriterTraceListener(logPath));
                 System.Diagnostics.Trace.AutoFlush = true;
                 TaskStore.TimingSink = message => System.Diagnostics.Trace.WriteLine("TimeSchedule store: " + message);
-                System.Diagnostics.Trace.WriteLine("TimeSchedule storage-mode=" +
-                    (TaskStore.UseCompactStore ? "compact-debug" : "legacy"));
+                System.Diagnostics.Trace.WriteLine("TimeSchedule storage-mode=compact");
             }
             Form1 mainForm = new Form1();
-            if (TaskStore.UseCompactStore)
-                mainForm.Text = "[TS-01 COMPACT TEST] " + mainForm.Text;
             Application.Run(mainForm);
         }
     }

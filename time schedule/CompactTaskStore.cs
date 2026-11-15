@@ -70,6 +70,9 @@ namespace time_schedule
         /// <summary>Фиксированный диапазон номеров задач в сегменте.</summary>
         public const int SegmentSize = 128;
 
+        /// <summary>Обычная длина SHA-256 в имени сегмента; при совпадении префикса имя удлиняется.</summary>
+        private const int SegmentHashPrefixLength = 16;
+
         /// <summary>Максимальное количество потоков загрузки и кодирования сегментов.</summary>
         private const int MaxReaders = 8;
 
@@ -125,6 +128,49 @@ namespace time_schedule
             return Path.Combine(Path.GetDirectoryName(legacyFile), "BackUp", StoreDirectoryName);
         }
 
+        /// <summary>Возвращает понятное отображаемое имя резервного снимка без внутреннего расширения.</summary>
+        /// <param name="snapshot">Каталог выбранного резервного снимка.</param>
+        /// <returns>Отображаемое имя снимка.</returns>
+        internal static string BackupDisplayName(DirectoryInfo snapshot)
+        {
+            if (snapshot == null) throw new ArgumentNullException(nameof(snapshot));
+            string name = Path.GetFileNameWithoutExtension(snapshot.Name);
+            if (IsUserFriendlyBackupName(name)) return name;
+            DateTime legacyTime;
+            if (TryGetLegacySnapshotTime(name, out legacyTime))
+                return "Архивная_" + legacyTime.ToString("dd.MM.yyyy_HH-mm-ss", CultureInfo.InvariantCulture);
+            return "Архивная_" + snapshot.CreationTime.ToString("dd.MM.yyyy_HH-mm-ss", CultureInfo.InvariantCulture);
+        }
+
+        /// <summary>Проверяет, что имя снимка уже соответствует понятному пользовательскому формату.</summary>
+        /// <param name="name">Имя каталога без расширения.</param>
+        private static bool IsUserFriendlyBackupName(string name)
+        {
+            if (name.StartsWith("Архивная_", StringComparison.OrdinalIgnoreCase)) return true;
+            if (name.Length <= 19 || name[19] != '_') return false;
+            DateTime ignored;
+            return DateTime.TryParseExact(name.Substring(0, 19), "dd.MM.yyyy_HH-mm-ss",
+                CultureInfo.InvariantCulture, DateTimeStyles.None, out ignored);
+        }
+
+        /// <summary>Извлекает локальное время из технического имени снимка прежнего формата UTC+GUID.</summary>
+        /// <param name="name">Имя каталога без расширения.</param>
+        /// <param name="localTime">Извлечённое время в локальном часовом поясе.</param>
+        /// <returns>Признак успешного распознавания прежнего формата.</returns>
+        private static bool TryGetLegacySnapshotTime(string name, out DateTime localTime)
+        {
+            localTime = DateTime.MinValue;
+            if (name.Length != 56 || name[23] != '-') return false;
+            Guid ignored;
+            if (!Guid.TryParseExact(name.Substring(24), "N", out ignored)) return false;
+            DateTime utcTime;
+            if (!DateTime.TryParseExact(name.Substring(0, 23), "yyyyMMdd-HHmmss-fffffff",
+                CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal,
+                out utcTime)) return false;
+            localTime = utcTime.ToLocalTime();
+            return true;
+        }
+
         /// <summary>
         /// Создаёт самодостаточную резервную копию текущего HEAD и всех его сегментов.
         /// Вызывается под общей блокировкой задач; временный каталог не считается готовой копией.
@@ -139,9 +185,19 @@ namespace time_schedule
             string backups = BackupDirectory(legacyFile);
             Directory.CreateDirectory(backups);
             string pending = Path.Combine(backups, ".pending-" + Guid.NewGuid().ToString("N"));
-            string final = Path.Combine(backups,
-                DateTime.UtcNow.ToString("yyyyMMdd-HHmmss-fffffff", CultureInfo.InvariantCulture) +
-                "-" + Guid.NewGuid().ToString("N") + ".snapshot");
+            string userName = new string(Environment.UserName.Select(character =>
+                Path.GetInvalidFileNameChars().Contains(character) ? '_' : character).ToArray()).Trim().TrimEnd('.', ' ');
+            if (string.IsNullOrWhiteSpace(userName)) userName = "Пользователь";
+            string baseName = DateTime.Now.ToString("dd.MM.yyyy_HH-mm-ss", CultureInfo.InvariantCulture) + "_" + userName;
+            string finalName = baseName + ".snapshot";
+            int duplicate = 2;
+            string final = Path.Combine(backups, finalName);
+            while (Directory.Exists(final) || File.Exists(final))
+            {
+                finalName = baseName + "_" + duplicate.ToString("D2", CultureInfo.InvariantCulture) + ".snapshot";
+                final = Path.Combine(backups, finalName);
+                duplicate++;
+            }
             Stopwatch elapsed = TaskStore.TimingSink == null ? null : Stopwatch.StartNew();
             try
             {
@@ -149,8 +205,8 @@ namespace time_schedule
                 File.Copy(HeadPath(root), HeadPath(pending));
                 foreach (var segment in current.Segments)
                 {
-                    string destination = SegmentPath(pending, segment.Key, segment.Value);
-                    File.Copy(SegmentPath(root, segment.Key, segment.Value), destination);
+                    string destination = SegmentPath(pending, segment.Key, current.RangeSize, segment.Value);
+                    File.Copy(FindSegmentPath(root, segment.Key, current.RangeSize, segment.Value), destination);
                     if (!string.Equals(Sha(destination), segment.Value, StringComparison.OrdinalIgnoreCase))
                         throw new InvalidDataException("Резервный сегмент не прошёл проверку SHA-256: " +
                             Path.GetFileName(destination));
@@ -183,7 +239,8 @@ namespace time_schedule
             {
                 foreach (DirectoryInfo older in new DirectoryInfo(backupDirectory)
                     .GetDirectories("*.snapshot")
-                    .OrderByDescending(d => d.Name, StringComparer.Ordinal)
+                    .OrderByDescending(d => d.CreationTimeUtc)
+                    .ThenByDescending(d => d.Name, StringComparer.Ordinal)
                     .Skip(Constants.MAX_BACKUP_FILESES))
                     older.Delete(true);
             }
@@ -232,7 +289,7 @@ namespace time_schedule
                 throw new InvalidDataException("Невозможно создать новую ревизию HEAD");
             Directory.CreateDirectory(Path.Combine(root, "segments"));
             foreach (var segment in archived.Segments)
-                RestoreArchivedSegment(archive, root, segment.Key, segment.Value);
+                RestoreArchivedSegment(archive, root, segment.Key, segment.Value, archived.RangeSize);
             var published = new Head {
                 Generation = checked(Math.Max(current == null ? 0 : current.Generation,
                     archived.Generation) + 1),
@@ -252,15 +309,20 @@ namespace time_schedule
         /// Восстанавливает один неизменяемый сегмент из независимого снимка.
         /// При замене повреждённого файла сохраняет его исходные байты для диагностики.
         /// </summary>
-        private static void RestoreArchivedSegment(string archive, string root, long id, string hash)
+        /// <param name="archive">Каталог резервного снимка.</param>
+        /// <param name="root">Рабочий каталог компактного хранилища.</param>
+        /// <param name="id">Нулевой идентификатор диапазона задач.</param>
+        /// <param name="hash">Полная контрольная сумма сегмента.</param>
+        /// <param name="rangeSize">Размер числового диапазона задач в сегменте.</param>
+        private static void RestoreArchivedSegment(string archive, string root, long id, string hash, int rangeSize)
         {
-            string target = SegmentPath(root, id, hash);
+            string target = SegmentPath(root, id, rangeSize, hash);
             if (File.Exists(target) && string.Equals(Sha(target), hash, StringComparison.OrdinalIgnoreCase))
                 return;
             string temp = Path.Combine(root, "segments", ".restore-" + Guid.NewGuid().ToString("N"));
             try
             {
-                File.Copy(SegmentPath(archive, id, hash), temp);
+                File.Copy(FindSegmentPath(archive, id, rangeSize, hash), temp);
                 if (!string.Equals(Sha(temp), hash, StringComparison.OrdinalIgnoreCase))
                     throw new InvalidDataException("Не пройдена проверка восстановленного сегмента: " + id);
                 if (File.Exists(target))
@@ -389,7 +451,11 @@ namespace time_schedule
         /// </summary>
         internal static void InitializeLocked(string legacyFile)
         {
-            if (Exists(legacyFile)) return;
+            if (Exists(legacyFile))
+            {
+                MigrateSegmentNamesLocked(legacyFile);
+                return;
+            }
             string root = StoreDirectory(legacyFile);
             // Отсутствие HEAD в уже созданном каталоге может означать утрату
             // опубликованного манифеста. Нельзя молча заменить актуальные задачи
@@ -548,12 +614,133 @@ namespace time_schedule
         /// <summary>Размещает каталог хранилища строго по указанному пути.</summary>
         private static string HeadPath(string root) { return Path.Combine(root, "HEAD"); }
 
-        /// <summary>Формирует только допустимое имя файла по идентификатору и хешу.</summary>
-        private static string SegmentPath(string root, long id, string sha)
+        /// <summary>Формирует короткое имя сегмента с диапазоном задач и сокращённой контрольной суммой.</summary>
+        /// <param name="root">Корневой каталог хранилища или резервного снимка.</param>
+        /// <param name="id">Нулевой идентификатор диапазона задач.</param>
+        /// <param name="rangeSize">Количество номеров задач в диапазоне.</param>
+        /// <param name="sha">Полная контрольная сумма содержимого сегмента.</param>
+        private static string SegmentPath(string root, long id, int rangeSize, string sha)
         {
-            if (id < 0 || sha == null || sha.Length != 64 || !sha.All(Uri.IsHexDigit))
-                throw new InvalidDataException("Некорректная ссылка на сегмент");
+            ValidateSegmentReference(id, rangeSize, sha);
+            string firstAvailable = null;
+            string damaged = null;
+            for (int hashLength = SegmentHashPrefixLength; hashLength <= 64; hashLength += 8)
+            {
+                string candidate = SegmentFilePath(root, id, rangeSize, sha, hashLength);
+                if (!File.Exists(candidate))
+                {
+                    if (firstAvailable == null) firstAvailable = candidate;
+                    continue;
+                }
+                string actualHash = Sha(candidate);
+                if (string.Equals(actualHash, sha, StringComparison.OrdinalIgnoreCase)) return candidate;
+                if (!actualHash.StartsWith(sha.Substring(0, hashLength), StringComparison.OrdinalIgnoreCase) && damaged == null)
+                    damaged = candidate;
+            }
+            if (damaged != null) return damaged;
+            if (firstAvailable != null) return firstAvailable;
+            throw new InvalidDataException("Не удалось подобрать уникальное имя сегмента задач № " + id);
+        }
+
+        /// <summary>Находит сегмент по полному SHA-256 в новом или прежнем формате имени.</summary>
+        /// <param name="root">Корневой каталог хранилища или резервного снимка.</param>
+        /// <param name="id">Нулевой идентификатор диапазона задач.</param>
+        /// <param name="rangeSize">Количество номеров задач в диапазоне.</param>
+        /// <param name="sha">Полная контрольная сумма ожидаемого содержимого.</param>
+        private static string FindSegmentPath(string root, long id, int rangeSize, string sha)
+        {
+            ValidateSegmentReference(id, rangeSize, sha);
+            string damaged = null;
+            for (int hashLength = SegmentHashPrefixLength; hashLength <= 64; hashLength += 8)
+            {
+                string candidate = SegmentFilePath(root, id, rangeSize, sha, hashLength);
+                if (!File.Exists(candidate)) continue;
+                string actualHash = Sha(candidate);
+                if (string.Equals(actualHash, sha, StringComparison.OrdinalIgnoreCase)) return candidate;
+                if (!actualHash.StartsWith(sha.Substring(0, hashLength), StringComparison.OrdinalIgnoreCase) && damaged == null)
+                    damaged = candidate;
+            }
+            string legacy = LegacySegmentPath(root, id, rangeSize, sha);
+            if (File.Exists(legacy))
+            {
+                string actualHash = Sha(legacy);
+                if (string.Equals(actualHash, sha, StringComparison.OrdinalIgnoreCase)) return legacy;
+                if (damaged == null) damaged = legacy;
+            }
+            if (damaged != null)
+                throw new InvalidDataException("Повреждён сегмент задач: " + damaged);
+            throw new FileNotFoundException("Не найден сегмент задач № " + id,
+                SegmentFilePath(root, id, rangeSize, sha, SegmentHashPrefixLength));
+        }
+
+        /// <summary>Формирует имя сегмента для заданной длины префикса SHA-256.</summary>
+        /// <param name="root">Корневой каталог хранилища.</param>
+        /// <param name="id">Нулевой идентификатор диапазона задач.</param>
+        /// <param name="rangeSize">Количество номеров задач в диапазоне.</param>
+        /// <param name="sha">Полная контрольная сумма содержимого.</param>
+        /// <param name="hashLength">Количество символов SHA-256 в имени файла.</param>
+        private static string SegmentFilePath(string root, long id, int rangeSize, string sha, int hashLength)
+        {
+            ValidateSegmentReference(id, rangeSize, sha);
+            if (hashLength < SegmentHashPrefixLength || hashLength > 64 || hashLength % 8 != 0)
+                throw new InvalidDataException("Некорректная длина контрольной суммы в имени сегмента");
+            long firstNumber;
+            try { firstNumber = checked(id * rangeSize + 1); }
+            catch (OverflowException ex) { throw new InvalidDataException("Переполнен диапазон номеров сегмента", ex); }
+            long lastNumber = firstNumber > long.MaxValue - (rangeSize - 1)
+                ? long.MaxValue : firstNumber + rangeSize - 1;
+            string range = firstNumber.ToString("D4", CultureInfo.InvariantCulture) + "-" +
+                lastNumber.ToString("D4", CultureInfo.InvariantCulture);
+            return Path.Combine(root, "segments", "Задачи_" + range + "_" + sha.Substring(0, hashLength) + ".tseg");
+        }
+
+        /// <summary>Формирует имя сегмента прежнего формата для обратной совместимости.</summary>
+        /// <param name="root">Корневой каталог хранилища.</param>
+        /// <param name="id">Нулевой идентификатор диапазона задач.</param>
+        /// <param name="rangeSize">Количество номеров задач в диапазоне.</param>
+        /// <param name="sha">Полная контрольная сумма содержимого.</param>
+        private static string LegacySegmentPath(string root, long id, int rangeSize, string sha)
+        {
+            ValidateSegmentReference(id, rangeSize, sha);
             return Path.Combine(root, "segments", "part-" + id.ToString("D8", CultureInfo.InvariantCulture) + "-" + sha + ".tseg");
+        }
+
+        /// <summary>Проверяет идентификатор, размер диапазона и полный SHA-256 ссылки на сегмент.</summary>
+        /// <param name="id">Нулевой идентификатор диапазона задач.</param>
+        /// <param name="rangeSize">Количество номеров задач в диапазоне.</param>
+        /// <param name="sha">Полная контрольная сумма содержимого.</param>
+        private static void ValidateSegmentReference(long id, int rangeSize, string sha)
+        {
+            if (id < 0 || rangeSize < 32 || rangeSize > 512 || sha == null || sha.Length != 64 || !sha.All(Uri.IsHexDigit))
+                throw new InvalidDataException("Некорректная ссылка на сегмент");
+        }
+
+        /// <summary>Переименовывает старые файлы сегментов, сохраняя доступность всех версий из history.</summary>
+        /// <param name="legacyFile">Путь к Tasks.bin, определяющий каталог компактного хранилища.</param>
+        private static void MigrateSegmentNamesLocked(string legacyFile)
+        {
+            string root = StoreDirectory(legacyFile);
+            string directory = Path.Combine(root, "segments");
+            if (!Directory.Exists(directory)) return;
+            Head head = ReadHead(root);
+            foreach (string oldPath in Directory.GetFiles(directory, "part-*.tseg"))
+            {
+                string name = Path.GetFileNameWithoutExtension(oldPath);
+                int separator = name.IndexOf('-', 5);
+                if (!name.StartsWith("part-", StringComparison.Ordinal) || separator <= 5) continue;
+                long id;
+                string hash = name.Substring(separator + 1);
+                if (!long.TryParse(name.Substring(5, separator - 5), NumberStyles.None,
+                    CultureInfo.InvariantCulture, out id) || id < 0 || hash.Length != 64 || !hash.All(Uri.IsHexDigit))
+                    continue;
+                string newPath;
+                try { newPath = SegmentPath(root, id, head.RangeSize, hash); }
+                catch (InvalidDataException) { continue; }
+                if (File.Exists(newPath)) continue;
+                try { File.Move(oldPath, newPath); }
+                catch (IOException) { }
+                catch (UnauthorizedAccessException) { }
+            }
         }
 
         /// <summary>Захватывает ту же сетевую блокировку Tasks.bin.lock, что и существующий TaskStore.</summary>
@@ -603,7 +790,7 @@ namespace time_schedule
             result.MigrationMs = watch.ElapsedMilliseconds;
             result.TaskCount = source.Tasks.Count;
             result.SegmentCount = current.Segments.Count;
-            result.SegmentBytes = current.Segments.Sum(x => new FileInfo(SegmentPath(testStoreDirectory, x.Key, x.Value)).Length);
+            result.SegmentBytes = current.Segments.Sum(x => new FileInfo(SegmentPath(testStoreDirectory, x.Key, segmentSize, x.Value)).Length);
             watch.Restart();
             ListTasks converted = ReadPreview(legacyFile, testStoreDirectory);
             result.ParallelReadMs = watch.ElapsedMilliseconds;
@@ -637,9 +824,7 @@ namespace time_schedule
             {
                 Parallel.ForEach(head.Segments, options, entry =>
                 {
-                    string path = SegmentPath(root, entry.Key, entry.Value);
-                    if (!string.Equals(Sha(path), entry.Value, StringComparison.OrdinalIgnoreCase))
-                        throw new InvalidDataException("Повреждён сегмент задач: " + path);
+                    string path = FindSegmentPath(root, entry.Key, head.RangeSize, entry.Value);
                     foreach (CompactTaskRecord record in CompactTaskCodec.Read(path, head.RangeSize, captureSourceHashes))
                     {
                         if (SegmentId(record.Item.Number, head.RangeSize) != entry.Key)
@@ -805,7 +990,7 @@ namespace time_schedule
             {
                 byte[] payload = entry.Value.Payload;
                 string hash = entry.Value.Hash;
-                string target = SegmentPath(root, entry.Key, hash);
+                string target = SegmentPath(root, entry.Key, head.RangeSize, hash);
                 if (!File.Exists(target))
                 {
                     string temporary = Path.Combine(segmentsPath, ".pending-" + Guid.NewGuid().ToString("N"));

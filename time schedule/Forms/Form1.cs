@@ -1213,12 +1213,10 @@ namespace time_schedule
             PlPersonButtonYSaved = 0;
 
         }
-        /// <summary>Показывает текущий проект и диагностическую отметку компактного хранилища.</summary>
+        /// <summary>Обновляет заголовок окна при открытии или смене проекта.</summary>
         private void SetNewTextForForm()
         {
             this.Text = Dals.ProjectFolderPath.Replace("\\Проект", string.Empty);
-            if (TaskStore.UseCompactStore)
-                this.Text = "[TS-01 COMPACT TEST] " + this.Text;
             this.Activate();
         }
         private void LoadPersonButtons()
@@ -1544,21 +1542,41 @@ namespace time_schedule
             fm.GroupBox1.Visible = false;
             fm.LBx.Width = fm.Width - fm.LBx.Location.X * 3;
             var availableBackups = new List<KeyValuePair<string, string>>();
+            var usedBackupNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             if (TaskStore.UseCompactStore)
             {
                 string compactBackups = CompactTaskStore.BackupDirectory(tasksPath);
                 if (Directory.Exists(compactBackups))
                     foreach (DirectoryInfo snapshot in new DirectoryInfo(compactBackups)
-                        .GetDirectories("*.snapshot").OrderByDescending(d => d.Name))
-                        availableBackups.Add(new KeyValuePair<string, string>(
-                            "Компактная копия: " + snapshot.Name, snapshot.FullName));
+                        .GetDirectories("*.snapshot").OrderByDescending(d => d.CreationTimeUtc)
+                        .ThenByDescending(d => d.Name, StringComparer.Ordinal))
+                    {
+                        string displayName = CompactTaskStore.BackupDisplayName(snapshot);
+                        string uniqueName = displayName;
+                        int duplicate = 2;
+                        while (!usedBackupNames.Add(uniqueName))
+                        {
+                            uniqueName = displayName + "_" + duplicate.ToString("D2");
+                            duplicate++;
+                        }
+                        availableBackups.Add(new KeyValuePair<string, string>(uniqueName, snapshot.FullName));
+                    }
             }
             string oldBackups = Dals.TakeBackUpPathDirectory(Constants.TASKS_BIN);
             foreach (FileInfo oldFile in new DirectoryInfo(oldBackups)
                 .GetFiles().OrderByDescending(f => f.CreationTimeUtc))
-                availableBackups.Add(new KeyValuePair<string, string>(
-                    TaskStore.UseCompactStore ? "Архив Tasks.bin: " + oldFile.Name :
-                        oldFile.Name.Replace('_', ':'), oldFile.FullName));
+            {
+                string displayName = TaskStore.UseCompactStore ? "Архивная_" + oldFile.Name :
+                    oldFile.Name.Replace('_', ':');
+                string uniqueName = displayName;
+                int duplicate = 2;
+                while (!usedBackupNames.Add(uniqueName))
+                {
+                    uniqueName = displayName + "_" + duplicate.ToString("D2");
+                    duplicate++;
+                }
+                availableBackups.Add(new KeyValuePair<string, string>(uniqueName, oldFile.FullName));
+            }
             if (availableBackups.Count == 0)
             {
                 MessageBox.Show("Резервные копии задач для этого проекта не найдены.",
