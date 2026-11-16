@@ -5,6 +5,7 @@ using System.Data;
 using System.Drawing;
 using System.Runtime.InteropServices;
 using System.IO;
+using System.Diagnostics;
 using Excel = Microsoft.Office.Interop.Excel;
 using System.Linq;
 using System.Text;
@@ -48,6 +49,7 @@ namespace time_schedule
         {
             FmTasksStatusLoad = fmTasksStatusLoad;
         }
+        /// <summary>Заполняет список задач и начальные значения фильтров с учётом прав пользователя.</summary>
         public void fmTasks_Load(object sender, EventArgs e)
         {
             LoadLBxTasks();
@@ -57,7 +59,10 @@ namespace time_schedule
             {
                 dTPFilterDateFinish.Value = Program.ListTasksAllPersonToShow.GetMaxDateFinishTasks().Date;
             }
-            catch { }
+            catch (Exception ex)
+            {
+                Trace.WriteLine("TimeSchedule tasks date filter initialization failed: " + ex);
+            }
             if (Program.UserType != UserType.Admin)
             {
                 btnDeleteTask.Enabled = false;
@@ -379,15 +384,61 @@ namespace time_schedule
         {
             LoadLBxTasks();
         }
+        /// <summary>Выполняет экспорт в Excel в отдельном STA-потоке, оставляя окно прогресса в UI-потоке.</summary>
         private void button1_Click_1(object sender, EventArgs e)
         {
             string[] targetItems = GetTargetItems();
-            fmProgressBar fmProgressBar = new fmProgressBar();
-            fmProgressBar.SetTextMessege("Идет формирование файла Excell");
-            System.Threading.Tasks.Task task = new System.Threading.Tasks.Task
-                (() => DoActionsCloseForm(() => WriteItemsToExcell(targetItems), fmProgressBar));
-            task.Start();
-            fmProgressBar.ShowDialog();
+            Exception exportError = null;
+            bool workerStarted = false;
+            using (fmProgressBar progressForm = new fmProgressBar())
+            {
+                progressForm.SetTextMessege("Идет формирование файла Excell");
+                Thread worker = new Thread(() =>
+                {
+                    try
+                    {
+                        WriteItemsToExcell(targetItems);
+                    }
+                    catch (Exception ex)
+                    {
+                        exportError = ex;
+                        Trace.WriteLine("TimeSchedule Excel export failed: " + ex);
+                    }
+                    finally
+                    {
+                        try
+                        {
+                            progressForm.BeginInvoke(new Action(progressForm.Close));
+                        }
+                        catch (InvalidOperationException ex)
+                        {
+                            Trace.WriteLine("TimeSchedule Excel progress window already closed: " + ex);
+                        }
+                    }
+                });
+                worker.IsBackground = true;
+                worker.SetApartmentState(ApartmentState.STA);
+                progressForm.Shown += (s, args) =>
+                {
+                    try
+                    {
+                        worker.Start();
+                        workerStarted = true;
+                    }
+                    catch (Exception ex)
+                    {
+                        exportError = ex;
+                        Trace.WriteLine("TimeSchedule Excel export worker failed to start: " + ex);
+                        progressForm.Close();
+                    }
+                };
+                progressForm.ShowDialog(this);
+                if (workerStarted)
+                    worker.Join();
+            }
+            if (exportError != null)
+                MessageBox.Show(this, "Не удалось сформировать файл Excel.\n\n" + exportError.Message,
+                    "Ошибка экспорта", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
 
         private string[] GetTargetItems()
@@ -405,16 +456,6 @@ namespace time_schedule
             }
 
             return targetItems;
-        }
-        private void DoActionsCloseForm(Action action, Form form)
-        {
-            action.Invoke();
-            if (form.InvokeRequired)
-            {
-                BeginInvoke(new Action(() => { form.Close(); }));
-                return;
-            }
-            form.Close();
         }
         private void WriteItemsToExcell(string[] targetItems)
         {
@@ -450,85 +491,88 @@ namespace time_schedule
             LoadListStatuses();
             LoadLBxTasks();
         }
+        /// <summary>Показывает выбор статусов, обновляет фильтр и освобождает диалог вместе с его подписками.</summary>
         private void LoadListStatuses()
         {
-            fmtreeView fmtreeView = new fmtreeView();
-            fmtreeView.Text = "Выберите статусы";
-            TreeView treeView = fmtreeView.GetTreeView();
-            treeView.CheckBoxes = true;
-            bool isChecked = fmtreeView.GetIsChecked();
-            treeView.Nodes.Add(new TreeNode("Все"));
+            using (fmtreeView fmtreeView = new fmtreeView())
+            {
+                fmtreeView.Text = "Выберите статусы";
+                TreeView treeView = fmtreeView.GetTreeView();
+                treeView.CheckBoxes = true;
+                bool isChecked = fmtreeView.GetIsChecked();
+                treeView.Nodes.Add(new TreeNode("Все"));
 
-            treeView.NodeMouseClick += TreeView_NodeMouseClick;
-            void TreeView_NodeMouseClick(object senderTree, TreeNodeMouseClickEventArgs tree)
-            {
-                if (isChecked)
+                treeView.NodeMouseClick += TreeView_NodeMouseClick;
+                void TreeView_NodeMouseClick(object senderTree, TreeNodeMouseClickEventArgs tree)
                 {
-                    foreach (TreeNode node in tree.Node.Nodes)
+                    if (isChecked)
                     {
-                        node.Checked = tree.Node.Checked;
-                    }
-                    if (tree.Node.Parent != null)
-                    {
-                        bool isNodeChecked = true;
-                        foreach (TreeNode node in tree.Node.Parent.Nodes)
+                        foreach (TreeNode node in tree.Node.Nodes)
                         {
-                            isNodeChecked &= node.Checked;
+                            node.Checked = tree.Node.Checked;
                         }
-                        tree.Node.Parent.Checked = isNodeChecked;
+                        if (tree.Node.Parent != null)
+                        {
+                            bool isNodeChecked = true;
+                            foreach (TreeNode node in tree.Node.Parent.Nodes)
+                            {
+                                isNodeChecked &= node.Checked;
+                            }
+                            tree.Node.Parent.Checked = isNodeChecked;
+                        }
+                        isChecked = false;
                     }
-                    isChecked = false;
                 }
-            }
-            treeView.BeforeCollapse += TreeView_BeforeCollapse; ;
-            treeView.BeforeCheck += TreeView_BeforeCheck;
-            foreach (int element in Enum.GetValues(typeof(TaskStatusRus)))
-            {
-                treeView.Nodes[0].Nodes.Add(new TreeNode(
-                    ((TaskStatusRus)element).ToString().Replace('_', ' ')));
-            }
-            foreach (TreeNode treeNode in treeView.Nodes[0].Nodes)
-            {
-                if (TaskStatuses.Contains((TaskStatus)Enum.Parse(
-                                    typeof(TaskStatusRus),
-                                    treeNode.Text.Replace(' ', '_'),
-                                    true)))
+                treeView.BeforeCollapse += TreeView_BeforeCollapse; ;
+                treeView.BeforeCheck += TreeView_BeforeCheck;
+                foreach (int element in Enum.GetValues(typeof(TaskStatusRus)))
                 {
-                    treeNode.Checked = true;
+                    treeView.Nodes[0].Nodes.Add(new TreeNode(
+                        ((TaskStatusRus)element).ToString().Replace('_', ' ')));
                 }
-            }
-            void TreeView_BeforeCollapse(object senderTree, TreeViewCancelEventArgs tree)
-            {
-                tree.Cancel = true;
-            }
-            void TreeView_BeforeCheck(object sensenderTreeder, TreeViewCancelEventArgs tree)
-            {
-                isChecked = true;
-            }
-            treeView.ExpandAll();
-            var listStatuses = new List<TaskStatus>();
-            fmtreeView.ShowDialog();
-            if (fmtreeView.BtnClick == BtnClick.ok)
-            {
-                TaskStatuses.Clear();
-                string allCheckedStatuses = string.Empty;
-                foreach (TreeNode node in treeView.Nodes[0].Nodes)
+                foreach (TreeNode treeNode in treeView.Nodes[0].Nodes)
                 {
-                    if (node.Checked)
+                    if (TaskStatuses.Contains((TaskStatus)Enum.Parse(
+                                        typeof(TaskStatusRus),
+                                        treeNode.Text.Replace(' ', '_'),
+                                        true)))
                     {
-                        if (allCheckedStatuses != string.Empty)
-                            allCheckedStatuses += ", ";
-                        allCheckedStatuses += node.Text;
-                        TaskStatuses.Add
-                            (
-                                (TaskStatus)Enum.Parse(
-                                    typeof(TaskStatusRus),
-                                    node.Text.Replace(' ', '_'),
-                                    true)
-                            );
+                        treeNode.Checked = true;
                     }
                 }
-                tBxStatusesFilter.Text = allCheckedStatuses;
+                void TreeView_BeforeCollapse(object senderTree, TreeViewCancelEventArgs tree)
+                {
+                    tree.Cancel = true;
+                }
+                void TreeView_BeforeCheck(object sensenderTreeder, TreeViewCancelEventArgs tree)
+                {
+                    isChecked = true;
+                }
+                treeView.ExpandAll();
+                var listStatuses = new List<TaskStatus>();
+                fmtreeView.ShowDialog();
+                if (fmtreeView.BtnClick == BtnClick.ok)
+                {
+                    TaskStatuses.Clear();
+                    string allCheckedStatuses = string.Empty;
+                    foreach (TreeNode node in treeView.Nodes[0].Nodes)
+                    {
+                        if (node.Checked)
+                        {
+                            if (allCheckedStatuses != string.Empty)
+                                allCheckedStatuses += ", ";
+                            allCheckedStatuses += node.Text;
+                            TaskStatuses.Add
+                                (
+                                    (TaskStatus)Enum.Parse(
+                                        typeof(TaskStatusRus),
+                                        node.Text.Replace(' ', '_'),
+                                        true)
+                                );
+                        }
+                    }
+                    tBxStatusesFilter.Text = allCheckedStatuses;
+                }
             }
         }
         private void cBxFilterByStatus_CheckedChanged(object sender, EventArgs e)

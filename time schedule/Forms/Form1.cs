@@ -176,19 +176,44 @@ namespace time_schedule
         /// <summary>Дерево отбора проектов для текущего цикла обновления; повторное чтение с диска не требуется.</summary>
         private TreeProjects selectionTreeForRefresh;
 
-        /// <summary>Обновляет интерфейс только из согласованно загруженных данных.</summary>
+        /// <summary>Координирует чтение данных, подготовку моделей и размещение календаря.</summary>
         public void LoadRefreshForm()
         {
             CancelPendingPaintDiagnostics();
             CalendarRefreshMetrics metrics = new CalendarRefreshMetrics();
             Stopwatch timing = Stopwatch.StartNew();
-            ListTasks loadedTasks = null;
-            ListPersons loadedPersons = null;
+            ListTasks loadedTasks;
+            ListPersons loadedPersons;
+            if (!TryReadCalendarData(out loadedTasks, out loadedPersons))
+                return;
+
+            long readMs = timing.ElapsedMilliseconds;
+            PrepareCalendarRefresh();
+            Stopwatch phase = Stopwatch.StartNew();
+            if (!TryBuildCalendarModels(loadedTasks, loadedPersons, metrics))
+                return;
+
+            phase.Restart();
+            ClearOldExemplars();
+            metrics.ClearMs = phase.ElapsedMilliseconds;
+            long modelMs = timing.ElapsedMilliseconds - readMs;
+            FinishCalendarRefresh(metrics, phase, timing, readMs, modelMs);
+        }
+
+        /// <summary>Читает согласованный снимок задач, сохраняя существующее сообщение при ошибке хранилища.</summary>
+        /// <param name="loadedTasks">Загруженные задачи или null при отсутствии нового формата.</param>
+        /// <param name="loadedPersons">Загруженные исполнители или null при отсутствии нового формата.</param>
+        /// <returns>True при успешном чтении или отсутствии данных нового формата.</returns>
+        private bool TryReadCalendarData(out ListTasks loadedTasks, out ListPersons loadedPersons)
+        {
+            loadedTasks = null;
+            loadedPersons = null;
             string tasksPath = Dals.TakeMainPathFile(Constants.TASKS_BIN);
             try
             {
                 if (TaskStore.HasTaskData(tasksPath))
                     loadedTasks = TaskStore.ReadProject(tasksPath, out loadedPersons);
+                return true;
             }
             catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException ||
                 ex is System.Runtime.Serialization.SerializationException || ex is InvalidCastException ||
@@ -197,36 +222,97 @@ namespace time_schedule
                 MessageBox.Show(
                     "Не удалось загрузить задачи проекта. Данные не изменены.\n\n" + ex.Message,
                     "Ошибка хранилища задач", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
+                return false;
             }
-            long readMs = timing.ElapsedMilliseconds;
+        }
+
+        /// <summary>Подготавливает видимость, прокрутку и готовность календаря перед построением моделей.</summary>
+        private void PrepareCalendarRefresh()
+        {
             ChangePanelVisibility(Statuses.Visibility.Invisible);
             SaveScrolls();
             if (CalcDivDays() < 0)
-            {
                 HorizontalScrollAdd(CalcDivDays());
-            }
             FormReadyToBeAddedControl = Statuses.FormReadyToBeAddedControl.NotReady;
             plForDate.Enabled = false;
-            Stopwatch phase = Stopwatch.StartNew();
-            ClearOldExemplars();
-            ClearAllPools();
-            metrics.ClearMs = phase.ElapsedMilliseconds;
+        }
+
+        /// <summary>Создаёт модели, сохраняя возможность возврата предыдущего состояния при ошибке.</summary>
+        /// <param name="loadedTasks">Согласованно прочитанные задачи.</param>
+        /// <param name="loadedPersons">Согласованно прочитанные исполнители.</param>
+        /// <param name="metrics">Показатели обновления.</param>
+        /// <returns>True, если новые модели готовы к размещению.</returns>
+        private bool TryBuildCalendarModels(ListTasks loadedTasks, ListPersons loadedPersons,
+            CalendarRefreshMetrics metrics)
+        {
+            CalendarModelState previousModels = new CalendarModelState(this);
             try
             {
+                InitializeCalendarModels();
                 LoadAllPools(loadedTasks, loadedPersons, metrics);
+                return true;
             }
             catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException ||
-                ex is System.Runtime.Serialization.SerializationException || ex is InvalidCastException)
+                ex is System.Runtime.Serialization.SerializationException || ex is InvalidCastException ||
+                ex is InvalidDataException || ex is InvalidOperationException || ex is ArgumentException)
             {
+                previousModels.Restore(this);
                 plForDate.Enabled = true;
                 ChangePanelVisibility(Statuses.Visibility.Visible);
-                MessageBox.Show("Не удалось построить календарь из актуальных данных. " + ex.Message);
-                return;
+                Trace.WriteLine("TimeSchedule calendar models failed: " + ex);
+                MessageBox.Show("Не удалось построить календарь из актуальных данных. " + ex.Message,
+                    "Ошибка обновления календаря", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return false;
             }
-            long modelMs = timing.ElapsedMilliseconds - readMs;
+        }
+
+        /// <summary>Размещает подготовленный календарь и сохраняет прежнее поведение при ошибке построения.</summary>
+        /// <param name="metrics">Показатели текущего обновления.</param>
+        /// <param name="phase">Таймер отдельных фаз.</param>
+        /// <param name="timing">Таймер всего обновления.</param>
+        /// <param name="readMs">Продолжительность чтения данных.</param>
+        /// <param name="modelMs">Продолжительность подготовки моделей.</param>
+        private void FinishCalendarRefresh(CalendarRefreshMetrics metrics, Stopwatch phase,
+            Stopwatch timing, long readMs, long modelMs)
+        {
+            try
+            {
+                BuildCalendarScale(metrics, phase);
+                AttachCalendarControls(metrics, phase);
+                LogRefreshMetrics(metrics, readMs, modelMs, timing.ElapsedMilliseconds);
+                ScheduleRefreshPaintDiagnostics(metrics);
+            }
+            catch (Exception ex) when (
+                ex is IOException ||
+                ex is UnauthorizedAccessException ||
+                ex is InvalidDataException ||
+                ex is System.Runtime.Serialization.SerializationException ||
+                ex is InvalidCastException ||
+                ex is InvalidOperationException ||
+                ex is ArgumentException)
+            {
+                CancelPendingPaintDiagnostics();
+                FormReadyToBeAddedControl = Statuses.FormReadyToBeAddedControl.NotReady;
+                plForDate.Enabled = true;
+                ChangePanelVisibility(Statuses.Visibility.Invisible);
+
+                Trace.WriteLine("TimeSchedule refresh failed: " + ex);
+                MessageBox.Show(
+                    "Не удалось завершить обновление календаря.\n" +
+                    "Повторите обновление после устранения причины.\n\n" + ex.Message,
+                    "Ошибка обновления календаря",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+            }
+        }
+
+        /// <summary>Строит шкалу дат и линии календаря, восстанавливая прокрутку перед размещением задач.</summary>
+        /// <param name="metrics">Измерения этапов обновления календаря.</param>
+        /// <param name="phase">Таймер отдельных этапов построения.</param>
+        private void BuildCalendarScale(CalendarRefreshMetrics metrics, Stopwatch phase)
+        {
             phase.Restart();
-            LoadTextBoxWithDate();//493
+            LoadTextBoxWithDate();
             metrics.BuildDatesMs = phase.ElapsedMilliseconds;
             phase.Restart();
             LoadHorizontLine();
@@ -236,6 +322,13 @@ namespace time_schedule
             plForDate.Enabled = true;
             LoadScrolls();
             FormReadyToBeAddedControl = Statuses.FormReadyToBeAddedControl.Ready;
+        }
+
+        /// <summary>Размещает ранее подготовленные элементы календаря и завершает отображение проекта.</summary>
+        /// <param name="metrics">Измерения этапов обновления календаря и активной Paint-диагностики.</param>
+        /// <param name="phase">Таймер отдельных этапов добавления элементов управления.</param>
+        private void AttachCalendarControls(CalendarRefreshMetrics metrics, Stopwatch phase)
+        {
             activePaintMetrics = metrics;
             phase.Restart();
             LoadPersonButtons();
@@ -246,10 +339,19 @@ namespace time_schedule
             phase.Restart();
             LoadDateTextBoxes();
             metrics.AttachDatesMs = phase.ElapsedMilliseconds;
-            ChangePanelVisibility(Statuses.Visibility.Visible);//313
+            ChangePanelVisibility(Statuses.Visibility.Visible);
             PushLableProject();
             LoadScrolls();
-            long totalMs = timing.ElapsedMilliseconds;
+        }
+
+        /// <summary>Записывает ранее собранные измерения обновления календаря без дополнительных чтений данных.</summary>
+        /// <param name="metrics">Измерения отдельных этапов построения календаря.</param>
+        /// <param name="readMs">Время загрузки данных хранилища.</param>
+        /// <param name="modelMs">Время подготовки моделей и компоновки.</param>
+        /// <param name="elapsedMs">Общее время до начала диагностического вывода.</param>
+        private static void LogRefreshMetrics(CalendarRefreshMetrics metrics, long readMs, long modelMs, long elapsedMs)
+        {
+            long totalMs = elapsedMs;
             long controlsMs = totalMs - readMs - modelMs;
             Trace.WriteLine("TimeSchedule refresh: disk-read-ms=" + readMs +
                 " model-and-layout-ms=" + modelMs + " controls-ms=" +
@@ -276,6 +378,12 @@ namespace time_schedule
                 " other-controls-ms=" + (controlsMs - metrics.BuildDatesMs -
                     metrics.BuildLinesMs - metrics.AttachPersonsMs -
                     metrics.AttachTasksMs - metrics.AttachDatesMs));
+        }
+
+        /// <summary>Регистрирует одноразовую диагностику Paint до ближайшего простоя UI и снимает подписку.</summary>
+        /// <param name="metrics">Измерения завершённого обновления календаря.</param>
+        private void ScheduleRefreshPaintDiagnostics(CalendarRefreshMetrics metrics)
+        {
             // Отложенный Paint может выполниться только после выхода из LoadRefreshForm.
             Stopwatch idleWait = Stopwatch.StartNew();
             EventHandler idleHandler = null;
@@ -341,6 +449,7 @@ namespace time_schedule
         {
             return plPersonButton;
         }
+        /// <summary>Синхронизирует прокрутку календаря при прокрутке списка исполнителей.</summary>
         private void PlPersonButton_MouseWheel(object sender, MouseEventArgs e)
         {
             try
@@ -348,9 +457,9 @@ namespace time_schedule
                 plMain.VerticalScroll.Value = plPersonButton.VerticalScroll.Value;
                 plMain.VerticalScroll.Value = plPersonButton.VerticalScroll.Value;
             }
-            catch
+            catch (Exception ex)
             {
-
+                Trace.WriteLine("TimeSchedule person mouse wheel scroll sync failed: " + ex);
             }
 
 
@@ -361,6 +470,7 @@ namespace time_schedule
             //plForDate.HorizontalScroll.Value = plMain.HorizontalScroll.Value;
             //plForDate.HorizontalScroll.Value = plMain.HorizontalScroll.Value;
         }
+        /// <summary>Синхронизирует шкалу дат и список исполнителей с прокруткой календаря.</summary>
         private void CalendarTasks_MouseWheel1(object sender, MouseEventArgs e)
         {
             try
@@ -369,8 +479,9 @@ namespace time_schedule
                 int test = plMain.VerticalScroll.Value;
                 plPersonButton.VerticalScroll.Value = test;
             }
-            catch
+            catch (Exception ex)
             {
+                Trace.WriteLine("TimeSchedule calendar wheel scroll sync failed: " + ex);
             }
 
         }
@@ -382,29 +493,51 @@ namespace time_schedule
         {
             return plMain.Location.X - plPersonButton.Location.X - 2;
         }
+        /// <summary>Удаляет элементы предыдущего календаря и освобождает принадлежащие ему ресурсы.</summary>
         private void ClearOldExemplars()
         {
-
-            for (int i = 0; i < plMain.Controls.Count; i++)
+            for (int i = plMain.Controls.Count - 1; i >= 0; i--)
             {
-                if (plMain.Controls[i] is Button)
+                Control control = plMain.Controls[i];
+                if (control is Button)
                 {
-                    plMain.Controls.Remove(plMain.Controls[i]);
-                    i--;
-                }
-
-            }
-            for (int i = 0; i < plPersonButton.Controls.Count; i++)
-            {
-                if (plPersonButton.Controls[i] is Button)
-                {
-                    plPersonButton.Controls.Remove(this.plPersonButton.Controls[i]);
-                    i--;
+                    plMain.Controls.RemoveAt(i);
+                    control.Dispose();
                 }
             }
-            plForDate.Controls.Clear();
-            pBForLine.CreateGraphics().Clear(Color.White);
+            for (int i = plPersonButton.Controls.Count - 1; i >= 0; i--)
+            {
+                Control control = plPersonButton.Controls[i];
+                if (control is Button)
+                {
+                    plPersonButton.Controls.RemoveAt(i);
+                    control.Dispose();
+                }
+            }
+            ClearDateControls();
+            using (Graphics graphics = pBForLine.CreateGraphics())
+                graphics.Clear(Color.White);
+            Bitmap previousBitmap = Bmp;
+            pBForLine.Image = null;
             Bmp = new Bitmap(1, 1);
+            previousBitmap?.Dispose();
+        }
+
+        /// <summary>Удаляет элементы прежней шкалы дат с освобождением ресурсов WinForms.</summary>
+        private void ClearDateControls()
+        {
+            while (plForDate.Controls.Count > 0)
+            {
+                Control control = plForDate.Controls[0];
+                plForDate.Controls.RemoveAt(0);
+                if (control is PictureBox pictureBox)
+                {
+                    Image image = pictureBox.Image;
+                    pictureBox.Image = null;
+                    image?.Dispose();
+                }
+                control.Dispose();
+            }
         }
         private int SetMaxLocationAndAddPersonButton(ref ListPersonButton listPersonButton)
         {
@@ -419,49 +552,52 @@ namespace time_schedule
             }
             return maxButtonLocationY;
         }
+        /// <summary>Рисует линию на текущем растровом изображении календаря.</summary>
         public void Drow(Pen pen, int pX0, int pY0, int pX1, int pY1)
         {
-            Graphics graphics = Graphics.FromImage(Bmp);
-            graphics.DrawLine(pen, pX0, pY0, pX1, pY1);
+            using (Graphics graphics = Graphics.FromImage(Bmp))
+                graphics.DrawLine(pen, pX0, pY0, pX1, pY1);
             pBForLine.Image = Bmp;
-            graphics.Dispose();
         }
+        /// <summary>Рисует горизонтальные границы строк календаря одним графическим контекстом.</summary>
         public void LoadHorizontLine()
         {
-            foreach (PersonButton personButton in Program.ListPersonButton.PersonButtons)
+            using (Graphics graphics = Graphics.FromImage(Bmp))
+            using (Pen rowPen = new Pen(Color.FromArgb(225, 225, 230), 1))
+            using (Pen separatorPen = new Pen(Color.FromArgb(245, 245, 248), 2))
             {
-                if (personButton.Person.ListTask.Tasks.Count > 0)
+                foreach (PersonButton personButton in Program.ListPersonButton.PersonButtons)
                 {
+                    if (personButton.Person.ListTask.Tasks.Count == 0)
+                        continue;
+
                     int locationY = personButton.Button.Location.Y;
-                    Pen pen = new Pen(Color.FromArgb(225, 225, 230), 1);
                     while (locationY < (personButton.Button.Location.Y + personButton.Button.Height))
                     {
                         locationY += Constants.ROW_HIGHT;
-                        Drow(pen, 0, locationY, pBForLine.Width, locationY);
-
+                        graphics.DrawLine(rowPen, 0, locationY, pBForLine.Width, locationY);
                     }
-
-                    Pen pen1 = new Pen(Color.FromArgb(245, 245, 248), 2);
-                    Drow(pen1, 0, locationY, pBForLine.Width, locationY + 1);
+                    graphics.DrawLine(separatorPen, 0, locationY, pBForLine.Width, locationY + 1);
                 }
             }
+            pBForLine.Image = Bmp;
         }
+
+        /// <summary>Рисует вертикальные границы дат, выделяя понедельники, одним графическим контекстом.</summary>
         public void DrowVerticalLines()
         {
-            Pen penGrey = new Pen(Color.FromArgb(225, 225, 230), 1);
-            Pen penForMonday = new Pen(Color.FromArgb(245, 245, 248), 2);
-            foreach (DateTextBox dateTextBox in Program.PoolTextBox.ListTextBoxes)
+            using (Graphics graphics = Graphics.FromImage(Bmp))
+            using (Pen penGrey = new Pen(Color.FromArgb(225, 225, 230), 1))
+            using (Pen penForMonday = new Pen(Color.FromArgb(245, 245, 248), 2))
             {
-                int locationX = dateTextBox.TextBox.Location.X;
-                if (dateTextBox.Date.DayOfWeek == DayOfWeek.Monday)
+                foreach (DateTextBox dateTextBox in Program.PoolTextBox.ListTextBoxes)
                 {
-                    Drow(penForMonday, locationX, 0, locationX, pBForLine.Height);
-                }
-                else
-                {
-                    Drow(penGrey, locationX, 0, locationX, pBForLine.Height);
+                    int locationX = dateTextBox.TextBox.Location.X;
+                    graphics.DrawLine(dateTextBox.Date.DayOfWeek == DayOfWeek.Monday ? penForMonday : penGrey,
+                        locationX, 0, locationX, pBForLine.Height);
                 }
             }
+            pBForLine.Image = Bmp;
         }
         public void SaveScrolls()
         {
@@ -473,6 +609,7 @@ namespace time_schedule
             PlPersonButtonYSaved = plPersonButton.VerticalScroll.Value;
 
         }
+        /// <summary>Восстанавливает позиции прокрутки независимых панелей календаря.</summary>
         public void LoadScrolls()
         {
             try
@@ -482,20 +619,29 @@ namespace time_schedule
                 plMain.HorizontalScroll.Value = HorizontalScrollValue;
                 plMain.HorizontalScroll.Value = HorizontalScrollValue;
             }
-            catch { }
+            catch (Exception ex)
+            {
+                Trace.WriteLine("TimeSchedule date and calendar horizontal scroll restore failed: " + ex);
+            }
             try
             {
                 plPersonButton.VerticalScroll.Value = VerticalScrollValue;
                 plPersonButton.VerticalScroll.Value = VerticalScrollValue;
 
             }
-            catch { }
+            catch (Exception ex)
+            {
+                Trace.WriteLine("TimeSchedule person vertical scroll restore failed: " + ex);
+            }
             try
             {
                 plMain.VerticalScroll.Value = VerticalScrollValue;
                 plMain.VerticalScroll.Value = VerticalScrollValue;
             }
-            catch { }
+            catch (Exception ex)
+            {
+                Trace.WriteLine("TimeSchedule calendar vertical scroll restore failed: " + ex);
+            }
         }
         public void ScrollToZero()
         {
@@ -509,72 +655,169 @@ namespace time_schedule
             MaxDateFinish = Program.ListTasksAllPersonToShow.GetMaxDateFinishTasks();
             MinDateStart = Program.ListTasksAllPersonToShow.GetMinDateStartTasks();
         }
+        /// <summary>Временно задаёт режим полного обновления и восстанавливает прежний режим при любом завершении вызова.</summary>
+        /// <param name="refreshType">Запрошенный режим обновления календаря.</param>
         public void LoadRefreshForm(RefreshType refreshType)
         {
-
             if (refreshType == RefreshType.All)
             {
                 RefreshType refreshTypeToSave = RefreshType;
                 RefreshType = RefreshType.All;
-                LoadRefreshForm();
-                RefreshType = refreshTypeToSave;
+                try
+                {
+                    LoadRefreshForm();
+                }
+                finally
+                {
+                    RefreshType = refreshTypeToSave;
+                }
             }
         }
         public void LoadRefreshFormForDelegat()
         {
             LoadRefreshForm(Statuses.ProgressBar.Use);
         }
+        /// <summary>Показывает анимированный индикатор в отдельном STA-потоке на время синхронного обновления календаря.</summary>
+        /// <param name="statusProgressBar">Режим отображения индикатора.</param>
         public void LoadRefreshForm(Statuses.ProgressBar statusProgressBar)
         {
             timer1.Interval = 900000;
-            if (statusProgressBar == Statuses.ProgressBar.Use)
-            {
-                fmProgressBar fmProgressBar = new fmProgressBar();
-                fmProgressBar.SetTextMessege("Идет обновление");
-                fmProgressBar.StartPosition = FormStartPosition.Manual;
-                fmProgressBar.Location = new Point(
-                    this.Left + this.Width / 2 - fmProgressBar.Width / 2,
-                    this.Top + this.Height / 2 - fmProgressBar.Height / 2);
+            if (statusProgressBar != Statuses.ProgressBar.Use)
+                return;
 
-                List<Form> listForm = new List<Form>() { this, fmProgressBar };
-                //Thread thread = new Thread(LoadRefreshWithProgressBarr, 0);
-                fmProgressBar.TopLevel = true;
-                System.Threading.Tasks.Task.Run(() => fmProgressBar.ShowDialog());
-                LoadRefreshWithProgressBarr(listForm);
-                //LoadRefreshWithProgressBarr(listForm);
-                OpenFormsCount = Application.OpenForms.Count;
-                //Test 2
+            RunWithProgressWindow(() => LoadRefreshForm(RefreshType.All));
+        }
+
+        /// <summary>Выполняет операцию на прежнем UI-потоке, сохраняя анимацию окна прогресса в отдельном STA-цикле сообщений.</summary>
+        /// <param name="refreshAction">Операция обновления, выполняемая вызывающим потоком.</param>
+        private void RunWithProgressWindow(Action refreshAction)
+        {
+            Rectangle mainBounds = Bounds;
+            ManualResetEventSlim windowReady = new ManualResetEventSlim(false);
+            fmProgressBar progressWindow = null;
+            Exception startupError = null;
+            int stopRequested = 0;
+
+            Thread progressThread = new Thread(() =>
+            {
+                try
+                {
+                    using (fmProgressBar window = new fmProgressBar())
+                    {
+                        window.SetTextMessege("Идет обновление");
+                        window.StartPosition = FormStartPosition.Manual;
+                        window.Location = new Point(
+                            mainBounds.Left + (mainBounds.Width - window.Width) / 2,
+                            mainBounds.Top + (mainBounds.Height - window.Height) / 2);
+                        window.Shown += (sender, e) =>
+                        {
+                            progressWindow = window;
+                            windowReady.Set();
+                            if (Interlocked.CompareExchange(ref stopRequested, 0, 0) != 0)
+                                window.Close();
+                        };
+                        Application.Run(window);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    startupError = ex;
+                    Trace.WriteLine("TimeSchedule progress window failed: " + ex);
+                }
+                finally
+                {
+                    windowReady.Set();
+                }
+            });
+            progressThread.Name = "TimeSchedule progress UI";
+            progressThread.IsBackground = true;
+            progressThread.SetApartmentState(ApartmentState.STA);
+            progressThread.Start();
+
+            if (!windowReady.Wait(TimeSpan.FromSeconds(10)))
+            {
+                Interlocked.Exchange(ref stopRequested, 1);
+                throw new InvalidOperationException("Не удалось открыть окно обновления календаря за отведённое время.");
+            }
+            if (startupError != null)
+            {
+                if (progressThread.Join(TimeSpan.FromSeconds(2)))
+                    windowReady.Dispose();
+                throw new InvalidOperationException("Не удалось открыть окно обновления календаря.", startupError);
+            }
+            if (progressWindow == null)
+            {
+                Interlocked.Exchange(ref stopRequested, 1);
+                throw new InvalidOperationException("Окно обновления календаря завершилось до начала операции.");
+            }
+
+            try
+            {
+                refreshAction();
+            }
+            finally
+            {
+                Interlocked.Exchange(ref stopRequested, 1);
+                try
+                {
+                    progressWindow.BeginInvoke(new Action(progressWindow.Close));
+                }
+                catch (InvalidOperationException ex)
+                {
+                    Trace.WriteLine("TimeSchedule progress window already closed: " + ex);
+                }
+                if (progressThread.Join(TimeSpan.FromSeconds(2)))
+                    windowReady.Dispose();
+                else
+                    Trace.WriteLine("TimeSchedule progress window: timed out while closing.");
             }
         }
+
+        /// <summary>Выполняет полное обновление календаря, инициированное окном прогресса.</summary>
+        /// <param name="fmProgressBar">Окно, сопровождающее синхронное обновление.</param>
         public void LoadRefreshForm(fmProgressBar fmProgressBar)
         {
             LoadRefreshForm(RefreshType.All);
-            //fmProgressBar.BeginInvoke(new Action(()=>fmProgressBar.Close()));
-            //fmProgressBar.Close();
         }
+
+        /// <summary>Совместимый вход для запуска обновления с переданным списком форм без ожидания OpenForms.</summary>
+        /// <param name="listForm">Список из главной формы и окна прогресса.</param>
         public void LoadRefreshWithProgressBarr(object listForm)
         {
-            //await System.Threading.Tasks.Task.Delay(50);
-            List<Form> result = new List<Form>();
-            do
+            List<Form> forms = listForm as List<Form>;
+            if (forms == null || forms.Count < 2 || !(forms[0] is Form1) || !(forms[1] is fmProgressBar))
+                throw new ArgumentException("Ожидается список главной формы и окна прогресса.", "listForm");
+
+            fmProgressBar progressForm = (fmProgressBar)forms[1];
+            try
             {
-                foreach (Form form in Application.OpenForms)
-                {
-                    if (form.Visible)
-                        result.Add(form);
-                }
-                Thread.Sleep(50);
+                ((Form1)forms[0]).LoadRefreshForm(progressForm);
             }
-            while (result.Count <= OpenFormsCount);
-            fmProgressBar fmProgressBar = (listForm as List<Form>)[1] as fmProgressBar;
-            Form1 form1 = (listForm as List<Form>)[0] as Form1;
-            LoadRefreshForm(fmProgressBar);
-            Invoke(new Action(() => fmProgressBar.Close()));
+            finally
+            {
+                if (!progressForm.IsDisposed)
+                    progressForm.Close();
+            }
         }
-        /// <summary>Строит элементы календаря из уже прочитанного согласованного снимка.</summary>
+        /// <summary>Последовательно готовит задачи, исполнителей, календарные дни и кнопки календаря.</summary>
+        /// <param name="loadedTasks">Согласованно прочитанные задачи либо null для старого формата.</param>
+        /// <param name="loadedPersons">Согласованно прочитанные исполнители либо null для старого формата.</param>
+        /// <param name="metrics">Измерения времени и размеров сформированных моделей.</param>
         private void LoadAllPools(ListTasks loadedTasks, ListPersons loadedPersons, CalendarRefreshMetrics metrics)
         {
             Stopwatch phase = Stopwatch.StartNew();
+            LoadAndFilterCalendarTasks(loadedTasks, loadedPersons, metrics, phase);
+            BuildCalendarPersonsAndTasks(metrics, phase);
+        }
+
+        /// <summary>Загружает данные проекта и отбирает задачи, которые нужно показать в календаре.</summary>
+        /// <param name="loadedTasks">Уже загруженный список задач либо null для прежнего формата.</param>
+        /// <param name="loadedPersons">Уже загруженный список исполнителей либо null для прежнего формата.</param>
+        /// <param name="metrics">Показатели чтения и фильтрации задач.</param>
+        /// <param name="phase">Счётчик времени этапов построения моделей.</param>
+        private void LoadAndFilterCalendarTasks(ListTasks loadedTasks, ListPersons loadedPersons,
+            CalendarRefreshMetrics metrics, Stopwatch phase)
+        {
             if (loadedTasks != null)
             {
                 Program.ListTasksAllPersonToSave = loadedTasks;
@@ -600,13 +843,17 @@ namespace time_schedule
             metrics.FilteredTasks = Program.ListTasksAllPersonToShow.Tasks.Count;
             if (!TaskStore.HasTaskData(Dals.TakeMainPathFile(Constants.TASKS_BIN)))
                 ReReadListPerson();
+        }
 
+        /// <summary>Готовит кнопки исполнителей, нерабочие дни и модели кнопок задач.</summary>
+        /// <param name="metrics">Показатели количества объектов и времени построения.</param>
+        /// <param name="phase">Счётчик времени этапов построения моделей.</param>
+        private void BuildCalendarPersonsAndTasks(CalendarRefreshMetrics metrics, Stopwatch phase)
+        {
             phase.Restart();
             Program.ListPersonButton.LoadListPersonButtons(
-                Program.listPersons.Persons,
-                Program.ListTasksAllPersonToShow,
-                Constants.ROW_HIGHT,
-                this);
+                Program.listPersons.Persons, Program.ListTasksAllPersonToShow,
+                Constants.ROW_HIGHT, this);
             int maxButtonLocationY = SetMaxLocationAndAddPersonButton(ref Program.ListPersonButton);
             pBForLine.Height = maxButtonLocationY;
             metrics.BuildPersonButtonsMs = phase.ElapsedMilliseconds;
@@ -614,21 +861,19 @@ namespace time_schedule
             if (File.Exists(Dals.TakeMainPathFile(Constants.HOLYDAYS_BIN)))
             {
                 Program.ListHolidays = Dals.binReadFileToObject(
-                    Program.ListHolidays,
-                    Dals.TakeMainPathFile(Constants.HOLYDAYS_BIN));
+                    Program.ListHolidays, Dals.TakeMainPathFile(Constants.HOLYDAYS_BIN));
             }
             else
             {
                 Program.ListHolidays.SetHolidaysFromList(
                     Dals.ReadListFromMainPathFile(Constants.HOLYDAYS));
             }
-
-            NonWorkDaysWrite(Program.ListTasksAllPersonToShow.GetMinDateStartTasks(), Program.ListTasksAllPersonToShow.GetMaxDateFinishTasks());
+            NonWorkDaysWrite(Program.ListTasksAllPersonToShow.GetMinDateStartTasks(),
+                Program.ListTasksAllPersonToShow.GetMaxDateFinishTasks());
             Program.listNonWorkingDays.NonWorkingDays.AddRange(Program.ListHolidays.Holidays);
             phase.Restart();
             Program.ListTaskButtons.AddTaskButtons(
-                Program.ListTasksAllPersonToShow,
-                Program.ListPersonButton);
+                Program.ListTasksAllPersonToShow, Program.ListPersonButton);
             metrics.BuildTaskButtonsMs = phase.ElapsedMilliseconds;
             metrics.TaskModels = Program.ListTaskButtons.TaskButtons.Count;
             metrics.CreatedTaskButtons = Program.ListTaskButtons.TaskButtons.Sum(task => task.Buttons.Count);
@@ -748,18 +993,72 @@ namespace time_schedule
             }
             return isEntry;
         }
-        private static void ClearAllPools()
+        /// <summary>Снимок ссылок на модели, необходимый для отката при неудачной подготовке календаря.</summary>
+        private sealed class CalendarModelState
         {
-            Program.PoolTextBox.ListTextBoxes.Clear();
-            Program.ListTaskButtons.TaskButtons.Clear();
-            Program.ListTasksAllPersonToSave.Tasks.Clear();
-            Program.ListTasksAllPersonToShow.Tasks.Clear();
-            Program.listPersons.Persons.Clear();
-            Program.ListPersonButton.PersonButtons.Clear();
-            Program.ListTaskButtons.TaskButtons.Clear();
-            Program.ListHolidays.Holidays.Clear();
-            Program.listNonWorkingDays.NonWorkingDays.Clear();
-            Program.ListTaskButtons.TaskButtons.Clear();
+            /// <summary>Полный список задач до обновления.</summary>
+            private readonly ListTasks savedTasks;
+            /// <summary>Отобранные для календаря задачи до обновления.</summary>
+            private readonly ListTasks shownTasks;
+            /// <summary>Исполнители до обновления.</summary>
+            private readonly ListPersons persons;
+            /// <summary>Модели кнопок исполнителей до обновления.</summary>
+            private readonly ListPersonButton personButtons;
+            /// <summary>Модели кнопок задач до обновления.</summary>
+            private readonly ListTaskButton taskButtons;
+            /// <summary>Пул элементов шкалы дат до обновления.</summary>
+            private readonly PoolTextBox dateTextBoxes;
+            /// <summary>Нерабочие дни до обновления.</summary>
+            private readonly ListNonWorkingDays nonWorkingDays;
+            /// <summary>Праздничные дни до обновления.</summary>
+            private readonly ListHolidays holidays;
+            /// <summary>Дерево проектов, использованное при предыдущем обновлении.</summary>
+            private readonly TreeProjects selectionTree;
+            /// <summary>Высота области линий до обновления.</summary>
+            private readonly int linesHeight;
+
+            /// <summary>Сохраняет ссылки на опубликованные модели, не копируя и не изменяя их содержимое.</summary>
+            public CalendarModelState(Form1 form)
+            {
+                savedTasks = Program.ListTasksAllPersonToSave;
+                shownTasks = Program.ListTasksAllPersonToShow;
+                persons = Program.listPersons;
+                personButtons = Program.ListPersonButton;
+                taskButtons = Program.ListTaskButtons;
+                dateTextBoxes = Program.PoolTextBox;
+                nonWorkingDays = Program.listNonWorkingDays;
+                holidays = Program.ListHolidays;
+                selectionTree = form.selectionTreeForRefresh;
+                linesHeight = form.pBForLine.Height;
+            }
+
+            /// <summary>Возвращает прежние ссылки на модели и размер области линий после сбоя подготовки.</summary>
+            public void Restore(Form1 form)
+            {
+                Program.ListTasksAllPersonToSave = savedTasks;
+                Program.ListTasksAllPersonToShow = shownTasks;
+                Program.listPersons = persons;
+                Program.ListPersonButton = personButtons;
+                Program.ListTaskButtons = taskButtons;
+                Program.PoolTextBox = dateTextBoxes;
+                Program.listNonWorkingDays = nonWorkingDays;
+                Program.ListHolidays = holidays;
+                form.selectionTreeForRefresh = selectionTree;
+                form.pBForLine.Height = linesHeight;
+            }
+        }
+
+        /// <summary>Создаёт независимые пустые коллекции для подготовки нового состояния календаря.</summary>
+        private static void InitializeCalendarModels()
+        {
+            Program.ListTasksAllPersonToSave = new ListTasks();
+            Program.ListTasksAllPersonToShow = new ListTasks();
+            Program.listPersons = new ListPersons();
+            Program.ListPersonButton = new ListPersonButton();
+            Program.ListTaskButtons = new ListTaskButton();
+            Program.PoolTextBox = new PoolTextBox();
+            Program.listNonWorkingDays = new ListNonWorkingDays();
+            Program.ListHolidays = new ListHolidays();
         }
         private void ChangePanelVisibility(Statuses.Visibility visibility)
         {
@@ -776,69 +1075,83 @@ namespace time_schedule
                 plMain.Visible = false;
             }
         }
+        /// <summary>Готовит шкалу рабочих дат и изображения, не размещая сами ячейки до этапа Attach.</summary>
         private void LoadTextBoxWithDate()
         {
-            int scrollValue = HorizontalScrollValue;
             DateTime dateToTables = Program.ListTasksAllPersonToShow.GetMinDateStartTasks();
             DateTime dateMaxToTable = Program.ListTasksAllPersonToShow.GetMaxDateFinishTasks();
             int height = plMain.Location.Y - plForDate.Location.Y;
-            int locationX = 0;
-            plForDate.Controls.Clear();
-            Bitmap bmp = new Bitmap(1, 1);
+            ClearDateControls();
+            Bitmap bitmap = new Bitmap(1, 1);
+            PictureBox pictureBox = new PictureBox();
+            pictureBox.Height = 1;
+            pictureBox.Location = new Point(HorizontalScrollValue, 1);
+            plForDate.Controls.Add(pictureBox);
+            pictureBox.Image = bitmap;
 
-            PictureBox pb = new PictureBox();
-            pb.Height = 1;
-            pb.Location = new Point(HorizontalScrollValue, 1);
-            plForDate.Controls.Add(pb);
-            pb.Image = bmp;
-
-            DateTextBox dateTextBox = new DateTextBox(dateToTables, height, locationX);
-            while (dateToTables <= dateMaxToTable)
+            int locationX = BuildCalendarDateModels(dateToTables, dateMaxToTable, height);
+            if (LastMaxHorizonntalScroll >= locationX + Constants.COLUMN_WITH &&
+                HorizontalScrollValue > LastMaxHorizonntalScroll - LastLargeChangeHorizonntalScroll)
             {
-                if (IsNotHolyday(dateToTables))
+                HorizontalScrollValue -= LastMaxHorizonntalScroll - locationX;
+            }
+            pBForLine.Width = locationX;
+            ResizeImage(new Size(locationX, pBForLine.Height));
+            ResizeCalendarDateImage(pictureBox, bitmap, locationX);
+        }
+
+        /// <summary>Формирует объекты рабочих дат и возвращает ширину шкалы в пикселях.</summary>
+        /// <param name="firstDate">Начальная дата календаря.</param>
+        /// <param name="lastDate">Конечная дата календаря.</param>
+        /// <param name="height">Высота объектов даты.</param>
+        /// <returns>Ширина сформированной шкалы дат.</returns>
+        private static int BuildCalendarDateModels(DateTime firstDate, DateTime lastDate, int height)
+        {
+            int locationX = 0;
+            DateTextBox dateTextBox = new DateTextBox(firstDate, height, locationX);
+            while (firstDate <= lastDate)
+            {
+                if (IsNotHolyday(firstDate))
                 {
-                    dateTextBox = new DateTextBox(dateToTables, height, locationX);
+                    dateTextBox = new DateTextBox(firstDate, height, locationX);
                     dateTextBox.TextBox.BringToFront();
                     dateTextBox.LocationX = locationX;
                     dateTextBox.SetLoadingStatus(Statuses.LoadingStatus.NotReady);
                     locationX += Constants.COLUMN_WITH;
                     Program.PoolTextBox.ListTextBoxes.Add(dateTextBox);
                 }
-                dateToTables = dateToTables.AddDays(1);
+                firstDate = firstDate.AddDays(1);
             }
+            return locationX;
+        }
 
-            if (LastMaxHorizonntalScroll >= locationX + Constants.COLUMN_WITH && HorizontalScrollValue > LastMaxHorizonntalScroll - LastLargeChangeHorizonntalScroll)
+        /// <summary>Заменяет временный растр шкалы дат, освобождая его после успешной подмены.</summary>
+        /// <param name="pictureBox">Контрол шкалы дат, владеющий итоговым растром.</param>
+        /// <param name="sourceBitmap">Исходный однопиксельный растр.</param>
+        /// <param name="width">Ширина итогового изображения.</param>
+        private static void ResizeCalendarDateImage(PictureBox pictureBox, Bitmap sourceBitmap, int width)
+        {
+            Bitmap resizedBitmap = null;
+            try
             {
-                HorizontalScrollValue -= LastMaxHorizonntalScroll - locationX;
-            }
-            ResizePlForTaskes();
-            ResizePlForDate();
-            void ResizePlForDate()
-            {
-                try
+                resizedBitmap = new Bitmap(width, sourceBitmap.Height);
+                using (Graphics graphics = Graphics.FromImage(resizedBitmap))
                 {
-                    var b = new Bitmap(locationX, bmp.Height);
-                    using (Graphics g = Graphics.FromImage((Image)b))
-                    {
-                        g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
-                        g.DrawImage(bmp, 0, 0, bmp.Width * 4, bmp.Height);
-                    }
-                    bmp = b;
-                    pb.Width = bmp.Width;
-                    pb.Image = bmp;
+                    graphics.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
+                    graphics.DrawImage(sourceBitmap, 0, 0, sourceBitmap.Width * 4, sourceBitmap.Height);
                 }
-                catch
-                {
-
-                }
-
+                pictureBox.Width = resizedBitmap.Width;
+                pictureBox.Image = resizedBitmap;
+                sourceBitmap.Dispose();
             }
-            void ResizePlForTaskes()
+            catch (Exception ex)
             {
-                pBForLine.Width = locationX;
-                ResizeImage(new Size(locationX, pBForLine.Height));
+                if (!ReferenceEquals(pictureBox.Image, resizedBitmap))
+                    resizedBitmap?.Dispose();
+                Trace.WriteLine("TimeSchedule date image resize failed: " + ex);
             }
         }
+
         private static bool IsNotHolyday(DateTime dateToTables)
         {
             if (dateToTables.DayOfWeek == DayOfWeek.Saturday)
@@ -892,9 +1205,9 @@ namespace time_schedule
                 plPersonButton.VerticalScroll.Value = test;
                 plPersonButton.VerticalScroll.Value = test;
             }
-            catch
+            catch (Exception ex)
             {
-
+                Trace.WriteLine("TimeSchedule mouse wheel scroll sync failed: " + ex);
             }
             VerticalScrollValue = plMain.VerticalScroll.Value;
             HorizontalScrollValue = plMain.HorizontalScroll.Value;
@@ -933,9 +1246,9 @@ namespace time_schedule
                 plPersonButton.VerticalScroll.Value = plMain.VerticalScroll.Value;
                 plPersonButton.VerticalScroll.Value = plMain.VerticalScroll.Value;
             }
-            catch
+            catch (Exception ex)
             {
-                //MessageBox.Show("1");
+                Trace.WriteLine("TimeSchedule scroll synchronization failed: " + ex);
             }
             VerticalScrollValue = plMain.VerticalScroll.Value;
             HorizontalScrollValue = plMain.HorizontalScroll.Value;
@@ -974,6 +1287,8 @@ namespace time_schedule
         }
 
 
+        /// <summary>Прокручивает календарь к запрошенной дате, не изменяя модель задач.</summary>
+        /// <param name="targetDateTime">Дата, к которой требуется перейти.</param>
         public void ScrollToDate(DateTime targetDateTime)
         {
             if (!plForDate.HorizontalScroll.Visible)
@@ -1011,7 +1326,10 @@ namespace time_schedule
                     plForDate.HorizontalScroll.Value = locationX;
                 }
             }
-            catch { }
+            catch (Exception ex)
+            {
+                Trace.WriteLine("TimeSchedule scroll to date failed: " + ex);
+            }
             HorizontalScrollValue = plMain.HorizontalScroll.Value;
             LoadTaskButtons();
             LoadDateTextBoxes();
@@ -1045,6 +1363,8 @@ namespace time_schedule
         {
             LoadRefreshForm(Statuses.ProgressBar.Use);
         }
+        /// <summary>Сдвигает календарь по рабочим датам с сохранением текущей синхронизации панелей.</summary>
+        /// <param name="value">Сдвиг в количестве столбцов календаря.</param>
         private void HorizontalScrollAdd(int value)
         {
             try
@@ -1054,9 +1374,9 @@ namespace time_schedule
                 plForDate.HorizontalScroll.Value = plMain.HorizontalScroll.Value;
                 plForDate.HorizontalScroll.Value = plMain.HorizontalScroll.Value;
             }
-            catch
+            catch (Exception ex)
             {
-
+                Trace.WriteLine("TimeSchedule horizontal scroll adjustment failed: " + ex);
             }
             HorizontalScrollValue = plMain.HorizontalScroll.Value;
         }
@@ -1066,20 +1386,24 @@ namespace time_schedule
             LoadTaskButtons();
             LoadDateTextBoxes();
         }
+        /// <summary>Создаёт растровую основу линий календаря и освобождает предыдущую, если она не отображается.</summary>
+        /// <param name="size">Размер нового растра.</param>
         public void ResizeImage(Size size)
         {
+            Bitmap bitmap = null;
             try
             {
-                Bitmap b = new Bitmap(size.Width, size.Height);
-                using (Graphics g = Graphics.FromImage((Image)b))
-                {
-                    g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
-                    g.DrawImage(b, 0, 0, size.Width, size.Height);
-                }
-                Bmp = b;
+                bitmap = new Bitmap(size.Width, size.Height);
+                Bitmap previousBitmap = Bmp;
+                Bmp = bitmap;
+                if (!ReferenceEquals(pBForLine.Image, previousBitmap))
+                    previousBitmap?.Dispose();
             }
-            catch
+            catch (Exception ex)
             {
+                if (!ReferenceEquals(Bmp, bitmap))
+                    bitmap?.Dispose();
+                Trace.WriteLine("TimeSchedule calendar bitmap resize failed: " + ex);
             }
         }
 
@@ -1134,6 +1458,7 @@ namespace time_schedule
             btnNewTask.Visible = true;
         }
 
+        /// <summary>Сохраняет синхронизацию горизонтальной прокрутки панелей при прокрутке исполнителей.</summary>
         private void plPersonButton_Scroll(object sender, ScrollEventArgs e)
         {
             try
@@ -1142,9 +1467,9 @@ namespace time_schedule
                 plMain.HorizontalScroll.Value = plForDate.HorizontalScroll.Value;
 
             }
-            catch
+            catch (Exception ex)
             {
-
+                Trace.WriteLine("TimeSchedule person panel scroll sync failed: " + ex);
             }
         }
 
@@ -1478,55 +1803,118 @@ namespace time_schedule
             fm.LBx.Items.AddRange(listString.ToArray());
         }
 
-        /// <summary>Восстанавливает повреждённый HEAD или выбранную независимую копию задач.</summary>
+        /// <summary>Выбирает восстановление из history или независимого архива задач.</summary>
         private void восстановлениеЗадачToolStripMenuItem_Click(object sender, EventArgs e)
         {
             string tasksPath = Dals.TakeMainPathFile(Constants.TASKS_BIN);
-            if (TaskStore.UseCompactStore)
+            if (HandleHeadRecovery(tasksPath)) return;
+            ShowTaskBackupSelection(tasksPath);
+        }
+
+        /// <summary>
+        /// Предлагает проверенный HEAD из history при повреждении основного манифеста.
+        /// Возвращает true, если пользователь отменил восстановление или выбрал этот HEAD.
+        /// </summary>
+        /// <param name="tasksPath">Путь к файлу задач выбранного проекта.</param>
+        /// <returns>Признак завершения сценария выбора восстановления.</returns>
+        private bool HandleHeadRecovery(string tasksPath)
+        {
+            CompactHeadRecoveryInfo candidate;
+            try { candidate = TaskStore.FindCompactHeadRecovery(tasksPath); }
+            catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException ||
+                ex is InvalidDataException || ex is System.Runtime.Serialization.SerializationException ||
+                ex is AggregateException || ex is ArgumentException || ex is FormatException)
             {
-                CompactHeadRecoveryInfo candidate;
-                try { candidate = TaskStore.FindCompactHeadRecovery(tasksPath); }
-                catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException ||
-                    ex is InvalidDataException || ex is System.Runtime.Serialization.SerializationException ||
-                    ex is AggregateException || ex is ArgumentException || ex is FormatException)
-                {
-                    MessageBox.Show("Восстановление HEAD из history недоступно. " +
-                        "Можно выбрать независимую резервную копию задач.\n\n" + ex.Message,
-                        "Восстановление задач", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    candidate = null;
-                }
-                if (candidate != null)
-                {
-                    string message = "Основной манифест задач отсутствует или повреждён.\n\n" +
-                        "Проверен резервный снимок из history:\n" +
-                        "Ревизия: " + candidate.Generation + "\n" +
-                        "Задач: " + candidate.TaskCount + "\n" +
-                        "Сегментов: " + candidate.SegmentCount + "\n\n" +
-                        "Изменения, выполненные после этой ревизии, могут быть утрачены.\n" +
-                        "Восстановить этот снимок?";
-                    DialogResult choice = MessageBox.Show(message +
-                        "\n\nНет — выбрать независимую резервную копию задач.",
-                        "Подтверждение восстановления HEAD", MessageBoxButtons.YesNoCancel,
-                        MessageBoxIcon.Warning);
-                    if (choice == DialogResult.Cancel) return;
-                    if (choice == DialogResult.Yes)
-                    {
-                        try
-                        {
-                            Program.ListTasksAllPersonToSave = TaskStore.RestoreCompactHead(tasksPath, candidate);
-                            LoadRefreshForm(Statuses.ProgressBar.Use);
-                        }
-                        catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException ||
-                            ex is InvalidDataException || ex is System.Runtime.Serialization.SerializationException ||
-                            ex is AggregateException || ex is ArgumentException || ex is FormatException)
-                        {
-                            MessageBox.Show("Восстановление HEAD не выполнено.\n\n" + ex.Message,
-                                "Ошибка восстановления", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        }
-                        return;
-                    }
-                }
+                MessageBox.Show("Восстановление HEAD из history недоступно. " +
+                    "Можно выбрать независимую резервную копию задач.\n\n" + ex.Message,
+                    "Восстановление задач", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return false;
             }
+            if (candidate == null) return false;
+
+            DialogResult choice = ConfirmHeadRecovery(candidate);
+            if (choice == DialogResult.No) return false;
+            if (choice == DialogResult.Yes) RestoreHeadFromHistory(tasksPath, candidate);
+            return true;
+        }
+
+        /// <summary>Запрашивает подтверждение восстановления проверенной ревизии HEAD.</summary>
+        /// <param name="candidate">Найденный проверенный манифест из history.</param>
+        /// <returns>Выбранный пользователем вариант восстановления.</returns>
+        private static DialogResult ConfirmHeadRecovery(CompactHeadRecoveryInfo candidate)
+        {
+            string message = "Основной манифест задач отсутствует или повреждён.\n\n" +
+                "Проверен резервный снимок из history:\n" +
+                "Ревизия: " + candidate.Generation + "\n" +
+                "Задач: " + candidate.TaskCount + "\n" +
+                "Сегментов: " + candidate.SegmentCount + "\n\n" +
+                "Изменения, выполненные после этой ревизии, могут быть утрачены.\n" +
+                "Восстановить этот снимок?";
+            return MessageBox.Show(message +
+                "\n\nНет — выбрать независимую резервную копию задач.",
+                "Подтверждение восстановления HEAD", MessageBoxButtons.YesNoCancel,
+                MessageBoxIcon.Warning);
+        }
+
+        /// <summary>Восстанавливает подтверждённый HEAD и обновляет календарь.</summary>
+        /// <param name="tasksPath">Путь к файлу задач выбранного проекта.</param>
+        /// <param name="candidate">Подтверждённый пользователем манифест.</param>
+        private void RestoreHeadFromHistory(string tasksPath, CompactHeadRecoveryInfo candidate)
+        {
+            try
+            {
+                Program.ListTasksAllPersonToSave = TaskStore.RestoreCompactHead(tasksPath, candidate);
+                LoadRefreshForm(Statuses.ProgressBar.Use);
+            }
+            catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException ||
+                ex is InvalidDataException || ex is System.Runtime.Serialization.SerializationException ||
+                ex is AggregateException || ex is ArgumentException || ex is FormatException)
+            {
+                MessageBox.Show("Восстановление HEAD не выполнено.\n\n" + ex.Message,
+                    "Ошибка восстановления", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        /// <summary>Отображает независимые снимки и исторические архивы для явного восстановления.</summary>
+        /// <param name="tasksPath">Путь к файлу задач выбранного проекта.</param>
+        private void ShowTaskBackupSelection(string tasksPath)
+        {
+            fmChangeList fm = CreateTaskRestoreForm();
+            List<KeyValuePair<string, string>> availableBackups;
+            try { availableBackups = FindAvailableTaskBackups(tasksPath); }
+            catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException ||
+                ex is ArgumentException)
+            {
+                MessageBox.Show("Не удалось прочитать резервные копии задач.\n\n" + ex.Message,
+                    "Ошибка восстановления", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+            if (availableBackups.Count == 0)
+            {
+                MessageBox.Show("Резервные копии задач для этого проекта не найдены.",
+                    "Восстановление задач", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            fm.LBx.Items.AddRange(availableBackups.Select(x => x.Key).ToArray());
+            fm.LBx.Click += (clickSender, clickArgs) =>
+                fm.BtnApply.Enabled = fm.LBx.SelectedIndex != -1;
+            string openedRevision;
+            try { openedRevision = TaskStore.RevisionForRestore(tasksPath); }
+            catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException ||
+                ex is InvalidDataException || ex is System.Runtime.Serialization.SerializationException)
+            {
+                MessageBox.Show("Не удалось проверить состояние задач: " + ex.Message);
+                return;
+            }
+            fm.ShowDialog();
+            RestoreSelectedTaskBackup(fm, availableBackups, tasksPath, openedRevision);
+        }
+
+        /// <summary>Настраивает окно выбора резервной копии задач.</summary>
+        /// <returns>Окно, готовое к заполнению списком архивов.</returns>
+        private static fmChangeList CreateTaskRestoreForm()
+        {
             fmChangeList fm = new fmChangeList();
             fm.Text = "Файлы";
             fm.StartPosition = FormStartPosition.CenterParent;
@@ -1541,33 +1929,37 @@ namespace time_schedule
             fm.BtnApply.Enabled = false;
             fm.GroupBox1.Visible = false;
             fm.LBx.Width = fm.Width - fm.LBx.Location.X * 3;
+            return fm;
+        }
+
+        /// <summary>Собирает список компактных снимков и архивов старого формата с уникальными отображаемыми именами.</summary>
+        /// <param name="tasksPath">Путь к файлу задач выбранного проекта.</param>
+        /// <returns>Пары отображаемого имени и полного пути резервной копии.</returns>
+        private static List<KeyValuePair<string, string>> FindAvailableTaskBackups(string tasksPath)
+        {
             var availableBackups = new List<KeyValuePair<string, string>>();
             var usedBackupNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            if (TaskStore.UseCompactStore)
-            {
-                string compactBackups = CompactTaskStore.BackupDirectory(tasksPath);
-                if (Directory.Exists(compactBackups))
-                    foreach (DirectoryInfo snapshot in new DirectoryInfo(compactBackups)
-                        .GetDirectories("*.snapshot").OrderByDescending(d => d.CreationTimeUtc)
-                        .ThenByDescending(d => d.Name, StringComparer.Ordinal))
+            string compactBackups = CompactTaskStore.BackupDirectory(tasksPath);
+            if (Directory.Exists(compactBackups))
+                foreach (DirectoryInfo snapshot in new DirectoryInfo(compactBackups)
+                    .GetDirectories("*.snapshot").OrderByDescending(d => d.CreationTimeUtc)
+                    .ThenByDescending(d => d.Name, StringComparer.Ordinal))
+                {
+                    string displayName = CompactTaskStore.BackupDisplayName(snapshot);
+                    string uniqueName = displayName;
+                    int duplicate = 2;
+                    while (!usedBackupNames.Add(uniqueName))
                     {
-                        string displayName = CompactTaskStore.BackupDisplayName(snapshot);
-                        string uniqueName = displayName;
-                        int duplicate = 2;
-                        while (!usedBackupNames.Add(uniqueName))
-                        {
-                            uniqueName = displayName + "_" + duplicate.ToString("D2");
-                            duplicate++;
-                        }
-                        availableBackups.Add(new KeyValuePair<string, string>(uniqueName, snapshot.FullName));
+                        uniqueName = displayName + "_" + duplicate.ToString("D2");
+                        duplicate++;
                     }
-            }
+                    availableBackups.Add(new KeyValuePair<string, string>(uniqueName, snapshot.FullName));
+                }
             string oldBackups = Dals.TakeBackUpPathDirectory(Constants.TASKS_BIN);
             foreach (FileInfo oldFile in new DirectoryInfo(oldBackups)
                 .GetFiles().OrderByDescending(f => f.CreationTimeUtc))
             {
-                string displayName = TaskStore.UseCompactStore ? "Архивная_" + oldFile.Name :
-                    oldFile.Name.Replace('_', ':');
+                string displayName = "Архивная_" + oldFile.Name;
                 string uniqueName = displayName;
                 int duplicate = 2;
                 while (!usedBackupNames.Add(uniqueName))
@@ -1577,61 +1969,42 @@ namespace time_schedule
                 }
                 availableBackups.Add(new KeyValuePair<string, string>(uniqueName, oldFile.FullName));
             }
-            if (availableBackups.Count == 0)
-            {
-                MessageBox.Show("Резервные копии задач для этого проекта не найдены.",
-                    "Восстановление задач", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                return;
-            }
-            fm.LBx.Items.AddRange(availableBackups.Select(x => x.Key).ToArray());
-            fm.LBx.Click += LBx_Click;
-            void LBx_Click(object newSender, EventArgs newE)
-            {
-                if (fm.LBx.SelectedIndex != -1)
-                {
-                    fm.BtnApply.Enabled = true;
-                }
-                if (fm.LBx.SelectedIndex == -1)
-                {
-                    fm.BtnApply.Enabled = false;
-                }
-            }
-            string openedRevision;
-            try { openedRevision = TaskStore.RevisionForRestore(tasksPath); }
-            catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException ||
-                ex is InvalidDataException || ex is System.Runtime.Serialization.SerializationException)
-            {
-                MessageBox.Show("Не удалось проверить состояние задач: " + ex.Message);
-                return;
-            }
-            fm.ShowDialog();
-            if (fm.BtnClick == BtnClick.aplly && fm.LBx.SelectedItem != null)
-            {
-                string fileName = availableBackups[fm.LBx.SelectedIndex].Value;
-                if (MessageBox.Show("Заменить все текущие задачи выбранной копией? " +
-                    "Если текущее хранилище исправно, его состояние будет сохранено в резервной копии. " +
-                    "Повреждённые файлы, когда возможно, сохраняются для диагностики.",
-                    "Подтверждение восстановления", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) != DialogResult.Yes)
-                    return;
-                try
-                {
-                    Program.ListTasksAllPersonToSave = TaskStore.Restore(tasksPath, fileName, openedRevision);
-                    Program.fmMain.LoadRefreshForm(Statuses.ProgressBar.Use);
-                }
-                catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException ||
-                    ex is InvalidDataException || ex is System.Runtime.Serialization.SerializationException ||
-                    ex is AggregateException || ex is ArgumentException || ex is FormatException)
-                {
-                    MessageBox.Show("Восстановление не выполнено: " + ex.Message);
-                }
-            }
-
+            return availableBackups;
         }
 
+        /// <summary>Восстанавливает выбранный архив после подтверждения пользователя.</summary>
+        /// <param name="fm">Окно выбора резервной копии.</param>
+        /// <param name="availableBackups">Список отображаемых архивов и их путей.</param>
+        /// <param name="tasksPath">Путь к файлу задач выбранного проекта.</param>
+        /// <param name="openedRevision">Ревизия, прочитанная перед открытием окна.</param>
+        private void RestoreSelectedTaskBackup(fmChangeList fm,
+            List<KeyValuePair<string, string>> availableBackups, string tasksPath, string openedRevision)
+        {
+            if (fm.BtnClick != BtnClick.aplly || fm.LBx.SelectedItem == null) return;
+            string fileName = availableBackups[fm.LBx.SelectedIndex].Value;
+            if (MessageBox.Show("Заменить все текущие задачи выбранной копией? " +
+                "Если текущее хранилище исправно, его состояние будет сохранено в резервной копии. " +
+                "Повреждённые файлы, когда возможно, сохраняются для диагностики.",
+                "Подтверждение восстановления", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) != DialogResult.Yes)
+                return;
+            try
+            {
+                Program.ListTasksAllPersonToSave = TaskStore.Restore(tasksPath, fileName, openedRevision);
+                Program.fmMain.LoadRefreshForm(Statuses.ProgressBar.Use);
+            }
+            catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException ||
+                ex is InvalidDataException || ex is System.Runtime.Serialization.SerializationException ||
+                ex is AggregateException || ex is ArgumentException || ex is FormatException)
+            {
+                MessageBox.Show("Восстановление не выполнено: " + ex.Message);
+            }
+        }
+
+        /// <summary>Показывает диалог создания проекта и освобождает его после закрытия.</summary>
         private void button2_Click(object sender, EventArgs e)
         {
-            FrmAddProject addProject = new FrmAddProject();
-            addProject.ShowDialog();
+            using (FrmAddProject addProject = new FrmAddProject())
+                addProject.ShowDialog();
         }
 
         private void NewRefresh_Click(object sender, EventArgs e)
@@ -1639,32 +2012,29 @@ namespace time_schedule
             ShowProgressbarAndMakeRefresh();
         }
 
+        /// <summary>Планирует обновление в UI-потоке, сохраняя возможность подписки на событие после вызова.</summary>
         public void ShowProgressbarAndMakeRefresh()
         {
-            fmProgressBar frm = new fmProgressBar();
-            frm.SetTextMessege("Идет обновление");
-            frm.StartPosition = FormStartPosition.Manual;
-            frm.Location = new Point(
-                this.Left + this.Width / 2 - frm.Width / 2,
-                this.Top + this.Height / 2 - frm.Height / 2);
-            System.Threading.Tasks.Task tsk = new System.Threading.Tasks.Task(() =>
+            if (IsDisposed || Disposing || !IsHandleCreated)
+                return;
+            BeginInvoke(new Action(() =>
             {
-                Invoke(new Action(() =>
+                if (IsDisposed || Disposing)
+                    return;
+                try
                 {
-                    LoadRefreshForm(RefreshType.All);
+                    LoadRefreshForm(Statuses.ProgressBar.Use);
                     EventRefreshFinished?.Invoke();
-                }));
-                Thread.Sleep(10);
-                frm.Invoke(new Action(() => frm.Close()));
-            });
-            frm.Load += Frm_EventLoadFinished;
-            System.Threading.Tasks.Task.Run(()=>frm.ShowDialog());
-             void Frm_EventLoadFinished(object s, EventArgs ev)
-            {
-                tsk.Start();
-                
-            }
-
+                }
+                catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException ||
+                    ex is System.Runtime.Serialization.SerializationException || ex is InvalidCastException ||
+                    ex is InvalidDataException || ex is InvalidOperationException || ex is ArgumentException)
+                {
+                    Trace.WriteLine("TimeSchedule scheduled refresh failed: " + ex);
+                    MessageBox.Show("Не удалось завершить обновление календаря.\n\n" + ex.Message,
+                        "Ошибка обновления календаря", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }));
         }
 
         private void butTest_Click(object sender, EventArgs e)

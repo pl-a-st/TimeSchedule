@@ -988,27 +988,8 @@ namespace time_schedule
             Stopwatch writeTimer = TaskStore.TimingSink == null ? null : Stopwatch.StartNew();
             Action<KeyValuePair<long, PreparedSegment>> writeOne = entry =>
             {
-                byte[] payload = entry.Value.Payload;
-                string hash = entry.Value.Hash;
-                string target = SegmentPath(root, entry.Key, head.RangeSize, hash);
-                if (!File.Exists(target))
-                {
-                    string temporary = Path.Combine(segmentsPath, ".pending-" + Guid.NewGuid().ToString("N"));
-                    try
-                    {
-                        using (var output = new FileStream(temporary, FileMode.CreateNew,
-                            FileAccess.Write, FileShare.None))
-                        {
-                            output.Write(payload, 0, payload.Length);
-                            output.Flush(true);
-                        }
-                        File.Move(temporary, target);
-                        Interlocked.Increment(ref newFiles);
-                    }
-                    finally { TryDelete(temporary); }
-                }
-                else if (!string.Equals(Sha(target), hash, StringComparison.OrdinalIgnoreCase))
-                    throw new InvalidDataException("Нарушена целостность сегмента: " + target);
+                if (WriteImmutableSegment(root, segmentsPath, head.RangeSize, entry.Key, entry.Value))
+                    Interlocked.Increment(ref newFiles);
             };
 
             // Записываются только независимые файлы; изменять общий HEAD из потоков нельзя.
@@ -1046,6 +1027,43 @@ namespace time_schedule
                     " new-files=" + newFiles + " parallel=" + (parallelWrite ? 1 : 0) +
                     " write-ms=" + writeTimer.ElapsedMilliseconds);
             return changed;
+        }
+
+        /// <summary>
+        /// Записывает новый неизменяемый сегмент через временный файл с синхронизацией
+        /// на диск либо проверяет SHA-256 уже существующего файла.
+        /// </summary>
+        /// <param name="root">Корневой каталог компактного хранилища.</param>
+        /// <param name="segmentsPath">Каталог файлов сегментов.</param>
+        /// <param name="rangeSize">Размер диапазона задач в одном сегменте.</param>
+        /// <param name="segmentId">Номер диапазона задач.</param>
+        /// <param name="prepared">Подготовленные неизменяемые байты и их SHA-256.</param>
+        /// <returns>True, если создан новый файл; false, если существующий прошёл проверку.</returns>
+        private static bool WriteImmutableSegment(string root, string segmentsPath, int rangeSize,
+            long segmentId, PreparedSegment prepared)
+        {
+            byte[] payload = prepared.Payload;
+            string hash = prepared.Hash;
+            string target = SegmentPath(root, segmentId, rangeSize, hash);
+            if (!File.Exists(target))
+            {
+                string temporary = Path.Combine(segmentsPath, ".pending-" + Guid.NewGuid().ToString("N"));
+                try
+                {
+                    using (var output = new FileStream(temporary, FileMode.CreateNew,
+                        FileAccess.Write, FileShare.None))
+                    {
+                        output.Write(payload, 0, payload.Length);
+                        output.Flush(true);
+                    }
+                    File.Move(temporary, target);
+                    return true;
+                }
+                finally { TryDelete(temporary); }
+            }
+            if (!string.Equals(Sha(target), hash, StringComparison.OrdinalIgnoreCase))
+                throw new InvalidDataException("Нарушена целостность сегмента: " + target);
+            return false;
         }
 
         /// <summary>Публикует манифест с контрольной суммой, сохраняя предыдущий для отката.</summary>

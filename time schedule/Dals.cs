@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.IO;
+using System.Diagnostics;
+using System.Runtime.InteropServices;
 using Excel = Microsoft.Office.Interop.Excel;
 using System.Text;
 using System.Threading.Tasks;
@@ -345,17 +347,45 @@ namespace time_schedule
                 fileName = ProjectFolderPath + "\\" + fileName;
             return ReadListFromFile(fileName);
         }
+        /// <summary>
+        /// Выгружает задачи в Excel, оставляя книгу открытой при успешном завершении.
+        /// При ошибке завершает только созданный этим вызовом экземпляр Excel.
+        /// </summary>
+        /// <param name="pathFileToSave">Путь для сохранения сформированной книги.</param>
+        /// <param name="listTasks">Задачи для выгрузки.</param>
         public static void ExelWriteListTasks(string pathFileToSave, ListTasks listTasks)
         {
             string pathModelFileName = Dals.ProjectFolderPath + "\\шаблон.xlsm";
-            Excel.Application excelApp = new Excel.Application();
+            Excel.Application excelApp = null;
             Excel.Workbook workbook = null;
-            OpenWorkBook(ref excelApp, ref workbook, pathModelFileName);
-            SaveWorkBook(ref workbook, pathFileToSave);
-            const int FIRST_SHEET = 1;
-            Excel.Worksheet worksheet = workbook.Sheets[FIRST_SHEET];
-            WorksheetWriteListTasks(worksheet, listTasks);
-            excelApp.Visible = true;
+            Excel.Worksheet worksheet = null;
+            bool completed = false;
+            try
+            {
+                excelApp = new Excel.Application();
+                workbook = OpenWorkBook(excelApp, pathModelFileName);
+                SaveWorkBook(workbook, pathFileToSave);
+                const int FIRST_SHEET = 1;
+                Excel.Sheets sheets = null;
+                try
+                {
+                    sheets = workbook.Sheets;
+                    worksheet = (Excel.Worksheet)sheets[FIRST_SHEET];
+                }
+                finally
+                {
+                    ReleaseExcelObject(sheets);
+                }
+                WorksheetWriteListTasks(worksheet, listTasks);
+                excelApp.Visible = true;
+                completed = true;
+            }
+            finally
+            {
+                ReleaseExcelObject(worksheet);
+                if (!completed)
+                    CloseFailedExcelExport(excelApp, workbook);
+            }
         }
         private static void ChooseFolderWritePath(string targetFolderName, FolderBrowserDialog folderBrowserDialog)
         {
@@ -377,55 +407,118 @@ namespace time_schedule
             streamWriter.Close();
         }
 
-        private static void SaveWorkBook(ref Excel.Workbook workbook, string pathFileToSave)
+        /// <summary>
+        /// Сохраняет книгу по указанному пути; если SaveAs не удался, сохраняет
+        /// исходную книгу по существовавшему ранее резервному сценарию.
+        /// </summary>
+        private static void SaveWorkBook(Excel.Workbook workbook, string pathFileToSave)
         {
             try
             {
                 workbook.SaveAs(pathFileToSave);
-                MessageBox.Show("Файл будет сохранен по адресу: " + pathFileToSave);
             }
-            catch
+            catch (Exception saveAsError) when (saveAsError is COMException ||
+                saveAsError is IOException || saveAsError is UnauthorizedAccessException)
             {
+                Trace.WriteLine("TimeSchedule Excel SaveAs failed: " + saveAsError);
                 MessageBox.Show("Не удалось сохранить файл " + pathFileToSave +
                     ". Заполнение будет произведено в файл шаблона. Необходимо его сохранить самстоятельно",
                     "Проблема", MessageBoxButtons.OK, MessageBoxIcon.Error,
                     MessageBoxDefaultButton.Button1, MessageBoxOptions.ServiceNotification);
-
-                workbook.Save();
+                try
+                {
+                    workbook.Save();
+                }
+                catch (Exception fallbackError) when (fallbackError is COMException ||
+                    fallbackError is IOException || fallbackError is UnauthorizedAccessException)
+                {
+                    throw new IOException("Не удалось сохранить книгу Excel ни по указанному пути, ни в исходный файл.",
+                        new AggregateException(saveAsError, fallbackError));
+                }
+                return;
             }
-
+            MessageBox.Show("Файл будет сохранен по адресу: " + pathFileToSave);
         }
-        private static void OpenWorkBook(
-            ref Excel.Application excelApp,
-            ref Excel.Workbook workbook,
-            string pathModelFile)
+
+        /// <summary>Открывает шаблон либо создаёт новую книгу; при отказе сохраняет причины обеих попыток.</summary>
+        private static Excel.Workbook OpenWorkBook(Excel.Application excelApp, string pathModelFile)
+        {
+            Excel.Workbooks workbooks = null;
+            try
+            {
+                workbooks = excelApp.Workbooks;
+                try
+                {
+                    return File.Exists(pathModelFile)
+                        ? workbooks.Open(pathModelFile)
+                        : workbooks.Add();
+                }
+                catch (COMException firstError)
+                {
+                    string fallbackPath = Path.IsPathRooted(pathModelFile)
+                        ? pathModelFile
+                        : Path.Combine(Environment.CurrentDirectory, pathModelFile);
+                    try
+                    {
+                        return workbooks.Open(fallbackPath);
+                    }
+                    catch (COMException secondError)
+                    {
+                        throw new IOException("Не удалось открыть или создать книгу Excel: " + fallbackPath,
+                            new AggregateException(firstError, secondError));
+                    }
+                }
+            }
+            finally
+            {
+                ReleaseExcelObject(workbooks);
+            }
+        }
+
+        /// <summary>Завершает неудачный экспорт, не затрагивая другие запущенные экземпляры Excel.</summary>
+        private static void CloseFailedExcelExport(Excel.Application excelApp, Excel.Workbook workbook)
         {
             try
             {
-                if (File.Exists(pathModelFile))
-                {
-                    workbook = excelApp.Workbooks.Open(pathModelFile);
-                }
-                else
-                {
-                    workbook = excelApp.Workbooks.Add();
-                }
+                if (workbook != null)
+                    workbook.Close(false);
             }
-            catch
+            catch (Exception ex) when (ex is COMException || ex is InvalidOperationException)
+            {
+                Trace.WriteLine("TimeSchedule Excel workbook cleanup failed: " + ex);
+            }
+            finally
             {
                 try
                 {
-                    pathModelFile = Environment.CurrentDirectory + "\\" + pathModelFile;
-                    workbook = excelApp.Workbooks.Open(pathModelFile);
+                    if (excelApp != null)
+                        excelApp.Quit();
                 }
-                catch
+                catch (Exception ex) when (ex is COMException || ex is InvalidOperationException)
                 {
-                    excelApp.Quit();
-                    MessageBox.Show("Не удалось открыть файл " + pathModelFile +
-                        " или проблемы с самим приложением");
-                    return;
+                    Trace.WriteLine("TimeSchedule Excel application cleanup failed: " + ex);
                 }
+                finally
+                {
+                    ReleaseExcelObject(workbook);
+                    ReleaseExcelObject(excelApp);
+                }
+            }
+        }
 
+        /// <summary>Освобождает принадлежащую текущему экспорту COM-обёртку Excel.</summary>
+        private static void ReleaseExcelObject(object comObject)
+        {
+            if (comObject != null && Marshal.IsComObject(comObject))
+            {
+                try
+                {
+                    Marshal.ReleaseComObject(comObject);
+                }
+                catch (Exception ex) when (ex is InvalidComObjectException || ex is COMException)
+                {
+                    Trace.WriteLine("TimeSchedule Excel COM object cleanup failed: " + ex);
+                }
             }
         }
         private static void WorksheetWriteListTasks(Excel.Worksheet worksheet, ListTasks listTasks)

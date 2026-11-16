@@ -147,7 +147,6 @@ namespace time_schedule
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            TaskStore.UseCompactStore = true;
 #if DEBUG
             bool timingEnabled = true;
 #else

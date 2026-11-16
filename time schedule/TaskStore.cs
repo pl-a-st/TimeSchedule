@@ -20,23 +20,18 @@ namespace time_schedule
     }
 
     /// <summary>
-    /// Совместный доступ к бинарному списку задач. Синхронизация действует между компьютерами,
-    /// когда все экземпляры используют один и тот же файл блокировки в общей папке.
+    /// Согласованный доступ к компактному хранилищу задач и двоичному списку исполнителей.
+    /// Синхронизация между компьютерами требует общего файла блокировки.
     /// </summary>
     public static class TaskStore
     {
-        /// <summary>Включает испытательный компактный формат; задаётся один раз при запуске приложения.</summary>
-        public static bool UseCompactStore { get; set; }
-
         /// <summary>
         /// Проверяет наличие задач; каталог компактного хранилища без HEAD
         /// также требует попытки чтения, чтобы сообщить об ошибке, а не скрыть её.
         /// </summary>
         public static bool HasTaskData(string file)
         {
-            return UseCompactStore
-                ? Directory.Exists(CompactTaskStore.StoreDirectory(file)) || File.Exists(file)
-                : File.Exists(file);
+            return Directory.Exists(CompactTaskStore.StoreDirectory(file)) || File.Exists(file);
         }
 
         /// <summary>Определяет принадлежность файла к основному списку задач.</summary>
@@ -99,7 +94,7 @@ namespace time_schedule
             throw new IOException("Не удалось получить блокировку общей папки: " + lockFile, last);
         }
 
-        /// <summary>Читает строго существующий и целый Tasks.bin без возврата устаревшего списка.</summary>
+        /// <summary>Читает проверенную опубликованную ревизию компактного хранилища задач.</summary>
         public static ListTasks Read(string file)
         {
             Stopwatch sw = Stopwatch.StartNew();
@@ -108,11 +103,11 @@ namespace time_schedule
             using (Acquire(file))
             {
                 waitMs = sw.ElapsedMilliseconds;
-                result = UseCompactStore ? CompactTaskStore.ReadLocked(file) : ReadExisting<ListTasks>(file);
+                result = CompactTaskStore.ReadLocked(file);
             }
             if (TimingSink != null)
                 ReportTiming("read tasks=" + result.Tasks.Count + " storage=" +
-                    (UseCompactStore ? "compact" : "legacy") + " lock-wait-ms=" + waitMs +
+                    "compact" + " lock-wait-ms=" + waitMs +
                     " deserialize-ms=" + (sw.ElapsedMilliseconds - waitMs));
             return result;
         }
@@ -128,13 +123,13 @@ namespace time_schedule
             using (Acquire(taskFile))
             {
                 waitMs = sw.ElapsedMilliseconds;
-                tasks = UseCompactStore ? CompactTaskStore.ReadLocked(taskFile) : ReadExisting<ListTasks>(taskFile);
+                tasks = CompactTaskStore.ReadLocked(taskFile);
                 tasksMs = sw.ElapsedMilliseconds - waitMs;
                 people = ReadOrImportPersons(personFile);
             }
             if (TimingSink != null)
                 ReportTiming("read-project tasks=" + tasks.Tasks.Count + " storage=" +
-                    (UseCompactStore ? "compact" : "legacy") + " lock-wait-ms=" + waitMs +
+                    "compact" + " lock-wait-ms=" + waitMs +
                     " tasks-deserialize-ms=" + tasksMs + " persons-deserialize-ms=" +
                     (sw.ElapsedMilliseconds - waitMs - tasksMs));
             return tasks;
@@ -147,7 +142,7 @@ namespace time_schedule
         public static string RevisionForRestore(string file)
         {
             using (Acquire(file))
-                return UseCompactStore && IsTaskFile(file)
+                return IsTaskFile(file)
                     ? CompactTaskStore.CurrentRevision(file) : RevisionUnsafe(file);
         }
 
@@ -156,7 +151,7 @@ namespace time_schedule
         {
             using (Acquire(file))
             {
-                if (UseCompactStore && IsTaskFile(file))
+                if (IsTaskFile(file))
                 {
                     CompactTaskStore.InitializeLocked(file); // миграция только под межмашинной блокировкой
                     return CompactTaskStore.CurrentRevision(file);
@@ -168,7 +163,6 @@ namespace time_schedule
         /// <summary>Под межмашинной блокировкой выбирает проверенную резервную ревизию HEAD без записи данных.</summary>
         internal static CompactHeadRecoveryInfo FindCompactHeadRecovery(string taskFile)
         {
-            if (!UseCompactStore) return null;
             using (Acquire(taskFile))
                 return CompactTaskStore.FindHeadRecoveryLocked(taskFile);
         }
@@ -176,8 +170,6 @@ namespace time_schedule
         /// <summary>Явно восстанавливает выбранную ревизию HEAD с защитой от конкурирующих изменений.</summary>
         internal static ListTasks RestoreCompactHead(string taskFile, CompactHeadRecoveryInfo approved)
         {
-            if (!UseCompactStore)
-                throw new InvalidOperationException("Восстановление HEAD доступно только для компактного хранилища");
             using (Acquire(taskFile))
                 return CompactTaskStore.RestoreHeadLocked(taskFile, approved);
         }
@@ -196,8 +188,7 @@ namespace time_schedule
             using (Acquire(file))
             {
                 waitMs = sw.ElapsedMilliseconds;
-                current = UseCompactStore
-                    ? CompactTaskStore.ReadLocked(file, out compactSourceHashes) : ReadOrImport(file);
+                current = CompactTaskStore.ReadLocked(file, out compactSourceHashes);
                 readMs = sw.ElapsedMilliseconds - waitMs;
                 Dictionary<long, string> original = Fingerprints(current);
                 ValidateExpected(original, expected);
@@ -206,15 +197,12 @@ namespace time_schedule
                 changeMs = sw.ElapsedMilliseconds - waitMs - readMs - checkMs;
                 ValidateChanges(original, current, expected);
                 verifyMs = sw.ElapsedMilliseconds - waitMs - readMs - checkMs - changeMs;
-                if (UseCompactStore)
-                    CompactTaskStore.CommitLocked(file, current, compactSourceHashes);
-                else
-                    Publish(file, current);
+                CompactTaskStore.CommitLocked(file, current, compactSourceHashes);
                 writeMs = sw.ElapsedMilliseconds - waitMs - readMs - checkMs - changeMs - verifyMs;
             }
             if (TimingSink != null)
                 ReportTiming("save tasks=" + current.Tasks.Count + " storage=" +
-                    (UseCompactStore ? "compact" : "legacy") + " lock-wait-ms=" + waitMs +
+                    "compact" + " lock-wait-ms=" + waitMs +
                     " deserialize-ms=" + readMs + " check-ms=" + checkMs +
                     " change-ms=" + changeMs + " verify-ms=" + verifyMs +
                     " serialize-publish-backup-ms=" + writeMs);
@@ -228,25 +216,7 @@ namespace time_schedule
         public static string CreateBackup(string file)
         {
             using (Acquire(file))
-            {
-                if (UseCompactStore)
-                    return CompactTaskStore.CreateBackupLocked(file);
-                ReadExisting<ListTasks>(file);
-                string backups = Path.Combine(Path.GetDirectoryName(file), "BackUp", Path.GetFileName(file));
-                Directory.CreateDirectory(backups);
-                string name = DateTime.UtcNow.ToString("yyyyMMdd-HHmmss-fffffff", CultureInfo.InvariantCulture) +
-                    "-" + Guid.NewGuid().ToString("N");
-                string temp = Path.Combine(backups, ".pending-" + Guid.NewGuid().ToString("N"));
-                string target = Path.Combine(backups, name);
-                try
-                {
-                    File.Copy(file, temp);
-                    File.Move(temp, target);
-                }
-                finally { TryDelete(temp); }
-                Prune(file);
-                return target;
-            }
+                return CompactTaskStore.CreateBackupLocked(file);
         }
 
         /// <summary>Восстанавливает компактный либо исторический архив с проверкой актуальной ревизии.</summary>
@@ -254,27 +224,30 @@ namespace time_schedule
         {
             using (Acquire(file))
             {
-                if (UseCompactStore && Directory.Exists(backupFile))
+                if (Directory.Exists(backupFile))
                     return CompactTaskStore.RestoreBackupLocked(file, backupFile, expectedRevision);
 
-                if (UseCompactStore) CompactTaskStore.ReadLocked(file);
-                string actualRevision = UseCompactStore ? CompactTaskStore.CurrentRevision(file) : RevisionUnsafe(file);
+                CompactTaskStore.ReadLocked(file);
+                string actualRevision = CompactTaskStore.CurrentRevision(file);
                 if (actualRevision != expectedRevision)
                     throw new TaskConflictException("За время выбора резервной копии задачи были изменены. Обновите список и повторите восстановление.");
                 ListTasks backup = ReadExisting<ListTasks>(backupFile);
                 Fingerprints(backup);
-                if (UseCompactStore)
-                    CompactTaskStore.CommitLocked(file, backup);
-                else
-                    Publish(file, backup);
+                CompactTaskStore.CommitLocked(file, backup);
                 return backup;
             }
         }
 
         /// <summary>
-        /// Согласованно изменяет исполнителей и их задачи под двумя файловыми блокировками.
-        /// Порядок всегда Persons.bin, затем Tasks.bin. Двухфайловой атомарности ФС не обещает.
+        /// Изменяет исполнителей и задачи под общими файловыми блокировками,
+        /// проверяет исходные ревизии и согласованно публикует оба хранилища.
+        /// Порядок блокировок: Persons.bin, затем Tasks.bin; общей атомарности нет.
         /// </summary>
+        /// <param name="taskFile">Путь к Tasks.bin, определяющий каталог проекта.</param>
+        /// <param name="change">Действие, изменяющее оба списка под блокировками.</param>
+        /// <param name="expected">Ожидаемые отпечатки задач.</param>
+        /// <param name="expectedPersonsRevision">Ожидаемая ревизия Persons.bin или null.</param>
+        /// <returns>Список задач после успешного сохранения.</returns>
         public static ListTasks UpdatePersonsAndTasks(string taskFile, Action<ListPersons, ListTasks> change,
             IDictionary<long, string> expected, string expectedPersonsRevision = null)
         {
@@ -285,85 +258,79 @@ namespace time_schedule
                 if (expectedPersonsRevision != null && RevisionUnsafe(personFile) != expectedPersonsRevision)
                     throw new TaskConflictException("Список исполнителей изменён другим пользователем. Обновите список.");
                 ListPersons people = ReadOrImportPersons(personFile);
-                ListTasks tasks = UseCompactStore ? CompactTaskStore.ReadLocked(taskFile) : ReadOrImport(taskFile);
+                ListTasks tasks = CompactTaskStore.ReadLocked(taskFile);
                 Dictionary<long, string> before = Fingerprints(tasks);
                 ValidateExpected(before, expected);
                 change(people, tasks);
                 ValidateChanges(before, tasks, expected);
-                // Сначала подготавливаем ОБА потока. Ошибка сериализации не меняет ни один основной файл.
-                byte[] previousPeople = File.Exists(personFile) ? File.ReadAllBytes(personFile) : null;
-                string personTemp = Stage(personFile, people);
-                string taskTemp = null;
-                bool publishedPeople = false;
-                bool publishedTasks = false;
+                PublishPersonsAndTasksLocked(personFile, taskFile, people, tasks);
+                return tasks;
+            }
+        }
+
+        /// <summary>
+        /// Публикует сначала Persons.bin, затем компактную ревизию задач в уже взятых
+        /// блокировках. При ошибке до публикации задач компенсирует изменение Persons.bin.
+        /// </summary>
+        /// <param name="personFile">Путь к файлу исполнителей.</param>
+        /// <param name="taskFile">Путь к Tasks.bin, определяющий каталог компактного хранилища.</param>
+        /// <param name="people">Подготовленный список исполнителей.</param>
+        /// <param name="tasks">Подготовленный список задач.</param>
+        private static void PublishPersonsAndTasksLocked(string personFile, string taskFile,
+            ListPersons people, ListTasks tasks)
+        {
+            byte[] previousPeople = File.Exists(personFile) ? File.ReadAllBytes(personFile) : null;
+            string personTemp = Stage(personFile, people);
+            bool publishedPeople = false;
+            bool publishedTasks = false;
+            try
+            {
+                string stagedPeopleHash = RevisionUnsafe(personTemp);
+                string compactRevisionBefore = CompactTaskStore.CurrentRevision(taskFile);
+                try { PublishStaged(personFile, personTemp); }
+                catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException)
+                {
+                    if (RevisionUnsafe(personFile) != stagedPeopleHash) throw;
+                }
+                publishedPeople = true;
+                personTemp = null;
                 try
                 {
-                    if (!UseCompactStore)
-                        taskTemp = Stage(taskFile, tasks);
-                    string stagedPeopleHash = RevisionUnsafe(personTemp);
-                    string stagedTasksHash = UseCompactStore ? null : RevisionUnsafe(taskTemp);
-                    string compactRevisionBefore = UseCompactStore
-                        ? CompactTaskStore.CurrentRevision(taskFile) : null;
-                    try { PublishStaged(personFile, personTemp); }
-                    catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException)
-                    {
-                        // Если файловая операция сообщила сбой ПОСЛЕ публикации,
-                        // контрольная сумма позволяет не принять опубликованное состояние за старое.
-                        if (RevisionUnsafe(personFile) != stagedPeopleHash) throw;
-                    }
-                    publishedPeople = true;
-                    personTemp = null;
-                    if (UseCompactStore)
-                    {
-                        try
-                        {
-                            CompactTaskStore.CommitLocked(taskFile, tasks);
-                            publishedTasks = true;
-                        }
-                        catch
-                        {
-                            // Не откатываем исполнителей, если запись манифеста могла завершиться.
-                            // Проверка не превращает неоднозначный исход в успешную операцию.
-                            if (CompactTaskStore.CurrentRevision(taskFile) != compactRevisionBefore)
-                                publishedTasks = true;
-                            throw;
-                        }
-                    }
-                    else
-                    {
-                        try { PublishStaged(taskFile, taskTemp); }
-                        catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException)
-                        {
-                            if (RevisionUnsafe(taskFile) != stagedTasksHash) throw;
-                        }
-                        publishedTasks = true;
-                        taskTemp = null;
-                    }
-                    Prune(personFile);
-                    if (!UseCompactStore) Prune(taskFile);
-                    return tasks;
+                    CompactTaskStore.CommitLocked(taskFile, tasks);
+                    publishedTasks = true;
                 }
                 catch
                 {
-                    if (publishedPeople && !publishedTasks)
-                    {
-                        // Компенсация под ОБЕИМИ блокировками, только если Tasks.bin не опубликован.
-                        if (previousPeople == null)
-                            File.Delete(personFile);
-                        else
-                        {
-                            string rollback = StageBytes(personFile, previousPeople);
-                            try { PublishStaged(personFile, rollback); }
-                            finally { TryDelete(rollback); }
-                        }
-                    }
+                    if (CompactTaskStore.CurrentRevision(taskFile) != compactRevisionBefore)
+                        publishedTasks = true;
                     throw;
                 }
-                finally
-                {
-                    TryDelete(personTemp);
-                    TryDelete(taskTemp);
-                }
+                Prune(personFile);
+            }
+            catch
+            {
+                if (publishedPeople && !publishedTasks)
+                    RestorePersonsAfterFailedCommit(personFile, previousPeople);
+                throw;
+            }
+            finally { TryDelete(personTemp); }
+        }
+
+        /// <summary>
+        /// Возвращает прежние байты Persons.bin или удаляет вновь созданный файл,
+        /// когда публикация изменений задач не состоялась.
+        /// </summary>
+        /// <param name="personFile">Путь к файлу исполнителей.</param>
+        /// <param name="previousPeople">Прежнее содержимое файла или null, если его не было.</param>
+        private static void RestorePersonsAfterFailedCommit(string personFile, byte[] previousPeople)
+        {
+            if (previousPeople == null)
+                File.Delete(personFile);
+            else
+            {
+                string rollback = StageBytes(personFile, previousPeople);
+                try { PublishStaged(personFile, rollback); }
+                finally { TryDelete(rollback); }
             }
         }
 
@@ -516,17 +483,6 @@ namespace time_schedule
                 result.Add(task.Number, Fingerprint(task));
             }
             return result;
-        }
-
-        /// <summary>Читает сохранённый список либо единожды импортирует прежний Tasks.txt.</summary>
-        private static ListTasks ReadOrImport(string file)
-        {
-            if (File.Exists(file)) return ReadExisting<ListTasks>(file);
-            string textFile = Path.Combine(Path.GetDirectoryName(file), Constants.TASKS);
-            var tasks = new ListTasks();
-            if (File.Exists(textFile))
-                tasks.SetTasksFromList(File.ReadAllLines(textFile).Where(s => !string.IsNullOrWhiteSpace(s)).ToList());
-            return tasks;
         }
 
         /// <summary>Поддерживает старый Persons.txt при первом сохранении проекта.</summary>
