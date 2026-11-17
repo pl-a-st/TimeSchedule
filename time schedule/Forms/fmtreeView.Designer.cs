@@ -31,6 +31,7 @@ namespace time_schedule {
             // 
             // treeView1
             // 
+            this.treeView1.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
             this.treeView1.Location = new System.Drawing.Point(12, 12);
             this.treeView1.Name = "treeView1";
             this.treeView1.Size = new System.Drawing.Size(156, 153);
@@ -38,6 +39,7 @@ namespace time_schedule {
             // 
             // btnOk
             // 
+            this.btnOk.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left;
             this.btnOk.Location = new System.Drawing.Point(12, 171);
             this.btnOk.Name = "btnOk";
             this.btnOk.Size = new System.Drawing.Size(75, 23);
@@ -48,6 +50,7 @@ namespace time_schedule {
             // btnCancel
             // 
             this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
+            this.btnCancel.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
             this.btnCancel.Location = new System.Drawing.Point(93, 171);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(75, 23);
@@ -63,11 +66,13 @@ namespace time_schedule {
             this.AutoValidate = System.Windows.Forms.AutoValidate.EnablePreventFocusChange;
             this.CancelButton = this.btnCancel;
             this.ClientSize = new System.Drawing.Size(182, 201);
+            this.MinimumSize = new System.Drawing.Size(190, 240);
             this.Controls.Add(this.btnCancel);
             this.Controls.Add(this.btnOk);
             this.Controls.Add(this.treeView1);
             this.MaximizeBox = false;
             this.MinimizeBox = false;
+            this.ShowIcon = false;
             this.Name = "fmtreeView";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "fmtreeView";

@@ -70,6 +70,7 @@
             // 
             // btnChangeTask
             // 
+            this.btnChangeTask.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right;
             this.btnChangeTask.Location = new System.Drawing.Point(481, 54);
             this.btnChangeTask.Name = "btnChangeTask";
             this.btnChangeTask.Size = new System.Drawing.Size(122, 29);
@@ -80,6 +81,7 @@
             // 
             // btnDeleteTask
             // 
+            this.btnDeleteTask.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right;
             this.btnDeleteTask.Location = new System.Drawing.Point(480, 169);
             this.btnDeleteTask.Name = "btnDeleteTask";
             this.btnDeleteTask.Size = new System.Drawing.Size(121, 29);
@@ -90,6 +92,7 @@
             // 
             // btnNewTask
             // 
+            this.btnNewTask.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right;
             this.btnNewTask.Location = new System.Drawing.Point(481, 19);
             this.btnNewTask.Name = "btnNewTask";
             this.btnNewTask.Size = new System.Drawing.Size(122, 29);
@@ -100,9 +103,8 @@
             // 
             // lBxTasks
             // 
-            this.lBxTasks.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left)));
             this.lBxTasks.FormattingEnabled = true;
+            this.lBxTasks.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
             this.lBxTasks.Location = new System.Drawing.Point(12, 246);
             this.lBxTasks.Name = "lBxTasks";
             this.lBxTasks.Size = new System.Drawing.Size(462, 342);
@@ -112,6 +114,7 @@
             // tBxTargetTask
             // 
             this.tBxTargetTask.ImeMode = System.Windows.Forms.ImeMode.NoControl;
+            this.tBxTargetTask.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
             this.tBxTargetTask.Location = new System.Drawing.Point(12, 217);
             this.tBxTargetTask.Name = "tBxTargetTask";
             this.tBxTargetTask.Size = new System.Drawing.Size(462, 20);
@@ -129,6 +132,7 @@
             // 
             // btnGoToDateStartTask
             // 
+            this.btnGoToDateStartTask.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right;
             this.btnGoToDateStartTask.Location = new System.Drawing.Point(482, 89);
             this.btnGoToDateStartTask.Name = "btnGoToDateStartTask";
             this.btnGoToDateStartTask.Size = new System.Drawing.Size(122, 28);
@@ -178,6 +182,7 @@
             // 
             // tBxPerson
             // 
+            this.tBxPerson.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left;
             this.tBxPerson.Location = new System.Drawing.Point(13, 617);
             this.tBxPerson.Name = "tBxPerson";
             this.tBxPerson.ReadOnly = true;
@@ -187,6 +192,7 @@
             // label2
             // 
             this.label2.AutoSize = true;
+            this.label2.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left;
             this.label2.Location = new System.Drawing.Point(13, 601);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(74, 13);
@@ -196,6 +202,7 @@
             // label3
             // 
             this.label3.AutoSize = true;
+            this.label3.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left;
             this.label3.Location = new System.Drawing.Point(10, 646);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(71, 13);
@@ -205,6 +212,7 @@
             // label4
             // 
             this.label4.AutoSize = true;
+            this.label4.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left;
             this.label4.Location = new System.Drawing.Point(265, 646);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(89, 13);
@@ -213,6 +221,7 @@
             // 
             // tBxStatus
             // 
+            this.tBxStatus.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
             this.tBxStatus.Location = new System.Drawing.Point(268, 617);
             this.tBxStatus.Name = "tBxStatus";
             this.tBxStatus.ReadOnly = true;
@@ -222,6 +231,7 @@
             // label5
             // 
             this.label5.AutoSize = true;
+            this.label5.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left;
             this.label5.Location = new System.Drawing.Point(268, 601);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(41, 13);
@@ -230,6 +240,7 @@
             // 
             // tBxDateStart
             // 
+            this.tBxDateStart.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left;
             this.tBxDateStart.Location = new System.Drawing.Point(13, 662);
             this.tBxDateStart.Name = "tBxDateStart";
             this.tBxDateStart.ReadOnly = true;
@@ -238,6 +249,7 @@
             // 
             // tBxDateFinish
             // 
+            this.tBxDateFinish.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
             this.tBxDateFinish.Location = new System.Drawing.Point(268, 662);
             this.tBxDateFinish.Name = "tBxDateFinish";
             this.tBxDateFinish.ReadOnly = true;
@@ -246,6 +258,7 @@
             // 
             // butOpenTaskInExcell
             // 
+            this.butOpenTaskInExcell.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right;
             this.butOpenTaskInExcell.Location = new System.Drawing.Point(480, 343);
             this.butOpenTaskInExcell.Name = "butOpenTaskInExcell";
             this.butOpenTaskInExcell.Size = new System.Drawing.Size(121, 48);
@@ -363,6 +376,7 @@
             // 
             // btnChangeToSelectTasks
             // 
+            this.btnChangeToSelectTasks.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right;
             this.btnChangeToSelectTasks.Location = new System.Drawing.Point(480, 284);
             this.btnChangeToSelectTasks.Name = "btnChangeToSelectTasks";
             this.btnChangeToSelectTasks.Size = new System.Drawing.Size(121, 48);
@@ -373,6 +387,7 @@
             // 
             // chkMultySelectTask
             // 
+            this.chkMultySelectTask.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right;
             this.chkMultySelectTask.Location = new System.Drawing.Point(482, 246);
             this.chkMultySelectTask.Name = "chkMultySelectTask";
             this.chkMultySelectTask.Size = new System.Drawing.Size(121, 32);
@@ -383,6 +398,7 @@
             // 
             // butDeleteTaskInlBx
             // 
+            this.butDeleteTaskInlBx.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right;
             this.butDeleteTaskInlBx.Location = new System.Drawing.Point(481, 542);
             this.butDeleteTaskInlBx.Name = "butDeleteTaskInlBx";
             this.butDeleteTaskInlBx.Size = new System.Drawing.Size(121, 46);
@@ -393,6 +409,7 @@
             // 
             // butAddProjectToSelectTasks
             // 
+            this.butAddProjectToSelectTasks.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right;
             this.butAddProjectToSelectTasks.Location = new System.Drawing.Point(480, 402);
             this.butAddProjectToSelectTasks.Name = "butAddProjectToSelectTasks";
             this.butAddProjectToSelectTasks.Size = new System.Drawing.Size(122, 48);
@@ -406,6 +423,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(619, 687);
+            this.MinimumSize = new System.Drawing.Size(635, 726);
             this.Controls.Add(this.butAddProjectToSelectTasks);
             this.Controls.Add(this.butDeleteTaskInlBx);
             this.Controls.Add(this.chkMultySelectTask);
@@ -428,6 +446,7 @@
             this.Controls.Add(this.btnDeleteTask);
             this.Controls.Add(this.btnNewTask);
             this.Controls.Add(this.lBxTasks);
+            this.ShowIcon = false;
             this.Name = "fmTasks";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "fmTasks";

@@ -75,10 +75,13 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(307, 87);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
+            this.MaximizeBox = false;
             this.Controls.Add(this.Cancel);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.btnChosePath);
             this.Controls.Add(this.tBxNameProject);
+            this.ShowIcon = false;
             this.Name = "fmAddProject";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Добавте проект";

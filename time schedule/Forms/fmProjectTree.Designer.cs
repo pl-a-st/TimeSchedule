@@ -37,6 +37,7 @@ namespace time_schedule {
             // 
             // projectTreeView
             // 
+            this.projectTreeView.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
             this.projectTreeView.Location = new System.Drawing.Point(12, 12);
             this.projectTreeView.Name = "projectTreeView";
             this.projectTreeView.Size = new System.Drawing.Size(262, 447);
@@ -50,6 +51,7 @@ namespace time_schedule {
             // 
             // button1
             // 
+            this.button1.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right;
             this.button1.Location = new System.Drawing.Point(280, 12);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(77, 23);
@@ -60,6 +62,7 @@ namespace time_schedule {
             // 
             // button2
             // 
+            this.button2.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right;
             this.button2.Location = new System.Drawing.Point(280, 41);
             this.button2.Name = "button2";
             this.button2.Size = new System.Drawing.Size(77, 23);
@@ -70,6 +73,7 @@ namespace time_schedule {
             // 
             // button3
             // 
+            this.button3.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
             this.button3.Location = new System.Drawing.Point(280, 407);
             this.button3.Name = "button3";
             this.button3.Size = new System.Drawing.Size(77, 23);
@@ -80,6 +84,7 @@ namespace time_schedule {
             // 
             // button4
             // 
+            this.button4.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
             this.button4.Location = new System.Drawing.Point(280, 436);
             this.button4.Name = "button4";
             this.button4.Size = new System.Drawing.Size(77, 23);
@@ -90,6 +95,7 @@ namespace time_schedule {
             // 
             // button5
             // 
+            this.button5.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right;
             this.button5.Location = new System.Drawing.Point(302, 226);
             this.button5.Name = "button5";
             this.button5.Size = new System.Drawing.Size(30, 23);
@@ -100,6 +106,7 @@ namespace time_schedule {
             // 
             // button6
             // 
+            this.button6.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right;
             this.button6.Location = new System.Drawing.Point(302, 188);
             this.button6.Name = "button6";
             this.button6.Size = new System.Drawing.Size(30, 23);
@@ -110,6 +117,7 @@ namespace time_schedule {
             // 
             // btnSave
             // 
+            this.btnSave.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right;
             this.btnSave.Location = new System.Drawing.Point(280, 264);
             this.btnSave.Name = "btnSave";
             this.btnSave.Size = new System.Drawing.Size(77, 36);
@@ -123,6 +131,7 @@ namespace time_schedule {
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(362, 481);
+            this.MinimumSize = new System.Drawing.Size(370, 520);
             this.Controls.Add(this.button5);
             this.Controls.Add(this.button6);
             this.Controls.Add(this.button4);
@@ -131,6 +140,7 @@ namespace time_schedule {
             this.Controls.Add(this.button2);
             this.Controls.Add(this.button1);
             this.Controls.Add(this.projectTreeView);
+            this.ShowIcon = false;
             this.Name = "fmProjectTree";
             this.Text = "Дерево проектов";
             this.Load += new System.EventHandler(this.fmProjectTree_Load);

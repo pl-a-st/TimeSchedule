@@ -41,9 +41,8 @@
             // 
             // lBxPersons
             // 
-            this.lBxPersons.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left)));
             this.lBxPersons.FormattingEnabled = true;
+            this.lBxPersons.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
             this.lBxPersons.Location = new System.Drawing.Point(12, 12);
             this.lBxPersons.Name = "lBxPersons";
             this.lBxPersons.Size = new System.Drawing.Size(243, 212);
@@ -51,6 +50,7 @@
             // 
             // btnNewPerson
             // 
+            this.btnNewPerson.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right;
             this.btnNewPerson.Location = new System.Drawing.Point(261, 12);
             this.btnNewPerson.Name = "btnNewPerson";
             this.btnNewPerson.Size = new System.Drawing.Size(142, 29);
@@ -61,6 +61,7 @@
             // 
             // btnDelete
             // 
+            this.btnDelete.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right;
             this.btnDelete.Location = new System.Drawing.Point(261, 47);
             this.btnDelete.Name = "btnDelete";
             this.btnDelete.Size = new System.Drawing.Size(142, 29);
@@ -71,6 +72,7 @@
             // 
             // btnChangePerson
             // 
+            this.btnChangePerson.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right;
             this.btnChangePerson.Location = new System.Drawing.Point(261, 82);
             this.btnChangePerson.Name = "btnChangePerson";
             this.btnChangePerson.Size = new System.Drawing.Size(142, 29);
@@ -94,6 +96,7 @@
             this.groupBox1.Controls.Add(this.lblPersonPlace);
             this.groupBox1.Controls.Add(this.button2);
             this.groupBox1.Controls.Add(this.button1);
+            this.groupBox1.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right;
             this.groupBox1.Location = new System.Drawing.Point(261, 134);
             this.groupBox1.Name = "groupBox1";
             this.groupBox1.Size = new System.Drawing.Size(142, 90);
@@ -124,11 +127,13 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(415, 239);
+            this.MinimumSize = new System.Drawing.Size(415, 270);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.btnChangePerson);
             this.Controls.Add(this.btnDelete);
             this.Controls.Add(this.btnNewPerson);
             this.Controls.Add(this.lBxPersons);
+            this.ShowIcon = false;
             this.Name = "fmWorkWithPersons";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Список исполнителей";

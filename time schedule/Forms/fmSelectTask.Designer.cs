@@ -37,9 +37,8 @@
             // 
             // lBxTasks
             // 
-            this.lBxTasks.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left)));
             this.lBxTasks.FormattingEnabled = true;
+            this.lBxTasks.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
             this.lBxTasks.Location = new System.Drawing.Point(16, 60);
             this.lBxTasks.Name = "lBxTasks";
             this.lBxTasks.Size = new System.Drawing.Size(452, 446);
@@ -47,6 +46,7 @@
             // 
             // btnSelectTask
             // 
+            this.btnSelectTask.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right;
             this.btnSelectTask.Location = new System.Drawing.Point(474, 60);
             this.btnSelectTask.Name = "btnSelectTask";
             this.btnSelectTask.Size = new System.Drawing.Size(75, 23);
@@ -57,6 +57,7 @@
             // 
             // tBxTargetTask
             // 
+            this.tBxTargetTask.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
             this.tBxTargetTask.Location = new System.Drawing.Point(16, 34);
             this.tBxTargetTask.Name = "tBxTargetTask";
             this.tBxTargetTask.Size = new System.Drawing.Size(452, 20);
@@ -74,6 +75,7 @@
             // 
             // bTnCacel
             // 
+            this.bTnCacel.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right;
             this.bTnCacel.Location = new System.Drawing.Point(474, 89);
             this.bTnCacel.Name = "bTnCacel";
             this.bTnCacel.Size = new System.Drawing.Size(75, 23);
@@ -87,11 +89,13 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(561, 519);
+            this.MinimumSize = new System.Drawing.Size(420, 350);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.tBxTargetTask);
             this.Controls.Add(this.bTnCacel);
             this.Controls.Add(this.btnSelectTask);
             this.Controls.Add(this.lBxTasks);
+            this.ShowIcon = false;
             this.Name = "fmSelectTask";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Выбор задачи";

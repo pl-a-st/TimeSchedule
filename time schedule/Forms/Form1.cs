@@ -435,6 +435,20 @@ namespace time_schedule
             phase.Restart();
             LoadScrolls();
             metrics.AttachScrollMs = phase.ElapsedMilliseconds;
+            if (Program.PoolTextBox.ListTextBoxes.Count > 0)
+            {
+                DateTextBox lastDate = Program.PoolTextBox.ListTextBoxes[Program.PoolTextBox.ListTextBoxes.Count - 1];
+                Trace.WriteLine(string.Format(
+                    "TimeSchedule calendar-bounds lastDate={0:yyyy-MM-dd} requestedRight={1} " +
+                    "gridWidth={2} bitmapWidth={3} datePanelWidth={4} dateScrollMax={5} " +
+                    "dateLargeChange={6} mainPanelWidth={7} mainScrollMax={8} " +
+                    "mainLargeChange={9} mainScrollValue={10}",
+                    lastDate.Date, lastDate.LocationX + Constants.COLUMN_WITH, pBForLine.Width,
+                    Bmp == null ? 0 : Bmp.Width, plForDate.ClientSize.Width,
+                    plForDate.HorizontalScroll.Maximum, plForDate.HorizontalScroll.LargeChange,
+                    plMain.ClientSize.Width, plMain.HorizontalScroll.Maximum,
+                    plMain.HorizontalScroll.LargeChange, plMain.HorizontalScroll.Value));
+            }
         }
 
         /// <summary>Записывает ранее собранные измерения обновления календаря без дополнительных чтений данных.</summary>
@@ -1463,6 +1477,28 @@ namespace time_schedule
                 i++;
             }
         }
+        /// <summary>Записывает геометрию правой границы при завершении прокрутки или переходе к последней дате.</summary>
+        /// <param name="reason">Пользовательская операция, вызвавшая измерение.</param>
+        private void TraceCalendarScrollBounds(string reason)
+        {
+            if (Program.PoolTextBox.ListTextBoxes.Count == 0)
+                return;
+            DateTextBox lastDate = Program.PoolTextBox.ListTextBoxes[Program.PoolTextBox.ListTextBoxes.Count - 1];
+            Trace.WriteLine(string.Format(
+                "TimeSchedule calendar-bounds-scroll reason={0} lastDate={1:yyyy-MM-dd} " +
+                "lastRight={2} mainScroll={3} mainMax={4} mainPage={5} " +
+                "mainVisibleRight={6} dateScroll={7} dateMax={8} datePage={9} " +
+                "dateVisibleRight={10} gridLeft={11} gridWidth={12} bitmapWidth={13}",
+                reason, lastDate.Date, lastDate.LocationX + Constants.COLUMN_WITH,
+                plMain.HorizontalScroll.Value, plMain.HorizontalScroll.Maximum,
+                plMain.HorizontalScroll.LargeChange,
+                plMain.HorizontalScroll.Value + plMain.ClientSize.Width,
+                plForDate.HorizontalScroll.Value, plForDate.HorizontalScroll.Maximum,
+                plForDate.HorizontalScroll.LargeChange,
+                plForDate.HorizontalScroll.Value + plForDate.ClientSize.Width,
+                pBForLine.Left, pBForLine.Width, Bmp == null ? 0 : Bmp.Width));
+        }
+
         private void ScrollChange(object sender, ScrollEventArgs e)
         {
             try
@@ -1478,6 +1514,8 @@ namespace time_schedule
             }
             VerticalScrollValue = plMain.VerticalScroll.Value;
             HorizontalScrollValue = plMain.HorizontalScroll.Value;
+            if (e.Type == ScrollEventType.EndScroll)
+                TraceCalendarScrollBounds("end-scroll");
             LoadTaskButtons();
             LoadDateTextBoxes();
             //label1.Text = "текущее " + plForDate.HorizontalScroll.Value;
@@ -1557,6 +1595,8 @@ namespace time_schedule
                 Trace.WriteLine("TimeSchedule scroll to date failed: " + ex);
             }
             HorizontalScrollValue = plMain.HorizontalScroll.Value;
+            if (targetDateTime.Date >= Program.ListTasksAllPersonToShow.GetMaxDateFinishTasks().Date)
+                TraceCalendarScrollBounds("scroll-to-last-date");
             LoadTaskButtons();
             LoadDateTextBoxes();
         }
@@ -1599,7 +1639,6 @@ namespace time_schedule
         {
             try
             {
-                plMain.HorizontalScroll.Value += value * Constants.COLUMN_WITH;
                 plMain.HorizontalScroll.Value += value * Constants.COLUMN_WITH;
                 plForDate.HorizontalScroll.Value = plMain.HorizontalScroll.Value;
                 plForDate.HorizontalScroll.Value = plMain.HorizontalScroll.Value;

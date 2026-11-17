@@ -240,6 +240,7 @@ namespace time_schedule
             this.Controls.Add(this.pnlMain);
             this.Controls.Add(this.butDelete);
             this.Controls.Add(this.butAddTask);
+            this.ShowIcon = false;
             this.Name = "FrmAddProject";
             this.Text = "Form2";
             this.Load += new System.EventHandler(this.FrmAddProject_Load);

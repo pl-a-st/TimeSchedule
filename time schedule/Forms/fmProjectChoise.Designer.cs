@@ -35,6 +35,7 @@
             // lBxProject
             // 
             this.lBxProject.FormattingEnabled = true;
+            this.lBxProject.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
             this.lBxProject.Location = new System.Drawing.Point(12, 12);
             this.lBxProject.Name = "lBxProject";
             this.lBxProject.Size = new System.Drawing.Size(361, 134);
@@ -43,6 +44,7 @@
             // 
             // btnSelect
             // 
+            this.btnSelect.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right;
             this.btnSelect.Location = new System.Drawing.Point(379, 12);
             this.btnSelect.Name = "btnSelect";
             this.btnSelect.Size = new System.Drawing.Size(75, 23);
@@ -53,6 +55,7 @@
             // 
             // tBxAddress
             // 
+            this.tBxAddress.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
             this.tBxAddress.Location = new System.Drawing.Point(12, 174);
             this.tBxAddress.Name = "tBxAddress";
             this.tBxAddress.ReadOnly = true;
@@ -70,6 +73,7 @@
             // 
             // Cancel
             // 
+            this.Cancel.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right;
             this.Cancel.Location = new System.Drawing.Point(379, 123);
             this.Cancel.Name = "Cancel";
             this.Cancel.Size = new System.Drawing.Size(75, 23);
@@ -80,6 +84,7 @@
             // 
             // btnDelete
             // 
+            this.btnDelete.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right;
             this.btnDelete.Location = new System.Drawing.Point(379, 70);
             this.btnDelete.Name = "btnDelete";
             this.btnDelete.Size = new System.Drawing.Size(75, 23);
@@ -90,6 +95,7 @@
             // 
             // btnAdd
             // 
+            this.btnAdd.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right;
             this.btnAdd.Location = new System.Drawing.Point(379, 41);
             this.btnAdd.Name = "btnAdd";
             this.btnAdd.Size = new System.Drawing.Size(75, 23);
@@ -103,6 +109,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(474, 213);
+            this.MinimumSize = new System.Drawing.Size(400, 250);
             this.Controls.Add(this.btnAdd);
             this.Controls.Add(this.btnDelete);
             this.Controls.Add(this.Cancel);
@@ -110,6 +117,7 @@
             this.Controls.Add(this.tBxAddress);
             this.Controls.Add(this.btnSelect);
             this.Controls.Add(this.lBxProject);
+            this.ShowIcon = false;
             this.Name = "fmProjectChoise";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Выберите проект";

@@ -157,6 +157,7 @@ namespace time_schedule.Forms {
             this.Controls.Add(this.btnNew);
             this.Controls.Add(this.lBx);
             this.Controls.Add(this.groupBox1);
+            this.ShowIcon = false;
             this.Name = "fmChangeList";
             this.Text = "fmChangeList";
             this.Load += new System.EventHandler(this.fmChangeList_Load);
