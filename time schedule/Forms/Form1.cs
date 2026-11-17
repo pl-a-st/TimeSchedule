@@ -54,6 +54,38 @@ namespace time_schedule
             get;
             private set;
         }
+        /// <summary>Полная логическая ширина календаря, не ограниченная шириной дочернего окна.</summary>
+        private int calendarLogicalWidth;
+
+        /// <summary>Включает оконную отрисовку только при превышении предела ширины PictureBox.</summary>
+        private bool calendarVirtualViewport;
+
+        /// <summary>Виртуальная горизонтальная координата первого пикселя видимого холста.</summary>
+        private int CalendarViewportOrigin => calendarVirtualViewport
+            ? plMain.HorizontalScroll.Value : 0;
+
+        /// <summary>Вертикальное смещение рисуемых объектов относительно модели исполнителей.</summary>
+        private int CalendarViewportVerticalOffset
+        {
+            get
+            {
+                if (!calendarVirtualViewport || Program.ListPersonButton == null)
+                    return 0;
+                foreach (PersonButton personButton in Program.ListPersonButton.PersonButtons)
+                {
+                    if (personButton.Person.ListTask.Tasks.Count == 0 ||
+                        !personButton.Button.IsHandleCreated || !pBForLine.IsHandleCreated)
+                        continue;
+                    int originalY = personButton.Button.Top -
+                        plPersonButton.AutoScrollPosition.Y;
+                    int visibleY = pBForLine.PointToClient(
+                        personButton.Button.PointToScreen(Point.Empty)).Y;
+                    return visibleY - originalY;
+                }
+                return plMain.AutoScrollPosition.Y - pBForLine.Top;
+            }
+        }
+
         public Bitmap Bmp
         {
             get;
@@ -82,6 +114,7 @@ namespace time_schedule
             };
             plMain.MouseWheel += CalendarTasks_MouseWheel;
             plMain.ClientSizeChanged += PlMain_ClientSizeChanged;
+            plMain.Scroll += CalendarViewport_Scroll;
             plPersonButton.MouseWheel += PlPersonButton_MouseWheel;
 
 
@@ -593,10 +626,32 @@ namespace time_schedule
 
         }
         VScrollBar myScrollBar = new VScrollBar();
+        /// <summary>Обновляет размер окна рисования после изменения ширины главной панели.</summary>
         private void PlMain_ClientSizeChanged(object sender, EventArgs e)
         {
-            //plForDate.HorizontalScroll.Value = plMain.HorizontalScroll.Value;
-            //plForDate.HorizontalScroll.Value = plMain.HorizontalScroll.Value;
+            UpdateCalendarViewport();
+        }
+
+        /// <summary>Перемещает окно рисования вслед за прокруткой без изменения логических дат.</summary>
+        private void CalendarViewport_Scroll(object sender, ScrollEventArgs e)
+        {
+            if (e.ScrollOrientation == ScrollOrientation.HorizontalScroll)
+                UpdateCalendarViewport();
+        }
+
+        /// <summary>Держит физический холст в пределах видимой области, используя виртуальную ширину панели.</summary>
+        private void UpdateCalendarViewport()
+        {
+            if (!calendarVirtualViewport || pBForLine.IsDisposed)
+                return;
+            int viewportWidth = Math.Max(1, plMain.ClientSize.Width);
+            int width = Math.Min(viewportWidth, Math.Max(1,
+                calendarLogicalWidth - plMain.HorizontalScroll.Value));
+            if (pBForLine.Width != width)
+                pBForLine.Width = width;
+            if (pBForLine.Left != 0)
+                pBForLine.Left = 0;
+            pBForLine.Invalidate();
         }
         /// <summary>Синхронизирует шкалу дат и список исполнителей с прокруткой календаря.</summary>
         private void CalendarTasks_MouseWheel1(object sender, MouseEventArgs e)
@@ -796,6 +851,8 @@ namespace time_schedule
         /// <summary>Рисует линию на текущем растровом изображении календаря.</summary>
         public void Drow(Pen pen, int pX0, int pY0, int pX1, int pY1)
         {
+            if (calendarVirtualViewport)
+                return;
             using (Graphics graphics = Graphics.FromImage(Bmp))
                 graphics.DrawLine(pen, pX0, pY0, pX1, pY1);
             pBForLine.Image = Bmp;
@@ -803,6 +860,8 @@ namespace time_schedule
         /// <summary>Рисует горизонтальные границы строк календаря одним графическим контекстом.</summary>
         public void LoadHorizontLine()
         {
+            if (calendarVirtualViewport)
+                return;
             using (Graphics graphics = Graphics.FromImage(Bmp))
             using (Pen rowPen = new Pen(Color.FromArgb(225, 225, 230), 1))
             using (Pen separatorPen = new Pen(Color.FromArgb(245, 245, 248), 2))
@@ -827,6 +886,8 @@ namespace time_schedule
         /// <summary>Рисует вертикальные границы дат, выделяя понедельники, одним графическим контекстом.</summary>
         public void DrowVerticalLines()
         {
+            if (calendarVirtualViewport)
+                return;
             using (Graphics graphics = Graphics.FromImage(Bmp))
             using (Pen penGrey = new Pen(Color.FromArgb(225, 225, 230), 1))
             using (Pen penForMonday = new Pen(Color.FromArgb(245, 245, 248), 2))
@@ -1336,9 +1397,24 @@ namespace time_schedule
             {
                 HorizontalScrollValue -= LastMaxHorizonntalScroll - locationX;
             }
-            pBForLine.Width = locationX;
-            ResizeImage(new Size(locationX, pBForLine.Height));
-            ResizeCalendarDateImage(pictureBox, bitmap, locationX);
+            calendarLogicalWidth = locationX;
+            calendarVirtualViewport = locationX > 65535;
+            plMain.AutoScrollMinSize = calendarVirtualViewport
+                ? new Size(locationX, 0) : Size.Empty;
+            plForDate.AutoScrollMinSize = calendarVirtualViewport
+                ? new Size(locationX, 0) : Size.Empty;
+            pBForLine.Width = calendarVirtualViewport
+                ? Math.Max(1, plMain.ClientSize.Width) : locationX;
+            ResizeImage(new Size(pBForLine.Width, pBForLine.Height));
+            if (calendarVirtualViewport)
+            {
+                pictureBox.Width = 1;
+                UpdateCalendarViewport();
+                Trace.WriteLine("TimeSchedule calendar-viewport: virtualWidth=" +
+                    calendarLogicalWidth + " physicalWidth=" + pBForLine.Width);
+            }
+            else
+                ResizeCalendarDateImage(pictureBox, bitmap, locationX);
         }
 
         /// <summary>Формирует объекты рабочих дат и возвращает ширину шкалы в пикселях.</summary>
@@ -1662,10 +1738,13 @@ namespace time_schedule
             Bitmap bitmap = null;
             try
             {
-                bitmap = new Bitmap(size.Width, size.Height);
+                bitmap = calendarVirtualViewport
+                    ? new Bitmap(1, 1) : new Bitmap(size.Width, size.Height);
                 Bitmap previousBitmap = Bmp;
+                if (calendarVirtualViewport)
+                    pBForLine.Image = null;
                 Bmp = bitmap;
-                if (!ReferenceEquals(pBForLine.Image, previousBitmap))
+                if (calendarVirtualViewport || !ReferenceEquals(pBForLine.Image, previousBitmap))
                     previousBitmap?.Dispose();
             }
             catch (Exception ex)
@@ -1896,6 +1975,7 @@ namespace time_schedule
         /// <param name="metrics">Необязательные измерения текущего полного обновления.</param>
         private void LoadDateTextBoxes(CalendarRefreshMetrics metrics = null)
         {
+            UpdateCalendarViewport();
             if (FormReadyToBeAddedControl == Statuses.FormReadyToBeAddedControl.NotReady)
                 return;
             Program.PoolTextBox.CalculateLoadingStatus(
@@ -2716,7 +2796,13 @@ namespace time_schedule
         /// <summary>Возвращает координаты курсора на холсте без 16-битного переполнения MouseEventArgs на широком PictureBox.</summary>
         private Point GetCanvasPilotCursorPoint()
         {
-            return pBForLine.PointToClient(Control.MousePosition);
+            Point point = pBForLine.PointToClient(Control.MousePosition);
+            if (calendarVirtualViewport)
+            {
+                point.X += CalendarViewportOrigin;
+                point.Y -= CalendarViewportVerticalOffset;
+            }
+            return point;
         }
 
         /// <summary>Подсвечивает задачу под курсором и ограниченно записывает факт попадания мыши в PictureBox.</summary>
@@ -2861,7 +2947,9 @@ namespace time_schedule
                 canvasPilotDeleteMenuItem.Enabled = Program.UserType == UserType.Admin;
                 foreach (ToolStripMenuItem item in canvasPilotStatusMenuItem.DropDownItems)
                     item.Checked = (TaskStatus)item.Tag == target.Task.Status;
-                canvasPilotTaskMenu.Show(pBForLine, location);
+                canvasPilotTaskMenu.Show(pBForLine,
+                    new Point(location.X - CalendarViewportOrigin,
+                        location.Y + CalendarViewportVerticalOffset));
                 return;
             }
             if (e.Button != MouseButtons.Left)
@@ -3745,6 +3833,8 @@ namespace time_schedule
             int segments = 0;
             try
             {
+                if (calendarVirtualViewport)
+                    PaintVirtualCalendarGrid(e.Graphics, e.ClipRectangle);
                 PaintCanvasPilotTaskBands(e.Graphics, e.ClipRectangle, ref segments);
                 PaintCanvasPilotPreviewBands(e.Graphics, e.ClipRectangle, ref segments);
             }
@@ -3763,6 +3853,47 @@ namespace time_schedule
             }
         }
 
+        /// <summary>Рисует только видимые линии сетки в глобальных координатах календаря.</summary>
+        /// <param name="graphics">Поверхность видимого участка PictureBox.</param>
+        /// <param name="clip">Видимая область в локальных координатах PictureBox.</param>
+        private void PaintVirtualCalendarGrid(Graphics graphics, Rectangle clip)
+        {
+            int origin = CalendarViewportOrigin;
+            int verticalOffset = CalendarViewportVerticalOffset;
+            using (Pen rowPen = new Pen(Color.FromArgb(225, 225, 230), 1))
+            using (Pen separatorPen = new Pen(Color.FromArgb(245, 245, 248), 2))
+            using (Pen penGrey = new Pen(Color.FromArgb(225, 225, 230), 1))
+            using (Pen penMonday = new Pen(Color.FromArgb(245, 245, 248), 2))
+            {
+                foreach (PersonButton personButton in Program.ListPersonButton.PersonButtons)
+                {
+                    if (personButton.Person.ListTask.Tasks.Count == 0)
+                        continue;
+                    int y = personButton.Button.Top -
+                        plPersonButton.AutoScrollPosition.Y + verticalOffset;
+                    int bottom = y + personButton.Button.Height;
+                    while (y < bottom)
+                    {
+                        y += Constants.ROW_HIGHT;
+                        if (y >= clip.Top && y <= clip.Bottom)
+                            graphics.DrawLine(rowPen, clip.Left, y, clip.Right, y);
+                    }
+                    if (y >= clip.Top && y <= clip.Bottom)
+                        graphics.DrawLine(separatorPen, clip.Left, y, clip.Right, y + 1);
+                }
+                foreach (DateTextBox date in Program.PoolTextBox.ListTextBoxes)
+                {
+                    int x = date.LocationX - origin;
+                    if (x < clip.Left)
+                        continue;
+                    if (x > clip.Right)
+                        break;
+                    graphics.DrawLine(date.Date.DayOfWeek == DayOfWeek.Monday ? penMonday : penGrey,
+                        x, clip.Top, x, clip.Bottom);
+                }
+            }
+        }
+
         /// <summary>Рисует существующие полосы, пропуская временно замещённые предпросмотром.</summary>
         /// <param name="graphics">Поверхность текущего Paint.</param>
         /// <param name="clip">Границы области перерисовки.</param>
@@ -3778,7 +3909,9 @@ namespace time_schedule
                 foreach (Rectangle planned in taskButton.CanvasPilotSegments)
                 {
                     Rectangle rectangle = new Rectangle(
-                        planned.X + 1, planned.Y + 1, planned.Width - 2, planned.Height - 1);
+                        planned.X + 1 - CalendarViewportOrigin,
+                        planned.Y + 1 + CalendarViewportVerticalOffset,
+                        planned.Width - 2, planned.Height - 1);
                     if (rectangle.Width <= 0 || rectangle.Height <= 0 ||
                         !clip.IntersectsWith(rectangle))
                         continue;
@@ -3828,14 +3961,16 @@ namespace time_schedule
                 return;
             int rowY = pBForLine.PointToClient(owner.Button.PointToScreen(Point.Empty)).Y +
                 task.PlaceInSynchTask * Constants.ROW_HIGHT;
-            int snapOffsetY = rowY - firstSegment.Y;
+            int snapOffsetY = rowY - firstSegment.Y -
+                CalendarViewportVerticalOffset;
             using (Pen outline = new Pen(Color.FromArgb(230, 55, 55, 65), 1))
             {
                 outline.DashStyle = System.Drawing.Drawing2D.DashStyle.Dash;
                 foreach (Rectangle planned in taskBand.CanvasPilotSegments)
                 {
-                    Rectangle rectangle = new Rectangle(planned.X + 1,
-                        planned.Y + 1 + snapOffsetY, planned.Width - 2, planned.Height - 1);
+                    Rectangle rectangle = new Rectangle(planned.X + 1 - CalendarViewportOrigin,
+                        planned.Y + 1 + snapOffsetY + CalendarViewportVerticalOffset,
+                        planned.Width - 2, planned.Height - 1);
                     if (rectangle.Width <= 0 || rectangle.Height <= 0 ||
                         !clip.IntersectsWith(rectangle))
                         continue;
