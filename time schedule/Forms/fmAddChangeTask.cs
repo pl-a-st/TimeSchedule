@@ -479,7 +479,7 @@ namespace time_schedule
             }
         }
 
-        /// <summary>Заменяет выбранную задачу и сообщает, если она исчезла после открытия редактора.</summary>
+        /// <summary>Заменяет выбранную задачу, сохраняя её исходный цвет при редактировании без прав администратора.</summary>
         private void RewriteTasks()
         {
             Task task = GetTaskForCreateChange(Convert.ToInt32(nUpDnTaskNumber.Value));
@@ -489,6 +489,8 @@ namespace time_schedule
             {
                 if (Program.ListTasksAllPersonToSave.Tasks[i].Number == nUpDnTaskNumber.Value)
                 {
+                    if (Program.UserType != UserType.Admin)
+                        task.SetTaskColor(Program.ListTasksAllPersonToSave.Tasks[i].Color);
                     if (Program.ListTasksAllPersonToSave.Tasks[i].DateFinish.Date != task.DateFinish.Date)
                     {
                         ChekTaskAfter(task);

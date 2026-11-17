@@ -378,6 +378,46 @@ namespace time_schedule
             return result;
         }
 
+        /// <summary>Фиксирует версии удаляемых задач и их непосредственных потомков, остающихся в проекте.</summary>
+        /// <param name="tasks">Снимок задач, на основе которого пользователь подтверждает удаление.</param>
+        /// <param name="numbers">Номера всех удаляемых задач.</param>
+        /// <returns>Отпечатки удаляемых задач и потомков, связи которых предстоит разорвать.</returns>
+        internal static Dictionary<long, string> CaptureDeletion(ListTasks tasks, IEnumerable<long> numbers)
+        {
+            var deleted = new HashSet<long>(numbers);
+            var affected = new HashSet<long>(deleted);
+            foreach (Task task in tasks.Tasks)
+                if (!deleted.Contains(task.Number) && deleted.Contains(task.TaskNumberAfter))
+                    affected.Add(task.Number);
+            return Capture(tasks, affected);
+        }
+
+        /// <summary>Под общей блокировкой удаляет выбранные задачи и отсоединяет их оставшихся непосредственных потомков.</summary>
+        /// <param name="tasks">Актуальный список внутри операции TaskStore.Update.</param>
+        /// <param name="numbers">Номера задач, удаление которых подтвердил пользователь.</param>
+        /// <param name="expected">Подтверждённые отпечатки удаляемых задач и отсоединяемых потомков.</param>
+        internal static void DeleteWithDirectDependents(ListTasks tasks, IEnumerable<long> numbers,
+            IDictionary<long, string> expected)
+        {
+            var deleted = new HashSet<long>(numbers);
+            if (deleted.Count == 0)
+                return;
+
+            var existing = new HashSet<long>(tasks.Tasks.Select(task => task.Number));
+            if (deleted.Any(number => !existing.Contains(number)))
+                throw new TaskConflictException("Одна из удаляемых задач больше не существует. Обновите список.");
+
+            var dependents = tasks.Tasks.Where(task => !deleted.Contains(task.Number) &&
+                deleted.Contains(task.TaskNumberAfter)).ToArray();
+            if (dependents.Any(task => !expected.ContainsKey(task.Number)))
+                throw new TaskConflictException("После подтверждения удаления появились новые зависимые задачи. " +
+                    "Удаление отменено. Обновите список и повторите операцию.");
+
+            foreach (Task dependent in dependents)
+                dependent.SetTaskNumberAfter(0);
+            tasks.Tasks.RemoveAll(task => deleted.Contains(task.Number));
+        }
+
         /// <summary>Получает отпечатки задачи и всех её рекурсивно зависимых задач из исходного снимка.</summary>
         public static Dictionary<long, string> CaptureWithDependents(ListTasks tasks, long number)
         {

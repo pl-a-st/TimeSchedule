@@ -39,37 +39,86 @@ namespace time_schedule
     [Serializable]
     public class DateTextBox
     {
+        /// <summary>Дата рабочего столбца календаря.</summary>
         public DateTime Date { get; private set; }
-        public TextBox TextBox { get; private set; } = new TextBox();
+
+        /// <summary>Экземпляр WinForms создаётся только при первом обращении к видимой дате.</summary>
+        [NonSerialized]
+        private TextBox textBox;
+
+        /// <summary>Высота ячейки, используемая при отложенном создании контрола.</summary>
+        [NonSerialized]
+        private int textBoxHeight;
+
+        /// <summary>Контрол даты; создаётся по требованию и сохраняет прежнюю идентичность экземпляра.</summary>
+        public TextBox TextBox
+        {
+            get { return textBox ?? (textBox = CreateTextBox()); }
+            private set { textBox = value; }
+        }
+
+        /// <summary>Показывает, материализован ли WinForms-контрол даты, без его создания.</summary>
+        public bool HasCreatedTextBox => textBox != null;
+
+        /// <summary>Абсолютная координата рабочего столбца до прокрутки.</summary>
         public int LocationX { get; set; } = 0;
+
+        /// <summary>Состояние присоединения элемента календаря к панели.</summary>
         public Statuses.LoadingStatus LoadingStatus { get; private set; } = Statuses.LoadingStatus.NotReady;
+
+        /// <summary>Сохраняет геометрию и дату без создания Windows-контрола.</summary>
         public DateTextBox(DateTime dateTime, int TextBoxHight, int locationX)
         {
             Date = dateTime.Date;
-            TextBox.BorderStyle = BorderStyle.Fixed3D;
-
-
-
-            TextBox.AutoSize = false;
-            TextBox.Size = new Size(Constants.COLUMN_WITH, TextBoxHight);
-            TextBox.Multiline = true;
-            TextBox.Text = dateTime.ToShortDateString() + "\n" + GetDayOfWeekRus(dateTime.DayOfWeek);
-            TextBox.BackColor = Color.FromArgb(80, 80, 85);
-            TextBox.ForeColor = Color.FromArgb(240, 240, 240);
-            TextBox.TextAlign = HorizontalAlignment.Center;
-            TextBox.ReadOnly = true;
-            if (dateTime == DateTime.Now.Date)
-            {
-                TextBox.BackColor = Color.FromArgb(255, 255, 255);
-                TextBox.ForeColor = Color.FromArgb(45, 45, 45);
-            }
-            TextBox.Location = new Point(locationX, 0);
-            
+            LocationX = locationX;
+            textBoxHeight = TextBoxHight;
         }
+
+        /// <summary>Создаёт прежний визуальный элемент шкалы дат с тем же оформлением.</summary>
+        private TextBox CreateTextBox()
+        {
+            TextBox box = new TextBox();
+            box.BorderStyle = BorderStyle.Fixed3D;
+            box.AutoSize = false;
+            box.Multiline = true;
+            box.TextAlign = HorizontalAlignment.Center;
+            box.ReadOnly = true;
+            ConfigureTextBox(box);
+            return box;
+        }
+
+        /// <summary>Передаёт свободную ячейку новому столбцу без создания нового WinForms-контрола.</summary>
+        /// <param name="box">Отсоединённый от панели и ранее созданный контрол даты.</param>
+        internal void ReuseTextBox(TextBox box)
+        {
+            if (box == null)
+                throw new ArgumentNullException(nameof(box));
+            if (textBox != null)
+                throw new InvalidOperationException("Ячейка календаря уже имеет контрол.");
+            ConfigureTextBox(box);
+            textBox = box;
+        }
+
+        /// <summary>Обновляет только зависящие от даты и геометрии свойства ячейки.</summary>
+        /// <param name="box">Контрол, отображающий рабочую дату.</param>
+        private void ConfigureTextBox(TextBox box)
+        {
+            box.Size = new Size(Constants.COLUMN_WITH, textBoxHeight);
+            box.Text = Date.ToShortDateString() + "\n" + GetDayOfWeekRus(Date.DayOfWeek);
+            box.BackColor = Date == DateTime.Now.Date
+                ? Color.FromArgb(255, 255, 255) : Color.FromArgb(80, 80, 85);
+            box.ForeColor = Date == DateTime.Now.Date
+                ? Color.FromArgb(45, 45, 45) : Color.FromArgb(240, 240, 240);
+            box.Location = new Point(LocationX, 0);
+        }
+
+        /// <summary>Обновляет состояние готовности ячейки к присоединению.</summary>
         public void SetLoadingStatus(Statuses.LoadingStatus loadingStatus)
         {
             LoadingStatus = loadingStatus;
         }
+
+        /// <summary>Переводит системный день недели в используемое календарём наименование.</summary>
         private static DayOfWeekRus GetDayOfWeekRus(DayOfWeek dayOfWeek)
         {
             DayOfWeekRus dayOfWeekRus = (DayOfWeekRus)Enum.Parse(typeof(DayOfWeek), dayOfWeek.ToString(), true);
@@ -120,23 +169,24 @@ namespace time_schedule
                 return true;
             return false;
         }
+        /// <summary>Находит левую границу видимых дат, завершая расчёт на максимально допустимой дате.</summary>
+        /// <param name="horizontalScroll">Горизонтальное смещение календаря.</param>
+        /// <param name="formWith">Ширина окна (исторический параметр).</param>
+        /// <param name="minDateStart">Исходная минимальная дата календаря.</param>
+        /// <returns>Дата начала видимой области, ограниченная диапазоном DateTime.</returns>
         private DateTime CalculateMinLoadDate(int horizontalScroll, int formWith, DateTime minDateStart)
         {
             int countDaysBeforScroll = horizontalScroll / Constants.COLUMN_WITH - 2;
             int reserve = formWith / 2 / Constants.COLUMN_WITH;
             DateTime minLoadDate = minDateStart;
-            try
+            for (int i = 0; i < countDaysBeforScroll; i++)
             {
-                for (int i = 0; i < countDaysBeforScroll; i++)
-                {
-                    minLoadDate = minLoadDate.AddDays(1);
-                    if (IsHolydays(minLoadDate))
-                    {
-                        i--;
-                    }
-                }
+                if (minLoadDate.Date >= DateTime.MaxValue.Date)
+                    break;
+                minLoadDate = minLoadDate.AddDays(1);
+                if (IsHolydays(minLoadDate))
+                    i--;
             }
-            catch { }
             return minLoadDate;
         }
 
@@ -150,10 +200,14 @@ namespace time_schedule
                 return true;
             return false;
         }
+        /// <summary>Определяет правую границу загрузки дат с резервом в одну ширину окна для прокрутки.</summary>
+        /// <param name="formWith">Ширина формы в пикселях.</param>
+        /// <param name="minLoadDate">Начальная дата диапазона загрузки.</param>
+        /// <returns>Последняя дата диапазона, в котором нужно материализовать ячейки шкалы.</returns>
         private DateTime CalculateMaxLoadDate(int formWith, DateTime minLoadDate)
         {
             int reserve = formWith / 2 / Constants.COLUMN_WITH;
-            int countDaysAfterScroll = formWith / Constants.COLUMN_WITH + 2 * Constants.COLUMN_WITH;
+            int countDaysAfterScroll = formWith / Constants.COLUMN_WITH + 2 * reserve;
             DateTime maxLoadDate = minLoadDate;
             for (int i = 0; i < countDaysAfterScroll; i++)
             {
@@ -660,6 +714,35 @@ namespace time_schedule
             Task task = new Task(dateStart, workDayCount);
             return task.DateFinish;
         }
+        /// <summary>Изменяет границы задачи, сохраняя обе даты точно и пересчитывая длительность в рабочих днях.</summary>
+        /// <param name="dateStart">Новая дата начала, включая этот день.</param>
+        /// <param name="dateFinish">Новая дата окончания, включая этот день.</param>
+        public void ChangeDateRange(DateTime dateStart, DateTime dateFinish)
+        {
+            dateStart = dateStart.Date;
+            dateFinish = dateFinish.Date;
+            if (dateStart > dateFinish)
+                throw new ArgumentOutOfRangeException(nameof(dateStart),
+                    "Начало задачи не может быть позже её окончания.");
+
+            long countWorkingDays = 0;
+            for (DateTime day = dateStart; day <= dateFinish; day = day.AddDays(1))
+            {
+                if (day.DayOfWeek != DayOfWeek.Saturday &&
+                    day.DayOfWeek != DayOfWeek.Sunday &&
+                    !Program.listNonWorkingDays.NonWorkingDays.Contains(day))
+                    countWorkingDays++;
+            }
+            if (countWorkingDays == 0)
+                throw new ArgumentOutOfRangeException(nameof(dateFinish),
+                    "Интервал задачи должен включать хотя бы один рабочий день.");
+
+            DateStart = dateStart;
+            DateFinish = dateFinish;
+            CountDays = (dateFinish - dateStart).Days + 1;
+            CountWorkingDays = countWorkingDays;
+        }
+
         public void ChangeDatesAndCountDays(DateTime dateStart, long countWorksDays)
         {
             dateStart = dateStart.Date;
@@ -807,27 +890,30 @@ namespace time_schedule
         {
             TaskButtons.Add(taskButton);
         }
+        /// <summary>Вычисляет общие границы диапазона один раз и создаёт геометрию задач без WinForms-контролов.</summary>
         public void AddTaskButtons(ListTasks listTasks, ListPersonButton listPersonButton)
         {
+            DateTime minDateStart = listTasks.GetMinDateStartTasks();
+            DateTime maxDateFinish = listTasks.GetMaxDateFinishTasks();
             foreach (Task task in listTasks.Tasks)
             {
-                TaskButton taskButton = new TaskButton(
-                    task,
-                    listPersonButton,
-                    listTasks.GetMinDateStartTasks(),
-                    listTasks.GetMaxDateFinishTasks());
+                TaskButton taskButton = new TaskButton(task, listPersonButton, minDateStart, maxDateFinish);
                 AddTaskButtons(taskButton);
             }
         }
+        /// <summary>При первом попадании задачи в диапазон создаёт её контролы и сдвигает их в координаты панели.</summary>
         public void SetNewLocationToButtons(int verticalScroll, int horizontalScroll)
         {
             foreach (TaskButton taskButton in TaskButtons)
             {
                 if (taskButton.LoadingStatus == Statuses.LoadingStatus.ReadyToLoad)
+                {
+                    taskButton.MaterializeButtons();
                     foreach (Button button in taskButton.Buttons)
                     {
                         button.Location = new Point(button.Location.X - horizontalScroll, button.Location.Y - verticalScroll);
                     }
+                }
             }
         }
         public void CalculateLoadingStatus(int horizontalScroll, int formWith, DateTime minDateStart)
@@ -862,23 +948,24 @@ namespace time_schedule
                 return true;
             return false;
         }
+        /// <summary>Находит левую границу видимых дат, завершая расчёт на максимально допустимой дате.</summary>
+        /// <param name="horizontalScroll">Горизонтальное смещение календаря.</param>
+        /// <param name="formWith">Ширина окна (исторический параметр).</param>
+        /// <param name="minDateStart">Исходная минимальная дата календаря.</param>
+        /// <returns>Дата начала видимой области, ограниченная диапазоном DateTime.</returns>
         private DateTime CalculateMinLoadDate(int horizontalScroll, int formWith, DateTime minDateStart)
         {
             int countDaysBeforScroll = horizontalScroll / Constants.COLUMN_WITH - 1;
             int reserve = formWith / 2 / Constants.COLUMN_WITH;
             DateTime minLoadDate = minDateStart;
-            try
+            for (int i = 0; i < countDaysBeforScroll; i++)
             {
-                for (int i = 0; i < countDaysBeforScroll; i++)
-                {
-                    minLoadDate = minLoadDate.AddDays(1);
-                    if (IsHolydays(minLoadDate))
-                    {
-                        i--;
-                    }
-                }
+                if (minLoadDate.Date >= DateTime.MaxValue.Date)
+                    break;
+                minLoadDate = minLoadDate.AddDays(1);
+                if (IsHolydays(minLoadDate))
+                    i--;
             }
-            catch { }
             return minLoadDate;
         }
 
@@ -914,6 +1001,21 @@ namespace time_schedule
     [Serializable]
     public class TaskButton
     {
+        /// <summary>Геометрия ещё не показанных сегментов задачи, без графических и оконных ресурсов.</summary>
+        [NonSerialized]
+        private List<Rectangle> pendingSegments = new List<Rectangle>();
+
+        /// <summary>Количество сегментов, рассчитанных для задачи до создания WinForms-кнопок.</summary>
+        [NonSerialized]
+        private int plannedButtonCount;
+
+        /// <summary>Полное количество запланированных визуальных сегментов задачи.</summary>
+        public int PlannedButtonCount => plannedButtonCount;
+
+        /// <summary>Геометрия для изолированного эксперимента рисования без создания кнопок.</summary>
+        internal IEnumerable<Rectangle> CanvasPilotSegments => pendingSegments ?? Enumerable.Empty<Rectangle>();
+
+        /// <summary>Ссылочная модель задачи, используемая календарём.</summary>
         public Task Task
         { get; private set; }
         public List<Button> Buttons
@@ -940,6 +1042,24 @@ namespace time_schedule
         {
             LoadingStatus = loadingStatus;
         }
+        /// <summary>Сохраняет абсолютную геометрию сегмента до попадания задачи в область загрузки.</summary>
+        private void PlanButton(int locationX, int locationY, int width, int height)
+        {
+            pendingSegments.Add(new Rectangle(locationX, locationY, width, height));
+            plannedButtonCount++;
+        }
+
+        /// <summary>Создаёт стандартные WinForms-кнопки только при первой необходимости отображения задачи.</summary>
+        public void MaterializeButtons()
+        {
+            if (pendingSegments == null)
+                return;
+            foreach (Rectangle segment in pendingSegments)
+                AddButton(segment.X, segment.Y, segment.Width, segment.Height);
+            pendingSegments = null;
+        }
+
+        /// <summary>Создаёт и настраивает один интерактивный сегмент задачи, сохраняя прежние обработчики.</summary>
         public void AddButton(int locationX, int locationY, int with, int height)
         {
             Button button = new Button();
@@ -954,20 +1074,6 @@ namespace time_schedule
             button.Click += Button_Click;
 
             button.MouseHover += Button_MouseHover;
-            void Button_MouseHover(object sender, EventArgs e)
-            {
-                int scroll = Program.fmMain.SetPlMain().Location.Y;
-                ToolTip t = new ToolTip();
-                string numTaskAfter = string.Empty;
-                if (Task.TaskNumberAfter > 0)
-                    numTaskAfter = "псоле №" + Task.TaskNumberAfter;
-                t.SetToolTip(button, "№" + Task.Number + "\n" + Task.Name + "\n" +
-                    "до " + Task.DateFinish.ToString().Split(' ')[0] + "\n" +
-                    "Статус: " +
-                    ((TaskStatusRus)Enum.Parse(typeof(TaskStatus),
-                    Task.Status.ToString(), true)).ToString().Replace("_", " ") + "\n" +
-                    numTaskAfter);
-            }
             button.MouseDown += Button_MouseDown;
             button.MouseUp += Button_MouseUp;
             button.MouseLeave += Button_MouseLeave;
@@ -1003,6 +1109,12 @@ namespace time_schedule
             }
             Buttons.Add(button);
         }
+        /// <summary>Заполняет общую подсказку формы при наведении на конкретный сегмент задачи.</summary>
+        private void Button_MouseHover(object sender, EventArgs e)
+        {
+            Program.fmMain.RegisterTaskToolTip((Button)sender, Task);
+        }
+
         private void CursorAndWidth(object button)
         {
             Thread.Sleep(250);
@@ -1141,6 +1253,7 @@ namespace time_schedule
             }
         }
 
+        /// <summary>Определяет цель переноса по уже отображённым контролам даты и исполнителя.</summary>
         private (PersonButton, DateTime) SetNewDateAndPerson(Point point, ListPersonButton listPersonButton, PoolTextBox poolTextBox)
         {
             var targetPersonButton = new PersonButton();
@@ -1157,9 +1270,9 @@ namespace time_schedule
             int locX = 0;
             foreach (DateTextBox dateTextBox in poolTextBox.ListTextBoxes)
             {
-                if (point.X >= dateTextBox.TextBox.Location.X &&
-                    (point.X <= dateTextBox.TextBox.Location.X + dateTextBox.TextBox.Width) &&
-                    dateTextBox.LoadingStatus == Statuses.LoadingStatus.Loaded)
+                if (dateTextBox.LoadingStatus == Statuses.LoadingStatus.Loaded &&
+                    point.X >= dateTextBox.TextBox.Location.X &&
+                    point.X <= dateTextBox.TextBox.Location.X + dateTextBox.TextBox.Width)
                 {
                     locX = dateTextBox.TextBox.Location.X;
                     dateTime = dateTextBox.Date.Date;
@@ -1174,7 +1287,14 @@ namespace time_schedule
             MouseLocation = Control.MousePosition;
             Program.fmMain.Cursor = Cursors.Default;
         }
+        /// <summary>Открывает редактор задачи тем же способом, что и прежняя WinForms-кнопка.</summary>
         private void Button_Click(object sender, EventArgs e)
+        {
+            OpenEditor();
+        }
+
+        /// <summary>Предоставляет общую точку открытия редактора для кнопки и холста.</summary>
+        internal void OpenEditor()
         {
             //Program.fmMain.SetPlForDate().AutoScroll = false;
             isDown = false;
@@ -1189,6 +1309,7 @@ namespace time_schedule
             //Program.fmMain.SetPlForDate().AutoScroll = true;
             //Dals.WriteObjectToMainPathFile(Constants.TASKS_BIN, Program.ListTasksAllPersonToSave);
         }
+        /// <summary>Рассчитывает многочастную полосу задачи без создания Windows-кнопок.</summary>
         public TaskButton(Task task, ListPersonButton listPersonButton, DateTime minDateStart, DateTime maxDateFinish)
         {
             Task = task;
@@ -1235,7 +1356,7 @@ namespace time_schedule
                         dateTime.Date == Task.DateFinish.Date) &&
                         dateTime.AddDays(3).Date != Task.DateFinish.Date)
                     {
-                        AddButton(locationX, locationY, width, Constants.ROW_HIGHT);
+                        PlanButton(locationX, locationY, width, Constants.ROW_HIGHT);
                         locationX += width;
                         width = 0;
                         numberOfDay = 0;

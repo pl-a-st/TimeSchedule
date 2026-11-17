@@ -215,7 +215,7 @@ namespace time_schedule
                 items.Select(x => Convert.ToInt64(x.Split('\t')[0])));
         }
 
-        /// <summary>Удаляет выбранную задачу только при совпадении версии, показанной пользователю.</summary>
+        /// <summary>Удаляет одну задачу по подтверждённому снимку, отсоединяя оставшихся непосредственных потомков.</summary>
         private void btnDeleteTask_Click(object sender, EventArgs e)
         {
             if (lBxTasks.SelectedIndex == -1)
@@ -223,55 +223,47 @@ namespace time_schedule
                 MessageBox.Show("Не выбрана задача.");
                 return;
             }
-            DialogResult result = MessageBox.Show(
-                "Вы уверены что хотите удалить задачу?",
-                "Сообщение",
-                MessageBoxButtons.YesNo,
-                MessageBoxIcon.Warning,
-                MessageBoxDefaultButton.Button1,
-                MessageBoxOptions.DefaultDesktopOnly);
-            if (result == DialogResult.No)
-            {
-                Program.fmMain.TopMost = true;
-                this.TopMost = true;
-
-                return;
-            }
-            this.Activate();
-            string selected = lBxTasks.SelectedItem.ToString();
+            long number = Convert.ToInt64(lBxTasks.SelectedItem.ToString().Split('\t')[0]);
+            long[] numbers = { number };
             Dictionary<long, string> expected;
-            try { expected = CaptureTargets(new[] { selected }); }
-            catch (TaskConflictException ex) { MessageBox.Show(ex.Message); return; }
-            if(Program.SaveProgramData(FindTaskAndDelete, expected) != Result.Sucess)
+            try { expected = TaskStore.CaptureDeletion(Program.ListTasksAllPersonToSave, numbers); }
+            catch (TaskConflictException ex) { MessageBox.Show(this, ex.Message); return; }
+            if (!ConfirmTaskDeletion(numbers, expected))
+                return;
+
+            this.Activate();
+            if (Program.SaveProgramData(() => TaskStore.DeleteWithDirectDependents(
+                Program.ListTasksAllPersonToSave, numbers, expected), expected) != Result.Sucess)
             {
-                MessageBox.Show(Program.SaveFailureMessage); 
+                MessageBox.Show(this, Program.SaveFailureMessage);
                 return;
             }
             Program.fmMain.ShowProgressbarAndMakeRefresh();
             Program.fmMain.EventRefreshFinished += ActionEventRefreshFinished;
-            
+
             void ActionEventRefreshFinished()
             {
                 LoadLBxTasks();
                 Program.fmMain.EventRefreshFinished -= ActionEventRefreshFinished;
             }
-            void FindTaskAndDelete()
-            {
-                DeleteTaskFromListToSave(selected);
-            }
         }
 
-        private static void DeleteTaskFromListToSave(string targetItem)
+        /// <summary>Запрашивает выбор между отменой удаления и отсоединением непосредственных потомков.</summary>
+        /// <param name="numbers">Уникальные номера задач, выбранных для удаления.</param>
+        /// <param name="expected">Отпечатки удаляемых задач вместе с их остающимися потомками.</param>
+        private bool ConfirmTaskDeletion(ICollection<long> numbers, IDictionary<long, string> expected)
         {
-            foreach (Task task in Program.ListTasksAllPersonToSave.Tasks)
-            {
-                if (task.Number == Convert.ToInt32(targetItem.Split('\t')[0]))
-                {
-                    Program.ListTasksAllPersonToSave.Tasks.Remove(task);
-                    break;
-                }
-
-            }
+            int dependents = expected.Count - numbers.Count;
+            string message;
+            if (dependents == 0)
+                message = numbers.Count == 1 ? "Удалить задачу №" + numbers.First() + "?"
+                    : "Удалить выбранные задачи (" + numbers.Count + ")?";
+            else
+                message = "Количество непосредственных потомков, остающихся в проекте: " + dependents + "." +
+                    "\n\nДа — удалить выбранные задачи и разорвать связи с этими потомками." +
+                    "\nНет — отменить удаление.\nДаты потомков останутся прежними.";
+            return MessageBox.Show(this, message, "Удаление задач", MessageBoxButtons.YesNo,
+                MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2) == DialogResult.Yes;
         }
 
         private void btnChangeTask_Click(object sender, EventArgs e)
@@ -715,35 +707,25 @@ namespace time_schedule
             }
         }
 
-        /// <summary>Удаляет выбранные задачи атомарно по проверенным версиям.</summary>
+        /// <summary>Удаляет выбранные задачи одной операцией, отсоединяя не удаляемых вместе с ними потомков.</summary>
         private void butDeleteTaskInlBx_Click(object sender, EventArgs e)
         {
-
-            DialogResult result = MessageBox.Show(
-               "Вы уверены что хотите УДАЛИТЬ выбранные задачи?",
-               "ВНИМАНИЕ",
-               MessageBoxButtons.YesNo,
-               MessageBoxIcon.Warning,
-               MessageBoxDefaultButton.Button1,
-               MessageBoxOptions.DefaultDesktopOnly);
-            if (result == DialogResult.No)
-            {
-                Program.fmMain.TopMost = true;
-                this.TopMost = true;
+            long[] numbers = GetTargetItems().Select(item =>
+                Convert.ToInt64(item.Split('\t')[0])).Distinct().ToArray();
+            if (numbers.Length == 0)
                 return;
-            }
-            this.Activate();
-            string[] targetItems = GetTargetItems();
+
             Dictionary<long, string> expected;
-            try { expected = CaptureTargets(targetItems); }
-            catch (TaskConflictException ex) { MessageBox.Show(ex.Message); return; }
-            if (Program.SaveProgramData(() =>
-                {
-                    foreach (string targetItem in targetItems)
-                        DeleteTaskFromListToSave(targetItem);
-                }, expected) != Result.Sucess)
+            try { expected = TaskStore.CaptureDeletion(Program.ListTasksAllPersonToSave, numbers); }
+            catch (TaskConflictException ex) { MessageBox.Show(this, ex.Message); return; }
+            if (!ConfirmTaskDeletion(numbers, expected))
+                return;
+
+            this.Activate();
+            if (Program.SaveProgramData(() => TaskStore.DeleteWithDirectDependents(
+                Program.ListTasksAllPersonToSave, numbers, expected), expected) != Result.Sucess)
             {
-                MessageBox.Show(Program.SaveFailureMessage);
+                MessageBox.Show(this, Program.SaveFailureMessage);
                 return;
             }
             Form1 form1 = this.Form1Delegat.SetForm1();
