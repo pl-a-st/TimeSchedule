@@ -15,7 +15,7 @@ namespace time_schedule
         Ok,
         Cancel
     }
-    public partial class frmWithRadioButton : Form
+    public partial class frmWithRadioButton : StyledWindowForm
     {
         public WasClickInfrmWithRadioButton WasClickInfrmWithRadioButton
         {
@@ -34,7 +34,7 @@ namespace time_schedule
 
         private void frmWithRadioButton_Load(object sender, EventArgs e)
         {
-            foreach(Control control in this.Controls)
+            foreach(Control control in WindowContentControls)
             {
                 if(!(control is RadioButton))
                 {
@@ -55,7 +55,7 @@ namespace time_schedule
             radioButton.Text = TextRadioButton;
             
             radioButton.Location = new Point(x: 5, y: 20 + label1.Height + CoutnRaioButton * radioButton.Height);
-            this.Controls.Add(radioButton);
+            WindowContentControls.Add(radioButton);
             butOk.Location = new Point(butOk.Location.X, butOk.Location.Y + radioButton.Height+6);
             butCancel.Location = new Point(butCancel.Location.X, butCancel.Location.Y +   radioButton.Height+6);
             this.Height += radioButton.Height+6;
@@ -64,7 +64,7 @@ namespace time_schedule
         public string GetTextSelectedRadio()
         {
             string textSelectedRadio = string.Empty;
-            foreach (Control control in this.Controls)
+            foreach (Control control in WindowContentControls)
             {
                 if (control is RadioButton)
                 {

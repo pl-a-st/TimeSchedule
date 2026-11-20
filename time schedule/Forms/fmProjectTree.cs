@@ -34,7 +34,7 @@ namespace time_schedule
         Cancel
     }
     [Serializable]
-    public partial class fmProjectTree : Form
+    public partial class fmProjectTree : StyledWindowForm
     {
         public HasLoad HasLoad
         {
@@ -55,6 +55,39 @@ namespace time_schedule
         public fmProjectTree()
         {
             InitializeComponent();
+        }
+
+        /// <summary>Использует реальный размер области содержимого для симметричных полей дерева.</summary>
+        protected override void OnLoad(EventArgs e)
+        {
+            base.OnLoad(e);
+            ArrangeProjectTreeControls();
+        }
+
+        /// <summary>Убирает обрезку кнопок и сохраняет отступы от рамок при изменении окна.</summary>
+        private void ArrangeProjectTreeControls()
+        {
+            Control content = projectTreeView.Parent;
+            if (content == null) return;
+            int margin = projectTreeView.Left;
+            int gap = Math.Max(6, margin * 2 / 3);
+            int columnWidth = button1.Width;
+            int columnLeft = content.ClientSize.Width - margin - columnWidth;
+            int treeWidth = columnLeft - gap - margin;
+            if (treeWidth < 150) return;
+
+            projectTreeView.SetBounds(margin, margin, treeWidth,
+                Math.Max(150, content.ClientSize.Height - margin * 2));
+            Button[] actions = { button1, button2, button3, button4, btnSave };
+            foreach (Button action in actions)
+            {
+                action.Left = columnLeft;
+                action.Width = columnWidth;
+            }
+            button5.Left = columnLeft + (columnWidth - button5.Width) / 2;
+            button6.Left = columnLeft + (columnWidth - button6.Width) / 2;
+            button4.Top = content.ClientSize.Height - margin - button4.Height;
+            button3.Top = button4.Top - gap - button3.Height;
         }
 
         public TreeView GetTreeView()

@@ -10,7 +10,7 @@ using System.Windows.Forms;
 
 namespace time_schedule
 {
-    public partial class fmInpootText : Form
+    public partial class fmInpootText : StyledWindowForm
     {
         public fmInpootText()
         {

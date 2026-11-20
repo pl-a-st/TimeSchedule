@@ -1,0 +1,390 @@
+﻿using System;
+using System.Drawing;
+using System.Drawing.Drawing2D;
+using System.Globalization;
+using System.Collections.Generic;
+using System.Windows.Forms;
+using System.Runtime.CompilerServices;
+
+namespace time_schedule
+{
+    /// <summary>Единые правила отображения календаря, отделённые от расчёта задач и расположения элементов.</summary>
+    internal static class ThemeVisuals
+    {
+        /// <summary>Радиус скругления цветовой полосы в пикселях.</summary>
+        internal const int TaskCornerRadius = 4;
+
+        /// <summary>Единый радиус рамок полей ввода в пикселях.</summary>
+        internal const int InputCornerRadius = 4;
+
+        /// <summary>Общая форма контуров полей и списков без объёмной системной рамки.</summary>
+        internal static GraphicsPath InputPath(Rectangle bounds)
+        {
+            var path = new GraphicsPath();
+            int diameter = Math.Min(InputCornerRadius * 2, Math.Min(bounds.Width, bounds.Height));
+            if (diameter < 2) { path.AddRectangle(bounds); return path; }
+            path.AddArc(bounds.Left, bounds.Top, diameter, diameter, 180, 90);
+            path.AddArc(bounds.Right - diameter, bounds.Top, diameter, diameter, 270, 90);
+            path.AddArc(bounds.Right - diameter, bounds.Bottom - diameter, diameter, diameter, 0, 90);
+            path.AddArc(bounds.Left, bounds.Bottom - diameter, diameter, diameter, 90, 90);
+            path.CloseFigure();
+            return path;
+        }
+
+        /// <summary>Определяет единый цвет рамки поля по доступности и фокусу.</summary>
+        /// <param name="enabled">Доступно ли поле для ввода.</param>
+        /// <param name="focused">Находится ли клавиатурный фокус внутри поля.</param>
+        internal static Color InputBorderColor(bool enabled, bool focused)
+        {
+            ThemePalette palette = ThemeManager.Palette;
+            return !enabled ? palette.MutedText : focused ? palette.Focus : palette.Grid;
+        }
+
+        /// <summary>Рисует единую матовую стрелку раскрытия в существующей области кнопки.</summary>
+        /// <param name="graphics">Контекст рисования пиктограммы.</param>
+        /// <param name="bounds">Область кнопки в координатах контрола.</param>
+        /// <param name="enabled">Состояние доступности списка.</param>
+        internal static void DrawDropDownArrow(Graphics graphics, Rectangle bounds, bool enabled)
+        {
+            if (bounds.Width < 8 || bounds.Height < 8) return;
+            SmoothingMode oldMode = graphics.SmoothingMode;
+            try
+            {
+                graphics.SmoothingMode = SmoothingMode.AntiAlias;
+                int centerX = bounds.Left + bounds.Width / 2;
+                int centerY = bounds.Top + bounds.Height / 2;
+                using (var pen = new Pen(enabled ? ThemeManager.Palette.Text :
+                    ThemeManager.Palette.MutedText, 1.4f))
+                {
+                    graphics.DrawLine(pen, centerX - 4, centerY - 2, centerX, centerY + 2);
+                    graphics.DrawLine(pen, centerX, centerY + 2, centerX + 4, centerY - 2);
+                }
+            }
+            finally { graphics.SmoothingMode = oldMode; }
+        }
+
+        /// <summary>Возвращает полную дату и полное русское название дня недели.</summary>
+        internal static string CalendarDate(DateTime date)
+        {
+            CultureInfo culture = CultureInfo.GetCultureInfo("ru-RU");
+            string day = date.ToString("dddd", culture);
+            return date.ToString("dd.MM.yyyy", culture) + Environment.NewLine +
+                char.ToUpper(day[0], culture) + day.Substring(1);
+        }
+
+        /// <summary>Фон заголовка исполнителя с контрастным разделением относительно календаря.</summary>
+        internal static Color PersonBackground => ThemeManager.Palette.Button;
+
+        /// <summary>Обычная сетка приглушена относительно утверждённого базового цвета Grid.</summary>
+        internal static Color CalendarGrid => BlendGridWithWindow(0.50f);
+
+        /// <summary>Начало недели заметнее обычного дня, но не перетягивает внимание с задач.</summary>
+        internal static Color CalendarWeekSeparator => BlendGridWithWindow(0.84f);
+
+        /// <summary>Мягкая двухпиксельная граница сотрудников, заметнее обычной сетки и слабее границы недели.</summary>
+        internal static Color CalendarPersonSeparator => BlendGridWithWindow(0.58f);
+
+        /// <summary>Общая тонкая граница шапки таблицы и правой грани кнопок сотрудников.</summary>
+        internal static Color CalendarHeaderLine => BlendGridWithWindow(0.68f);
+
+        /// <summary>Смешивает цвет сетки с поверхностью окна, не изменяя саму палитру темы.</summary>
+        private static Color BlendGridWithWindow(float gridWeight)
+        {
+            Color grid = ThemeManager.Palette.Grid;
+            Color surface = ThemeManager.Palette.Window;
+            return Color.FromArgb((int)(grid.R * gridWeight + surface.R * (1 - gridWeight)),
+                (int)(grid.G * gridWeight + surface.G * (1 - gridWeight)),
+                (int)(grid.B * gridWeight + surface.B * (1 - gridWeight)));
+        }
+
+        /// <summary>Основной текст задач использует утверждённый тёмный оттенок светлой палитры.</summary>
+        private static readonly Color taskInk = ThemePalette.For(ThemeKind.Light).Text;
+
+        /// <summary>Цветовые группы временной палитры задач в порядке их исходных оттенков.</summary>
+        private static readonly float[] taskHueCenters = { 0f, 30f, 55f, 125f, 177f, 220f, 275f, 330f };
+
+        /// <summary>Мягкие цвета задач для светлой темы; последний оттенок предназначен для серых задач.</summary>
+        private static readonly Color[] lightTaskColors =
+        {
+            Color.FromArgb(248, 174, 177), Color.FromArgb(252, 195, 149),
+            Color.FromArgb(255, 234, 165), Color.FromArgb(183, 236, 184),
+            Color.FromArgb(170, 228, 226), Color.FromArgb(184, 216, 248),
+            Color.FromArgb(220, 194, 245), Color.FromArgb(242, 202, 224),
+            Color.FromArgb(188, 204, 225)
+        };
+
+        /// <summary>Приглушённые цвета задач для тёмной темы с сохранением различимости оттенков.</summary>
+        private static readonly Color[] darkTaskColors =
+        {
+            Color.FromArgb(217, 139, 148), Color.FromArgb(227, 173, 127),
+            Color.FromArgb(231, 207, 138), Color.FromArgb(165, 209, 153),
+            Color.FromArgb(141, 208, 211), Color.FromArgb(139, 186, 229),
+            Color.FromArgb(192, 166, 218), Color.FromArgb(225, 177, 202),
+            Color.FromArgb(145, 167, 195)
+        };
+
+        /// <summary>Ступени светлой темы: пастельные варианты вплоть до утверждённого базового цвета.</summary>
+        private static readonly float[] taskPaletteLightFades = { 0.60f, 0.40f, 0.20f, 0f };
+
+        /// <summary>Четыре отчётливо различимые ступени тёмной темы с читаемым тёмным текстом.</summary>
+        private static readonly float[] taskPaletteDarkFades = { 0.58f, 0.39f, 0.20f, 0f };
+
+        /// <summary>Исходные RGB для записи в задачу, построенные один раз.</summary>
+        private static readonly Color[,] taskPaletteLight = BuildTaskPalette(ThemeKind.Light);
+
+        /// <summary>Соответствующие цветовые уровни тёмной темы.</summary>
+        private static readonly Color[,] taskPaletteDark = BuildTaskPalette(ThemeKind.Dark);
+
+        /// <summary>Индекс палитрового RGB для быстрого рисования больших календарей.</summary>
+        private static readonly Dictionary<int, int> taskPaletteIndices = BuildTaskPaletteIndices();
+
+        /// <summary>
+        /// Готовит оттенки один раз. Осветление к светлой нейтральной поверхности
+        /// сохраняет видимую градацию и читаемость текста в обеих темах.
+        /// </summary>
+        /// <param name="kind">Тема для построения цветовых полос.</param>
+        private static Color[,] BuildTaskPalette(ThemeKind kind)
+        {
+            Color[] bases = kind == ThemeKind.Dark ? darkTaskColors : lightTaskColors;
+            Color surface = ThemePalette.For(ThemeKind.Light).Window;
+            var result = new Color[bases.Length, TaskPaletteToneCount];
+            for (int family = 0; family < bases.Length; family++)
+                for (int tone = 0; tone < TaskPaletteToneCount; tone++)
+                {
+                    float fade = (kind == ThemeKind.Dark ? taskPaletteDarkFades : taskPaletteLightFades)[tone];
+                    Color color = bases[family];
+                    result[family, tone] = Color.FromArgb(
+                        (int)(color.R * (1f - fade) + surface.R * fade),
+                        (int)(color.G * (1f - fade) + surface.G * fade),
+                        (int)(color.B * (1f - fade) + surface.B * fade));
+                }
+            return result;
+        }
+
+        /// <summary>Сопоставляет палитровые RGB ступеням без изменения старых произвольных цветов.</summary>
+        private static Dictionary<int, int> BuildTaskPaletteIndices()
+        {
+            var result = new Dictionary<int, int>();
+            for (int family = 0; family < lightTaskColors.Length; family++)
+                for (int tone = 0; tone < TaskPaletteToneCount; tone++)
+                    result[taskPaletteLight[family, tone].ToArgb()] = family * TaskPaletteToneCount + tone;
+            return result;
+        }
+
+        /// <summary>Число цветовых семейств, поддерживаемых выбором оттенка задачи.</summary>
+        internal static int TaskPaletteFamilyCount => lightTaskColors.Length;
+
+        /// <summary>Число ступеней насыщенности в каждом цветовом семействе.</summary>
+        internal const int TaskPaletteToneCount = 4;
+
+        /// <summary>Возвращает неизменяемый исходный RGB для выбранной ячейки палитры.</summary>
+        /// <param name="family">Номер семейства в таблице цветов.</param>
+        /// <param name="tone">Номер ступени, от наиболее светлой до базовой.</param>
+        internal static Color TaskPaletteSourceColor(int family, int tone)
+        {
+            return TaskPaletteDisplayColor(family, tone, ThemeKind.Light);
+        }
+
+        /// <summary>Показывает палитровый оттенок в указанной теме без изменения глобальной темы.</summary>
+        /// <param name="family">Номер семейства.</param>
+        /// <param name="tone">Номер ступени.</param>
+        /// <param name="kind">Тема предпросмотра.</param>
+        internal static Color TaskPaletteDisplayColor(int family, int tone, ThemeKind kind)
+        {
+            if (family < 0 || family >= TaskPaletteFamilyCount ||
+                tone < 0 || tone >= TaskPaletteToneCount)
+                throw new ArgumentOutOfRangeException(family < 0 || family >= TaskPaletteFamilyCount
+                    ? nameof(family) : nameof(tone));
+            Color[,] variants = kind == ThemeKind.Dark ? taskPaletteDark : taskPaletteLight;
+            return variants[family, tone];
+        }
+
+        /// <summary>Возвращает цвет календаря для текущей темы без изменения исходного RGB задачи.</summary>
+        /// <param name="original">Исходный цвет задачи.</param>
+        internal static Color TaskDisplayColor(Color original)
+        {
+            return TaskDisplayColorInTheme(original, ThemeManager.Current);
+        }
+
+        /// <summary>
+        /// Вычисляет цвет задачи для заданной темы. Новые палитровые оттенки сохраняют
+        /// различия насыщенности, а произвольные старые RGB продолжают использовать
+        /// существующее сопоставление с ближайшим цветовым семейством.
+        /// </summary>
+        /// <param name="original">Исходный цвет задачи.</param>
+        /// <param name="kind">Тема, в которой будет отображена задача.</param>
+        internal static Color TaskDisplayColorInTheme(Color original, ThemeKind kind)
+        {
+            if (original.IsEmpty || original.A == 0) return original;
+            if (original.A == 255 && taskPaletteIndices.TryGetValue(original.ToArgb(), out int index))
+                return TaskPaletteDisplayColor(index / TaskPaletteToneCount,
+                    index % TaskPaletteToneCount, kind);
+
+            Color[] colors = kind == ThemeKind.Dark ? darkTaskColors : lightTaskColors;
+            int nearest = colors.Length - 1;
+            if (original.GetSaturation() >= 0.14f)
+            {
+                float hue = original.GetHue();
+                float minDistance = float.MaxValue;
+                for (int i = 0; i < taskHueCenters.Length; i++)
+                {
+                    float distance = Math.Abs(hue - taskHueCenters[i]);
+                    distance = Math.Min(distance, 360f - distance);
+                    if (distance < minDistance) { minDistance = distance; nearest = i; }
+                }
+            }
+            return Color.FromArgb(original.A, colors[nearest]);
+        }
+
+        /// <summary>Исходное правило определения просрочки без изменения статусов и дат задачи.</summary>
+        internal static bool IsTaskOverdue(Task task)
+        {
+            return (task.Status == TaskStatus.New && task.DateStart.Date < DateTime.Today) ||
+                (task.DateFinish.Date < DateTime.Today && task.Status != TaskStatus.Closed);
+        }
+
+        /// <summary>Подбирает читаемый цвет текста и сохраняет красное выделение просроченных задач.</summary>
+        internal static Color TaskTextColor(Task task)
+        {
+            return IsTaskOverdue(task) ? Color.FromArgb(105, 25, 42) : taskInk;
+        }
+
+        /// <summary>Возвращает общую однопиксельную внутреннюю геометрию сегмента для обычного показа и предпросмотра.</summary>
+        /// <param name="planned">Рассчитанный прямоугольник задачи без визуальных отступов.</param>
+        /// <param name="viewportX">Горизонтальное смещение отображаемого календаря.</param>
+        /// <param name="offsetY">Вертикальное смещение холста или предпросмотра.</param>
+        internal static Rectangle TaskBandBounds(Rectangle planned, int viewportX, int offsetY)
+        {
+            return new Rectangle(planned.X + 1 - viewportX, planned.Y + 1 + offsetY,
+                planned.Width - 1, planned.Height - 1);
+        }
+
+        /// <summary>Создаёт форму сегмента: скруглены только внешние границы всей задачи.</summary>
+        internal static GraphicsPath TaskPath(Rectangle rect, bool roundLeft = true, bool roundRight = true)
+        {
+            var path = new GraphicsPath();
+            if (rect.Width < 2 || rect.Height < 2) return path;
+            int x = rect.Left, y = rect.Top, right = rect.Right - 1, bottom = rect.Bottom - 1;
+            int radius = Math.Min(TaskCornerRadius, Math.Min(rect.Width - 1, rect.Height - 1) / 2);
+            if (radius <= 1 || (!roundLeft && !roundRight))
+            {
+                path.AddRectangle(new Rectangle(x, y, rect.Width - 1, rect.Height - 1));
+                return path;
+            }
+            int diameter = radius * 2;
+            path.StartFigure();
+            if (roundLeft) path.AddArc(x, y, diameter, diameter, 180, 90);
+            else path.AddLine(x, y, x, y);
+            if (roundRight) path.AddArc(right - diameter, y, diameter, diameter, 270, 90);
+            else path.AddLine(right, y, right, y);
+            if (roundRight) path.AddArc(right - diameter, bottom - diameter, diameter, diameter, 0, 90);
+            else path.AddLine(right, bottom, right, bottom);
+            if (roundLeft) path.AddArc(x, bottom - diameter, diameter, diameter, 90, 90);
+            else path.AddLine(x, bottom, x, bottom);
+            path.CloseFigure();
+            return path;
+        }
+
+        /// <summary>Рисует сегмент с мягкими внешними углами и ровными внутренними торцами.</summary>
+        /// <param name="graphics">Графический контекст холста календаря.</param>
+        /// <param name="rect">Границы сегмента в координатах холста.</param>
+        /// <param name="fill">Кисть текущего цвета отображения задачи.</param>
+        /// <param name="outline">Необязательный контур временного предпросмотра.</param>
+        /// <param name="roundLeft">Скруглять только левый конец всей задачи.</param>
+        /// <param name="roundRight">Скруглять только правый конец всей задачи.</param>
+        internal static void FillTask(Graphics graphics, Rectangle rect, Brush fill, Pen outline = null,
+            bool roundLeft = true, bool roundRight = true)
+        {
+            if (rect.Width < 2 || rect.Height < 2) return;
+            SmoothingMode previous = graphics.SmoothingMode;
+            try
+            {
+                graphics.SmoothingMode = SmoothingMode.AntiAlias;
+                using (GraphicsPath shape = TaskPath(rect, roundLeft, roundRight))
+                {
+                    graphics.FillPath(fill, shape);
+                    if (!roundLeft || !roundRight)
+                    {
+                        graphics.SmoothingMode = SmoothingMode.None;
+                        FillSquareTaskCaps(graphics, rect, fill, roundLeft, roundRight);
+                        graphics.SmoothingMode = SmoothingMode.AntiAlias;
+                    }
+                    if (outline != null) graphics.DrawPath(outline, shape);
+                }
+            }
+            finally { graphics.SmoothingMode = previous; }
+        }
+
+        /// <summary>Делает только внутренние прямые торцы непрозрачными без изменения внешних скруглений.</summary>
+        /// <param name="graphics">Графический контекст со сглаживанием в режиме None.</param>
+        /// <param name="rect">Пиксельные границы сегмента.</param>
+        /// <param name="fill">Кисть текущего отображаемого цвета задачи.</param>
+        /// <param name="roundLeft">Скругляется ли левый внешний конец задачи.</param>
+        /// <param name="roundRight">Скругляется ли правый внешний конец задачи.</param>
+        private static void FillSquareTaskCaps(Graphics graphics, Rectangle rect, Brush fill,
+            bool roundLeft, bool roundRight)
+        {
+            int height = Math.Max(0, rect.Height - 1);
+            if (!roundLeft) graphics.FillRectangle(fill, rect.Left, rect.Top, 1, height);
+            if (!roundRight) graphics.FillRectangle(fill, rect.Right - 1, rect.Top, 1, height);
+        }
+
+        /// <summary>Состояние концов сегмента, сохраняемое при изменении размера WinForms-кнопки.</summary>
+        private sealed class ButtonCorners
+        {
+            internal bool Left;
+            internal bool Right;
+        }
+
+        /// <summary>Состояния кнопок не удерживают закрытые формы или задачи в памяти.</summary>
+        private static readonly ConditionalWeakTable<Button, ButtonCorners> buttonCorners =
+            new ConditionalWeakTable<Button, ButtonCorners>();
+
+        /// <summary>Оформляет сегмент кнопки; обработчик изменения размера добавляется только один раз.</summary>
+        internal static void ApplyTaskButtonCorners(Button button, bool roundLeft = true, bool roundRight = true)
+        {
+            if (button == null) return;
+            ButtonCorners corners;
+            if (!buttonCorners.TryGetValue(button, out corners))
+            {
+                corners = new ButtonCorners();
+                buttonCorners.Add(button, corners);
+                button.SizeChanged += TaskButtonResized;
+                button.Disposed += TaskButtonDisposed;
+            }
+            corners.Left = roundLeft;
+            corners.Right = roundRight;
+            UpdateButtonRegion(button, corners);
+        }
+
+        /// <summary>Пересчитывает геометрию сегмента при изменении его размеров.</summary>
+        private static void TaskButtonResized(object sender, EventArgs e)
+        {
+            var button = (Button)sender;
+            ButtonCorners corners;
+            if (buttonCorners.TryGetValue(button, out corners)) UpdateButtonRegion(button, corners);
+        }
+
+        /// <summary>Удаляет обработчики, когда сегмент выводится из эксплуатации.</summary>
+        private static void TaskButtonDisposed(object sender, EventArgs e)
+        {
+            var button = (Button)sender;
+            button.SizeChanged -= TaskButtonResized;
+            button.Disposed -= TaskButtonDisposed;
+            buttonCorners.Remove(button);
+        }
+
+        /// <summary>Освобождает старый графический регион при изменении границ сегмента.</summary>
+        private static void UpdateButtonRegion(Button button, ButtonCorners corners)
+        {
+            if (button.Width < 2 || button.Height < 2) return;
+            using (GraphicsPath path = TaskPath(new Rectangle(0, 0, button.Width, button.Height),
+                corners.Left, corners.Right))
+            {
+                Region oldRegion = button.Region;
+                button.Region = new Region(path);
+                if (oldRegion != null) oldRegion.Dispose();
+            }
+        }
+    }
+}

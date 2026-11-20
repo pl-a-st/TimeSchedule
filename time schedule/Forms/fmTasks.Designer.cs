@@ -36,7 +36,7 @@
             this.label1 = new System.Windows.Forms.Label();
             this.btnGoToDateStartTask = new ButtonForShedule();
             this.dTPFilterDateStart = new System.Windows.Forms.DateTimePicker();
-            this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.groupBox1 = new StyledGroupBox();
             this.dTPFilterDateFinish = new System.Windows.Forms.DateTimePicker();
             this.cBxFilterByDate = new System.Windows.Forms.CheckBox();
             this.tBxPerson = new System.Windows.Forms.TextBox();
@@ -49,15 +49,15 @@
             this.tBxDateFinish = new System.Windows.Forms.TextBox();
             this.butOpenTaskInExcell = new ButtonForShedule();
             this.cBxFilterByStatus = new System.Windows.Forms.CheckBox();
-            this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.groupBox2 = new StyledGroupBox();
             this.tBxStatusesFilter = new System.Windows.Forms.TextBox();
             this.btnFilter = new ButtonForShedule();
             this.cBxOverdue = new System.Windows.Forms.CheckBox();
             this.label6 = new System.Windows.Forms.Label();
             this.cBxNotStarted = new System.Windows.Forms.CheckBox();
             this.label7 = new System.Windows.Forms.Label();
-            this.groupBox3 = new System.Windows.Forms.GroupBox();
-            this.groupBox4 = new System.Windows.Forms.GroupBox();
+            this.groupBox3 = new StyledGroupBox();
+            this.groupBox4 = new StyledGroupBox();
             this.btnChangeToSelectTasks = new ButtonForShedule();
             this.chkMultySelectTask = new System.Windows.Forms.CheckBox();
             this.butDeleteTaskInlBx = new ButtonForShedule();

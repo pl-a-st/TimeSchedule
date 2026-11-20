@@ -33,7 +33,7 @@
             this.btnDelete = new ButtonForShedule();
             this.btnChangePerson = new ButtonForShedule();
             this.button1 = new ButtonForShedule();
-            this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.groupBox1 = new StyledGroupBox();
             this.button2 = new ButtonForShedule();
             this.lblPersonPlace = new System.Windows.Forms.Label();
             this.groupBox1.SuspendLayout();

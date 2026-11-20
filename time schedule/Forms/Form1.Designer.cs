@@ -74,7 +74,7 @@
             this.plMain.Controls.Add(this.pBForLine);
             this.plMain.Location = new System.Drawing.Point(181, 85);
             this.plMain.Name = "plMain";
-            this.plMain.Size = new System.Drawing.Size(977, 645);
+            this.plMain.Size = new System.Drawing.Size(991, 659);
             this.plMain.TabIndex = 0;
             this.plMain.Scroll += new System.Windows.Forms.ScrollEventHandler(this.ScrollChange);
             this.plMain.MouseEnter += new System.EventHandler(this.plMain_MouseEnter);
@@ -99,7 +99,7 @@
             this.plForDate.Enabled = false;
             this.plForDate.Location = new System.Drawing.Point(181, 53);
             this.plForDate.Name = "plForDate";
-            this.plForDate.Size = new System.Drawing.Size(977, 50);
+            this.plForDate.Size = new System.Drawing.Size(991, 50);
             this.plForDate.TabIndex = 1;
             // 
             // toolStripMenuItem1
@@ -211,9 +211,9 @@
             this.menuStrip1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(245)))), ((int)(((byte)(245)))), ((int)(((byte)(250)))));
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripMenuItem1});
-            this.menuStrip1.Location = new System.Drawing.Point(0, 0);
+            this.menuStrip1.Location = new System.Drawing.Point(1, 1);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(1171, 24);
+            this.menuStrip1.Size = new System.Drawing.Size(1197, 24);
             this.menuStrip1.TabIndex = 2;
             this.menuStrip1.Text = "menuStrip1";
             this.menuStrip1.ItemClicked += new System.Windows.Forms.ToolStripItemClickedEventHandler(this.menuStrip1_ItemClicked);
@@ -226,15 +226,16 @@
             this.plPersonButton.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(245)))), ((int)(((byte)(245)))), ((int)(((byte)(248)))));
             this.plPersonButton.Location = new System.Drawing.Point(11, 85);
             this.plPersonButton.Name = "plPersonButton";
-            this.plPersonButton.Size = new System.Drawing.Size(200, 624);
+            this.plPersonButton.Size = new System.Drawing.Size(200, 638);
             this.plPersonButton.TabIndex = 4;
             this.plPersonButton.Scroll += new System.Windows.Forms.ScrollEventHandler(this.plPersonButton_Scroll);
             // 
             // dateTimePicker1
             // 
-            this.dateTimePicker1.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
+            this.dateTimePicker1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.dateTimePicker1.CalendarMonthBackground = System.Drawing.Color.FromArgb(((int)(((byte)(32)))), ((int)(((byte)(32)))), ((int)(((byte)(32)))));
-            this.dateTimePicker1.Location = new System.Drawing.Point(476, 765);
+            this.dateTimePicker1.Location = new System.Drawing.Point(2, 2);
             this.dateTimePicker1.Name = "dateTimePicker1";
             this.dateTimePicker1.Size = new System.Drawing.Size(172, 20);
             this.dateTimePicker1.TabIndex = 8;
@@ -251,8 +252,10 @@
             // 
             // cBxSeetingsProjects
             // 
+            this.cBxSeetingsProjects.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.cBxSeetingsProjects.FormattingEnabled = true;
-            this.cBxSeetingsProjects.Location = new System.Drawing.Point(44, 27);
+            this.cBxSeetingsProjects.Location = new System.Drawing.Point(2, 2);
             this.cBxSeetingsProjects.Name = "cBxSeetingsProjects";
             this.cBxSeetingsProjects.Size = new System.Drawing.Size(135, 21);
             this.cBxSeetingsProjects.TabIndex = 11;
@@ -320,7 +323,7 @@
             this.minusFiveDay.FlatAppearance.BorderSize = 0;
             this.minusFiveDay.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.minusFiveDay.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(240)))), ((int)(((byte)(240)))), ((int)(((byte)(240)))));
-            this.minusFiveDay.Location = new System.Drawing.Point(476, 736);
+            this.minusFiveDay.Location = new System.Drawing.Point(483, 750);
             this.minusFiveDay.Name = "minusFiveDay";
             this.minusFiveDay.Size = new System.Drawing.Size(43, 23);
             this.minusFiveDay.TabIndex = 9;
@@ -335,7 +338,7 @@
             this.addFiveDays.FlatAppearance.BorderSize = 0;
             this.addFiveDays.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.addFiveDays.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(240)))), ((int)(((byte)(240)))), ((int)(((byte)(240)))));
-            this.addFiveDays.Location = new System.Drawing.Point(606, 736);
+            this.addFiveDays.Location = new System.Drawing.Point(613, 750);
             this.addFiveDays.Name = "addFiveDays";
             this.addFiveDays.Size = new System.Drawing.Size(42, 23);
             this.addFiveDays.TabIndex = 7;
@@ -350,7 +353,7 @@
             this.bTnToDay.FlatAppearance.BorderSize = 0;
             this.bTnToDay.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.bTnToDay.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(240)))), ((int)(((byte)(240)))), ((int)(((byte)(240)))));
-            this.bTnToDay.Location = new System.Drawing.Point(525, 736);
+            this.bTnToDay.Location = new System.Drawing.Point(532, 750);
             this.bTnToDay.Name = "bTnToDay";
             this.bTnToDay.Size = new System.Drawing.Size(75, 23);
             this.bTnToDay.TabIndex = 5;
@@ -366,7 +369,7 @@
             this.NewRefresh.FlatAppearance.BorderSize = 0;
             this.NewRefresh.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.NewRefresh.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(240)))), ((int)(((byte)(240)))), ((int)(((byte)(240)))));
-            this.NewRefresh.Location = new System.Drawing.Point(360, 736);
+            this.NewRefresh.Location = new System.Drawing.Point(367, 750);
             this.NewRefresh.Name = "NewRefresh";
             this.NewRefresh.Size = new System.Drawing.Size(110, 49);
             this.NewRefresh.TabIndex = 3;
@@ -382,7 +385,7 @@
             this.btnNewTask.FlatAppearance.BorderSize = 0;
             this.btnNewTask.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnNewTask.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(240)))), ((int)(((byte)(240)))), ((int)(((byte)(240)))));
-            this.btnNewTask.Location = new System.Drawing.Point(654, 736);
+            this.btnNewTask.Location = new System.Drawing.Point(661, 750);
             this.btnNewTask.Name = "btnNewTask";
             this.btnNewTask.Size = new System.Drawing.Size(110, 49);
             this.btnNewTask.TabIndex = 3;
@@ -394,15 +397,13 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(245)))), ((int)(((byte)(245)))), ((int)(((byte)(248)))));
-            this.ClientSize = new System.Drawing.Size(1171, 820);
+            this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(159)))), ((int)(((byte)(183)))), ((int)(((byte)(213)))));
+            this.ClientSize = new System.Drawing.Size(1199, 848);
             this.Controls.Add(this.button2);
             this.Controls.Add(this.btnSetings);
             this.Controls.Add(this.lblProjects);
-            this.Controls.Add(this.cBxSeetingsProjects);
             this.Controls.Add(this.button1);
             this.Controls.Add(this.minusFiveDay);
-            this.Controls.Add(this.dateTimePicker1);
             this.Controls.Add(this.addFiveDays);
             this.Controls.Add(this.bTnToDay);
             this.Controls.Add(this.NewRefresh);
@@ -411,6 +412,7 @@
             this.Controls.Add(this.plForDate);
             this.Controls.Add(this.menuStrip1);
             this.Controls.Add(this.plPersonButton);
+            this.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(25)))), ((int)(((byte)(39)))), ((int)(((byte)(60)))));
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MainMenuStrip = this.menuStrip1;
             this.Name = "Form1";
@@ -421,6 +423,19 @@
             this.Load += new System.EventHandler(this.Form1_Load);
             this.Shown += new System.EventHandler(this.Form1_Shown);
             this.SizeChanged += new System.EventHandler(this.Form1_SizeChanged);
+            this.Controls.SetChildIndex(this.plPersonButton, 0);
+            this.Controls.SetChildIndex(this.menuStrip1, 0);
+            this.Controls.SetChildIndex(this.plForDate, 0);
+            this.Controls.SetChildIndex(this.plMain, 0);
+            this.Controls.SetChildIndex(this.btnNewTask, 0);
+            this.Controls.SetChildIndex(this.NewRefresh, 0);
+            this.Controls.SetChildIndex(this.bTnToDay, 0);
+            this.Controls.SetChildIndex(this.addFiveDays, 0);
+            this.Controls.SetChildIndex(this.minusFiveDay, 0);
+            this.Controls.SetChildIndex(this.button1, 0);
+            this.Controls.SetChildIndex(this.lblProjects, 0);
+            this.Controls.SetChildIndex(this.btnSetings, 0);
+            this.Controls.SetChildIndex(this.button2, 0);
             this.plMain.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.pBForLine)).EndInit();
             this.menuStrip1.ResumeLayout(false);

@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace time_schedule {
-    public partial class fmHolidays : Form {
+    public partial class fmHolidays : StyledWindowForm {
         public fmHolidays(LoadRefreshForm loadRefreshForm) {
             InitializeComponent();
             thisloadRefreshForm = loadRefreshForm;

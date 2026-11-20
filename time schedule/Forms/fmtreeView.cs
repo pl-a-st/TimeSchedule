@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace time_schedule {
-    public partial class fmtreeView : Form {
+    public partial class fmtreeView : StyledWindowForm {
         public BtnClick BtnClick {
             get;
             private set;

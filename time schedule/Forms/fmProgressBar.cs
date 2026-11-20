@@ -14,13 +14,65 @@ namespace time_schedule
     public delegate void ForControl();
     public partial class fmProgressBar : Form
     {
+        /// <summary>Цветной визуальный слой действующего нативного ProgressBar.Marquee.</summary>
+        private readonly StyledMarqueeProgressIndicator marqueeIndicator;
         public delegate void LoadFinished();
         public event LoadFinished EventLoadFinished;
         public Action ActionForDoing { get; set; }
         public fmProgressBar()
         {
             InitializeComponent();
+            marqueeIndicator = new StyledMarqueeProgressIndicator
+            {
+                Bounds = progressBar.Bounds,
+                Anchor = progressBar.Anchor
+            };
+            Controls.Add(marqueeIndicator);
+            marqueeIndicator.BringToFront();
+            progressBar.Visible = false;
+            SetStyle(ControlStyles.ResizeRedraw | ControlStyles.OptimizedDoubleBuffer, true);
+            ThemeManager.Changed += ProgressThemeChanged;
+            Disposed += ProgressDisposed;
+            ApplyProgressTheme();
         }
+
+        /// <summary>Оформляет окно загрузки, сохраняя штатный ProgressBar.Marquee и его скорость.</summary>
+        private void ApplyProgressTheme()
+        {
+            if (IsDisposed) return;
+            ThemePalette palette = ThemeManager.Palette;
+            BackColor = palette.Window;
+            ForeColor = palette.Text;
+            label1.BackColor = palette.Window;
+            label1.ForeColor = palette.Text;
+            progressBar.BackColor = palette.Surface;
+            progressBar.ForeColor = palette.Accent;
+            marqueeIndicator.Invalidate();
+            Invalidate();
+        }
+
+        /// <summary>Обновляет окно при смене темы без сброса состояния загрузки.</summary>
+        private void ProgressThemeChanged(object sender, EventArgs e)
+        {
+            if (!IsDisposed) ApplyProgressTheme();
+        }
+
+        /// <summary>Удаляет подписку и не удерживает закрытое окно в памяти.</summary>
+        private void ProgressDisposed(object sender, EventArgs e)
+        {
+            ThemeManager.Changed -= ProgressThemeChanged;
+            Disposed -= ProgressDisposed;
+        }
+
+        /// <summary>Добавляет внешнюю тонкую рамку окна загрузки без изменения его компоновки.</summary>
+        protected override void OnPaint(PaintEventArgs e)
+        {
+            base.OnPaint(e);
+            if (Width < 3 || Height < 3) return;
+            using (var pen = new Pen(ThemeManager.Palette.Grid))
+                e.Graphics.DrawRectangle(pen, 0, 0, ClientSize.Width - 1, ClientSize.Height - 1);
+        }
+
         public void SetTextMessege(string textToMessege)
         {
             label1.Text = textToMessege;
@@ -37,6 +89,7 @@ namespace time_schedule
             StatusLoad = Statuses.FormLoad.Load;
             progressBar.MarqueeAnimationSpeed = 10;
             progressBar.Style = ProgressBarStyle.Marquee;
+            marqueeIndicator.StartAnimation();
             EventLoadFinished?.Invoke();
         }
 

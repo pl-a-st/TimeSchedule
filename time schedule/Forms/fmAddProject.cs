@@ -15,7 +15,7 @@ namespace time_schedule
         yes,
         no
     }
-    public partial class fmAddProject : Form
+    public partial class fmAddProject : StyledWindowForm
     {
         public fmAddProject()
         {

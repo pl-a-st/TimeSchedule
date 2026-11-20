@@ -11,7 +11,7 @@ using System.Windows.Forms;
 
 namespace time_schedule
 {
-    public partial class fmMainPathChoise : Form
+    public partial class fmMainPathChoise : StyledWindowForm
     {
         public fmMainPathChoise()
         {

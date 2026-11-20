@@ -10,7 +10,7 @@ using System.Windows.Forms;
 
 namespace time_schedule.Forms {
 
-    public partial class fmChangeList : Form {
+    public partial class fmChangeList : StyledWindowForm {
 
         public fmChangeList() {
             InitializeComponent();

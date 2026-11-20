@@ -77,8 +77,8 @@ namespace time_schedule
         /// <summary>Создаёт прежний визуальный элемент шкалы дат с тем же оформлением.</summary>
         private TextBox CreateTextBox()
         {
-            TextBox box = new TextBox();
-            box.BorderStyle = BorderStyle.Fixed3D;
+            TextBox box = new StyledCalendarDateTextBox();
+            box.BorderStyle = BorderStyle.None;
             box.AutoSize = false;
             box.Multiline = true;
             box.TextAlign = HorizontalAlignment.Center;
@@ -1067,7 +1067,8 @@ namespace time_schedule
             button.Width = with - 2;
             button.Height = height - 1;
             button.Text = Task.Name;
-            button.BackColor = Task.Color;
+            button.BackColor = ThemeVisuals.TaskDisplayColor(Task.Color);
+            button.ForeColor = ThemeVisuals.TaskTextColor(Task);
             button.FlatStyle = FlatStyle.Flat;
             button.FlatAppearance.BorderSize = 0;
             button.FlatAppearance.BorderColor = Color.DimGray;
@@ -1091,7 +1092,6 @@ namespace time_schedule
                 )
             {
                 button.Font = new Font(button.Font.FontFamily, button.Font.Size, button.Font.Style);
-                button.ForeColor = System.Drawing.Color.DarkRed;
             }
             void Button_MouseDown(object sender, MouseEventArgs e)
             {
@@ -1107,6 +1107,9 @@ namespace time_schedule
                     thread.Start(button);
                 }
             }
+            if (Buttons.Count != 0)
+                ThemeVisuals.ApplyTaskButtonCorners(Buttons[Buttons.Count - 1], Buttons.Count == 1, false);
+            ThemeVisuals.ApplyTaskButtonCorners(button, Buttons.Count == 0, true);
             Buttons.Add(button);
         }
         /// <summary>Заполняет общую подсказку формы при наведении на конкретный сегмент задачи.</summary>

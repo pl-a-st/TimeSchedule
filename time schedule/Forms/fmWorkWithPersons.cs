@@ -14,7 +14,7 @@ namespace time_schedule {
         up,
         down
     }
-    public partial class fmWorkWithPersons : Form {
+    public partial class fmWorkWithPersons : StyledWindowForm {
         public fmWorkWithPersons(LoadRefreshForm loadRefreshForm) {
             InitializeComponent();
             thisloadRefreshForm = loadRefreshForm;

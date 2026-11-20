@@ -40,7 +40,7 @@
             this.rBnWorksDay = new System.Windows.Forms.RadioButton();
             this.rBnDayFinish = new System.Windows.Forms.RadioButton();
             this.label5 = new System.Windows.Forms.Label();
-            this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.groupBox1 = new StyledGroupBox();
             this.rBnDayStart = new System.Windows.Forms.RadioButton();
             this.rBnPreviousTask = new System.Windows.Forms.RadioButton();
             this.btnPreviousTask = new time_schedule.ButtonForShedule();
@@ -48,7 +48,7 @@
             this.label6 = new System.Windows.Forms.Label();
             this.nUpDnPreviousTask = new System.Windows.Forms.NumericUpDown();
             this.btnCreateTask = new time_schedule.ButtonForShedule();
-            this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.groupBox2 = new StyledGroupBox();
             this.btnCancel = new time_schedule.ButtonForShedule();
             this.bTnColor = new time_schedule.ButtonForShedule();
             this.cmBxTaskStatus = new System.Windows.Forms.ComboBox();

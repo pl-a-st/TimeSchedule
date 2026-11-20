@@ -40,7 +40,7 @@ namespace time_schedule {
             this.projectTreeView.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
             this.projectTreeView.Location = new System.Drawing.Point(12, 12);
             this.projectTreeView.Name = "projectTreeView";
-            this.projectTreeView.Size = new System.Drawing.Size(262, 447);
+            this.projectTreeView.Size = new System.Drawing.Size(250, 447);
             this.projectTreeView.TabIndex = 0;
             this.projectTreeView.BeforeCheck += new System.Windows.Forms.TreeViewCancelEventHandler(this.projectTreeView_BeforeCheck);
             this.projectTreeView.AfterCheck += new System.Windows.Forms.TreeViewEventHandler(this.projectTreeView_AfterCheck);
@@ -52,9 +52,9 @@ namespace time_schedule {
             // button1
             // 
             this.button1.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right;
-            this.button1.Location = new System.Drawing.Point(280, 12);
+            this.button1.Location = new System.Drawing.Point(269, 12);
             this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(77, 23);
+            this.button1.Size = new System.Drawing.Size(89, 23);
             this.button1.TabIndex = 1;
             this.button1.Text = "Добавить";
             this.button1.UseVisualStyleBackColor = true;
@@ -63,9 +63,9 @@ namespace time_schedule {
             // button2
             // 
             this.button2.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right;
-            this.button2.Location = new System.Drawing.Point(280, 41);
+            this.button2.Location = new System.Drawing.Point(269, 41);
             this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(77, 23);
+            this.button2.Size = new System.Drawing.Size(89, 23);
             this.button2.TabIndex = 1;
             this.button2.Text = "Удалить";
             this.button2.UseVisualStyleBackColor = true;
@@ -74,9 +74,9 @@ namespace time_schedule {
             // button3
             // 
             this.button3.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
-            this.button3.Location = new System.Drawing.Point(280, 407);
+            this.button3.Location = new System.Drawing.Point(269, 407);
             this.button3.Name = "button3";
-            this.button3.Size = new System.Drawing.Size(77, 23);
+            this.button3.Size = new System.Drawing.Size(89, 23);
             this.button3.TabIndex = 1;
             this.button3.Text = "Применить";
             this.button3.UseVisualStyleBackColor = true;
@@ -85,9 +85,9 @@ namespace time_schedule {
             // button4
             // 
             this.button4.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
-            this.button4.Location = new System.Drawing.Point(280, 436);
+            this.button4.Location = new System.Drawing.Point(269, 436);
             this.button4.Name = "button4";
-            this.button4.Size = new System.Drawing.Size(77, 23);
+            this.button4.Size = new System.Drawing.Size(89, 23);
             this.button4.TabIndex = 1;
             this.button4.Text = "Отмена";
             this.button4.UseVisualStyleBackColor = true;
@@ -96,7 +96,7 @@ namespace time_schedule {
             // button5
             // 
             this.button5.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right;
-            this.button5.Location = new System.Drawing.Point(302, 226);
+            this.button5.Location = new System.Drawing.Point(299, 226);
             this.button5.Name = "button5";
             this.button5.Size = new System.Drawing.Size(30, 23);
             this.button5.TabIndex = 5;
@@ -107,7 +107,7 @@ namespace time_schedule {
             // button6
             // 
             this.button6.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right;
-            this.button6.Location = new System.Drawing.Point(302, 188);
+            this.button6.Location = new System.Drawing.Point(299, 188);
             this.button6.Name = "button6";
             this.button6.Size = new System.Drawing.Size(30, 23);
             this.button6.TabIndex = 6;
@@ -118,11 +118,11 @@ namespace time_schedule {
             // btnSave
             // 
             this.btnSave.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right;
-            this.btnSave.Location = new System.Drawing.Point(280, 264);
+            this.btnSave.Location = new System.Drawing.Point(269, 264);
             this.btnSave.Name = "btnSave";
-            this.btnSave.Size = new System.Drawing.Size(77, 36);
+            this.btnSave.Size = new System.Drawing.Size(89, 36);
             this.btnSave.TabIndex = 1;
-            this.btnSave.Text = "Сохранить  настройки";
+            this.btnSave.Text = "Сохранить\r\nнастройки";
             this.btnSave.UseVisualStyleBackColor = true;
             this.btnSave.Click += new System.EventHandler(this.btnSave_Click);
             // 

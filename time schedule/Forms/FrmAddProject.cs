@@ -10,7 +10,7 @@ using System.Windows.Forms;
 
 namespace time_schedule
 {
-    public partial class FrmAddProject : Form
+    public partial class FrmAddProject : StyledWindowForm
     {
         PoolTasksPanel PoolTasksPanel = new PoolTasksPanel();
         public FrmAddProject()

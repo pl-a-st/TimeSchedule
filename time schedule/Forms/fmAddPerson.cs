@@ -13,7 +13,7 @@ namespace time_schedule {
         yes,
         no
     }
-    public partial class fmAddPerson : Form {
+    public partial class fmAddPerson : StyledWindowForm {
         public fmAddPerson() {
             InitializeComponent();
         }

@@ -10,7 +10,7 @@ using System.Windows.Forms;
 
 namespace time_schedule
 {
-    public partial class fmSelectTask : Form
+    public partial class fmSelectTask : StyledWindowForm
     {
         public fmSelectTask()
         {

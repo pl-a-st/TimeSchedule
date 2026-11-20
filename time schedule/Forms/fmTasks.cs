@@ -26,7 +26,7 @@ namespace time_schedule
         Need,
         Nedlessly
     }
-    public partial class fmTasks : Form
+    public partial class fmTasks : StyledWindowForm
     {
         private Form1 Form1Delegat;
         public fmTasks(Form1 form1Delegat)
@@ -35,6 +35,86 @@ namespace time_schedule
             InitializeComponent();
 
         }
+        /// <summary>Выравнивает поля и кнопки после создания области содержимого собственного заголовка.</summary>
+        protected override void OnLoad(EventArgs e)
+        {
+            base.OnLoad(e);
+            ArrangeTaskControls();
+        }
+
+        /// <summary>
+        /// Сохраняет одинаковые боковые отступы и промежутки, не меняя логику фильтров
+        /// и число видимых строк списка задач.
+        /// </summary>
+        private void ArrangeTaskControls()
+        {
+            Control content = lBxTasks.Parent;
+            if (content == null) return;
+            int margin = lBxTasks.Left;
+            int gap = Math.Max(6, margin * 2 / 3);
+            int buttonWidth = btnNewTask.Width;
+            int columnLeft = content.ClientSize.Width - margin - buttonWidth;
+            int leftAreaRight = columnLeft - gap;
+            if (leftAreaRight - lBxTasks.Left < 320) return;
+
+            Button[] actions =
+            {
+                btnNewTask, btnChangeTask, btnGoToDateStartTask, btnDeleteTask,
+                btnChangeToSelectTasks, butOpenTaskInExcell,
+                butAddProjectToSelectTasks, butDeleteTaskInlBx
+            };
+            foreach (Button button in actions)
+            {
+                button.Left = columnLeft;
+                button.Width = buttonWidth;
+            }
+            chkMultySelectTask.Left = columnLeft + 2;
+            chkMultySelectTask.Width = buttonWidth - 2;
+
+            int listWidth = leftAreaRight - lBxTasks.Left;
+            lBxTasks.Width = listWidth;
+            tBxTargetTask.Width = leftAreaRight - tBxTargetTask.Left;
+            groupBox3.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            groupBox4.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            groupBox3.Width = leftAreaRight - groupBox3.Left;
+            groupBox4.Width = leftAreaRight - groupBox4.Left;
+            tBxStatus.Width = leftAreaRight - tBxStatus.Left;
+            tBxDateFinish.Width = leftAreaRight - tBxDateFinish.Left;
+
+            ArrangeTaskFilterGroups(margin, gap);
+            ArrangeTaskSearch(margin, gap);
+
+            butOpenTaskInExcell.Text = "Открыть в Excell\nвсе задачи списка";
+            butAddProjectToSelectTasks.Text = "Добавить проекты\nвсем задачам списка";
+            btnChangeToSelectTasks.Text = "Изменить все\nзадачи списка";
+            butDeleteTaskInlBx.Text = "Удалить все\nзадачи списка";
+        }
+
+        /// <summary>Согласует ширины вложенных фильтров и интервалы между их полями.</summary>
+        private void ArrangeTaskFilterGroups(int margin, int gap)
+        {
+            groupBox1.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            groupBox2.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            groupBox1.Width = groupBox4.ClientSize.Width - groupBox1.Left - margin;
+            groupBox2.Width = groupBox4.ClientSize.Width - groupBox2.Left - margin;
+            int innerMargin = Math.Max(8, margin - 2);
+            dTPFilterDateStart.Left = innerMargin;
+            dTPFilterDateFinish.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            dTPFilterDateFinish.Left = groupBox1.ClientSize.Width - innerMargin - dTPFilterDateFinish.Width;
+            btnFilter.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            btnFilter.Left = groupBox2.ClientSize.Width - innerMargin - btnFilter.Width;
+            tBxStatusesFilter.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            tBxStatusesFilter.Left = innerMargin;
+            tBxStatusesFilter.Width = btnFilter.Left - gap - tBxStatusesFilter.Left;
+        }
+
+        /// <summary>Разводит подпись поиска, её декоративную рамку и список задач.</summary>
+        private void ArrangeTaskSearch(int margin, int gap)
+        {
+            tBxTargetTask.Top = label1.Bottom + margin / 2;
+            lBxTasks.Top = tBxTargetTask.Bottom + gap;
+        }
+
         public TaskLoadFor FmTasksStatusLoad
         {
             get;
@@ -687,20 +767,20 @@ namespace time_schedule
         {
             if (chkMultySelectTask.Checked)
             {
-                butDeleteTaskInlBx.Text = "Удалить выделенные задачи в списке";
-                btnChangeToSelectTasks.Text = "Изменить выделенные задачи в списке";
-                butOpenTaskInExcell.Text = "Открыть выделенные задачи в Excell";
-                butAddProjectToSelectTasks.Text = "Добавить проекты выделенным задачам списка";
+                butDeleteTaskInlBx.Text = "Удалить выделенные\nзадачи в списке";
+                btnChangeToSelectTasks.Text = "Изменить выделенные\nзадачи в списке";
+                butOpenTaskInExcell.Text = "Открыть выделенные\nзадачи в Excell";
+                butAddProjectToSelectTasks.Text = "Добавить проекты\nвыделенным задачам\nсписка";
                 btnChangeTask.Enabled = false;
                 btnDeleteTask.Enabled = false;
                 lBxTasks.SelectionMode = SelectionMode.MultiExtended;
             }
             if (!chkMultySelectTask.Checked)
             {
-                butDeleteTaskInlBx.Text = "Удалить все задачи из списка";
-                btnChangeToSelectTasks.Text = "Изменить все задачи в списке";
-                butOpenTaskInExcell.Text = "Открыть в Excell все задачи списка";
-                butAddProjectToSelectTasks.Text = "Добавить проекты всем задачам списка";
+                butDeleteTaskInlBx.Text = "Удалить все\nзадачи из списка";
+                btnChangeToSelectTasks.Text = "Изменить все\nзадачи в списке";
+                butOpenTaskInExcell.Text = "Открыть в Excell\nвсе задачи списка";
+                butAddProjectToSelectTasks.Text = "Добавить проекты\nвсем задачам списка";
                 btnChangeTask.Enabled = true;
                 btnDeleteTask.Enabled = true;
                 lBxTasks.SelectionMode = SelectionMode.One;

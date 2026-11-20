@@ -147,6 +147,12 @@ namespace time_schedule
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
+            ThemeApplication.Start();
+            if (args.Any(arg => string.Equals(arg, "--theme-preview", StringComparison.OrdinalIgnoreCase)))
+            {
+                Application.Run(new ThemePreviewForm());
+                return;
+            }
 #if DEBUG
             bool timingEnabled = true;
 #else

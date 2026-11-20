@@ -24,7 +24,7 @@ namespace time_schedule
         Change,
         ChangeToSelectTasks
     }
-    public partial class fmAddChangeTask : Form
+    public partial class fmAddChangeTask : StyledWindowForm
     {
         Task thisTask = new Task();
         private DateTime FinishDateBeforeChange;
@@ -49,13 +49,14 @@ namespace time_schedule
         {
 
             InitializeComponent();
+            InitializeEditorTheme();
             thisloadRefreshForm = loadRefreshForm;
         }
         public fmAddChangeTask()
         {
 
             InitializeComponent();
-            
+            InitializeEditorTheme();
         }
         public NumericUpDown GetPriority()
         {
@@ -181,7 +182,7 @@ namespace time_schedule
                     LoadFmAddTaskToCreateTask();
                 if (Program.UserType != UserType.Admin)
                 {
-                    foreach (Control control in this.Controls)
+                    foreach (Control control in WindowContentControls)
                     {
                         ControlToReadOnly(control);
                     }
@@ -195,7 +196,7 @@ namespace time_schedule
             thread.Start(this);
             if (CreateOrChange == CreateOrChange.ChangeToSelectTasks)
             {
-                foreach (Control control in this.Controls)
+                foreach (Control control in WindowContentControls)
                 {
                     ControlToNotEnabled(control);
                 }
@@ -401,31 +402,16 @@ namespace time_schedule
                 dTmTaskDateStart.Enabled = false;
             }
         }
+        /// <summary>Выбирает исходный RGB в палитре без записи в задачу до подтверждения редактора.</summary>
         private void bTnColor_Click(object sender, EventArgs e)
         {
-            ColorDialog colorDialog1 = new ColorDialog();
-            colorDialog1.AllowFullOpen = true;
-            colorDialog1.CustomColors = new int[] {
-                ToInt(Color.FromArgb(169,208,142)),
-                ToInt(Color.FromArgb(248,203,173)),
-                ToInt(Color.FromArgb(132,151,176)),
-                ToInt(Color.FromArgb(165,165,165)),
-                ToInt(Color.FromArgb(255,230,153)),
-                ToInt(Color.FromArgb(226,239,218)),
-                ToInt(Color.FromArgb(142,169,219)),
-                ToInt(Color.FromArgb(255,217,102)),
-                ToInt(Color.FromArgb(221,235,247)),
-                };
-            colorDialog1.SolidColorOnly = true;
-            if (colorDialog1.ShowDialog() != DialogResult.Cancel)
+            using (var palette = new TaskColorPaletteForm(bTnColor.BackColor))
             {
-                bTnColor.BackColor = colorDialog1.Color;
-                Program.TaskColor = colorDialog1.Color;
+                palette.PositionBeforeShow(this);
+                if (palette.ShowDialog(this) != DialogResult.OK) return;
+                bTnColor.BackColor = palette.SelectedColor;
+                Program.TaskColor = palette.SelectedColor;
             }
-        }
-        static int ToInt(Color c)
-        {
-            return c.R + c.G * 0x100 + c.B * 0x10000;
         }
         private void WriteNewNonWorkigDays()
         {

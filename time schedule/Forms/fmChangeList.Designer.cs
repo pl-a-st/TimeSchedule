@@ -31,7 +31,7 @@ namespace time_schedule.Forms {
             this.btnNew = new ButtonForShedule();
             this.lBx = new System.Windows.Forms.ListBox();
             this.btnUp = new ButtonForShedule();
-            this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.groupBox1 = new StyledGroupBox();
             this.lblReplace = new System.Windows.Forms.Label();
             this.btnDown = new ButtonForShedule();
             this.btnApply = new ButtonForShedule();

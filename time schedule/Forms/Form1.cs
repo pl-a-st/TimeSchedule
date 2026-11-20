@@ -20,7 +20,7 @@ namespace time_schedule
         All,
         Minimum
     }
-    public partial class Form1 : Form
+    public partial class Form1 : StyledWindowForm
     {
         public Statuses.FormReadyToBeAddedControl FormReadyToBeAddedControl { get; private set; } = Statuses.FormReadyToBeAddedControl.NotReady;
         public RefreshType RefreshType { get; private set; } = RefreshType.Minimum;
@@ -102,12 +102,16 @@ namespace time_schedule
             Program.fmMain = this;
             InitializeComponent();
             InitializeCanvasPilot();
+            InitializeMainTheme();
+            InitializeCalendarTaskToolTip();
             plMain.Paint += ObserveCalendarPaint;
             plForDate.Paint += ObserveCalendarPaint;
             pBForLine.Paint += ObserveCalendarPaint;
             FormClosed += (sender, e) =>
             {
                 CancelPendingPaintDiagnostics();
+                calendarTaskToolTip.Popup -= CalendarTaskToolTipPopup;
+                calendarTaskToolTip.Draw -= CalendarTaskToolTipDraw;
                 calendarTaskToolTip.Dispose();
                 DisposeUnusedDateTextBoxes();
                 DisposeCanvasPilot();
@@ -206,6 +210,44 @@ namespace time_schedule
 
         /// <summary>Единственный ToolTip календаря; освобождается при закрытии главного окна.</summary>
         private readonly ToolTip calendarTaskToolTip = new ToolTip();
+
+        /// <summary>Единые параметры измерения и вывода многострочного текста подсказки.</summary>
+        private const TextFormatFlags CalendarTaskToolTipTextFlags =
+            TextFormatFlags.Left | TextFormatFlags.Top | TextFormatFlags.NoPrefix |
+            TextFormatFlags.NoPadding | TextFormatFlags.WordBreak;
+
+        /// <summary>Включает тематическое оформление существующей подсказки без изменения её содержимого.</summary>
+        private void InitializeCalendarTaskToolTip()
+        {
+            calendarTaskToolTip.OwnerDraw = true;
+            calendarTaskToolTip.Popup += CalendarTaskToolTipPopup;
+            calendarTaskToolTip.Draw += CalendarTaskToolTipDraw;
+        }
+
+        /// <summary>Подбирает размеры подсказки с учётом переноса текста и доступной ширины экрана.</summary>
+        private void CalendarTaskToolTipPopup(object sender, PopupEventArgs e)
+        {
+            if (e.AssociatedControl == null) return;
+            string caption = calendarTaskToolTip.GetToolTip(e.AssociatedControl);
+            if (string.IsNullOrEmpty(caption)) return;
+            int maxWidth = Math.Max(160, Math.Min(480, Screen.FromControl(this).WorkingArea.Width - 80));
+            Size textSize = TextRenderer.MeasureText(caption, Font,
+                new Size(maxWidth - 14, 32767), CalendarTaskToolTipTextFlags);
+            e.ToolTipSize = new Size(textSize.Width + 14, textSize.Height + 10);
+        }
+
+        /// <summary>Рисует подсказку в текущей теме без создания новых контролов на каждую задачу.</summary>
+        private void CalendarTaskToolTipDraw(object sender, DrawToolTipEventArgs e)
+        {
+            ThemePalette palette = ThemeManager.Palette;
+            e.Graphics.Clear(palette.Surface);
+            using (Pen border = new Pen(palette.Grid))
+                e.Graphics.DrawRectangle(border, 0, 0, e.Bounds.Width - 1, e.Bounds.Height - 1);
+            Rectangle content = new Rectangle(7, 5,
+                Math.Max(0, e.Bounds.Width - 14), Math.Max(0, e.Bounds.Height - 10));
+            TextRenderer.DrawText(e.Graphics, e.ToolTipText, Font, content,
+                palette.Text, CalendarTaskToolTipTextFlags);
+        }
 
         /// <summary>Отсоединённые ячейки дат в порядке первоначального присоединения, чтобы сохранять соответствие даты и контрола при повторном использовании.</summary>
         private readonly Queue<TextBox> reusableDateTextBoxes = new Queue<TextBox>();
@@ -792,7 +834,7 @@ namespace time_schedule
         private void ClearCalendarBitmap()
         {
             using (Graphics graphics = pBForLine.CreateGraphics())
-                graphics.Clear(Color.White);
+                graphics.Clear(ThemeManager.Palette.Window);
             Bitmap previousBitmap = Bmp;
             pBForLine.Image = null;
             Bmp = new Bitmap(1, 1);
@@ -863,24 +905,37 @@ namespace time_schedule
             if (calendarVirtualViewport)
                 return;
             using (Graphics graphics = Graphics.FromImage(Bmp))
-            using (Pen rowPen = new Pen(Color.FromArgb(225, 225, 230), 1))
-            using (Pen separatorPen = new Pen(Color.FromArgb(245, 245, 248), 2))
+            using (Pen rowPen = new Pen(CalendarGridColor, 1))
+            using (Pen separatorPen = new Pen(ThemeVisuals.CalendarPersonSeparator, 1))
             {
                 foreach (PersonButton personButton in Program.ListPersonButton.PersonButtons)
                 {
                     if (personButton.Person.ListTask.Tasks.Count == 0)
                         continue;
 
-                    int locationY = personButton.Button.Location.Y;
-                    while (locationY < (personButton.Button.Location.Y + personButton.Button.Height))
-                    {
-                        locationY += Constants.ROW_HIGHT;
-                        graphics.DrawLine(rowPen, 0, locationY, pBForLine.Width, locationY);
-                    }
-                    graphics.DrawLine(separatorPen, 0, locationY, pBForLine.Width, locationY + 1);
+                    int bottom = personButton.Button.Bottom;
+                    for (int y = personButton.Button.Top + Constants.ROW_HIGHT;
+                        y < bottom; y += Constants.ROW_HIGHT)
+                        graphics.DrawLine(rowPen, 0, y, pBForLine.Width, y);
+                    DrawCalendarPersonSeparator(graphics, separatorPen,
+                        0, pBForLine.Width, bottom);
                 }
             }
             pBForLine.Image = Bmp;
+        }
+
+        /// <summary>Рисует две равномерные строки в штатном промежутке без смещения задач или сотрудников.</summary>
+        /// <param name="graphics">Поверхность штатной или виртуальной календарной сетки.</param>
+        /// <param name="separator">Цвет границы, приглушённый относительно линий начала недели.</param>
+        /// <param name="left">Левая координата видимого участка.</param>
+        /// <param name="right">Правая координата видимого участка.</param>
+        /// <param name="bottom">Нижняя координата кнопки исполнителя, начало промежутка.</param>
+        private static void DrawCalendarPersonSeparator(Graphics graphics, Pen separator,
+            int left, int right, int bottom)
+        {
+            graphics.DrawLine(separator, left, bottom, right, bottom);
+            if (Constants.MIN_ROW_HIGHT >= 2)
+                graphics.DrawLine(separator, left, bottom + 1, right, bottom + 1);
         }
 
         /// <summary>Рисует вертикальные границы дат, выделяя понедельники, одним графическим контекстом.</summary>
@@ -889,8 +944,8 @@ namespace time_schedule
             if (calendarVirtualViewport)
                 return;
             using (Graphics graphics = Graphics.FromImage(Bmp))
-            using (Pen penGrey = new Pen(Color.FromArgb(225, 225, 230), 1))
-            using (Pen penForMonday = new Pen(Color.FromArgb(245, 245, 248), 2))
+            using (Pen penGrey = new Pen(CalendarGridColor, 1))
+            using (Pen penForMonday = new Pen(ThemeVisuals.CalendarWeekSeparator, 2))
             {
                 foreach (DateTextBox dateTextBox in Program.PoolTextBox.ListTextBoxes)
                 {
@@ -1740,6 +1795,8 @@ namespace time_schedule
             {
                 bitmap = calendarVirtualViewport
                     ? new Bitmap(1, 1) : new Bitmap(size.Width, size.Height);
+                using (Graphics graphics = Graphics.FromImage(bitmap))
+                    graphics.Clear(ThemeManager.Palette.Window);
                 Bitmap previousBitmap = Bmp;
                 if (calendarVirtualViewport)
                     pBForLine.Image = null;
@@ -1909,6 +1966,7 @@ namespace time_schedule
                     if (personButton.Person.ListTask.Tasks.Count > 0)
                     {
                         plPersonButton.Controls.Add(personButton.Button);
+                        ApplyPersonTheme(personButton.Button);
                         personButton.Button.BringToFront();
                     }
                 }
@@ -2010,6 +2068,7 @@ namespace time_schedule
                             layoutSuspended = true;
                         }
                         plForDate.Controls.Add(dateTextBox.TextBox);
+                        ApplyDateTheme(dateTextBox);
                         dateTextBox.TextBox.BringToFront();
                         dateTextBox.SetLoadingStatus(Statuses.LoadingStatus.Loaded);
                     }
@@ -2023,6 +2082,7 @@ namespace time_schedule
         }
         private void Form1_SizeChanged(object sender, EventArgs e)
         {
+            if (mainThemeInitializing) return;
             LoadTaskButtons();
             LoadDateTextBoxes();
             this.VerticalScrollValue = this.plMain.VerticalScroll.Value;
@@ -2691,6 +2751,7 @@ namespace time_schedule
                     DeleteCanvasPilotTask(selected);
             });
             canvasPilotTaskMenu.Items.Add(canvasPilotDeleteMenuItem);
+            ApplyCanvasPilotMenuTheme(ThemeManager.Palette);
         }
 
         /// <summary>Фиксирует новый статус одной задачи в Compact без изменения цвета или других полей.</summary>
@@ -3860,10 +3921,10 @@ namespace time_schedule
         {
             int origin = CalendarViewportOrigin;
             int verticalOffset = CalendarViewportVerticalOffset;
-            using (Pen rowPen = new Pen(Color.FromArgb(225, 225, 230), 1))
-            using (Pen separatorPen = new Pen(Color.FromArgb(245, 245, 248), 2))
-            using (Pen penGrey = new Pen(Color.FromArgb(225, 225, 230), 1))
-            using (Pen penMonday = new Pen(Color.FromArgb(245, 245, 248), 2))
+            using (Pen rowPen = new Pen(CalendarGridColor, 1))
+            using (Pen separatorPen = new Pen(ThemeVisuals.CalendarPersonSeparator, 1))
+            using (Pen penGrey = new Pen(CalendarGridColor, 1))
+            using (Pen penMonday = new Pen(ThemeVisuals.CalendarWeekSeparator, 2))
             {
                 foreach (PersonButton personButton in Program.ListPersonButton.PersonButtons)
                 {
@@ -3872,14 +3933,15 @@ namespace time_schedule
                     int y = personButton.Button.Top -
                         plPersonButton.AutoScrollPosition.Y + verticalOffset;
                     int bottom = y + personButton.Button.Height;
-                    while (y < bottom)
+                    for (int rowY = y + Constants.ROW_HIGHT;
+                        rowY < bottom; rowY += Constants.ROW_HIGHT)
                     {
-                        y += Constants.ROW_HIGHT;
-                        if (y >= clip.Top && y <= clip.Bottom)
-                            graphics.DrawLine(rowPen, clip.Left, y, clip.Right, y);
+                        if (rowY >= clip.Top && rowY <= clip.Bottom)
+                            graphics.DrawLine(rowPen, clip.Left, rowY, clip.Right, rowY);
                     }
-                    if (y >= clip.Top && y <= clip.Bottom)
-                        graphics.DrawLine(separatorPen, clip.Left, y, clip.Right, y + 1);
+                    if (bottom < clip.Bottom && bottom + Constants.MIN_ROW_HIGHT > clip.Top)
+                        DrawCalendarPersonSeparator(graphics, separatorPen,
+                            clip.Left, clip.Right, bottom);
                 }
                 foreach (DateTextBox date in Program.PoolTextBox.ListTextBoxes)
                 {
@@ -3906,19 +3968,21 @@ namespace time_schedule
                     canvasPilotDragPreview.VisibleTaskNumbers.Contains(taskButton.Task.Number))
                     continue;
                 Task task = taskButton.Task;
-                foreach (Rectangle planned in taskButton.CanvasPilotSegments)
+                var plannedSegments = taskButton.CanvasPilotSegments.ToList();
+                for (int segmentIndex = 0; segmentIndex < plannedSegments.Count; segmentIndex++)
                 {
-                    Rectangle rectangle = new Rectangle(
-                        planned.X + 1 - CalendarViewportOrigin,
-                        planned.Y + 1 + CalendarViewportVerticalOffset,
-                        planned.Width - 2, planned.Height - 1);
+                    Rectangle planned = plannedSegments[segmentIndex];
+                    Rectangle rectangle = ThemeVisuals.TaskBandBounds(planned,
+                        CalendarViewportOrigin, CalendarViewportVerticalOffset);
                     if (rectangle.Width <= 0 || rectangle.Height <= 0 ||
                         !clip.IntersectsWith(rectangle))
                         continue;
 
+                    Color displayColor = ThemeVisuals.TaskDisplayColor(task.Color);
                     Color color = ReferenceEquals(canvasPilotHoveredTask, taskButton)
-                        ? GetCanvasPilotHoverColor(task.Color) : task.Color;
-                    graphics.FillRectangle(GetCanvasPilotBrush(color), rectangle);
+                        ? GetCanvasPilotHoverColor(displayColor) : displayColor;
+                    ThemeVisuals.FillTask(graphics, rectangle, GetCanvasPilotBrush(color),
+                        roundLeft: segmentIndex == 0, roundRight: segmentIndex == plannedSegments.Count - 1);
                     TextRenderer.DrawText(graphics, task.Name ?? string.Empty,
                         GetCanvasPilotFont(task.Status), rectangle,
                         GetCanvasPilotTextColor(task),
@@ -3966,20 +4030,22 @@ namespace time_schedule
             using (Pen outline = new Pen(Color.FromArgb(230, 55, 55, 65), 1))
             {
                 outline.DashStyle = System.Drawing.Drawing2D.DashStyle.Dash;
-                foreach (Rectangle planned in taskBand.CanvasPilotSegments)
+                var plannedSegments = taskBand.CanvasPilotSegments.ToList();
+                for (int segmentIndex = 0; segmentIndex < plannedSegments.Count; segmentIndex++)
                 {
-                    Rectangle rectangle = new Rectangle(planned.X + 1 - CalendarViewportOrigin,
-                        planned.Y + 1 + snapOffsetY + CalendarViewportVerticalOffset,
-                        planned.Width - 2, planned.Height - 1);
+                    Rectangle planned = plannedSegments[segmentIndex];
+                    Rectangle rectangle = ThemeVisuals.TaskBandBounds(planned,
+                        CalendarViewportOrigin, snapOffsetY + CalendarViewportVerticalOffset);
                     if (rectangle.Width <= 0 || rectangle.Height <= 0 ||
                         !clip.IntersectsWith(rectangle))
                         continue;
                     bool isDependentMove = canvasPilotDragPreview.ProjectedTasks
                         .ContainsKey(task.Number);
+                    Color displayColor = ThemeVisuals.TaskDisplayColor(task.Color);
                     Color previewColor = isDependentMove
-                        ? Color.FromArgb(195, task.Color) : task.Color;
-                    graphics.FillRectangle(GetCanvasPilotBrush(previewColor), rectangle);
-                    graphics.DrawRectangle(outline, rectangle);
+                        ? Color.FromArgb(195, displayColor) : displayColor;
+                    ThemeVisuals.FillTask(graphics, rectangle, GetCanvasPilotBrush(previewColor), outline,
+                        segmentIndex == 0, segmentIndex == plannedSegments.Count - 1);
                     TextRenderer.DrawText(graphics, task.Name ?? string.Empty,
                         GetCanvasPilotFont(task.Status), rectangle,
                         GetCanvasPilotTextColor(task),
@@ -4058,12 +4124,10 @@ namespace time_schedule
             return font;
         }
 
-        /// <summary>Применяет исходное правило красного текста просроченных задач.</summary>
+        /// <summary>Использует единое правило читаемости и выделения просроченных задач.</summary>
         private static Color GetCanvasPilotTextColor(Task task)
         {
-            return ((task.Status == TaskStatus.New && task.DateStart.Date < DateTime.Today) ||
-                (task.DateFinish.Date < DateTime.Today && task.Status != TaskStatus.Closed))
-                ? Color.DarkRed : SystemColors.ControlText;
+            return ThemeVisuals.TaskTextColor(task);
         }
 
         /// <summary>Записывает показатели контролов, USER/GDI, памяти и размера растра календаря.</summary>
