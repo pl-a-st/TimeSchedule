@@ -12,6 +12,9 @@ namespace time_schedule
         /// <summary>Прокрутки, уже подключённые к существующим спискам.</summary>
         private static readonly ConditionalWeakTable<ListBox, StyledListScrollBar> listScrollBars =
             new ConditionalWeakTable<ListBox, StyledListScrollBar>();
+        /// <summary>Поля текста, у которых однажды подключено обновление цветов при изменении доступности.</summary>
+        private static readonly ConditionalWeakTable<TextBoxBase, object> themedTextInputs =
+            new ConditionalWeakTable<TextBoxBase, object>();
         /// <summary>Оболочки, уже подключённые к существующим спискам и полям даты.</summary>
         private static readonly ConditionalWeakTable<Control, StyledInputFrame> inputFrames =
             new ConditionalWeakTable<Control, StyledInputFrame>();
@@ -106,7 +109,11 @@ namespace time_schedule
             {
                 ApplyChoiceTheme(radioButton, palette);
             }
-            else if (root is TextBoxBase || root is ComboBox || root is NumericUpDown || root is DateTimePicker ||
+            else if (root is TextBoxBase textInput)
+            {
+                ApplyTextInputTheme(textInput);
+            }
+            else if (root is ComboBox || root is NumericUpDown || root is DateTimePicker ||
                 root is ListBox || root is TreeView || root is ListView)
             {
                 root.BackColor = palette.Surface;
@@ -131,6 +138,45 @@ namespace time_schedule
             foreach (Control child in root.Controls)
                 Apply(child, font, excluded);
             root.Invalidate();
+        }
+
+        /// <summary>Оформляет недоступное текстовое поле тем же приглушённым фоном, что и остальные заблокированные элементы.</summary>
+        private static void ApplyTextInputTheme(TextBoxBase input)
+        {
+            if (!themedTextInputs.TryGetValue(input, out _))
+            {
+                themedTextInputs.Add(input, new object());
+                input.EnabledChanged += TextInputEnabledChanged;
+                input.Disposed += TextInputDisposed;
+            }
+            ApplyTextInputColors(input);
+        }
+
+        /// <summary>Синхронизирует текст и фон с доступностью поля и выбранной темой.</summary>
+        private static void ApplyTextInputColors(TextBoxBase input)
+        {
+            if (input.IsDisposed) return;
+            ThemePalette palette = ThemeManager.Palette;
+            Color background = input.Enabled ? palette.Surface : palette.ButtonDisabled;
+            Color foreground = input.Enabled ? palette.Text : ThemeVisuals.DisabledText;
+            if (input.BackColor != background) input.BackColor = background;
+            if (input.ForeColor != foreground) input.ForeColor = foreground;
+            input.Invalidate();
+        }
+
+        /// <summary>Обновляет цвет при включении и отключении поля без изменения его значения.</summary>
+        private static void TextInputEnabledChanged(object sender, EventArgs e)
+        {
+            ApplyTextInputColors((TextBoxBase)sender);
+        }
+
+        /// <summary>Освобождает подписки оформления при уничтожении текстового поля.</summary>
+        private static void TextInputDisposed(object sender, EventArgs e)
+        {
+            var input = (TextBoxBase)sender;
+            input.EnabledChanged -= TextInputEnabledChanged;
+            input.Disposed -= TextInputDisposed;
+            themedTextInputs.Remove(input);
         }
 
         /// <summary>Согласует цвета нативного флажка с палитрой, сохраняя его Checked и события.</summary>

@@ -64,7 +64,7 @@ namespace time_schedule
             Rectangle bounds = new Rectangle(0, 0, Width - 1, Height - 1);
             StyledButton.DrawSurface(e.Graphics, bounds,
                 Parent != null ? Parent.BackColor : palette.Window, fill,
-                Enabled ? palette.Text : palette.MutedText, Text, Font,
+                Enabled ? palette.Text : ThemeVisuals.DisabledText, Text, Font,
                 ThemeSquareCorners ? 0 : 4, Focused && ShowFocusCues, palette.Focus);
         }
         

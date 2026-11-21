@@ -62,7 +62,7 @@ namespace time_schedule
             ThemePalette colors = ThemeManager.Palette;
             Color fill = !Enabled ? colors.ButtonDisabled : pressed ? colors.ButtonPressed :
                 hovered ? colors.ButtonHover : IsAccent ? colors.Accent : colors.Button;
-            Color text = Enabled ? colors.Text : colors.MutedText;
+            Color text = Enabled ? colors.Text : ThemeVisuals.DisabledText;
             Rectangle bounds = new Rectangle(0, 0, Math.Max(0, Width - 1), Math.Max(0, Height - 1));
             if (bounds.Width == 0 || bounds.Height == 0) return;
             DrawSurface(e.Graphics, bounds, Parent != null ? Parent.BackColor : colors.Window,

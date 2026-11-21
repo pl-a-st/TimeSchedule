@@ -103,7 +103,7 @@ namespace time_schedule
                 }
                 if (arrow.Left > 5)
                 {
-                    using (Pen separator = new Pen(Color.FromArgb(85, palette.Grid)))
+                    using (Pen separator = new Pen(Enabled ? Color.FromArgb(85, palette.Grid) : ThemeVisuals.InputBorderColor(false, false)))
                         e.Graphics.DrawLine(separator, arrow.Left, 5, arrow.Left, Height - 6);
                 }
                 e.Graphics.DrawPath(border, path);
@@ -112,7 +112,7 @@ namespace time_schedule
             Rectangle text = new Rectangle(8, 0, Math.Max(0, arrow.Left - 12), Height);
             if (text.Width > 0)
                 TextRenderer.DrawText(e.Graphics, combo.Text, combo.Font, text,
-                    Enabled ? palette.Text : palette.MutedText,
+                    Enabled ? palette.Text : ThemeVisuals.DisabledText,
                     TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.SingleLine |
                     TextFormatFlags.EndEllipsis | TextFormatFlags.NoPrefix);
         }

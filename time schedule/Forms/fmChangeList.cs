@@ -12,8 +12,10 @@ namespace time_schedule.Forms {
 
     public partial class fmChangeList : StyledWindowForm {
 
+        /// <summary>Не позволяет уменьшить окно до пересечения списка и управляющих кнопок.</summary>
         public fmChangeList() {
             InitializeComponent();
+            MinimumSize = new Size(ClientSize.Width, ClientSize.Height + WindowChromeHeight);
         }
         public BtnUpDowm BtnUpDowm {
             get;

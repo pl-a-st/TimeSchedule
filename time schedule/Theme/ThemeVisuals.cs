@@ -17,6 +17,12 @@ namespace time_schedule
         /// <summary>Единый радиус рамок полей ввода в пикселях.</summary>
         internal const int InputCornerRadius = 4;
 
+        /// <summary>Доля цвета сетки в мягкой границе недоступного поля.</summary>
+        private const float DisabledInputBorderGridWeight = 0.28f;
+
+        /// <summary>Доля вторичного текста в тексте недоступных элементов.</summary>
+        private const float DisabledTextWeight = 0.58f;
+
         /// <summary>Общая форма контуров полей и списков без объёмной системной рамки.</summary>
         internal static GraphicsPath InputPath(Rectangle bounds)
         {
@@ -31,13 +37,29 @@ namespace time_schedule
             return path;
         }
 
-        /// <summary>Определяет единый цвет рамки поля по доступности и фокусу.</summary>
+        /// <summary>Определяет цвет рамки по доступности и фокусу, приглушая недоступные поля.</summary>
         /// <param name="enabled">Доступно ли поле для ввода.</param>
         /// <param name="focused">Находится ли клавиатурный фокус внутри поля.</param>
         internal static Color InputBorderColor(bool enabled, bool focused)
         {
             ThemePalette palette = ThemeManager.Palette;
-            return !enabled ? palette.MutedText : focused ? palette.Focus : palette.Grid;
+            return !enabled ? BlendGridWithWindow(DisabledInputBorderGridWeight) :
+                focused ? palette.Focus : palette.Grid;
+        }
+
+        /// <summary>Приглушённый текст и пиктограммы недоступных элементов обеих тем.</summary>
+        internal static Color DisabledText
+        {
+            get
+            {
+                ThemePalette palette = ThemeManager.Palette;
+                Color text = palette.MutedText;
+                Color background = palette.Window;
+                return Color.FromArgb(
+                    (int)(text.R * DisabledTextWeight + background.R * (1f - DisabledTextWeight)),
+                    (int)(text.G * DisabledTextWeight + background.G * (1f - DisabledTextWeight)),
+                    (int)(text.B * DisabledTextWeight + background.B * (1f - DisabledTextWeight)));
+            }
         }
 
         /// <summary>Рисует единую матовую стрелку раскрытия в существующей области кнопки.</summary>
@@ -54,7 +76,7 @@ namespace time_schedule
                 int centerX = bounds.Left + bounds.Width / 2;
                 int centerY = bounds.Top + bounds.Height / 2;
                 using (var pen = new Pen(enabled ? ThemeManager.Palette.Text :
-                    ThemeManager.Palette.MutedText, 1.4f))
+                    DisabledText, 1.4f))
                 {
                     graphics.DrawLine(pen, centerX - 4, centerY - 2, centerX, centerY + 2);
                     graphics.DrawLine(pen, centerX, centerY + 2, centerX + 4, centerY - 2);
@@ -249,14 +271,33 @@ namespace time_schedule
             return IsTaskOverdue(task) ? Color.FromArgb(105, 25, 42) : taskInk;
         }
 
-        /// <summary>Возвращает общую однопиксельную внутреннюю геометрию сегмента для обычного показа и предпросмотра.</summary>
-        /// <param name="planned">Рассчитанный прямоугольник задачи без визуальных отступов.</param>
-        /// <param name="viewportX">Горизонтальное смещение отображаемого календаря.</param>
-        /// <param name="offsetY">Вертикальное смещение холста или предпросмотра.</param>
-        internal static Rectangle TaskBandBounds(Rectangle planned, int viewportX, int offsetY)
+        /// <summary>Ширина видимого свободного промежутка от линии сетки до полосы задачи.</summary>
+        private const int TaskGridClearance = 2;
+
+        /// <summary>Ширина зазора по каждой стороне внутреннего недельного стыка одной задачи.</summary>
+        private const int TaskWeekSplitClearance = 1;
+
+        /// <summary>Вычисляет зазоры задачи с отдельным правилом для её внутренних недельных стыков.</summary>
+        /// <param name="planned">Прямоугольник ячейки без отступов.</param>
+        /// <param name="viewportX">Горизонтальное смещение календаря.</param>
+        /// <param name="offsetY">Вертикальное смещение календаря или предпросмотра.</param>
+        /// <param name="belowPersonSeparator">Над ячейкой расположен двухпиксельный разделитель исполнителей.</param>
+        /// <param name="rightWeekSeparator">Справа проходит двухпиксельная граница начала недели.</param>
+        /// <param name="fromPreviousWeek">Слева находится недельный сегмент этой же задачи.</param>
+        /// <param name="intoNextWeek">Справа продолжается недельный сегмент этой же задачи.</param>
+        internal static Rectangle TaskBandBounds(Rectangle planned, int viewportX, int offsetY,
+            bool belowPersonSeparator, bool rightWeekSeparator,
+            bool fromPreviousWeek, bool intoNextWeek)
         {
-            return new Rectangle(planned.X + 1 - viewportX, planned.Y + 1 + offsetY,
-                planned.Width - 1, planned.Height - 1);
+            int leftInset = (fromPreviousWeek ? TaskWeekSplitClearance : TaskGridClearance) + 1;
+            int rightInset = (intoNextWeek ? TaskWeekSplitClearance : TaskGridClearance) +
+                (rightWeekSeparator ? 1 : 0);
+            int topInset = TaskGridClearance + (belowPersonSeparator ? 0 : 1);
+            int bottomInset = TaskGridClearance;
+            return new Rectangle(planned.X + leftInset - viewportX,
+                planned.Y + topInset + offsetY,
+                Math.Max(1, planned.Width - leftInset - rightInset),
+                Math.Max(1, planned.Height - topInset - bottomInset));
         }
 
         /// <summary>Создаёт форму сегмента: скруглены только внешние границы всей задачи.</summary>

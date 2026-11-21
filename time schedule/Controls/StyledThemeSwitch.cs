@@ -53,67 +53,77 @@ namespace time_schedule
         /// <summary>Перерисовывает элемент при потере фокуса.</summary>
         protected override void OnLostFocus(EventArgs e) { Invalidate(); base.OnLostFocus(e); }
 
-        /// <summary>Отображает обе темы отдельными матовыми сегментами с постоянными пиктограммами.</summary>
+        /// <summary>Рисует единый переключатель с движущимся ползунком вместо двух кнопок.</summary>
         protected override void OnPaint(PaintEventArgs e)
         {
             ThemePalette palette = ThemeManager.Palette;
             e.Graphics.Clear(Parent != null ? Parent.BackColor : palette.Window);
             e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
 
-            Rectangle track = new Rectangle(3, (Height - 26) / 2, Width - 6, 26);
-            using (GraphicsPath path = Capsule(track))
-            using (SolidBrush brush = new SolidBrush(hovered ? palette.ButtonHover : palette.Surface))
-                e.Graphics.FillPath(brush, path);
+            Rectangle track = new Rectangle(5, (Height - 24) / 2, Width - 10, 24);
+            using (GraphicsPath trackPath = Capsule(track))
+            using (SolidBrush background = new SolidBrush(hovered ? palette.ButtonHover : palette.Button))
+            using (Pen outline = new Pen(Color.FromArgb(125, palette.Grid), 1f))
+            {
+                e.Graphics.FillPath(background, trackPath);
+                e.Graphics.DrawPath(outline, trackPath);
+            }
 
-            int segmentWidth = (track.Width - 7) / 2;
-            Rectangle light = new Rectangle(track.Left + 2, track.Top + 2, segmentWidth, track.Height - 4);
-            Rectangle dark = new Rectangle(track.Right - segmentWidth - 2, track.Top + 2,
-                segmentWidth, track.Height - 4);
-            bool darkSelected = ThemeManager.Current == ThemeKind.Dark;
-            DrawSegment(e.Graphics, light, !darkSelected, palette, true);
-            DrawSegment(e.Graphics, dark, darkSelected, palette, false);
+            bool isDark = ThemeManager.Current == ThemeKind.Dark;
+            const int thumbSize = 20;
+            Rectangle thumb = new Rectangle(isDark ? track.Right - thumbSize - 2 : track.Left + 2,
+                track.Top + 2, thumbSize, thumbSize);
+            using (GraphicsPath thumbPath = Capsule(thumb))
+            using (SolidBrush thumbBrush = new SolidBrush(palette.Accent))
+            {
+                e.Graphics.FillPath(thumbBrush, thumbPath);
+            }
+
+            float cx = thumb.Left + thumb.Width / 2f;
+            float cy = thumb.Top + thumb.Height / 2f;
+            if (isDark) DrawMoon(e.Graphics, cx, cy, palette.Text);
+            else DrawSun(e.Graphics, cx, cy, palette.Text);
 
             if (Focused && ShowFocusCues)
             {
-                Rectangle focus = Rectangle.Inflate(darkSelected ? dark : light, -1, -1);
-                using (GraphicsPath focusPath = Capsule(focus))
-                using (Pen focusPen = new Pen(Color.FromArgb(155, palette.Focus), 1f))
+                using (GraphicsPath focusPath = Capsule(Rectangle.Inflate(track, 1, 1)))
+                using (Pen focusPen = new Pen(palette.Focus, 1f))
                     e.Graphics.DrawPath(focusPen, focusPath);
             }
         }
 
-        /// <summary>Рисует общую поверхность и одну из пиктограмм, не добавляя новой палитры.</summary>
-        private static void DrawSegment(Graphics graphics, Rectangle bounds, bool selected,
-            ThemePalette palette, bool sun)
+        /// <summary>Рисует солнце внутри ползунка светлой темы.</summary>
+        private static void DrawSun(Graphics graphics, float cx, float cy, Color color)
         {
-            using (GraphicsPath path = Capsule(bounds))
-            using (SolidBrush brush = new SolidBrush(selected ? palette.Accent : palette.Button))
-                graphics.FillPath(brush, path);
-
-            Color icon = selected ? palette.Text : palette.MutedText;
-            float x = bounds.Left + bounds.Width / 2f;
-            float y = bounds.Top + bounds.Height / 2f;
-            using (Pen pen = new Pen(icon, 1.4f))
+            using (Pen pen = new Pen(color, 1.3f))
             {
                 pen.StartCap = LineCap.Round;
                 pen.EndCap = LineCap.Round;
-                if (sun)
+                graphics.DrawEllipse(pen, cx - 2.8f, cy - 2.8f, 5.6f, 5.6f);
+                for (int i = 0; i < 8; i++)
                 {
-                    graphics.DrawEllipse(pen, x - 3.3f, y - 3.3f, 6.6f, 6.6f);
-                    for (int i = 0; i < 8; i++)
-                    {
-                        double angle = i * Math.PI / 4;
-                        float dx = (float)Math.Cos(angle);
-                        float dy = (float)Math.Sin(angle);
-                        graphics.DrawLine(pen, x + 5.4f * dx, y + 5.4f * dy,
-                            x + 7.7f * dx, y + 7.7f * dy);
-                    }
+                    double angle = i * Math.PI / 4;
+                    float dx = (float)Math.Cos(angle);
+                    float dy = (float)Math.Sin(angle);
+                    graphics.DrawLine(pen, cx + 4.8f * dx, cy + 4.8f * dy,
+                        cx + 6.9f * dx, cy + 6.9f * dy);
                 }
-                else
-                {
-                    graphics.DrawArc(pen, x - 6, y - 6, 12, 12, 47, 263);
-                    graphics.DrawArc(pen, x - 1, y - 7, 9, 11, 76, 180);
-                }
+            }
+        }
+
+        /// <summary>Рисует цельный контур полумесяца без пересечения дуг в верхней части.</summary>
+        private static void DrawMoon(Graphics graphics, float cx, float cy, Color color)
+        {
+            using (GraphicsPath moon = new GraphicsPath())
+            using (SolidBrush brush = new SolidBrush(color))
+            {
+                moon.StartFigure();
+                moon.AddBezier(cx + 2.9f, cy - 5.4f, cx - 4.3f, cy - 6.4f,
+                    cx - 6.4f, cy + 4.7f, cx + 1.8f, cy + 5.5f);
+                moon.AddBezier(cx + 1.8f, cy + 5.5f, cx - 1.6f, cy + 3.5f,
+                    cx - 1.6f, cy - 2.1f, cx + 2.9f, cy - 5.4f);
+                moon.CloseFigure();
+                graphics.FillPath(brush, moon);
             }
         }
 

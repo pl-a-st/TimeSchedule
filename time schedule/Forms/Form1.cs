@@ -541,6 +541,7 @@ namespace time_schedule
             metrics.CreatedDateTextBoxes = Program.PoolTextBox.ListTextBoxes.Count(date => date.HasCreatedTextBox);
             phase.Restart();
             ChangePanelVisibility(Statuses.Visibility.Visible);
+            FitMainCalendarToPeople();
             metrics.AttachVisibilityMs = phase.ElapsedMilliseconds;
             phase.Restart();
             PushLableProject();
@@ -916,15 +917,22 @@ namespace time_schedule
                 reusableDateTextBoxes.Dequeue().Dispose();
         }
 
+        /// <summary>Размещает строки исполнителей без лишнего разделителя после последней строки.</summary>
+        /// <param name="listPersonButton">Список исполнителей; сохраняется исходный контракт метода.</param>
+        /// <returns>Высота строк и только внутренних межстрочных разделителей.</returns>
         private int SetMaxLocationAndAddPersonButton(ref ListPersonButton listPersonButton)
         {
             int maxButtonLocationY = 0;
+            bool hasVisiblePerson = false;
             foreach (PersonButton personButton in Program.ListPersonButton.PersonButtons)
             {
                 if (personButton.Person.ListTask.Tasks.Count > 0)
                 {
+                    if (hasVisiblePerson)
+                        maxButtonLocationY += Constants.MIN_ROW_HIGHT;
                     personButton.SetLocation(0, maxButtonLocationY);
-                    maxButtonLocationY += (personButton.Button.Height + Constants.MIN_ROW_HIGHT);
+                    maxButtonLocationY += personButton.Button.Height;
+                    hasVisiblePerson = true;
                 }
             }
             return maxButtonLocationY;
@@ -956,22 +964,32 @@ namespace time_schedule
                     for (int y = personButton.Button.Top + Constants.ROW_HIGHT;
                         y < bottom; y += Constants.ROW_HIGHT)
                         graphics.DrawLine(rowPen, 0, y, pBForLine.Width, y);
-                    DrawCalendarPersonSeparator(graphics, separatorPen,
-                        0, pBForLine.Width, bottom);
+                    bool finalPerson = bottom >= pBForLine.Height;
+                    DrawCalendarPersonSeparator(graphics, separatorPen, rowPen,
+                        0, pBForLine.Width, bottom, finalPerson);
                 }
             }
             pBForLine.Image = Bmp;
         }
 
-        /// <summary>Рисует две равномерные строки в штатном промежутке без смещения задач или сотрудников.</summary>
+        /// <summary>Разделяет исполнителей двойной линией; завершает последнюю строку одной тонкой линией сетки.</summary>
         /// <param name="graphics">Поверхность штатной или виртуальной календарной сетки.</param>
-        /// <param name="separator">Цвет границы, приглушённый относительно линий начала недели.</param>
+        /// <param name="separator">Цвет внутренних разделителей исполнителей.</param>
+        /// <param name="gridLine">Тонкая линия окончания календарной сетки.</param>
         /// <param name="left">Левая координата видимого участка.</param>
         /// <param name="right">Правая координата видимого участка.</param>
         /// <param name="bottom">Нижняя координата кнопки исполнителя, начало промежутка.</param>
-        private static void DrawCalendarPersonSeparator(Graphics graphics, Pen separator,
-            int left, int right, int bottom)
+        /// <param name="finalPerson">Последний отображаемый исполнитель.</param>
+        private static void DrawCalendarPersonSeparator(Graphics graphics, Pen separator, Pen gridLine,
+            int left, int right, int bottom, bool finalPerson)
         {
+            if (finalPerson)
+            {
+                int endY = bottom - 1;
+                graphics.DrawLine(gridLine, left, endY, right, endY);
+                return;
+            }
+
             graphics.DrawLine(separator, left, bottom, right, bottom);
             if (Constants.MIN_ROW_HIGHT >= 2)
                 graphics.DrawLine(separator, left, bottom + 1, right, bottom + 1);
@@ -4052,9 +4070,12 @@ namespace time_schedule
                         if (rowY >= clip.Top && rowY <= clip.Bottom)
                             graphics.DrawLine(rowPen, clip.Left, rowY, clip.Right, rowY);
                     }
-                    if (bottom < clip.Bottom && bottom + Constants.MIN_ROW_HIGHT > clip.Top)
-                        DrawCalendarPersonSeparator(graphics, separatorPen,
-                            clip.Left, clip.Right, bottom);
+                    bool finalPerson = personButton.Button.Bottom >= pBForLine.Height;
+                    int separatorTop = finalPerson ? bottom - 1 : bottom;
+                    int separatorHeight = finalPerson ? 1 : Constants.MIN_ROW_HIGHT;
+                    if (separatorTop < clip.Bottom && separatorTop + separatorHeight > clip.Top)
+                        DrawCalendarPersonSeparator(graphics, separatorPen, rowPen,
+                            clip.Left, clip.Right, bottom, finalPerson);
                 }
                 foreach (DateTextBox date in Program.PoolTextBox.ListTextBoxes)
                 {
@@ -4086,7 +4107,10 @@ namespace time_schedule
                 {
                     Rectangle planned = plannedSegments[segmentIndex];
                     Rectangle rectangle = ThemeVisuals.TaskBandBounds(planned,
-                        CalendarViewportOrigin, CalendarViewportVerticalOffset);
+                        CalendarViewportOrigin, CalendarViewportVerticalOffset,
+                        task.PlaceInSynchTask == 0 && planned.Y > 0,
+                        taskButton.IsRightWeekSeparator(segmentIndex),
+                        taskButton.IsWeekSplit(segmentIndex - 1), taskButton.IsWeekSplit(segmentIndex));
                     if (rectangle.Width <= 0 || rectangle.Height <= 0 ||
                         !clip.IntersectsWith(rectangle))
                         continue;
@@ -4148,7 +4172,10 @@ namespace time_schedule
                 {
                     Rectangle planned = plannedSegments[segmentIndex];
                     Rectangle rectangle = ThemeVisuals.TaskBandBounds(planned,
-                        CalendarViewportOrigin, snapOffsetY + CalendarViewportVerticalOffset);
+                        CalendarViewportOrigin, snapOffsetY + CalendarViewportVerticalOffset,
+                        task.PlaceInSynchTask == 0 && planned.Y > 0,
+                        taskBand.IsRightWeekSeparator(segmentIndex),
+                        taskBand.IsWeekSplit(segmentIndex - 1), taskBand.IsWeekSplit(segmentIndex));
                     if (rectangle.Width <= 0 || rectangle.Height <= 0 ||
                         !clip.IntersectsWith(rectangle))
                         continue;

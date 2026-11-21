@@ -25,6 +25,8 @@ namespace time_schedule
         private readonly FlowLayoutPanel buttons;
         /// <summary>Непрерывная линия под заголовком поверх всех дочерних элементов.</summary>
         private readonly Panel separator;
+        /// <summary>Правый отступ группы системных кнопок во всех формах.</summary>
+        private const int WindowButtonsRightMargin = 14;
 
         /// <summary>Создаёт общий заголовок для указанной формы.</summary>
         /// <param name="window">Форма, состоянием которой управляют кнопки.</param>
@@ -47,9 +49,9 @@ namespace time_schedule
 
             buttons = new FlowLayoutPanel
             {
-                Dock = DockStyle.Right, Width = 120, Height = Height,
+                Dock = DockStyle.Right, Width = 120 + WindowButtonsRightMargin, Height = Height,
                 WrapContents = false, FlowDirection = FlowDirection.LeftToRight,
-                Margin = Padding.Empty, Padding = Padding.Empty
+                Margin = Padding.Empty, Padding = new Padding(0, 0, WindowButtonsRightMargin, 0)
             };
             buttons.Controls.Add(themeSwitch);
             buttons.Controls.Add(minimize);
@@ -111,7 +113,7 @@ namespace time_schedule
         {
             buttons.Width = (themeSwitch.Visible ? themeSwitch.Width : 0) +
                 (minimize.Visible ? minimize.Width : 0) +
-                (maximize.Visible ? maximize.Width : 0) + close.Width;
+                (maximize.Visible ? maximize.Width : 0) + close.Width + WindowButtonsRightMargin;
             buttons.PerformLayout();
             UpdateSeparatorBounds();
         }

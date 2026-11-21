@@ -43,7 +43,7 @@ namespace time_schedule
             int right = ClientSize.Width - 1;
             int bottom = ClientSize.Height - 1;
             string caption = Text ?? string.Empty;
-            Color frame = Blend(palette.Grid, background, BorderMix);
+            Color frame = Enabled ? Blend(palette.Grid, background, BorderMix) : ThemeVisuals.InputBorderColor(false, false);
             SmoothingMode previous = e.Graphics.SmoothingMode;
             try
             {
@@ -66,7 +66,7 @@ namespace time_schedule
                 e.Graphics.FillRectangle(cover, 7, top - 1, Math.Max(1, Math.Min(right - 9, labelWidth + 8)), 3);
             Rectangle text = new Rectangle(9, 0, available, Font.Height + 2);
             TextRenderer.DrawText(e.Graphics, caption, Font, text,
-                Enabled ? palette.Text : palette.MutedText,
+                Enabled ? palette.Text : ThemeVisuals.DisabledText,
                 TextFormatFlags.NoPadding | TextFormatFlags.NoPrefix |
                 TextFormatFlags.SingleLine | TextFormatFlags.EndEllipsis |
                 TextFormatFlags.VerticalCenter);

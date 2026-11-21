@@ -39,7 +39,30 @@ namespace time_schedule
         protected override void OnLoad(EventArgs e)
         {
             base.OnLoad(e);
+            if (lBxTasks.Parent != null)
+                lBxTasks.Parent.SizeChanged += TaskContentSizeChanged;
             ArrangeTaskControls();
+        }
+
+        /// <summary>Пересчитывает расположение элементов после изменения рабочей области.</summary>
+        private void TaskContentSizeChanged(object sender, EventArgs e)
+        {
+            if (!IsDisposed && !Disposing) ArrangeTaskControls();
+        }
+
+        /// <summary>Выравнивает рамку поиска после подключения тематических оболочек полей.</summary>
+        protected override void OnShown(EventArgs e)
+        {
+            base.OnShown(e);
+            ArrangeTaskControls();
+        }
+
+        /// <summary>Снимает подписку на компоновку после закрытия формы.</summary>
+        protected override void OnFormClosed(FormClosedEventArgs e)
+        {
+            if (lBxTasks != null && lBxTasks.Parent != null)
+                lBxTasks.Parent.SizeChanged -= TaskContentSizeChanged;
+            base.OnFormClosed(e);
         }
 
         /// <summary>
@@ -71,15 +94,19 @@ namespace time_schedule
             chkMultySelectTask.Left = columnLeft + 2;
             chkMultySelectTask.Width = buttonWidth - 2;
 
-            int listWidth = leftAreaRight - lBxTasks.Left;
-            lBxTasks.Width = listWidth;
-            tBxTargetTask.Width = leftAreaRight - tBxTargetTask.Left;
             groupBox3.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             groupBox4.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-            groupBox3.Width = leftAreaRight - groupBox3.Left;
-            groupBox4.Width = leftAreaRight - groupBox4.Left;
-            tBxStatus.Width = leftAreaRight - tBxStatus.Left;
-            tBxDateFinish.Width = leftAreaRight - tBxDateFinish.Left;
+            int contentLeft = groupBox4.Left;
+            int contentWidth = leftAreaRight - contentLeft;
+            groupBox3.Left = contentLeft;
+            groupBox3.Width = contentWidth;
+            groupBox4.Width = contentWidth;
+            lBxTasks.Left = contentLeft;
+            lBxTasks.Width = contentWidth;
+            Control statusField = ThemeControlStyler.GetVisualControl(tBxStatus);
+            Control finishField = ThemeControlStyler.GetVisualControl(tBxDateFinish);
+            statusField.Width = leftAreaRight - statusField.Left;
+            finishField.Width = leftAreaRight - finishField.Left;
 
             ArrangeTaskFilterGroups(margin, gap);
             ArrangeTaskSearch(margin, gap);
@@ -103,16 +130,26 @@ namespace time_schedule
             dTPFilterDateFinish.Left = groupBox1.ClientSize.Width - innerMargin - dTPFilterDateFinish.Width;
             btnFilter.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             btnFilter.Left = groupBox2.ClientSize.Width - innerMargin - btnFilter.Width;
-            tBxStatusesFilter.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-            tBxStatusesFilter.Left = innerMargin;
-            tBxStatusesFilter.Width = btnFilter.Left - gap - tBxStatusesFilter.Left;
+            Control statusFilter = ThemeControlStyler.GetVisualControl(tBxStatusesFilter);
+            statusFilter.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            statusFilter.Left = innerMargin;
+            statusFilter.Width = Math.Max(1, btnFilter.Left - gap - statusFilter.Left);
         }
 
-        /// <summary>Разводит подпись поиска, её декоративную рамку и список задач.</summary>
+        /// <summary>Выравнивает визуальную оболочку поиска по списку, не меняя родителя TextBox.</summary>
         private void ArrangeTaskSearch(int margin, int gap)
         {
-            tBxTargetTask.Top = label1.Bottom + margin / 2;
-            lBxTasks.Top = tBxTargetTask.Bottom + gap;
+            Control search = ThemeControlStyler.GetVisualControl(tBxTargetTask);
+            if (search == null || search.Parent != lBxTasks.Parent) return;
+
+            int listBottom = lBxTasks.Bottom;
+            int searchTop = label1.Bottom + Math.Max(6, margin / 2);
+            search.SetBounds(groupBox4.Left, searchTop, groupBox4.Width, search.Height);
+            int listTop = search.Bottom + Math.Max(8, gap);
+            if (listBottom - listTop >= 80)
+                lBxTasks.SetBounds(lBxTasks.Left, listTop, lBxTasks.Width, listBottom - listTop);
+
+            search.BringToFront();
         }
 
         public TaskLoadFor FmTasksStatusLoad

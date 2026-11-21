@@ -98,12 +98,15 @@ namespace time_schedule
             e.Graphics.Clear(Parent == null ? colors.Window : Parent.BackColor);
             Rectangle bounds = new Rectangle(0, 0, Width - 1, Height - 1);
             if (bounds.Width < 2 || bounds.Height < 2) return;
-            Color outline = !input.Enabled ? colors.MutedText :
-                input.ContainsFocus ? colors.Focus : colors.Grid;
+            Color outline = ThemeVisuals.InputBorderColor(input.Enabled, input.ContainsFocus);
             e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
             using (GraphicsPath shape = ThemeVisuals.InputPath(bounds))
+            using (SolidBrush fill = new SolidBrush(input.BackColor))
             using (Pen pen = new Pen(outline))
+            {
+                e.Graphics.FillPath(fill, shape);
                 e.Graphics.DrawPath(pen, shape);
+            }
         }
 
         /// <summary>Обновляет границу при фокусе, блокировке и смене темы.</summary>
@@ -201,11 +204,12 @@ namespace time_schedule
             glyph.SetBounds(combo.Right - width, combo.Top, width, combo.Height);
         }
 
-        /// <summary>Использует общий тематический popup без смены исходного ComboBox.</summary>
+        /// <summary>Раскрывает штатный список без изменения порядка выбора или режима ввода.</summary>
         private void GlyphClick(object sender, EventArgs e)
         {
-            if (!combo.Enabled || combo.IsDisposed) return;
-            ThemeControlStyler.ToggleComboPopup(combo);
+            if (!combo.Enabled) return;
+            combo.Focus();
+            combo.DroppedDown = !combo.DroppedDown;
         }
 
         /// <summary>Согласует состояние стрелки с доступностью исходного списка.</summary>

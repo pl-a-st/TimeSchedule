@@ -61,7 +61,23 @@ namespace time_schedule
         protected override void OnLoad(EventArgs e)
         {
             base.OnLoad(e);
+            if (projectTreeView.Parent != null)
+                projectTreeView.Parent.SizeChanged += ProjectTreeContentSizeChanged;
             ArrangeProjectTreeControls();
+        }
+
+        /// <summary>Пересчитывает расположение элементов после изменения рабочей области.</summary>
+        private void ProjectTreeContentSizeChanged(object sender, EventArgs e)
+        {
+            if (!IsDisposed && !Disposing) ArrangeProjectTreeControls();
+        }
+
+        /// <summary>Снимает подписку на компоновку после закрытия формы.</summary>
+        protected override void OnFormClosed(FormClosedEventArgs e)
+        {
+            if (projectTreeView != null && projectTreeView.Parent != null)
+                projectTreeView.Parent.SizeChanged -= ProjectTreeContentSizeChanged;
+            base.OnFormClosed(e);
         }
 
         /// <summary>Убирает обрезку кнопок и сохраняет отступы от рамок при изменении окна.</summary>

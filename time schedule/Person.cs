@@ -1003,6 +1003,10 @@ namespace time_schedule
         [NonSerialized]
         private int plannedButtonCount;
 
+        /// <summary>Границы сегментов, попадающие на утолщённую линию начала недели.</summary>
+        [NonSerialized]
+        private List<bool> rightWeekSeparators = new List<bool>();
+
         /// <summary>Полное количество запланированных визуальных сегментов задачи.</summary>
         public int PlannedButtonCount => plannedButtonCount;
 
@@ -1036,11 +1040,44 @@ namespace time_schedule
         {
             LoadingStatus = loadingStatus;
         }
-        /// <summary>Сохраняет абсолютную геометрию сегмента до попадания задачи в область загрузки.</summary>
-        private void PlanButton(int locationX, int locationY, int width, int height)
+        /// <summary>Сохраняет геометрию сегмента и толщину линии у его правой границы.</summary>
+        private void PlanButton(int locationX, int locationY, int width, int height, DateTime lastDay)
         {
             pendingSegments.Add(new Rectangle(locationX, locationY, width, height));
+            rightWeekSeparators.Add(IsNextVisibleDayMonday(lastDay));
             plannedButtonCount++;
+        }
+
+        /// <summary>Определяет, начинается ли следующая отображаемая колонка с понедельника.</summary>
+        private static bool IsNextVisibleDayMonday(DateTime lastDay)
+        {
+            if (lastDay.Date >= DateTime.MaxValue.Date)
+                return false;
+            DateTime next = lastDay.Date.AddDays(1);
+            while (next.DayOfWeek == DayOfWeek.Saturday ||
+                next.DayOfWeek == DayOfWeek.Sunday ||
+                Program.listNonWorkingDays.NonWorkingDays.Contains(next))
+            {
+                if (next.Date >= DateTime.MaxValue.Date)
+                    return false;
+                next = next.AddDays(1);
+            }
+            return next.DayOfWeek == DayOfWeek.Monday;
+        }
+
+        /// <summary>Возвращает толщину правой линии для обычного режима и Canvas без пересчёта дат при Paint.</summary>
+        internal bool IsRightWeekSeparator(int index)
+        {
+            return rightWeekSeparators != null && index >= 0 &&
+                index < rightWeekSeparators.Count && rightWeekSeparators[index];
+        }
+
+        /// <summary>Определяет внутренний недельный стык между сегментами одной задачи.</summary>
+        /// <param name="index">Индекс сегмента, заканчивающегося перед следующей неделей.</param>
+        internal bool IsWeekSplit(int index)
+        {
+            return index >= 0 && index + 1 < plannedButtonCount &&
+                IsRightWeekSeparator(index);
         }
 
         /// <summary>Создаёт стандартные WinForms-кнопки только при первой необходимости отображения задачи.</summary>
@@ -1057,9 +1094,12 @@ namespace time_schedule
         public void AddButton(int locationX, int locationY, int with, int height)
         {
             Button button = new Button();
-            button.Location = new Point(locationX + 1, locationY + 1);
-            button.Width = with - 2;
-            button.Height = height - 1;
+            int segmentIndex = Buttons.Count;
+            button.Bounds = ThemeVisuals.TaskBandBounds(
+                new Rectangle(locationX, locationY, with, height), 0, 0,
+                Task.PlaceInSynchTask == 0 && locationY > 0,
+                IsRightWeekSeparator(segmentIndex),
+                IsWeekSplit(segmentIndex - 1), IsWeekSplit(segmentIndex));
             button.Text = Task.Name;
             button.BackColor = ThemeVisuals.TaskDisplayColor(Task.Color);
             button.ForeColor = ThemeVisuals.TaskTextColor(Task);
@@ -1353,7 +1393,7 @@ namespace time_schedule
                         dateTime.Date == Task.DateFinish.Date) &&
                         dateTime.AddDays(3).Date != Task.DateFinish.Date)
                     {
-                        PlanButton(locationX, locationY, width, Constants.ROW_HIGHT);
+                        PlanButton(locationX, locationY, width, Constants.ROW_HIGHT, dateTime);
                         locationX += width;
                         width = 0;
                         numberOfDay = 0;

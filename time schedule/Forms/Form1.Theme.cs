@@ -31,6 +31,14 @@ namespace time_schedule
         private const int ProjectButtonPaintInset = 1;
         /// <summary>Смещение календарного блока, создающее воздух слева и сверху.</summary>
         private const int CalendarWorkspaceOffset = 12;
+        /// <summary>Минимальный отступ календарной области от правого края рабочей панели.</summary>
+        private const int CalendarWorkspaceRightMargin = 16;
+        /// <summary>Дополнительный воздух справа, когда вертикальной полосы прокрутки нет.</summary>
+        private const int CalendarNoVerticalScrollExtraMargin = 12;
+        /// <summary>Минимальный промежуток между календарём и линией нижней панели команд.</summary>
+        private const int CalendarToolbarGap = 24;
+        /// <summary>Предотвращает повторное изменение геометрии во время Resize.</summary>
+        private bool fittingCalendarToPeople;
         /// <summary>Разделительная линия над командной группой главной формы.</summary>
         private Panel mainToolbarSeparator;
         /// <summary>Одна нижняя линия видимой сетки перед полосой горизонтальной прокрутки.</summary>
@@ -117,8 +125,11 @@ namespace time_schedule
             try
             {
                 int offset = CalendarWorkspaceOffset;
+                int additionalWidth = Math.Min(offset,
+                    Math.Max(0, host.ClientSize.Width - plMain.Right - CalendarWorkspaceRightMargin));
                 plMain.SetBounds(plMain.Left + offset, plMain.Top + offset,
-                    Math.Max(1, plMain.Width - offset), Math.Max(1, plMain.Height - offset));
+                    Math.Max(1, plMain.Width - offset + additionalWidth),
+                    Math.Max(1, plMain.Height - offset));
                 plForDate.SetBounds(plForDate.Left + offset, plForDate.Top + offset,
                     plMain.Width, plForDate.Height);
                 plPersonButton.SetBounds(plPersonButton.Left + offset,
@@ -209,6 +220,48 @@ namespace time_schedule
         {
             AlignMainProjectRow();
             CenterMainToolbar();
+            FitMainCalendarToPeople();
+        }
+
+        /// <summary>
+        /// Определяет видимую высоту сетки по строкам исполнителей, ограничивая её
+        /// нижней панелью. Поддерживает более свободный правый край при отсутствии
+        /// вертикальной полосы, не меняя модель задач или прокрутку.
+        /// </summary>
+        private void FitMainCalendarToPeople()
+        {
+            Control host = plMain.Parent;
+            if (fittingCalendarToPeople || IsDisposed || Disposing || host == null ||
+                pBForLine == null || pBForLine.IsDisposed ||
+                FormReadyToBeAddedControl != Statuses.FormReadyToBeAddedControl.Ready)
+                return;
+
+            fittingCalendarToPeople = true;
+            host.SuspendLayout();
+            try
+            {
+                int maxBottom = mainToolbarSeparator != null && !mainToolbarSeparator.IsDisposed
+                    ? mainToolbarSeparator.Top - CalendarToolbarGap
+                    : host.ClientSize.Height - 110;
+                int availableHeight = Math.Max(1, maxBottom - plMain.Top);
+                int scrollHeight = SystemInformation.HorizontalScrollBarHeight;
+                int contentHeight = Math.Max(Constants.ROW_HIGHT, pBForLine.Height);
+                int intendedHeight = Math.Min(availableHeight, contentHeight + scrollHeight);
+                bool verticalScrollNeeded = contentHeight + scrollHeight > availableHeight;
+                int rightMargin = CalendarWorkspaceRightMargin +
+                    (verticalScrollNeeded ? 0 : CalendarNoVerticalScrollExtraMargin);
+                int intendedWidth = Math.Max(1, host.ClientSize.Width - plMain.Left - rightMargin);
+
+                if (plMain.Height != intendedHeight) plMain.Height = intendedHeight;
+                if (plMain.Width != intendedWidth) plMain.Width = intendedWidth;
+                if (plForDate.Width != intendedWidth) plForDate.Width = intendedWidth;
+                UpdateMainCalendarGridEndLine();
+            }
+            finally
+            {
+                host.ResumeLayout(true);
+                fittingCalendarToPeople = false;
+            }
         }
 
         /// <summary>Совмещает видимую правую границу кнопки проектов с границами кнопок исполнителей.</summary>

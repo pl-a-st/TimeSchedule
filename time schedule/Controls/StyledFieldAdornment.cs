@@ -195,7 +195,7 @@ namespace time_schedule
                     using (SolidBrush brush = new SolidBrush(Color.FromArgb(60, palette.ButtonHover)))
                         e.Graphics.FillRectangle(brush, ClientRectangle);
                 }
-                using (Pen separator = new Pen(Color.FromArgb(95, palette.Grid)))
+                using (Pen separator = new Pen(Enabled ? Color.FromArgb(95, palette.Grid) : ThemeVisuals.InputBorderColor(false, false)))
                     e.Graphics.DrawLine(separator, 0, 4, 0, Height - 5);
                 Rectangle glyph = new Rectangle(1, 2, Math.Max(0, Width - 2),
                     Math.Max(0, Height - 4));

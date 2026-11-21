@@ -22,6 +22,22 @@ namespace time_schedule
         private ScrollState horizontal;
         /// <summary>Признак инициализированного состояния полос.</summary>
         private bool hasSnapshot;
+        /// <summary>Слежение за нативными сообщениями прокрутки без дополнительных таймеров.</summary>
+        private readonly TreeScrollMessages scrollMessages;
+        /// <summary>Признак перетаскивания вертикального ползунка в системном TreeView.</summary>
+        private bool trackingVertical;
+        /// <summary>Признак перетаскивания горизонтального ползунка в системном TreeView.</summary>
+        private bool trackingHorizontal;
+        /// <summary>Команда, обновляющая положение ползунка во время перетаскивания.</summary>
+        private const int SbThumbTrack = 5;
+        /// <summary>Сообщение завершения перетаскивания ползунка.</summary>
+        private const int SbEndScroll = 8;
+        /// <summary>Команда фиксации выбранного положения ползунка.</summary>
+        private const int SbThumbPosition = 4;
+        /// <summary>Сообщение нативной вертикальной прокрутки.</summary>
+        private const int WmVScroll = 0x0115;
+        /// <summary>Сообщение нативной горизонтальной прокрутки.</summary>
+        private const int WmHScroll = 0x0114;
         /// <summary>Сообщение Windows для прозрачной обработки мыши.</summary>
         private const int WmNcHitTest = 0x0084;
         /// <summary>Передаёт указатель исходному дереву под декоратором.</summary>
@@ -60,13 +76,37 @@ namespace time_schedule
             public int Position, TrackPosition;
         }
 
+        /// <summary>Подписывается на события штатной полосы без подмены алгоритма прокрутки.</summary>
+        private sealed class TreeScrollMessages : NativeWindow
+        {
+            /// <summary>Владелец декоративного слоя.</summary>
+            private readonly StyledTreeViewOverlay owner;
+
+            /// <summary>Создаёт подписку на текущий дескриптор дерева.</summary>
+            internal TreeScrollMessages(StyledTreeViewOverlay target) { owner = target; }
+
+            /// <summary>Читает текущее промежуточное положение после штатной обработки сообщения.</summary>
+            protected override void WndProc(ref Message message)
+            {
+                int code = message.Msg == WmVScroll || message.Msg == WmHScroll
+                    ? (int)(message.WParam.ToInt64() & 0xFFFF) : -1;
+                int kind = message.Msg;
+                base.WndProc(ref message);
+                if (code >= 0 && !owner.IsDisposed)
+                    owner.NativeScrollProcessed(kind, code);
+            }
+        }
+
         /// <summary>Создаёт оформляющий слой без нового прокручиваемого контейнера.</summary>
         internal StyledTreeViewOverlay(TreeView source)
         {
             tree = source ?? throw new ArgumentNullException(nameof(source));
+            scrollMessages = new TreeScrollMessages(this);
             SetStyle(ControlStyles.UserPaint | ControlStyles.AllPaintingInWmPaint |
                 ControlStyles.OptimizedDoubleBuffer | ControlStyles.ResizeRedraw, true);
             TabStop = false;
+            tree.HandleCreated += TreeHandleCreated;
+            tree.HandleDestroyed += TreeHandleDestroyed;
             tree.SizeChanged += TreeGeometryChanged;
             tree.LocationChanged += TreeGeometryChanged;
             tree.VisibleChanged += TreeGeometryChanged;
@@ -80,7 +120,44 @@ namespace time_schedule
             tree.Disposed += TreeDisposed;
             ThemeManager.Changed += ThemeChanged;
             Application.Idle += ApplicationIdle;
+            if (tree.IsHandleCreated) TreeHandleCreated(tree, EventArgs.Empty);
             AttachToParent();
+        }
+
+        /// <summary>Подключает наблюдение при создании или пересоздании HWND TreeView.</summary>
+        private void TreeHandleCreated(object sender, EventArgs e)
+        {
+            if (scrollMessages.Handle != IntPtr.Zero) scrollMessages.ReleaseHandle();
+            if (!tree.IsDisposed && tree.IsHandleCreated)
+                scrollMessages.AssignHandle(tree.Handle);
+            hasSnapshot = false;
+        }
+
+        /// <summary>Отключает наблюдение при уничтожении HWND без вмешательства в дерево.</summary>
+        private void TreeHandleDestroyed(object sender, EventArgs e)
+        {
+            if (scrollMessages.Handle != IntPtr.Zero) scrollMessages.ReleaseHandle();
+            trackingVertical = trackingHorizontal = false;
+            hasSnapshot = false;
+        }
+
+        /// <summary>Синхронизирует декоративный ползунок с сообщениями SB_THUMBTRACK.</summary>
+        private void NativeScrollProcessed(int message, int command)
+        {
+            bool tracking = command == SbThumbTrack;
+            if (message == WmVScroll)
+            {
+                if (tracking) trackingVertical = true;
+                else if (command == SbEndScroll || command == SbThumbPosition)
+                    trackingVertical = false;
+            }
+            else if (message == WmHScroll)
+            {
+                if (tracking) trackingHorizontal = true;
+                else if (command == SbEndScroll || command == SbThumbPosition)
+                    trackingHorizontal = false;
+            }
+            RefreshScroll();
         }
 
         /// <summary>Считывает положение нативной полосы без изменения её состояния.</summary>
@@ -92,7 +169,9 @@ namespace time_schedule
             return new ScrollState
             {
                 Minimum = info.Minimum, Maximum = info.Maximum,
-                Page = info.Page, Position = info.Position,
+                Page = info.Page,
+                Position = (bar == SbVert ? trackingVertical : trackingHorizontal)
+                    ? info.TrackPosition : info.Position,
                 Show = info.Page != 0 && info.Maximum - info.Minimum + 1 > info.Page
             };
         }
@@ -250,6 +329,9 @@ namespace time_schedule
             if (disposing)
             {
                 Application.Idle -= ApplicationIdle;
+                tree.HandleCreated -= TreeHandleCreated;
+                tree.HandleDestroyed -= TreeHandleDestroyed;
+                if (scrollMessages.Handle != IntPtr.Zero) scrollMessages.ReleaseHandle();
                 ThemeManager.Changed -= ThemeChanged;
                 tree.SizeChanged -= TreeGeometryChanged;
                 tree.LocationChanged -= TreeGeometryChanged;

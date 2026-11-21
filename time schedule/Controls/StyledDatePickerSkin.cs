@@ -136,7 +136,7 @@ namespace time_schedule
         {
             ThemePalette palette = ThemeManager.Palette;
             editor.BackColor = Enabled ? palette.Surface : palette.ButtonDisabled;
-            editor.ForeColor = Enabled ? palette.Text : palette.MutedText;
+            editor.ForeColor = Enabled ? palette.Text : ThemeVisuals.DisabledText;
             editor.Font = picker.Font;
         }
 
@@ -175,7 +175,7 @@ namespace time_schedule
                     finally { e.Graphics.Restore(state); }
                 }
                 if (button.Left > 5)
-                    using (var separator = new Pen(Color.FromArgb(85, palette.Grid)))
+                    using (var separator = new Pen(Enabled ? Color.FromArgb(85, palette.Grid) : ThemeVisuals.InputBorderColor(false, false)))
                         e.Graphics.DrawLine(separator, button.Left, 5, button.Left, Height - 6);
                 using (var pen = new Pen(ThemeVisuals.InputBorderColor(Enabled,
                     editor.Focused || picker.ContainsFocus)))
@@ -185,11 +185,11 @@ namespace time_schedule
             {
                 Rectangle text = new Rectangle(6, 0, Math.Max(0, button.Left - 9), Height);
                 TextRenderer.DrawText(e.Graphics, picker.Text, picker.Font, text,
-                    Enabled ? palette.Text : palette.MutedText,
+                    Enabled ? palette.Text : ThemeVisuals.DisabledText,
                     TextFormatFlags.VerticalCenter | TextFormatFlags.Left | TextFormatFlags.SingleLine |
                     TextFormatFlags.EndEllipsis | TextFormatFlags.NoPrefix);
             }
-            DrawCalendarIcon(e.Graphics, button, Enabled ? palette.Text : palette.MutedText);
+            DrawCalendarIcon(e.Graphics, button, Enabled ? palette.Text : ThemeVisuals.DisabledText);
         }
 
         /// <summary>Область кнопки календаря, общая для рисования и обработки нажатий.</summary>

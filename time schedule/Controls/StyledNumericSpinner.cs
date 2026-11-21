@@ -90,9 +90,9 @@ namespace time_schedule
                 using (SolidBrush brush = new SolidBrush(colors.ButtonHover))
                     e.Graphics.FillRectangle(brush, hoverRect);
             }
-            using (Pen pen = new Pen(colors.Grid))
+            using (Pen pen = new Pen(Enabled ? colors.Grid : ThemeVisuals.InputBorderColor(false, false)))
                 e.Graphics.DrawLine(pen, 0, Height / 2, Width, Height / 2);
-            Color color = Enabled ? colors.Text : colors.MutedText;
+            Color color = Enabled ? colors.Text : ThemeVisuals.DisabledText;
             DrawArrow(e.Graphics, Width / 2f, Height / 4f, true, color);
             DrawArrow(e.Graphics, Width / 2f, Height * 3f / 4f, false, color);
         }

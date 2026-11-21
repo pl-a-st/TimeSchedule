@@ -13,9 +13,11 @@ namespace time_schedule
 {
     public partial class fmMainPathChoise : StyledWindowForm
     {
+        /// <summary>Сохраняет единый нижний отступ подписи и поля пути при изменении размера окна.</summary>
         public fmMainPathChoise()
         {
             InitializeComponent();
+            label1.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
         }
         public TextBox SetTBxAddress()
         {
