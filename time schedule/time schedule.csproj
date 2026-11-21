@@ -101,6 +101,7 @@
     <Compile Include="Forms\ThemePreviewForm.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="Controls\StyledComboPopupScrollBar.cs" />
     <Compile Include="Controls\StyledListScrollBar.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -109,6 +110,9 @@
     </Compile>
     <Compile Include="Controls\StyledInputFrame.cs">
       <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Controls\StyledDateTimePicker.cs">
+      <SubType>Component</SubType>
     </Compile>
     <Compile Include="Controls\StyledDatePickerSkin.cs">
       <SubType>Component</SubType>

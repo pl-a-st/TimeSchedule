@@ -44,7 +44,7 @@ namespace time_schedule
             this.txtProjectName = new System.Windows.Forms.TextBox();
             this.lblProjectName = new System.Windows.Forms.Label();
             this.lblDateFinish = new System.Windows.Forms.Label();
-            this.dateTimePicker1 = new System.Windows.Forms.DateTimePicker();
+            this.dateTimePicker1 = new time_schedule.StyledDateTimePicker();
             this.lblPatern = new System.Windows.Forms.Label();
             this.comboBox1 = new System.Windows.Forms.ComboBox();
             this.SuspendLayout();

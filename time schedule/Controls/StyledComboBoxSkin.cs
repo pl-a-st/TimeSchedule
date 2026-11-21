@@ -17,7 +17,6 @@ namespace time_schedule
         private bool synchronizing;
         /// <summary>Признак наведения на кнопку раскрытия.</summary>
         private bool hoverArrow;
-
         /// <summary>Создаёт поверхностный декоратор без смены родителя ComboBox.</summary>
         internal StyledComboBoxSkin(ComboBox source)
         {
@@ -125,20 +124,22 @@ namespace time_schedule
                 Math.Min(19, Math.Max(0, Width - 8)), Math.Max(0, Height - 6)); }
         }
 
-        /// <summary>Раскрывает штатный ComboBox без модификации его данных и событий.</summary>
-        protected override void OnMouseDown(MouseEventArgs e)
+        /// <summary>
+        /// Открывает тематический список после завершения нажатия мыши;
+        /// штатный ComboBox сохраняет Items и SelectedIndex.
+        /// </summary>
+        protected override void OnClick(EventArgs e)
         {
-            base.OnMouseDown(e);
-            if (e.Button != MouseButtons.Left || !combo.Enabled) return;
-            combo.Focus();
-            combo.DroppedDown = !combo.DroppedDown;
+            base.OnClick(e);
+            if (combo.IsDisposed || !combo.Enabled) return;
+            ThemeControlStyler.ToggleComboPopup(combo);
         }
 
         /// <summary>Сохраняет штатное изменение выбранной строки колесом мыши.</summary>
         protected override void OnMouseWheel(MouseEventArgs e)
         {
             base.OnMouseWheel(e);
-            if (!combo.Enabled || combo.DroppedDown || combo.Items.Count == 0) return;
+            if (!combo.Enabled || ThemeControlStyler.IsComboPopupOpen(combo) || combo.DroppedDown || combo.Items.Count == 0) return;
             int step = e.Delta > 0 ? -1 : e.Delta < 0 ? 1 : 0;
             if (step == 0) return;
             int current = combo.SelectedIndex;
@@ -191,6 +192,90 @@ namespace time_schedule
                 ThemeManager.Changed -= ThemeChanged;
                 if (Parent != null) Parent.Layout -= ParentLayout;
             }
+            base.Dispose(disposing);
+        }
+
+    }
+
+    /// <summary>
+    /// Размещает тематический ComboBox внутри ToolStrip через обычную панель.
+    /// Это позволяет использовать общие оформление и popup без добавления
+    /// элементов в закрытую коллекцию Controls у ToolStripDropDown.
+    /// </summary>
+    public sealed class StyledToolStripComboBox : ToolStripControlHost
+    {
+        /// <summary>Поле фильтра, содержащее значения и выбранный элемент.</summary>
+        private readonly ComboBox combo;
+
+        /// <summary>Создаёт редактируемый по выбору список, совместимый с ToolStrip.</summary>
+        public StyledToolStripComboBox()
+            : base(new Panel { Size = new Size(158, 23), Margin = Padding.Empty, Padding = Padding.Empty })
+        {
+            combo = new ComboBox
+            {
+                Name = "TaskFilterComboBox",
+                Dock = DockStyle.Fill,
+                DropDownStyle = ComboBoxStyle.DropDownList,
+                FlatStyle = FlatStyle.Flat,
+                TabStop = true
+            };
+            Control.Controls.Add(combo);
+            combo.SelectedIndexChanged += ComboSelectedIndexChanged;
+            AutoSize = false;
+            Size = new Size(158, 23);
+        }
+
+        /// <summary>Исходное WinForms-поле для общего оформителя.</summary>
+        public ComboBox ComboBox { get { return combo; } }
+
+        /// <summary>Варианты фильтра, используемые главным календарём.</summary>
+        public ComboBox.ObjectCollection Items { get { return combo.Items; } }
+
+        /// <summary>Совместимый с Designer режим отображения штатного поля.</summary>
+        public FlatStyle FlatStyle
+        {
+            get { return combo.FlatStyle; }
+            set { combo.FlatStyle = value; }
+        }
+
+        /// <summary>Текущее значение фильтра без второго источника данных.</summary>
+        public new string Text
+        {
+            get { return combo.Text; }
+            set
+            {
+                combo.Text = value;
+                base.Text = combo.Text;
+            }
+        }
+
+        /// <summary>Сохраняет событие выбора, ожидаемое главным календарём.</summary>
+        public event EventHandler SelectedIndexChanged;
+
+        /// <summary>Подключает существующий popup и поверхность к панели-хосту.</summary>
+        internal void ApplyTheme()
+        {
+            if (combo.IsDisposed) return;
+            ThemePalette palette = ThemeManager.Palette;
+            Control.BackColor = palette.Window;
+            combo.BackColor = palette.Surface;
+            combo.ForeColor = palette.Text;
+            ThemeControlStyler.EnableComboList(combo);
+            ThemeControlStyler.EnsureInputSkins(Control);
+            Control.Invalidate(true);
+        }
+
+        /// <summary>Передаёт изменение выбора штатному обработчику главной формы.</summary>
+        private void ComboSelectedIndexChanged(object sender, EventArgs e)
+        {
+            base.Text = combo.Text;
+            SelectedIndexChanged?.Invoke(this, e);
+        }
+
+        /// <summary>Освобождает подписку одновременно с hosted-контролом.</summary>
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing) combo.SelectedIndexChanged -= ComboSelectedIndexChanged;
             base.Dispose(disposing);
         }
     }

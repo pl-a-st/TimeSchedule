@@ -67,6 +67,8 @@ namespace time_schedule
             RestoreMainInput(dateTimePicker1);
             CenterMainToolbar();
             ThemeControlStyler.EnsureInPlaceFrame(cBxSeetingsProjects);
+            ThemeControlStyler.SetComboPopupPreparation(cBxSeetingsProjects,
+                () => cBxSeetingsProjects_DropDown(cBxSeetingsProjects, EventArgs.Empty));
             ThemeControlStyler.EnsureInPlaceFrame(dateTimePicker1);
             ThemeControlStyler.EnsurePanelScrollBars(plMain);
             ThemeControlStyler.EnsureInputSkins(dateTimePicker1);

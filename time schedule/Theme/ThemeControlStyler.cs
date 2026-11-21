@@ -15,6 +15,9 @@ namespace time_schedule
         /// <summary>Оболочки, уже подключённые к существующим спискам и полям даты.</summary>
         private static readonly ConditionalWeakTable<Control, StyledInputFrame> inputFrames =
             new ConditionalWeakTable<Control, StyledInputFrame>();
+        /// <summary>Списки, для которых установлена тема выделения без замены исходного ListBox.</summary>
+        private static readonly ConditionalWeakTable<ListBox, object> styledListItems =
+            new ConditionalWeakTable<ListBox, object>();
         /// <summary>Линии списков, установленные без замены их содержимого.</summary>
         private static readonly ConditionalWeakTable<ListBox, StyledListBoxOutline> listOutlines =
             new ConditionalWeakTable<ListBox, StyledListBoxOutline>();
@@ -52,6 +55,9 @@ namespace time_schedule
         /// <summary>Списки, для которых уже зарегистрирована отрисовка раскрытой части.</summary>
         private static readonly ConditionalWeakTable<ComboBox, object> styledComboLists =
             new ConditionalWeakTable<ComboBox, object>();
+        /// <summary>Единый владелец выпадающего окна и его подписок для всех режимов ComboBox.</summary>
+        private static readonly ConditionalWeakTable<ComboBox, StyledComboPopupController> comboPopups =
+            new ConditionalWeakTable<ComboBox, StyledComboPopupController>();
 
         /// <summary>Матовые поверхности полей даты, сохраняющие штатные события.</summary>
         private static readonly ConditionalWeakTable<DateTimePicker, StyledDatePickerSkin> datePickerSkins =
@@ -74,7 +80,7 @@ namespace time_schedule
             if (font != null) root.Font = font;
             if (root == excluded) return;
 
-            if (root is ComboBox comboBox && comboBox.DropDownStyle == ComboBoxStyle.DropDownList)
+            if (root is ComboBox comboBox)
                 EnableComboList(comboBox);
 
             if (root is ButtonForShedule button)
@@ -92,6 +98,14 @@ namespace time_schedule
                 ordinaryButton.BackColor = palette.Button;
                 ordinaryButton.ForeColor = palette.Text;
             }
+            else if (root is CheckBox checkBox)
+            {
+                ApplyChoiceTheme(checkBox, palette);
+            }
+            else if (root is RadioButton radioButton)
+            {
+                ApplyChoiceTheme(radioButton, palette);
+            }
             else if (root is TextBoxBase || root is ComboBox || root is NumericUpDown || root is DateTimePicker ||
                 root is ListBox || root is TreeView || root is ListView)
             {
@@ -105,10 +119,11 @@ namespace time_schedule
                     picker.CalendarForeColor = palette.Text;
                     picker.CalendarTitleBackColor = palette.Button;
                     picker.CalendarTitleForeColor = palette.Text;
+                    picker.CalendarTrailingForeColor = palette.MutedText;
                 }
             }
             else if (root is Panel || root is Form || root is GroupBox || root is Label ||
-                root is CheckBox || root is RadioButton || root is TabPage)
+                root is TabPage)
             {
                 root.BackColor = palette.Window;
                 root.ForeColor = palette.Text;
@@ -116,6 +131,21 @@ namespace time_schedule
             foreach (Control child in root.Controls)
                 Apply(child, font, excluded);
             root.Invalidate();
+        }
+
+        /// <summary>Согласует цвета нативного флажка с палитрой, сохраняя его Checked и события.</summary>
+        /// <param name="control">Существующий флажок или радиокнопка.</param>
+        /// <param name="palette">Текущая палитра.</param>
+        private static void ApplyChoiceTheme(ButtonBase control, ThemePalette palette)
+        {
+            control.UseVisualStyleBackColor = false;
+            control.FlatStyle = FlatStyle.Flat;
+            control.FlatAppearance.BorderColor = palette.Grid;
+            control.FlatAppearance.CheckedBackColor = palette.ButtonHover;
+            control.FlatAppearance.MouseDownBackColor = palette.ButtonPressed;
+            control.FlatAppearance.MouseOverBackColor = palette.Window;
+            control.BackColor = palette.Window;
+            control.ForeColor = control.Enabled ? palette.Text : palette.MutedText;
         }
 
         /// <summary>
@@ -165,11 +195,12 @@ namespace time_schedule
 
         /// <summary>
         /// Рисует общий контур на месте уже работающего поля, не изменяя его иерархию.
-        /// Применять для элементов с привязками и сложной компоновкой, например на главной форме.
+        /// Не подключает декоратор к ToolStrip: его коллекция Controls доступна только для чтения.
         /// </summary>
         internal static void EnsureInPlaceFrame(Control field)
         {
             if (field == null || field.IsDisposed || field.Parent == null ||
+                field.Parent is ToolStrip ||
                 !(field is DateTimePicker || field is ComboBox)) return;
             StyledFieldAdornment existing;
             if (inPlaceFrames.TryGetValue(field, out existing)) return;
@@ -313,6 +344,7 @@ namespace time_schedule
             foreach (ListBox list in lists)
             {
                 if (list.IsDisposed || list.MultiColumn || list.Parent == null) continue;
+                EnsureListItemTheme(list);
                 StyledListScrollBar existing;
                 if (!listScrollBars.TryGetValue(list, out existing))
                 {
@@ -329,6 +361,50 @@ namespace time_schedule
             }
         }
 
+        /// <summary>
+        /// Оформляет выбранные строки только у штатных однотипных списков: существующие
+        /// OwnerDraw-списки и их DrawItem/MeasureItem остаются без изменений.
+        /// </summary>
+        /// <param name="list">Существующий ListBox со штатными данными и обработчиками.</param>
+        private static void EnsureListItemTheme(ListBox list)
+        {
+            if (styledListItems.TryGetValue(list, out _) || list.DrawMode != DrawMode.Normal ||
+                list.HorizontalScrollbar) return;
+            int itemHeight = list.ItemHeight;
+            list.DrawItem += DrawListItem;
+            list.DrawMode = DrawMode.OwnerDrawFixed;
+            list.ItemHeight = itemHeight;
+            styledListItems.Add(list, new object());
+        }
+
+        /// <summary>Рисует выделение, не меняя выбранный индекс, табуляцию и прокрутку списка.</summary>
+        private static void DrawListItem(object sender, DrawItemEventArgs e)
+        {
+            ListBox list = (ListBox)sender;
+            ThemePalette palette = ThemeManager.Palette;
+            bool selected = list.Enabled && (e.State & DrawItemState.Selected) != 0;
+            Color background = !list.Enabled ? palette.ButtonDisabled :
+                selected ? palette.ButtonHover : palette.Surface;
+            using (SolidBrush brush = new SolidBrush(background))
+                e.Graphics.FillRectangle(brush, e.Bounds);
+            if (e.Index < 0 || e.Index >= list.Items.Count) return;
+
+            Rectangle text = new Rectangle(e.Bounds.X + 4, e.Bounds.Y,
+                Math.Max(0, e.Bounds.Width - 8), e.Bounds.Height);
+            TextFormatFlags flags = TextFormatFlags.Left | TextFormatFlags.VerticalCenter |
+                TextFormatFlags.SingleLine | TextFormatFlags.EndEllipsis | TextFormatFlags.NoPrefix;
+            if (list.UseTabStops) flags |= TextFormatFlags.ExpandTabs;
+            TextRenderer.DrawText(e.Graphics, list.GetItemText(list.Items[e.Index]), list.Font,
+                text, list.Enabled ? palette.Text : palette.MutedText, flags);
+            if ((e.State & DrawItemState.Focus) != 0 && list.Focused)
+            {
+                Rectangle focus = Rectangle.Inflate(e.Bounds, -1, -1);
+                if (focus.Width > 1 && focus.Height > 1)
+                    using (Pen pen = new Pen(palette.Focus))
+                        e.Graphics.DrawRectangle(pen, focus);
+            }
+        }
+
         /// <summary>Собирает списки без изменения дерева контролов во время его обхода.</summary>
         private static void CollectLists(Control root, List<ListBox> lists)
         {
@@ -341,6 +417,11 @@ namespace time_schedule
         private static void ListDisposed(object sender, EventArgs e)
         {
             var list = (ListBox)sender;
+            if (styledListItems.TryGetValue(list, out _))
+            {
+                list.DrawItem -= DrawListItem;
+                styledListItems.Remove(list);
+            }
             StyledListScrollBar scrollbar;
             if (listScrollBars.TryGetValue(list, out scrollbar))
             {
@@ -394,25 +475,58 @@ namespace time_schedule
         }
 
         /// <summary>
-        /// Подключает отрисовку раскрытого списка однократно, сохраняя его элементы,
-        /// поведение при вводе и существующие подписки SelectedIndexChanged.
+        /// Подключает оформление раскрытия однократно, не затрагивая существующий OwnerDraw,
+        /// элементы, поведение при вводе и подписки SelectedIndexChanged.
         /// </summary>
         internal static void EnableComboList(ComboBox combo)
         {
             if (combo == null || combo.IsDisposed || styledComboLists.TryGetValue(combo, out _)) return;
             styledComboLists.Add(combo, new object());
-            if (combo.DrawMode == DrawMode.Normal) combo.DrawMode = DrawMode.OwnerDrawFixed;
-            combo.DrawItem += DrawComboItem;
+            if (combo.DrawMode == DrawMode.Normal)
+            {
+                combo.DrawMode = DrawMode.OwnerDrawFixed;
+                combo.DrawItem += DrawComboItem;
+            }
             combo.DropDown += ComboDropDown;
             combo.Disposed += ComboDisposed;
+            comboPopups.Add(combo, new StyledComboPopupController(combo));
             ApplyComboPopupColors(combo);
         }
 
-        /// <summary>Обновляет оформление нативного списка непосредственно перед раскрытием.</summary>
+        /// <summary>Открывает оформленный список независимо от режима ввода.</summary>
+        internal static void ToggleComboPopup(ComboBox combo)
+        {
+            if (combo == null || combo.IsDisposed || !combo.Enabled) return;
+            EnableComboList(combo);
+            if (comboPopups.TryGetValue(combo, out StyledComboPopupController popup))
+                popup.Toggle();
+        }
+
+        /// <summary>Учитывает раскрытие при прокрутке свёрнутого ComboBox колесом.</summary>
+        internal static bool IsComboPopupOpen(ComboBox combo)
+        {
+            return combo != null && comboPopups.TryGetValue(combo, out StyledComboPopupController popup) &&
+                popup.IsOpen;
+        }
+
+        /// <summary>Регистрирует подготовку данных, ранее выполнявшуюся событием DropDown.</summary>
+        internal static void SetComboPopupPreparation(ComboBox combo, Action prepare)
+        {
+            if (combo == null || combo.IsDisposed) return;
+            EnableComboList(combo);
+            if (comboPopups.TryGetValue(combo, out StyledComboPopupController popup))
+                popup.Prepare = prepare;
+        }
+
+        /// <summary>
+        /// Сохраняет оформление нативного раскрытия для сторонних вызовов DroppedDown
+        /// и автодополнения. Пользовательское раскрытие обслуживает StyledComboPopupController.
+        /// </summary>
         private static void ComboDropDown(object sender, EventArgs e)
         {
             ComboBox combo = (ComboBox)sender;
             ApplyComboPopupColors(combo);
+            StyledComboPopupScrollBar.ApplyNativeTheme(combo);
 #if DEBUG
             System.Diagnostics.Debug.WriteLine("TS-04 ComboDropDown: " + combo.Name +
                 ", mode=" + combo.DrawMode + ", style=" + combo.DropDownStyle);
@@ -435,6 +549,11 @@ namespace time_schedule
             ComboBox combo = (ComboBox)sender;
             combo.DrawItem -= DrawComboItem;
             combo.DropDown -= ComboDropDown;
+            if (comboPopups.TryGetValue(combo, out StyledComboPopupController popup))
+            {
+                popup.Dispose();
+                comboPopups.Remove(combo);
+            }
             combo.Disposed -= ComboDisposed;
             styledComboLists.Remove(combo);
         }
@@ -444,14 +563,17 @@ namespace time_schedule
         {
             ComboBox combo = (ComboBox)sender;
             ThemePalette palette = ThemeManager.Palette;
-            bool selected = (e.State & DrawItemState.Selected) != 0;
-            using (SolidBrush brush = new SolidBrush(selected ? palette.ButtonHover : palette.Surface))
+            bool selected = combo.Enabled && (e.State & DrawItemState.Selected) != 0;
+            Color background = !combo.Enabled ? palette.ButtonDisabled :
+                selected ? palette.ButtonHover : palette.Surface;
+            using (SolidBrush brush = new SolidBrush(background))
                 e.Graphics.FillRectangle(brush, e.Bounds);
             if (e.Index < 0 || e.Index >= combo.Items.Count) return;
             Rectangle text = new Rectangle(e.Bounds.Left + 4, e.Bounds.Top,
                 Math.Max(0, e.Bounds.Width - 8), e.Bounds.Height);
             TextRenderer.DrawText(e.Graphics, combo.GetItemText(combo.Items[e.Index]), combo.Font,
-                text, palette.Text, TextFormatFlags.Left | TextFormatFlags.VerticalCenter |
+                text, combo.Enabled ? palette.Text : palette.MutedText,
+                TextFormatFlags.Left | TextFormatFlags.VerticalCenter |
                 TextFormatFlags.EndEllipsis | TextFormatFlags.NoPrefix);
             if ((e.State & DrawItemState.Focus) != 0 && (e.State & DrawItemState.NoFocusRect) == 0)
             {

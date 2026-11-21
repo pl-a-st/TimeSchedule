@@ -57,8 +57,24 @@ namespace time_schedule
         /// <summary>Полная логическая ширина календаря, не ограниченная шириной дочернего окна.</summary>
         private int calendarLogicalWidth;
 
-        /// <summary>Включает оконную отрисовку только при превышении предела ширины PictureBox.</summary>
+        /// <summary>Предельная ширина полного растра, после которой применяется уже работающая отрисовка видимой области.</summary>
+        private const int MaxCalendarBitmapWidth = 8192;
+
+        /// <summary>Бюджет памяти полного растра календаря без учёта копий GDI+.</summary>
+        private const long MaxCalendarBitmapBytes = 24L * 1024 * 1024;
+
+        /// <summary>Признак рисования по видимой области при большом размере или расходе памяти полного растра.</summary>
         private bool calendarVirtualViewport;
+
+        /// <summary>Выбирает существующий виртуальный режим до выделения потенциально чрезмерного Bitmap.</summary>
+        /// <param name="width">Полная ширина календаря в пикселях.</param>
+        /// <param name="height">Высота календаря в пикселях.</param>
+        /// <returns>True, если требуется рисование по видимой области.</returns>
+        private static bool UseVirtualCalendar(int width, int height)
+        {
+            return width > MaxCalendarBitmapWidth ||
+                (long)width * Math.Max(1, height) * 4 > MaxCalendarBitmapBytes;
+        }
 
         /// <summary>Виртуальная горизонтальная координата первого пикселя видимого холста.</summary>
         private int CalendarViewportOrigin => calendarVirtualViewport
@@ -132,11 +148,33 @@ namespace time_schedule
         {
             SelfRef = this;
         }
-        int CalcDivDays()
+        /// <summary>Не вычисляет смещение календаря по предельным датам пустого отбора.</summary>
+        private int CalcDivDays()
         {
+            if (Program.ListTasksAllPersonToShow.Tasks.Count == 0)
+                return 0;
             DateTime maxDateTime = Program.ListTasksAllPersonToShow.GetMaxDateFinishTasks();
-            DateTime minDateTime = Program.ListTasksAllPersonToShow.GetMinDateStartTasks();
             return (maxDateTime - MaxDateFinish).Days;
+        }
+
+        /// <summary>
+        /// Возвращает диапазон выбранных задач или безопасный видимый интервал,
+        /// если в отобранном проекте задач нет. Модель задач не изменяется.
+        /// </summary>
+        /// <param name="first">Начало отображаемой шкалы.</param>
+        /// <param name="last">Последняя дата задач или резервного интервала.</param>
+        private static void GetCalendarDateBounds(out DateTime first, out DateTime last)
+        {
+            if (Program.ListTasksAllPersonToShow.Tasks.Count == 0)
+            {
+                first = DateTime.Today.AddDays(-7);
+                last = DateTime.Today.AddDays(14);
+                return;
+            }
+            first = Program.ListTasksAllPersonToShow.GetMinDateStartTasks();
+            last = Program.ListTasksAllPersonToShow.GetMaxDateFinishTasks();
+            if (last < first)
+                throw new InvalidDataException("Даты задач выбранного проекта образуют некорректный интервал.");
         }
         /// <summary>Временные и количественные показатели одного обновления календаря.</summary>
         private sealed class CalendarRefreshMetrics
@@ -510,6 +548,7 @@ namespace time_schedule
             phase.Restart();
             LoadScrolls();
             metrics.AttachScrollMs = phase.ElapsedMilliseconds;
+            UpdateMainCalendarGridEndLine();
             if (Program.PoolTextBox.ListTextBoxes.Count > 0)
             {
                 DateTextBox lastDate = Program.PoolTextBox.ListTextBoxes[Program.PoolTextBox.ListTextBoxes.Count - 1];
@@ -966,15 +1005,28 @@ namespace time_schedule
             PlPersonButtonYSaved = plPersonButton.VerticalScroll.Value;
 
         }
-        /// <summary>Восстанавливает позиции прокрутки независимых панелей календаря.</summary>
+        /// <summary>Ограничивает сохранённую прокрутку текущей областью после смены отбора.</summary>
+        /// <param name="scroll">Системная полоса прокрутки панели.</param>
+        /// <param name="requested">Позиция из предыдущего отображения.</param>
+        private static int ClampCalendarScroll(ScrollProperties scroll, int requested)
+        {
+            int last = Math.Max(scroll.Minimum,
+                scroll.Maximum - Math.Max(1, scroll.LargeChange) + 1);
+            return Math.Max(scroll.Minimum, Math.Min(requested, last));
+        }
+
+        /// <summary>Восстанавливает одинаковое допустимое смещение заголовка и холста, сотрудников и строк.</summary>
         public void LoadScrolls()
         {
             try
             {
-                plForDate.HorizontalScroll.Value = HorizontalScrollValue;
-                plForDate.HorizontalScroll.Value = HorizontalScrollValue;
-                plMain.HorizontalScroll.Value = HorizontalScrollValue;
-                plMain.HorizontalScroll.Value = HorizontalScrollValue;
+                int x = Math.Min(ClampCalendarScroll(plForDate.HorizontalScroll, HorizontalScrollValue),
+                    ClampCalendarScroll(plMain.HorizontalScroll, HorizontalScrollValue));
+                plForDate.HorizontalScroll.Value = x;
+                plForDate.HorizontalScroll.Value = x;
+                plMain.HorizontalScroll.Value = x;
+                plMain.HorizontalScroll.Value = x;
+                HorizontalScrollValue = x;
             }
             catch (Exception ex)
             {
@@ -982,22 +1034,17 @@ namespace time_schedule
             }
             try
             {
-                plPersonButton.VerticalScroll.Value = VerticalScrollValue;
-                plPersonButton.VerticalScroll.Value = VerticalScrollValue;
-
+                int y = Math.Min(ClampCalendarScroll(plPersonButton.VerticalScroll, VerticalScrollValue),
+                    ClampCalendarScroll(plMain.VerticalScroll, VerticalScrollValue));
+                plPersonButton.VerticalScroll.Value = y;
+                plPersonButton.VerticalScroll.Value = y;
+                plMain.VerticalScroll.Value = y;
+                plMain.VerticalScroll.Value = y;
+                VerticalScrollValue = y;
             }
             catch (Exception ex)
             {
-                Trace.WriteLine("TimeSchedule person vertical scroll restore failed: " + ex);
-            }
-            try
-            {
-                plMain.VerticalScroll.Value = VerticalScrollValue;
-                plMain.VerticalScroll.Value = VerticalScrollValue;
-            }
-            catch (Exception ex)
-            {
-                Trace.WriteLine("TimeSchedule calendar vertical scroll restore failed: " + ex);
+                Trace.WriteLine("TimeSchedule calendar and person vertical scroll restore failed: " + ex);
             }
         }
         public void ScrollToZero()
@@ -1009,8 +1056,10 @@ namespace time_schedule
         }
         public void SaveMinMaxDate()
         {
-            MaxDateFinish = Program.ListTasksAllPersonToShow.GetMaxDateFinishTasks();
-            MinDateStart = Program.ListTasksAllPersonToShow.GetMinDateStartTasks();
+            DateTime first, last;
+            GetCalendarDateBounds(out first, out last);
+            MaxDateFinish = last;
+            MinDateStart = first;
         }
         /// <summary>Временно задаёт режим полного обновления и восстанавливает прежний режим при любом завершении вызова.</summary>
         /// <param name="refreshType">Запрошенный режим обновления календаря.</param>
@@ -1198,11 +1247,16 @@ namespace time_schedule
                 Program.ListTasksAllPersonToShow.SetTasks(GetRelevantTasks(Program.ListTasksAllPersonToShow.Tasks));
             metrics.RelevanceFilterMs = phase.ElapsedMilliseconds;
             metrics.FilteredTasks = Program.ListTasksAllPersonToShow.Tasks.Count;
+            if (metrics.FilteredTasks == 0)
+                Trace.WriteLine("TimeSchedule calendar project-filter returned no tasks.");
             if (!TaskStore.HasTaskData(Dals.TakeMainPathFile(Constants.TASKS_BIN)))
                 ReReadListPerson();
         }
 
-        /// <summary>Готовит кнопки исполнителей, нерабочие дни и модели кнопок задач.</summary>
+        /// <summary>
+        /// Готовит строки исполнителей, нерабочие дни и задачи; сохраняет ненулевую
+        /// высоту поверхности календаря при отсутствии задач в выбранных проектах.
+        /// </summary>
         /// <param name="metrics">Показатели количества объектов и времени построения.</param>
         /// <param name="phase">Счётчик времени этапов построения моделей.</param>
         private void BuildCalendarPersonsAndTasks(CalendarRefreshMetrics metrics, Stopwatch phase)
@@ -1212,7 +1266,7 @@ namespace time_schedule
                 Program.listPersons.Persons, Program.ListTasksAllPersonToShow,
                 Constants.ROW_HIGHT, this);
             int maxButtonLocationY = SetMaxLocationAndAddPersonButton(ref Program.ListPersonButton);
-            pBForLine.Height = maxButtonLocationY;
+            pBForLine.Height = Math.Max(1, maxButtonLocationY);
             metrics.BuildPersonButtonsMs = phase.ElapsedMilliseconds;
             metrics.PersonModels = Program.ListPersonButton.PersonButtons.Count;
             if (File.Exists(Dals.TakeMainPathFile(Constants.HOLYDAYS_BIN)))
@@ -1225,8 +1279,9 @@ namespace time_schedule
                 Program.ListHolidays.SetHolidaysFromList(
                     Dals.ReadListFromMainPathFile(Constants.HOLYDAYS));
             }
-            NonWorkDaysWrite(Program.ListTasksAllPersonToShow.GetMinDateStartTasks(),
-                Program.ListTasksAllPersonToShow.GetMaxDateFinishTasks());
+            DateTime firstCalendarDate, lastCalendarDate;
+            GetCalendarDateBounds(out firstCalendarDate, out lastCalendarDate);
+            NonWorkDaysWrite(firstCalendarDate, lastCalendarDate);
             Program.listNonWorkingDays.NonWorkingDays.AddRange(Program.ListHolidays.Holidays);
             phase.Restart();
             Program.ListTaskButtons.AddTaskButtons(
@@ -1432,28 +1487,37 @@ namespace time_schedule
                 plMain.Visible = false;
             }
         }
-        /// <summary>Готовит шкалу рабочих дат и изображения, не размещая сами ячейки до этапа Attach.</summary>
+        /// <summary>Готовит шкалу дат с единой начальной координатой для заголовка и задач.</summary>
         private void LoadTextBoxWithDate()
         {
-            DateTime dateToTables = Program.ListTasksAllPersonToShow.GetMinDateStartTasks();
-            DateTime dateMaxToTable = Program.ListTasksAllPersonToShow.GetMaxDateFinishTasks();
+            DateTime dateToTables, dateMaxToTable;
+            GetCalendarDateBounds(out dateToTables, out dateMaxToTable);
             int height = plMain.Location.Y - plForDate.Location.Y;
             ClearDateControls();
+
+            if (MinDateStart.Date != dateToTables.Date)
+            {
+                HorizontalScrollValue = 0;
+                plMain.AutoScrollPosition = Point.Empty;
+                plForDate.AutoScrollPosition = Point.Empty;
+            }
+
             Bitmap bitmap = new Bitmap(1, 1);
             PictureBox pictureBox = new PictureBox();
             pictureBox.Height = 1;
-            pictureBox.Location = new Point(HorizontalScrollValue, 1);
+            pictureBox.Location = new Point(0, 1);
             plForDate.Controls.Add(pictureBox);
             pictureBox.Image = bitmap;
 
             int locationX = BuildCalendarDateModels(dateToTables, dateMaxToTable, height);
-            if (LastMaxHorizonntalScroll >= locationX + Constants.COLUMN_WITH &&
-                HorizontalScrollValue > LastMaxHorizonntalScroll - LastLargeChangeHorizonntalScroll)
-            {
-                HorizontalScrollValue -= LastMaxHorizonntalScroll - locationX;
-            }
+            int visibleWidth = Math.Max(1, Math.Min(plMain.ClientSize.Width, plForDate.ClientSize.Width));
+            HorizontalScrollValue = Math.Max(0, Math.Min(HorizontalScrollValue,
+                Math.Max(0, locationX - visibleWidth)));
             calendarLogicalWidth = locationX;
-            calendarVirtualViewport = locationX > 65535;
+            calendarVirtualViewport = UseVirtualCalendar(locationX, pBForLine.Height);
+            Trace.WriteLine("TimeSchedule calendar-render-mode: virtual=" + calendarVirtualViewport +
+                " width=" + locationX + " height=" + pBForLine.Height +
+                " estimated-bitmap-bytes=" + (long)locationX * pBForLine.Height * 4);
             plMain.AutoScrollMinSize = calendarVirtualViewport
                 ? new Size(locationX, 0) : Size.Empty;
             plForDate.AutoScrollMinSize = calendarVirtualViewport
@@ -1472,26 +1536,53 @@ namespace time_schedule
                 ResizeCalendarDateImage(pictureBox, bitmap, locationX);
         }
 
-        /// <summary>Формирует объекты рабочих дат и возвращает ширину шкалы в пикселях.</summary>
+        /// <summary>
+        /// Формирует рабочие даты. Если при выборе одного вложенного проекта
+        /// задач мало, продлевает шкалу до ширины окна без добавления фиктивных задач.
+        /// </summary>
         /// <param name="firstDate">Начальная дата календаря.</param>
         /// <param name="lastDate">Конечная дата календаря.</param>
         /// <param name="height">Высота объектов даты.</param>
         /// <returns>Ширина сформированной шкалы дат.</returns>
-        private static int BuildCalendarDateModels(DateTime firstDate, DateTime lastDate, int height)
+        private int BuildCalendarDateModels(DateTime firstDate, DateTime lastDate, int height)
         {
             int locationX = 0;
-            while (firstDate <= lastDate)
+            DateTime date = firstDate;
+            while (date <= lastDate)
             {
-                if (IsNotHolyday(firstDate))
+                if (IsNotHolyday(date))
                 {
-                    DateTextBox dateTextBox = new DateTextBox(firstDate, height, locationX);
-                    dateTextBox.SetLoadingStatus(Statuses.LoadingStatus.NotReady);
-                    locationX += Constants.COLUMN_WITH;
-                    Program.PoolTextBox.ListTextBoxes.Add(dateTextBox);
+                    AddCalendarDateModel(date, height, ref locationX);
                 }
-                firstDate = firstDate.AddDays(1);
+                if (date == DateTime.MaxValue.Date) break;
+                date = date.AddDays(1);
             }
+
+            int requiredColumns = Math.Max(1,
+                (plMain.ClientSize.Width + Constants.COLUMN_WITH - 1) / Constants.COLUMN_WITH + 1);
+            date = lastDate;
+            while (Program.PoolTextBox.ListTextBoxes.Count < requiredColumns &&
+                date < DateTime.MaxValue.Date)
+            {
+                date = date.AddDays(1);
+                if (IsNotHolyday(date))
+                    AddCalendarDateModel(date, height, ref locationX);
+            }
+            if (locationX == 0)
+                throw new InvalidDataException("Не удалось сформировать рабочие даты для календаря.");
             return locationX;
+        }
+
+        /// <summary>Добавляет одну рабочую дату в конец непрерывной шкалы.</summary>
+        /// <param name="date">Дата нового столбца.</param>
+        /// <param name="height">Высота заголовка.</param>
+        /// <param name="locationX">Позиция следующего столбца, увеличиваемая после вставки.</param>
+        private static void AddCalendarDateModel(DateTime date, int height, ref int locationX)
+        {
+            DateTextBox dateTextBox = new DateTextBox(date, height, locationX);
+            dateTextBox.SetLoadingStatus(Statuses.LoadingStatus.NotReady);
+            locationX += Constants.COLUMN_WITH;
+            Program.PoolTextBox.ListTextBoxes.Add(dateTextBox);
         }
 
         /// <summary>Заменяет временный растр шкалы дат, освобождая его после успешной подмены.</summary>
@@ -1726,7 +1817,7 @@ namespace time_schedule
                 Trace.WriteLine("TimeSchedule scroll to date failed: " + ex);
             }
             HorizontalScrollValue = plMain.HorizontalScroll.Value;
-            if (targetDateTime.Date >= Program.ListTasksAllPersonToShow.GetMaxDateFinishTasks().Date)
+            if (targetDateTime.Date >= MaxDateFinish.Date)
                 TraceCalendarScrollBounds("scroll-to-last-date");
             LoadTaskButtons();
             LoadDateTextBoxes();
@@ -1804,11 +1895,13 @@ namespace time_schedule
                 if (calendarVirtualViewport || !ReferenceEquals(pBForLine.Image, previousBitmap))
                     previousBitmap?.Dispose();
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is ArgumentException || ex is ExternalException ||
+                ex is InvalidOperationException)
             {
                 if (!ReferenceEquals(Bmp, bitmap))
                     bitmap?.Dispose();
                 Trace.WriteLine("TimeSchedule calendar bitmap resize failed: " + ex);
+                throw;
             }
         }
 
@@ -1988,10 +2081,12 @@ namespace time_schedule
                 pBForLine.Invalidate();
                 return;
             }
+            if (Program.ListTasksAllPersonToShow.Tasks.Count == 0)
+                return;
             Program.ListTaskButtons.CalculateLoadingStatus(
                 HorizontalScrollValue,
                 this.Width,
-                Program.ListTasksAllPersonToShow.GetMinDateStartTasks());
+                MinDateStart);
             Program.ListTaskButtons.SetNewLocationToButtons(
                 VerticalScrollValue,
                 HorizontalScrollValue);
@@ -2039,7 +2134,7 @@ namespace time_schedule
             Program.PoolTextBox.CalculateLoadingStatus(
                 plMain.HorizontalScroll.Value,
                 this.Width,
-                Program.ListTasksAllPersonToShow.GetMinDateStartTasks());
+                MinDateStart);
             if (reusableDateTextBoxes.Count > 0)
             {
                 foreach (DateTextBox date in Program.PoolTextBox.ListTextBoxes)
@@ -2154,23 +2249,40 @@ namespace time_schedule
             }
         }
 
-        private void comboBox1_Click(object sender, EventArgs e)
+        /// <summary>
+        /// Загружает сохранённые наборы при раскрытии штатного ComboBox.
+        /// Накладная стрелка StyledFieldAdornment раскрывает список без события Click.
+        /// </summary>
+        private void cBxSeetingsProjects_DropDown(object sender, EventArgs e)
         {
-            cBxSeetingsProjects.Items.Clear();
-            cBxSeetingsProjects.Text = "";
-            string fileName = Dals.ProjectFolderPath.Replace('\\', '_');
-            fileName = fileName.Replace(':', '+');
-            List<TreeProjects> listTreeProject = new List<TreeProjects>();
-            listTreeProject = Dals.binReadUserPathFileToObject(listTreeProject, fileName);
-            List<string> projectNames = new List<string>();
-            foreach (TreeProjects treeProjects in listTreeProject)
+            string fileName = Dals.ProjectFolderPath.Replace('\\', '_').Replace(':', '+');
+            List<TreeProjects> saved = new List<TreeProjects>();
+            if (File.Exists(Dals.TakeUserPath(fileName)))
+                saved = Dals.binReadUserPathFileToObject(saved, fileName);
+
+            object selected = cBxSeetingsProjects.SelectedItem;
+            cBxSeetingsProjects.BeginUpdate();
+            cBxSeetingsProjects.SelectedIndexChanged -= cBxSeetingsProgects_SelectedIndexChanged;
+            try
             {
-                projectNames.Add(treeProjects.GetName());
+                cBxSeetingsProjects.Items.Clear();
+                foreach (TreeProjects tree in saved)
+                    cBxSeetingsProjects.Items.Add(tree.GetName());
+                if (selected != null && cBxSeetingsProjects.Items.Contains(selected))
+                    cBxSeetingsProjects.SelectedItem = selected;
+                else
+                    cBxSeetingsProjects.SelectedIndex = -1;
             }
-            cBxSeetingsProjects.Items.AddRange(projectNames.ToArray());
+            finally
+            {
+                cBxSeetingsProjects.SelectedIndexChanged += cBxSeetingsProgects_SelectedIndexChanged;
+                cBxSeetingsProjects.EndUpdate();
+            }
         }
         private void cBxSeetingsProgects_SelectedIndexChanged(object sender, EventArgs e)
         {
+            if (cBxSeetingsProjects.SelectedItem == null)
+                return;
             string fileName = Dals.ProjectFolderPath.Replace('\\', '_');
             fileName = fileName.Replace(':', '+');
             List<TreeProjects> listTreeProject = new List<TreeProjects>();
@@ -2184,6 +2296,7 @@ namespace time_schedule
                 if (treeProjects.GetName() == cBxSeetingsProjects.SelectedItem.ToString())
                 {
                     treeProjects.SaveSettingsTree();
+                    break;
                 }
             }
             ZeroingScrolss();

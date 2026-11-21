@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
@@ -12,6 +13,10 @@ namespace time_schedule
         private readonly StyledTitleBar titleBar;
         /// <summary>Контейнер исходных элементов, сохраняемый при перестройке компоновки.</summary>
         private Panel clientContent;
+        /// <summary>Контейнеры формы, отслеживаемые для оформления полей, добавляемых после открытия.</summary>
+        private readonly HashSet<Control> observedThemeContainers = new HashSet<Control>();
+        /// <summary>Не допускает повторного подключения декораторов при вложенных событиях ControlAdded.</summary>
+        private bool applyingAddedControlTheme;
         /// <summary>Защита от повторного изменения компоновки при пересчёте рамки.</summary>
         private bool updatingFrame;
         /// <summary>Признак доступности изменения размеров для текущего типа окна.</summary>
@@ -92,17 +97,93 @@ namespace time_schedule
             base.OnLoad(e);
         }
 
-        /// <summary>Подключает визуальные полосы прокрутки к готовым спискам без смены их экземпляров.</summary>
+        /// <summary>Подключает оформление и декораторы полей после завершения первоначальной компоновки.</summary>
         protected override void OnShown(EventArgs e)
         {
             base.OnShown(e);
+            RefreshStandardControlTheme();
             if (AutoThemeStandardControls)
+                ObserveThemeContainers(this);
+        }
+
+        /// <summary>
+        /// Подписывает контейнеры формы на появление вложенных полей без вмешательства в Designer.
+        /// </summary>
+        /// <param name="root">Контейнер с уже существующими или будущими элементами.</param>
+        private void ObserveThemeContainers(Control root)
+        {
+            if (root == null || root.IsDisposed || root is StyledTitleBar ||
+                root is StyledInputFrame) return;
+            bool container = root is Form || root is Panel || root is GroupBox ||
+                root is TabControl || root is TabPage || root is UserControl ||
+                root.Controls.Count > 0;
+            if (container && observedThemeContainers.Add(root))
             {
-                ThemeControlStyler.EnsureInputFrames(this);
-                ThemeControlStyler.EnsureInputSkins(this);
-                ThemeControlStyler.EnsureListScrollBars(this);
-                ThemeControlStyler.EnsureTreeViewOverlays(this);
+                root.ControlAdded += ThemeContainerControlAdded;
+                root.ControlRemoved += ThemeContainerControlRemoved;
             }
+            foreach (Control child in root.Controls)
+                ObserveThemeContainers(child);
+        }
+
+        /// <summary>Снимает наблюдение с контейнера, удалённого из формы или перенесённого в другое окно.</summary>
+        /// <param name="root">Удаляемый контейнер вместе с его дочерними элементами.</param>
+        private void UnobserveThemeContainers(Control root)
+        {
+            if (root == null) return;
+            if (observedThemeContainers.Remove(root))
+            {
+                root.ControlAdded -= ThemeContainerControlAdded;
+                root.ControlRemoved -= ThemeContainerControlRemoved;
+            }
+            foreach (Control child in root.Controls)
+                UnobserveThemeContainers(child);
+        }
+
+        /// <summary>Применяет единую тему и штатные адаптеры только к новому поддереву контролов.</summary>
+        private void ThemeContainerControlAdded(object sender, ControlEventArgs e)
+        {
+            Control added = e.Control;
+            if (added == null || added.IsDisposed || applyingAddedControlTheme ||
+                IsDisposed || Disposing || !AutoThemeStandardControls ||
+                added is StyledInputFrame || added is StyledFieldAdornment ||
+                added is StyledDatePickerSkin || added is StyledComboBoxSkin ||
+                added is StyledListScrollBar || added is StyledListBoxOutline ||
+                added is StyledNumericSpinner || added is StyledTreeViewOverlay ||
+                added is StyledPanelScrollBar || added is StyledPanelScrollCorner ||
+                added is StyledTitleBar) return;
+            applyingAddedControlTheme = true;
+            try
+            {
+                ObserveThemeContainers(added);
+                ThemeControlStyler.Apply(added, null);
+                ThemeControlStyler.EnsureInputFrames(added);
+                ThemeControlStyler.EnsureInputSkins(added);
+                ThemeControlStyler.EnsureListScrollBars(added);
+                ThemeControlStyler.EnsureTreeViewOverlays(added);
+            }
+            finally { applyingAddedControlTheme = false; }
+        }
+
+        /// <summary>Освобождает подписки на вложенный контейнер при его удалении из формы.</summary>
+        private void ThemeContainerControlRemoved(object sender, ControlEventArgs e)
+        {
+            UnobserveThemeContainers(e.Control);
+        }
+
+        /// <summary>
+        /// Применяет утверждённую тему к стандартным и добавленным после открытия полям.
+        /// Повторные вызовы не создают вторые декораторы или подписки.
+        /// </summary>
+        protected void RefreshStandardControlTheme()
+        {
+            if (!AutoThemeStandardControls || IsDisposed || Disposing) return;
+            ThemeControlStyler.Apply(this, null);
+            if (!IsHandleCreated) return;
+            ThemeControlStyler.EnsureInputFrames(this);
+            ThemeControlStyler.EnsureInputSkins(this);
+            ThemeControlStyler.EnsureListScrollBars(this);
+            ThemeControlStyler.EnsureTreeViewOverlays(this);
         }
 
         /// <summary>Обновляет рамку и стандартные контролы уже открытого окна без их пересоздания.</summary>
@@ -110,14 +191,20 @@ namespace time_schedule
         {
             if (IsDisposed || Disposing) return;
             ApplyWindowFrame();
-            if (AutoThemeStandardControls && IsHandleCreated)
-                ThemeControlStyler.Apply(this, null);
+            if (IsHandleCreated)
+                RefreshStandardControlTheme();
         }
 
         /// <summary>Освобождает подписку на общую тему окна.</summary>
         private void WindowDisposed(object sender, EventArgs e)
         {
             ThemeManager.Changed -= WindowThemeChanged;
+            foreach (Control container in observedThemeContainers)
+            {
+                container.ControlAdded -= ThemeContainerControlAdded;
+                container.ControlRemoved -= ThemeContainerControlRemoved;
+            }
+            observedThemeContainers.Clear();
             Disposed -= WindowDisposed;
         }
 

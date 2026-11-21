@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -64,13 +65,16 @@ namespace time_schedule
             Disposed -= ProgressDisposed;
         }
 
-        /// <summary>Добавляет внешнюю тонкую рамку окна загрузки без изменения его компоновки.</summary>
+        /// <summary>Рисует один закруглённый контур целиком внутри окна, не обрезая крайние пиксели.</summary>
         protected override void OnPaint(PaintEventArgs e)
         {
             base.OnPaint(e);
-            if (Width < 3 || Height < 3) return;
-            using (var pen = new Pen(ThemeManager.Palette.Grid))
-                e.Graphics.DrawRectangle(pen, 0, 0, ClientSize.Width - 1, ClientSize.Height - 1);
+            if (ClientSize.Width < 5 || ClientSize.Height < 5) return;
+            e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+            using (GraphicsPath border = ThemeVisuals.InputPath(
+                new Rectangle(1, 1, ClientSize.Width - 3, ClientSize.Height - 3)))
+            using (Pen pen = new Pen(ThemeManager.Palette.Grid))
+                e.Graphics.DrawPath(pen, border);
         }
 
         public void SetTextMessege(string textToMessege)

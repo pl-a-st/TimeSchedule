@@ -27,8 +27,22 @@ namespace time_schedule
         private Font mainToolbarDateFont;
         /// <summary>Высота визуальных элементов нижней панели команд.</summary>
         private const int MainToolbarControlHeight = 34;
+        /// <summary>Пиксель, зарезервированный тематической отрисовкой справа от кнопки.</summary>
+        private const int ProjectButtonPaintInset = 1;
+        /// <summary>Смещение календарного блока, создающее воздух слева и сверху.</summary>
+        private const int CalendarWorkspaceOffset = 12;
         /// <summary>Разделительная линия над командной группой главной формы.</summary>
         private Panel mainToolbarSeparator;
+        /// <summary>Одна нижняя линия видимой сетки перед полосой горизонтальной прокрутки.</summary>
+        private Panel mainCalendarGridEndLine;
+        /// <summary>Правая граница рабочей сетки перед вертикальным скроллбаром.</summary>
+        private Panel mainCalendarGridRightLine;
+        /// <summary>Левая граница сетки, продолженная до верхней линии календарных дат.</summary>
+        private Panel mainCalendarGridLeftLine;
+        /// <summary>Верхняя граница только над областью календарной сетки.</summary>
+        private Panel mainCalendarGridTopLine;
+        /// <summary>Скрывает за пределами сетки лишнюю ширину фона шапки дат.</summary>
+        private Panel mainCalendarHeaderEdge;
 
         /// <summary>Подключает заголовок, меню, кнопки и выбор темы к действующей главной форме.</summary>
         private void InitializeMainTheme()
@@ -44,7 +58,18 @@ namespace time_schedule
             dateTimePicker1.Width = Math.Max(dateTimePicker1.Width, 220);
             mainToolbarSeparator = new Panel { Height = 1, TabStop = false };
             plMain.Parent.Controls.Add(mainToolbarSeparator);
+            mainCalendarGridEndLine = new Panel { Height = 1, TabStop = false, Enabled = false };
+            plMain.Parent.Controls.Add(mainCalendarGridEndLine);
+            mainCalendarGridRightLine = new Panel { Width = 1, TabStop = false, Enabled = false };
+            plMain.Parent.Controls.Add(mainCalendarGridRightLine);
+            mainCalendarGridLeftLine = new Panel { Width = 1, TabStop = false, Enabled = false };
+            plMain.Parent.Controls.Add(mainCalendarGridLeftLine);
+            mainCalendarGridTopLine = new Panel { Height = 1, TabStop = false, Enabled = false };
+            plMain.Parent.Controls.Add(mainCalendarGridTopLine);
+            mainCalendarHeaderEdge = new Panel { TabStop = false, Enabled = false };
+            plMain.Parent.Controls.Add(mainCalendarHeaderEdge);
             Font = mainThemeFont;
+            InsetMainCalendarWorkspace();
             themeMenuItem = new ToolStripMenuItem("Тёмная тема") { Visible = false };
             themeMenuItem.Click += ToggleMainTheme;
             menuStrip1.Items.Add(themeMenuItem);
@@ -64,13 +89,61 @@ namespace time_schedule
             menuStrip1.Font = mainThemeFont;
             cBxSeetingsProjects.DrawMode = DrawMode.OwnerDrawFixed;
             cBxSeetingsProjects.DrawItem += ThemeControlStyler.DrawComboItem;
+            InitializeMainMenuComboTheme();
             ThemeManager.Changed += MainThemeChanged;
             Disposed += MainThemeDisposed;
             plMain.Parent.Resize += MainToolbarResized;
+            plMain.SizeChanged += MainCalendarBoundsChanged;
+            plMain.ClientSizeChanged += MainCalendarBoundsChanged;
+            plMain.VisibleChanged += MainCalendarVisibilityChanged;
+            plForDate.SizeChanged += MainCalendarBoundsChanged;
+            plPersonButton.SizeChanged += MainCalendarBoundsChanged;
             btnNewTask.VisibleChanged += MainToolbarVisibilityChanged;
             Shown += MainThemeShown;
             CenterMainToolbar();
             ApplyMainTheme();
+        }
+
+        /// <summary>Сдвигает существующие части календаря без переподчинения контролов и потери якорей.</summary>
+        private void InsetMainCalendarWorkspace()
+        {
+            Control host = plMain.Parent;
+            if (host == null || !ReferenceEquals(host, plForDate.Parent) ||
+                !ReferenceEquals(host, plPersonButton.Parent) ||
+                !ReferenceEquals(host, btnSetings.Parent) ||
+                !ReferenceEquals(host, button1.Parent)) return;
+
+            host.SuspendLayout();
+            try
+            {
+                int offset = CalendarWorkspaceOffset;
+                plMain.SetBounds(plMain.Left + offset, plMain.Top + offset,
+                    Math.Max(1, plMain.Width - offset), Math.Max(1, plMain.Height - offset));
+                plForDate.SetBounds(plForDate.Left + offset, plForDate.Top + offset,
+                    plMain.Width, plForDate.Height);
+                plPersonButton.SetBounds(plPersonButton.Left + offset,
+                    plPersonButton.Top + offset, plPersonButton.Width,
+                    Math.Max(1, plPersonButton.Height - offset));
+                button1.Location = new Point(button1.Left + offset, button1.Top + offset);
+                btnSetings.Location = new Point(btnSetings.Left + offset, btnSetings.Top + offset);
+                cBxSeetingsProjects.Location = new Point(
+                    cBxSeetingsProjects.Left + offset, cBxSeetingsProjects.Top + offset);
+                lblProjects.Location = new Point(lblProjects.Left + offset, lblProjects.Top + offset);
+            }
+            finally { host.ResumeLayout(true); }
+        }
+
+        /// <summary>
+        /// Оформляет фильтр задач как обычный тематический список внутри панели,
+        /// совместимой с ToolStripControlHost и исходным обработчиком выбора.
+        /// </summary>
+        private void InitializeMainMenuComboTheme()
+        {
+            cBxShowTask.FlatStyle = FlatStyle.Flat;
+            cBxShowTask.AutoSize = false;
+            cBxShowTask.Width = 158;
+            cBxShowTask.Margin = new Padding(8, 3, 8, 5);
+            cBxShowTask.ApplyTheme();
         }
 
         /// <summary>Завершает выравнивание после появления формы и её элементов.</summary>
@@ -81,7 +154,10 @@ namespace time_schedule
             AlignMainProjectRow();
             CenterMainToolbar();
             ThemeControlStyler.EnsureInPlaceFrame(cBxSeetingsProjects);
+            ThemeControlStyler.SetComboPopupPreparation(cBxSeetingsProjects,
+                () => cBxSeetingsProjects_DropDown(cBxSeetingsProjects, EventArgs.Empty));
             ThemeControlStyler.EnsurePanelScrollBars(plMain);
+            UpdateMainCalendarGridEndLine();
             ThemeControlStyler.EnsureInputSkins(dateTimePicker1);
             ThemeControlStyler.SetDatePickerVisualHeight(dateTimePicker1, MainToolbarControlHeight);
         }
@@ -135,12 +211,17 @@ namespace time_schedule
             CenterMainToolbar();
         }
 
-        /// <summary>Выравнивает проект относительно существующих кнопок без смены их родителей и обработчиков.</summary>
+        /// <summary>Совмещает видимую правую границу кнопки проектов с границами кнопок исполнителей.</summary>
         private void AlignMainProjectRow()
         {
             if (plMain.Parent == null ||
                 !ReferenceEquals(btnSetings.Parent, cBxSeetingsProjects.Parent) ||
                 !ReferenceEquals(lblProjects.Parent, cBxSeetingsProjects.Parent)) return;
+            if (button1.Left != plPersonButton.Left)
+                button1.Left = plPersonButton.Left;
+            // Тематическая отрисовка ButtonForShedule оставляет один пиксель у правого края.
+            int projectWidth = Math.Max(1, GetPersonButtonWith()) + 1;
+            if (button1.Width != projectWidth) button1.Width = projectWidth;
             int top = btnSetings.Top + (btnSetings.Height - cBxSeetingsProjects.Height) / 2;
             Point comboLocation = new Point(btnSetings.Right + 3, top);
             if (cBxSeetingsProjects.Location != comboLocation)
@@ -148,6 +229,76 @@ namespace time_schedule
             Point labelLocation = new Point(cBxSeetingsProjects.Right + 10,
                 btnSetings.Top + (btnSetings.Height - lblProjects.Height) / 2);
             if (lblProjects.Location != labelLocation) lblProjects.Location = labelLocation;
+        }
+
+        /// <summary>Обновляет обрамление календаря после изменения размеров составляющих панелей.</summary>
+        private void MainCalendarBoundsChanged(object sender, EventArgs e)
+        {
+            UpdateMainCalendarGridEndLine();
+        }
+
+        /// <summary>Восстанавливает все линии сетки после скрытия и повторного показа календаря.</summary>
+        private void MainCalendarVisibilityChanged(object sender, EventArgs e)
+        {
+            UpdateMainCalendarGridEndLine();
+        }
+
+        /// <summary>Выравнивает границы календаря по общей геометрии рабочей сетки.</summary>
+        private void UpdateMainCalendarGridEndLine()
+        {
+            if (mainCalendarGridEndLine == null || mainCalendarGridEndLine.IsDisposed ||
+                mainCalendarGridRightLine == null || mainCalendarGridRightLine.IsDisposed ||
+                mainCalendarGridLeftLine == null || mainCalendarGridLeftLine.IsDisposed ||
+                mainCalendarGridTopLine == null || mainCalendarGridTopLine.IsDisposed ||
+                mainCalendarHeaderEdge == null || mainCalendarHeaderEdge.IsDisposed ||
+                plMain.IsDisposed || plMain.Parent == null) return;
+
+            int gridRight = plMain.Left + plMain.ClientSize.Width - 1;
+            int gridBottom = plMain.Top + plMain.ClientSize.Height - 1;
+            int headerTop = Math.Max(0, plForDate.Top - 1);
+            int gridLeft = plMain.Left;
+            bool visible = plMain.Visible && plMain.ClientSize.Width > 0 &&
+                plMain.ClientSize.Height > 0;
+
+            Rectangle bottomLine = new Rectangle(plMain.Left, gridBottom,
+                Math.Max(0, gridRight - plMain.Left + 1), 1);
+            bool bottomVisible = visible && plMain.HorizontalScroll.Visible;
+            if (mainCalendarGridEndLine.Bounds != bottomLine)
+                mainCalendarGridEndLine.Bounds = bottomLine;
+            mainCalendarGridEndLine.Visible = bottomVisible;
+            if (bottomVisible) mainCalendarGridEndLine.BringToFront();
+
+            Rectangle rightLine = new Rectangle(gridRight, headerTop,
+                1, Math.Max(0, gridBottom - headerTop + 1));
+            if (mainCalendarGridRightLine.Bounds != rightLine)
+                mainCalendarGridRightLine.Bounds = rightLine;
+            mainCalendarGridRightLine.Visible = visible;
+            if (visible) mainCalendarGridRightLine.BringToFront();
+
+            Rectangle leftLine = new Rectangle(gridLeft, headerTop,
+                1, Math.Max(0, gridBottom - headerTop + 1));
+            if (mainCalendarGridLeftLine.Bounds != leftLine)
+                mainCalendarGridLeftLine.Bounds = leftLine;
+            mainCalendarGridLeftLine.Visible = visible;
+            if (visible) mainCalendarGridLeftLine.BringToFront();
+
+            Rectangle topLine = new Rectangle(gridLeft, headerTop,
+                Math.Max(0, gridRight - gridLeft + 1), 1);
+            if (mainCalendarGridTopLine.Bounds != topLine)
+                mainCalendarGridTopLine.Bounds = topLine;
+            mainCalendarGridTopLine.Visible = visible;
+            if (visible) mainCalendarGridTopLine.BringToFront();
+
+            int personnelHeight = Math.Max(1, gridBottom - plPersonButton.Top + 1);
+            if (plPersonButton.Height != personnelHeight)
+                plPersonButton.Height = personnelHeight;
+
+            Rectangle headerExcess = new Rectangle(gridRight + 1, plForDate.Top,
+                Math.Max(0, plForDate.Right - gridRight - 1), plForDate.Height);
+            if (mainCalendarHeaderEdge.Bounds != headerExcess)
+                mainCalendarHeaderEdge.Bounds = headerExcess;
+            mainCalendarHeaderEdge.Visible = visible && headerExcess.Width > 0;
+            if (mainCalendarHeaderEdge.Visible) mainCalendarHeaderEdge.BringToFront();
         }
 
         /// <summary>Перерасполагает кнопки при изменении доступности создания задачи.</summary>
@@ -171,7 +322,7 @@ namespace time_schedule
             }
             if (count == 0) return;
             int x = Math.Max(8, (host.ClientSize.Width - totalWidth - gap * (count - 1)) / 2);
-            int y = host.ClientSize.Height - 70;
+            int y = host.ClientSize.Height - 56;
             int groupLeft = x;
             foreach (Control control in commands)
             {
@@ -206,11 +357,21 @@ namespace time_schedule
         {
             ThemePalette palette = ThemeManager.Palette;
             if (mainToolbarSeparator != null) mainToolbarSeparator.BackColor = palette.Grid;
+            if (mainCalendarGridEndLine != null && !mainCalendarGridEndLine.IsDisposed)
+                mainCalendarGridEndLine.BackColor = ThemeVisuals.CalendarGrid;
+            if (mainCalendarGridRightLine != null && !mainCalendarGridRightLine.IsDisposed)
+                mainCalendarGridRightLine.BackColor = ThemeVisuals.CalendarHeaderLine;
+            if (mainCalendarGridLeftLine != null && !mainCalendarGridLeftLine.IsDisposed)
+                mainCalendarGridLeftLine.BackColor = ThemeVisuals.CalendarHeaderLine;
+            if (mainCalendarGridTopLine != null && !mainCalendarGridTopLine.IsDisposed)
+                mainCalendarGridTopLine.BackColor = ThemeVisuals.CalendarHeaderLine;
+            if (mainCalendarHeaderEdge != null && !mainCalendarHeaderEdge.IsDisposed)
+                mainCalendarHeaderEdge.BackColor = palette.Window;
             BackColor = palette.Window;
             ForeColor = palette.Text;
             menuStrip1.BackColor = palette.Window;
             menuStrip1.ForeColor = palette.Text;
-            MainThemeMenuRenderer menuRenderer = new MainThemeMenuRenderer(palette);
+            MainThemeMenuRenderer menuRenderer = new MainThemeMenuRenderer(palette, true);
             menuStrip1.Renderer = menuRenderer;
             menuStrip1.Padding = new Padding(5, 1, 5, 1);
             menuStrip1.Invalidate();
@@ -220,12 +381,14 @@ namespace time_schedule
             themeMenuItem.Checked = ThemeManager.Current == ThemeKind.Dark;
             cBxShowTask.BackColor = palette.Surface;
             cBxShowTask.ForeColor = palette.Text;
+            cBxShowTask.ApplyTheme();
             plMain.BackColor = palette.Window;
             pBForLine.BackColor = palette.Window;
             plPersonButton.BackColor = palette.Window;
             AlignMainProjectRow();
             plForDate.BackColor = palette.Surface;
             ApplyCalendarTheme();
+            UpdateMainCalendarGridEndLine();
             lblProjects.ForeColor = palette.Text;
             cBxSeetingsProjects.BackColor = palette.Surface;
             cBxSeetingsProjects.ForeColor = palette.Text;
@@ -234,6 +397,7 @@ namespace time_schedule
             dateTimePicker1.CalendarMonthBackground = palette.Surface;
             dateTimePicker1.CalendarTitleBackColor = palette.Button;
             dateTimePicker1.CalendarTitleForeColor = palette.Text;
+            dateTimePicker1.CalendarTrailingForeColor = palette.MutedText;
             dateTimePicker1.ForeColor = palette.Text;
             dateTimePicker1.BackColor = palette.Surface;
             dateTimePicker1.Invalidate();
@@ -252,10 +416,23 @@ namespace time_schedule
             MainThemeMenuRenderer renderer)
         {
             item.ForeColor = item.Enabled ? palette.Text : palette.MutedText;
-            item.BackColor = palette.Window;
+            item.BackColor = item.Owner is ToolStripDropDown ? palette.Surface : palette.Window;
             if (!(item is ToolStripDropDownItem dropDown)) return;
             dropDown.DropDown.Renderer = renderer;
             dropDown.DropDown.BackColor = palette.Surface;
+            if (dropDown.DropDown is ToolStripDropDownMenu menu)
+            {
+                bool hasImages = false, hasChecks = false;
+                foreach (ToolStripItem child in menu.Items)
+                {
+                    hasImages |= child.Image != null;
+                    if (child is ToolStripMenuItem option)
+                        hasChecks |= option.Checked || option.CheckOnClick;
+                }
+                menu.ShowImageMargin = hasImages;
+                menu.ShowCheckMargin = hasChecks;
+                menu.Padding = new Padding(4, 3, 4, 3);
+            }
             foreach (ToolStripItem child in dropDown.DropDownItems)
                 ApplyMenuItemColors(child, palette, renderer);
         }
@@ -387,7 +564,15 @@ namespace time_schedule
             ThemeManager.Changed -= MainThemeChanged;
             themeMenuItem.Click -= ToggleMainTheme;
             cBxSeetingsProjects.DrawItem -= ThemeControlStyler.DrawComboItem;
-            if (plMain.Parent != null) plMain.Parent.Resize -= MainToolbarResized;
+            if (plMain.Parent != null)
+            {
+                plMain.Parent.Resize -= MainToolbarResized;
+            }
+            plMain.SizeChanged -= MainCalendarBoundsChanged;
+            plMain.ClientSizeChanged -= MainCalendarBoundsChanged;
+            plMain.VisibleChanged -= MainCalendarVisibilityChanged;
+            plForDate.SizeChanged -= MainCalendarBoundsChanged;
+            plPersonButton.SizeChanged -= MainCalendarBoundsChanged;
             btnNewTask.VisibleChanged -= MainToolbarVisibilityChanged;
             Shown -= MainThemeShown;
             calendarDateFont.Dispose();
@@ -424,6 +609,12 @@ namespace time_schedule
             public override Color MenuBorder => palette.Grid;
             /// <summary>Граница выделенного пункта.</summary>
             public override Color MenuItemBorder => palette.Grid;
+            /// <summary>Граница полос меню и подменю.</summary>
+            public override Color ToolStripBorder => palette.Grid;
+            /// <summary>Тёмная линия разделителя меню.</summary>
+            public override Color SeparatorDark => palette.Grid;
+            /// <summary>Светлая линия разделителя меню.</summary>
+            public override Color SeparatorLight => palette.Surface;
             /// <summary>Начало области отметок и иконок.</summary>
             public override Color ImageMarginGradientBegin => palette.Surface;
             /// <summary>Середина области отметок и иконок.</summary>
@@ -443,11 +634,38 @@ namespace time_schedule
         {
             /// <summary>Палитра стрелок раскрытия и отключённых пунктов.</summary>
             private readonly ThemePalette palette;
+            /// <summary>Разрешает оформление строк только главного меню, не затрагивая контекстные меню задач.</summary>
+            private readonly bool drawMainMenuSelection;
 
             /// <summary>Создаёт оформление меню с правильными цветами всех областей.</summary>
-            internal MainThemeMenuRenderer(ThemePalette colors) : base(new MainThemeColorTable(colors))
+            internal MainThemeMenuRenderer(ThemePalette colors, bool drawMainSelection = false)
+                : base(new MainThemeColorTable(colors))
             {
                 palette = colors;
+                drawMainMenuSelection = drawMainSelection;
+            }
+
+            /// <summary>Оформляет выбранные пункты меню без системной градиентной рамки.</summary>
+            protected override void OnRenderMenuItemBackground(ToolStripItemRenderEventArgs e)
+            {
+                if (!drawMainMenuSelection || !(e.Item is ToolStripMenuItem) ||
+                    e.Item.Width <= 1 || e.Item.Height <= 1)
+                {
+                    base.OnRenderMenuItemBackground(e);
+                    return;
+                }
+                bool submenu = e.Item.Owner is ToolStripDropDown;
+                Color background = e.Item.Selected && e.Item.Enabled
+                    ? palette.ButtonHover : submenu ? palette.Surface : palette.Window;
+                Rectangle bounds = new Rectangle(Point.Empty, e.Item.Size);
+                using (SolidBrush brush = new SolidBrush(background))
+                    e.Graphics.FillRectangle(brush, bounds);
+                if (e.Item.Selected && e.Item.Enabled)
+                {
+                    Rectangle border = Rectangle.Inflate(bounds, -1, -1);
+                    using (Pen pen = new Pen(palette.Grid))
+                        e.Graphics.DrawRectangle(pen, border);
+                }
             }
 
             /// <summary>Рисует стрелки подменю читаемыми в обеих темах.</summary>

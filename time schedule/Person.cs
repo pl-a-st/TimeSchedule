@@ -190,15 +190,12 @@ namespace time_schedule
             return minLoadDate;
         }
 
-        private static bool IsHolydays(DateTime minLoadDate)
+        /// <summary>Использует те же выходные и нерабочие дни, что и построение календарных столбцов.</summary>
+        private static bool IsHolydays(DateTime date)
         {
-            if (Program.ListHolidays.Holidays.Contains(minLoadDate))
-                return true;
-            if (minLoadDate.DayOfWeek == DayOfWeek.Sunday)
-                return true;
-            if (minLoadDate.DayOfWeek == DayOfWeek.Wednesday)
-                return true;
-            return false;
+            return date.DayOfWeek == DayOfWeek.Saturday ||
+                date.DayOfWeek == DayOfWeek.Sunday ||
+                Program.listNonWorkingDays.NonWorkingDays.Contains(date.Date);
         }
         /// <summary>Определяет правую границу загрузки дат с резервом в одну ширину окна для прокрутки.</summary>
         /// <param name="formWith">Ширина формы в пикселях.</param>
@@ -969,15 +966,12 @@ namespace time_schedule
             return minLoadDate;
         }
 
-        private static bool IsHolydays(DateTime minLoadDate)
+        /// <summary>Использует те же выходные и нерабочие дни, что и построение календарных столбцов.</summary>
+        private static bool IsHolydays(DateTime date)
         {
-            if (Program.ListHolidays.Holidays.Contains(minLoadDate))
-                return true;
-            if (minLoadDate.DayOfWeek == DayOfWeek.Sunday)
-                return true;
-            if (minLoadDate.DayOfWeek == DayOfWeek.Wednesday)
-                return true;
-            return false;
+            return date.DayOfWeek == DayOfWeek.Saturday ||
+                date.DayOfWeek == DayOfWeek.Sunday ||
+                Program.listNonWorkingDays.NonWorkingDays.Contains(date.Date);
         }
         private DateTime CalculateMaxLoadDate(int formWith, DateTime minLoadDate)
         {

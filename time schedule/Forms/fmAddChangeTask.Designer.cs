@@ -32,10 +32,10 @@
             this.cmBxPerson = new System.Windows.Forms.ComboBox();
             this.label2 = new System.Windows.Forms.Label();
             this.tBxTaskName = new System.Windows.Forms.TextBox();
-            this.dTmTaskDateStart = new System.Windows.Forms.DateTimePicker();
+            this.dTmTaskDateStart = new time_schedule.StyledDateTimePicker();
             this.label3 = new System.Windows.Forms.Label();
             this.label4 = new System.Windows.Forms.Label();
-            this.dTmTaskDateFinish = new System.Windows.Forms.DateTimePicker();
+            this.dTmTaskDateFinish = new time_schedule.StyledDateTimePicker();
             this.nUpDnCounWorkDay = new System.Windows.Forms.NumericUpDown();
             this.rBnWorksDay = new System.Windows.Forms.RadioButton();
             this.rBnDayFinish = new System.Windows.Forms.RadioButton();

@@ -44,10 +44,10 @@
             this.menuPersons = new System.Windows.Forms.ToolStripMenuItem();
             this.нерабочиеДниToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.восстановлениеЗадачToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.cBxShowTask = new System.Windows.Forms.ToolStripComboBox();
+            this.cBxShowTask = new time_schedule.StyledToolStripComboBox();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.plPersonButton = new System.Windows.Forms.Panel();
-            this.dateTimePicker1 = new System.Windows.Forms.DateTimePicker();
+            this.dateTimePicker1 = new time_schedule.StyledDateTimePicker();
             this.timer1 = new System.Windows.Forms.Timer(this.components);
             this.cBxSeetingsProjects = new System.Windows.Forms.ComboBox();
             this.lblProjects = new System.Windows.Forms.Label();
@@ -260,7 +260,7 @@
             this.cBxSeetingsProjects.Size = new System.Drawing.Size(135, 21);
             this.cBxSeetingsProjects.TabIndex = 11;
             this.cBxSeetingsProjects.SelectedIndexChanged += new System.EventHandler(this.cBxSeetingsProgects_SelectedIndexChanged);
-            this.cBxSeetingsProjects.Click += new System.EventHandler(this.comboBox1_Click);
+            this.cBxSeetingsProjects.DropDown += new System.EventHandler(this.cBxSeetingsProjects_DropDown);
             // 
             // lblProjects
             // 
@@ -467,7 +467,7 @@
         private System.Windows.Forms.ToolStripMenuItem создатьToolStripMenuItem;
         private System.Windows.Forms.ComboBox cBxSeetingsProjects;
         private System.Windows.Forms.Label lblProjects;
-        private System.Windows.Forms.ToolStripComboBox cBxShowTask;
+        private time_schedule.StyledToolStripComboBox cBxShowTask;
         private System.Windows.Forms.ToolStripMenuItem восстановлениеЗадачToolStripMenuItem;
         private ButtonForShedule bTnToDay;
         private ButtonForShedule addFiveDays;

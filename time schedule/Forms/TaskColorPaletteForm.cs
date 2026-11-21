@@ -64,7 +64,7 @@ namespace time_schedule
             ShowInTaskbar = false;
             StartPosition = FormStartPosition.Manual;
             ClientSize = new Size(640, 478);
-            paletteFont = new Font("Verdana", 9f, FontStyle.Regular, GraphicsUnit.Point);
+            paletteFont = (Font)Control.DefaultFont.Clone();
             Font = paletteFont;
             swatchToolTip.OwnerDraw = true;
             swatchToolTip.Popup += SwatchToolTipPopup;

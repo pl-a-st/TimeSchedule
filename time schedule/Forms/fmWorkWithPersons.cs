@@ -20,6 +20,65 @@ namespace time_schedule {
             thisloadRefreshForm = loadRefreshForm;
         }
         LoadRefreshForm thisloadRefreshForm;
+        /// <summary>Признак подключения реакции на компоновку области исполнителей.</summary>
+        private bool personLayoutConnected;
+        /// <summary>Защита от повторного изменения геометрии при Resize.</summary>
+        private bool arrangingPersonControls;
+
+        /// <summary>Выравнивает правую колонку и список по одинаковым боковым отступам после создания заголовка окна.</summary>
+        protected override void OnShown(EventArgs e)
+        {
+            base.OnShown(e);
+            if (!personLayoutConnected && lBxPersons.Parent != null)
+            {
+                lBxPersons.Parent.Layout += PersonContentLayout;
+                lBxPersons.Parent.SizeChanged += PersonContentSizeChanged;
+                personLayoutConnected = true;
+            }
+            ArrangePersonControls();
+        }
+
+        /// <summary>Поддерживает одинаковые отступы при изменении ширины окна.</summary>
+        private void PersonContentLayout(object sender, LayoutEventArgs e) { ArrangePersonControls(); }
+
+        /// <summary>Подстраивает список при изменении высоты рабочего контейнера.</summary>
+        private void PersonContentSizeChanged(object sender, EventArgs e) { ArrangePersonControls(); }
+
+        /// <summary>Выравнивает размеры списка по рабочей области, сохраняя штатные строки и прокрутку.</summary>
+        private void ArrangePersonControls()
+        {
+            if (arrangingPersonControls || lBxPersons == null || lBxPersons.IsDisposed || lBxPersons.Parent == null)
+                return;
+            arrangingPersonControls = true;
+            try
+            {
+                Control content = lBxPersons.Parent;
+                int margin = lBxPersons.Left;
+                int gap = 8;
+                int columnWidth = btnNewPerson.Width;
+                int rightColumn = Math.Max(lBxPersons.Left + 90 + gap,
+                    content.ClientSize.Width - margin - columnWidth);
+                lBxPersons.Width = Math.Max(90, rightColumn - gap - lBxPersons.Left);
+                lBxPersons.Height = Math.Max(90, content.ClientSize.Height - margin - lBxPersons.Top);
+                btnNewPerson.Left = rightColumn;
+                btnDelete.Left = rightColumn;
+                btnChangePerson.Left = rightColumn;
+                groupBox1.Left = rightColumn;
+            }
+            finally { arrangingPersonControls = false; }
+        }
+
+        /// <summary>Снимает обработчик компоновки, сохраняя штатную обработку закрытия списка.</summary>
+        protected override void OnFormClosed(FormClosedEventArgs e)
+        {
+            if (personLayoutConnected && lBxPersons != null && lBxPersons.Parent != null)
+            {
+                lBxPersons.Parent.Layout -= PersonContentLayout;
+                lBxPersons.Parent.SizeChanged -= PersonContentSizeChanged;
+                personLayoutConnected = false;
+            }
+            base.OnFormClosed(e);
+        }
         /// <summary>Версия списка исполнителей, показанного в данном окне.</summary>
         private string personRevision;
         public Form setForm() {

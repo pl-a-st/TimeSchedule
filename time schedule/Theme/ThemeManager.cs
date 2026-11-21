@@ -72,10 +72,14 @@ namespace time_schedule
     /// <summary>Управляет выбранной темой в текущем процессе; подключение форм выполняется поэтапно.</summary>
     internal static class ThemeManager
     {
+        /// <summary>Неизменяемая светлая палитра, переиспользуемая при рисовании элементов.</summary>
+        private static readonly ThemePalette lightPalette = ThemePalette.For(ThemeKind.Light);
+        /// <summary>Неизменяемая тёмная палитра, переиспользуемая при рисовании элементов.</summary>
+        private static readonly ThemePalette darkPalette = ThemePalette.For(ThemeKind.Dark);
         /// <summary>Текущая тема приложения.</summary>
         internal static ThemeKind Current { get; private set; } = ThemeKind.Light;
-        /// <summary>Текущие цвета оформления.</summary>
-        internal static ThemePalette Palette { get { return ThemePalette.For(Current); } }
+        /// <summary>Текущие цвета оформления без создания нового объекта при каждом Paint.</summary>
+        internal static ThemePalette Palette { get { return Current == ThemeKind.Dark ? darkPalette : lightPalette; } }
         /// <summary>Уведомление о смене темы для подключённых контролов.</summary>
         internal static event EventHandler Changed;
 

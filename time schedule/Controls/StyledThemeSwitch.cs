@@ -74,7 +74,12 @@ namespace time_schedule
             DrawSegment(e.Graphics, dark, darkSelected, palette, false);
 
             if (Focused && ShowFocusCues)
-                ControlPaint.DrawFocusRectangle(e.Graphics, Rectangle.Inflate(track, 0, 2));
+            {
+                Rectangle focus = Rectangle.Inflate(darkSelected ? dark : light, -1, -1);
+                using (GraphicsPath focusPath = Capsule(focus))
+                using (Pen focusPen = new Pen(Color.FromArgb(155, palette.Focus), 1f))
+                    e.Graphics.DrawPath(focusPen, focusPath);
+            }
         }
 
         /// <summary>Рисует общую поверхность и одну из пиктограмм, не добавляя новой палитры.</summary>

@@ -22,25 +22,24 @@ namespace time_schedule
             ThemeManager.Changed += ApplyAll;
         }
 
-        /// <summary>Подключает оформление к появившимся формам, не создавая новые таймеры.</summary>
+        /// <summary>Подключает оформление к появившимся формам без собственного управления темой.</summary>
         private static void RegisterOpenForms(object sender, EventArgs e)
         {
             foreach (Form form in Application.OpenForms)
             {
-                if (form.IsDisposed || !registered.Add(form)) continue;
+                if (form.IsDisposed || IsSpecialized(form) || !registered.Add(form)) continue;
                 form.FormClosed += UnregisterForm;
                 form.Paint += DrawLightWindowBorder;
                 form.Resize += WindowResized;
-                if (!IsSpecialized(form)) ThemeControlStyler.Apply(form, null);
+                ThemeControlStyler.Apply(form, null);
                 form.Invalidate();
             }
         }
 
-        /// <summary>Специализированные окна оформляются собственным адаптером той же палитры.</summary>
+        /// <summary>Исключает формы, самостоятельно управляющие темой и жизненным циклом оформления.</summary>
         private static bool IsSpecialized(Form form)
         {
-            return form is Form1 || form is fmAddChangeTask ||
-                form is ThemePreviewForm || form is TaskColorPaletteForm;
+            return form is StyledWindowForm || form is fmProgressBar;
         }
 
         /// <summary>Применяет утверждённую тему к открытым обычным формам.</summary>
@@ -48,8 +47,8 @@ namespace time_schedule
         {
             foreach (Form form in Application.OpenForms)
             {
-                if (form.IsDisposed) continue;
-                if (!IsSpecialized(form)) ThemeControlStyler.Apply(form, null);
+                if (form.IsDisposed || IsSpecialized(form)) continue;
+                ThemeControlStyler.Apply(form, null);
                 form.Invalidate();
             }
         }

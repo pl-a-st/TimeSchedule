@@ -151,7 +151,7 @@ namespace time_schedule
             /// <summary>Ширина зоны системной кнопки, перекрываемой матовой поверхностью.</summary>
             private const int ButtonWidth = 20;
 
-            /// <summary>Список, который открывается исходным механизмом WinForms.</summary>
+            /// <summary>Исходное поле, хранящее текст и выбор при тематическом раскрытии.</summary>
             private readonly ComboBox combo;
             /// <summary>Наведение влияет только на вид кнопки, не на поведение раскрытия.</summary>
             private bool hovered;
@@ -240,13 +240,12 @@ namespace time_schedule
                 Invalidate();
             }
 
-            /// <summary>Открывает штатный список, оставляя его выбор и события прежними.</summary>
+            /// <summary>Открывает общий тематический список, сохраняя ввод и события ComboBox.</summary>
             protected override void OnClick(EventArgs e)
             {
                 base.OnClick(e);
                 if (combo.IsDisposed || !combo.Enabled) return;
-                combo.Focus();
-                combo.DroppedDown = !combo.DroppedDown;
+                ThemeControlStyler.ToggleComboPopup(combo);
             }
         }
     }

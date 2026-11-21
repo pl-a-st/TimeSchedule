@@ -89,8 +89,8 @@ namespace time_schedule
         /// <summary>Перерисовывает дорожку при изменении фонового цвета исходного списка.</summary>
         private void ListAppearanceChanged(object sender, EventArgs e) { Invalidate(); }
 
-        /// <summary>Перерисовывает ползунок после выбора и системной прокрутки списка.</summary>
-        private void ListSelectionChanged(object sender, EventArgs e) { Invalidate(); }
+        /// <summary>Пересчитывает видимость и положение полосы после изменения выбора.</summary>
+        private void ListSelectionChanged(object sender, EventArgs e) { SyncBounds(); }
 
         /// <summary>Перерисовывает декоративный ползунок после системной прокрутки мышью.</summary>
         private void ListMouseWheel(object sender, MouseEventArgs e) { ListSelectionChanged(sender, e); }

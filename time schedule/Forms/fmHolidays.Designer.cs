@@ -30,13 +30,13 @@
         {
             this.LBxHolidays = new System.Windows.Forms.ListBox();
             this.btnSetListDays = new ButtonForShedule();
-            this.dTPListDays = new System.Windows.Forms.DateTimePicker();
+            this.dTPListDays = new time_schedule.StyledDateTimePicker();
             this.tXBListDays = new System.Windows.Forms.TextBox();
             this.btnSetIntervalDays = new ButtonForShedule();
-            this.dTPFirstInTheInterval = new System.Windows.Forms.DateTimePicker();
-            this.dTPSecondInTheInterval = new System.Windows.Forms.DateTimePicker();
+            this.dTPFirstInTheInterval = new time_schedule.StyledDateTimePicker();
+            this.dTPSecondInTheInterval = new time_schedule.StyledDateTimePicker();
             this.groupBox1 = new StyledGroupBox();
-            this.dTPOnceDay = new System.Windows.Forms.DateTimePicker();
+            this.dTPOnceDay = new time_schedule.StyledDateTimePicker();
             this.groupBox2 = new StyledGroupBox();
             this.button2 = new ButtonForShedule();
             this.button1 = new ButtonForShedule();

@@ -201,12 +201,11 @@ namespace time_schedule
             glyph.SetBounds(combo.Right - width, combo.Top, width, combo.Height);
         }
 
-        /// <summary>Раскрывает штатный список без изменения порядка выбора или режима ввода.</summary>
+        /// <summary>Использует общий тематический popup без смены исходного ComboBox.</summary>
         private void GlyphClick(object sender, EventArgs e)
         {
-            if (!combo.Enabled) return;
-            combo.Focus();
-            combo.DroppedDown = !combo.DroppedDown;
+            if (!combo.Enabled || combo.IsDisposed) return;
+            ThemeControlStyler.ToggleComboPopup(combo);
         }
 
         /// <summary>Согласует состояние стрелки с доступностью исходного списка.</summary>

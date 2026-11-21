@@ -35,9 +35,9 @@
             this.tBxTargetTask = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
             this.btnGoToDateStartTask = new ButtonForShedule();
-            this.dTPFilterDateStart = new System.Windows.Forms.DateTimePicker();
+            this.dTPFilterDateStart = new time_schedule.StyledDateTimePicker();
             this.groupBox1 = new StyledGroupBox();
-            this.dTPFilterDateFinish = new System.Windows.Forms.DateTimePicker();
+            this.dTPFilterDateFinish = new time_schedule.StyledDateTimePicker();
             this.cBxFilterByDate = new System.Windows.Forms.CheckBox();
             this.tBxPerson = new System.Windows.Forms.TextBox();
             this.label2 = new System.Windows.Forms.Label();
