@@ -17,9 +17,11 @@ namespace time_schedule
     }
     public partial class fmAddProject : StyledWindowForm
     {
+        /// <summary>Подключает клавишу Esc к штатному действию отмены выбора проекта.</summary>
         public fmAddProject()
         {
             InitializeComponent();
+            CancelButton = Cancel;
         }
         public Project Project = new Project();
         private void fmAddProject_Load(object sender, EventArgs e)
@@ -33,13 +35,13 @@ namespace time_schedule
             if (tBxNameProject.Text=="")
             {
                 
-                MessageBox.Show("Не назанно условное обозначение проекта");
+                ThemedMessageBox.Show("Не указано условное обозначение проекта.");
                 return;
             }
             string folderName = string.Empty;
             
             FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog();
-            folderBrowserDialog.Description = "Выбирете папку \"Проект\" !!! ";
+            folderBrowserDialog.Description = "Выберите папку проекта.";
 
             if (folderBrowserDialog.ShowDialog() == DialogResult.OK)
             {

@@ -60,7 +60,7 @@
             this.LBxHolidays.FormattingEnabled = true;
             this.LBxHolidays.Location = new System.Drawing.Point(13, 55);
             this.LBxHolidays.Name = "LBxHolidays";
-            this.LBxHolidays.Size = new System.Drawing.Size(80, 212);
+            this.LBxHolidays.Size = new System.Drawing.Size(126, 212);
             this.LBxHolidays.TabIndex = 0;
             // 
             // btnSetListDays
@@ -116,7 +116,7 @@
             // groupBox1
             // 
             this.groupBox1.Controls.Add(this.dTPOnceDay);
-            this.groupBox1.Location = new System.Drawing.Point(99, 12);
+            this.groupBox1.Location = new System.Drawing.Point(145, 12);
             this.groupBox1.Name = "groupBox1";
             this.groupBox1.Size = new System.Drawing.Size(431, 50);
             this.groupBox1.TabIndex = 11;
@@ -141,7 +141,7 @@
             this.groupBox2.Controls.Add(this.tXBListDays);
             this.groupBox2.Controls.Add(this.dTPListDays);
             this.groupBox2.Controls.Add(this.btnSetListDays);
-            this.groupBox2.Location = new System.Drawing.Point(99, 68);
+            this.groupBox2.Location = new System.Drawing.Point(145, 68);
             this.groupBox2.Name = "groupBox2";
             this.groupBox2.Size = new System.Drawing.Size(431, 100);
             this.groupBox2.TabIndex = 12;
@@ -183,7 +183,7 @@
             this.groupBox3.Controls.Add(this.dTPFirstInTheInterval);
             this.groupBox3.Controls.Add(this.btnSetIntervalDays);
             this.groupBox3.Controls.Add(this.dTPSecondInTheInterval);
-            this.groupBox3.Location = new System.Drawing.Point(99, 174);
+            this.groupBox3.Location = new System.Drawing.Point(145, 174);
             this.groupBox3.Name = "groupBox3";
             this.groupBox3.Size = new System.Drawing.Size(431, 51);
             this.groupBox3.TabIndex = 13;
@@ -201,7 +201,7 @@
             // 
             // RemoveDay
             // 
-            this.RemoveDay.Location = new System.Drawing.Point(99, 235);
+            this.RemoveDay.Location = new System.Drawing.Point(145, 235);
             this.RemoveDay.Name = "RemoveDay";
             this.RemoveDay.Size = new System.Drawing.Size(92, 29);
             this.RemoveDay.TabIndex = 14;
@@ -212,7 +212,7 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(10, 9);
+            this.label2.Location = new System.Drawing.Point(13, 9);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(83, 13);
             this.label2.TabIndex = 15;
@@ -220,7 +220,7 @@
             // 
             // btnApply
             // 
-            this.btnApply.Location = new System.Drawing.Point(183, 11);
+            this.btnApply.Location = new System.Drawing.Point(187, 11);
             this.btnApply.Name = "btnApply";
             this.btnApply.Size = new System.Drawing.Size(92, 27);
             this.btnApply.TabIndex = 16;
@@ -234,14 +234,14 @@
             this.groupBox4.Controls.Add(this.btnApply);
             this.groupBox4.Location = new System.Drawing.Point(13, 269);
             this.groupBox4.Name = "groupBox4";
-            this.groupBox4.Size = new System.Drawing.Size(517, 44);
+            this.groupBox4.Size = new System.Drawing.Size(563, 44);
             this.groupBox4.TabIndex = 18;
             this.groupBox4.TabStop = false;
             this.groupBox4.Enter += new System.EventHandler(this.groupBox4_Enter);
             // 
             // btnCancel
             // 
-            this.btnCancel.Location = new System.Drawing.Point(281, 11);
+            this.btnCancel.Location = new System.Drawing.Point(285, 11);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(92, 27);
             this.btnCancel.TabIndex = 17;
@@ -251,9 +251,9 @@
             // 
             // btnSort
             // 
-            this.btnSort.Location = new System.Drawing.Point(12, 28);
+            this.btnSort.Location = new System.Drawing.Point(13, 28);
             this.btnSort.Name = "btnSort";
-            this.btnSort.Size = new System.Drawing.Size(81, 23);
+            this.btnSort.Size = new System.Drawing.Size(126, 23);
             this.btnSort.TabIndex = 19;
             this.btnSort.Text = "≡↓";
             this.btnSort.UseVisualStyleBackColor = true;
@@ -263,7 +263,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(544, 322);
+            this.ClientSize = new System.Drawing.Size(590, 322);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
             this.MaximizeBox = false;
             this.Controls.Add(this.btnSort);

@@ -17,6 +17,46 @@ namespace time_schedule.Forms {
             InitializeComponent();
             MinimumSize = new Size(ClientSize.Width, ClientSize.Height + WindowChromeHeight);
         }
+
+        /// <summary>Панель формы, отслеживаемая только при выборе резервной копии.</summary>
+        private Control restoreContent;
+
+        /// <summary>В режиме восстановления разворачивает список на свободную ширину и выравнивает нижние команды.</summary>
+        protected override void OnShown(EventArgs e) {
+            base.OnShown(e);
+            if (btnNew.Visible || btnChange.Visible || btnDelete.Visible || groupBox1.Visible) return;
+            restoreContent = lBx.Parent;
+            if (restoreContent != null) restoreContent.SizeChanged += RestoreContentSizeChanged;
+            ArrangeRestoreControls();
+        }
+
+        /// <summary>Снимает подписку перед уничтожением диалога.</summary>
+        protected override void OnFormClosed(FormClosedEventArgs e) {
+            if (restoreContent != null) restoreContent.SizeChanged -= RestoreContentSizeChanged;
+            restoreContent = null;
+            base.OnFormClosed(e);
+        }
+
+        /// <summary>Сохраняет отступы режима восстановления при изменении размера окна.</summary>
+        private void RestoreContentSizeChanged(object sender, EventArgs e) {
+            if (!IsDisposed && !Disposing) ArrangeRestoreControls();
+        }
+
+        /// <summary>Убирает пустую колонку скрытых действий и центрирует кнопки подтверждения и отмены.</summary>
+        private void ArrangeRestoreControls() {
+            Control content = lBx.Parent;
+            if (content == null || content.ClientSize.Width <= 0) return;
+            const int margin = 12;
+            const int gap = 12;
+            int actionWidth = Math.Min(btnApply.Width, Math.Max(80, (content.ClientSize.Width - 3 * margin) / 2));
+            int left = (content.ClientSize.Width - actionWidth * 2 - gap) / 2;
+            int top = content.ClientSize.Height - margin - Math.Max(btnApply.Height, btnCancel.Height);
+            btnApply.SetBounds(left, top, actionWidth, btnApply.Height);
+            btnCancel.SetBounds(left + actionWidth + gap, top, actionWidth, btnCancel.Height);
+            lBx.SetBounds(margin, margin, Math.Max(1, content.ClientSize.Width - 2 * margin),
+                Math.Max(1, top - gap - margin));
+        }
+
         public BtnUpDowm BtnUpDowm {
             get;
             private set;

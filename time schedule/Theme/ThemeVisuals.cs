@@ -119,8 +119,11 @@ namespace time_schedule
                 (int)(grid.B * gridWeight + surface.B * (1 - gridWeight)));
         }
 
-        /// <summary>Основной текст задач использует утверждённый тёмный оттенок светлой палитры.</summary>
-        private static readonly Color taskInk = ThemePalette.For(ThemeKind.Light).Text;
+        /// <summary>Сине-графитовый цвет текста обычных задач в светлой теме.</summary>
+        private static readonly Color lightTaskInk = Color.FromArgb(41, 57, 76);
+
+        /// <summary>Глубокий чернильный цвет текста обычных задач в тёмной теме.</summary>
+        private static readonly Color darkTaskInk = Color.FromArgb(20, 38, 56);
 
         /// <summary>Цветовые группы временной палитры задач в порядке их исходных оттенков.</summary>
         private static readonly float[] taskHueCenters = { 0f, 30f, 55f, 125f, 177f, 220f, 275f, 330f };
@@ -265,10 +268,95 @@ namespace time_schedule
                 (task.DateFinish.Date < DateTime.Today && task.Status != TaskStatus.Closed);
         }
 
-        /// <summary>Подбирает читаемый цвет текста и сохраняет красное выделение просроченных задач.</summary>
+        /// <summary>Согласованный винный оттенок текста и знаков просрочки.</summary>
+        private static readonly Color overdueTaskInk = Color.FromArgb(79, 42, 57);
+
+        /// <summary>Выбирает цвет по теме для обычной задачи и сохраняет винный цвет просрочки.</summary>
         internal static Color TaskTextColor(Task task)
         {
-            return IsTaskOverdue(task) ? Color.FromArgb(105, 25, 42) : taskInk;
+            if (IsTaskOverdue(task)) return overdueTaskInk;
+            return ThemeManager.Current == ThemeKind.Dark ? darkTaskInk : lightTaskInk;
+        }
+
+        /// <summary>Отступ между восклицательным знаком и текстом, не меняющий геометрию полосы.</summary>
+        private const int TaskOverdueMarkerGap = 3;
+
+        /// <summary>Отступ восклицательного знака от края полосы задачи.</summary>
+        private const int TaskOverdueMarkerEdgeInset = 1;
+
+        /// <summary>Масштаб независимого шрифта знака просрочки относительно шрифта задачи.</summary>
+        private const float TaskOverdueMarkerFontScale = 1.2f;
+
+        /// <summary>Начертание знака просрочки, не зависящее от оформления статуса задачи.</summary>
+        private const FontStyle TaskOverdueMarkerFontStyle = FontStyle.Bold;
+
+        /// <summary>Рассчитывает ширину места под увеличенный знак просрочки.</summary>
+        /// <param name="font">Исходный шрифт подписи задачи.</param>
+        private static int TaskOverdueMarkerWidth(Font font)
+        {
+            return Math.Max(8, (int)Math.Ceiling(font.Height * TaskOverdueMarkerFontScale * 0.65f));
+        }
+
+        /// <summary>Определяет занимаемые маркерами края полосы; на узких сегментах оставляет место тексту.</summary>
+        /// <param name="band">Фактические границы отображаемого сегмента.</param>
+        /// <param name="font">Шрифт подписи задачи, определяющий масштаб знака.</param>
+        /// <param name="markStart">Нужен знак в начале сегмента.</param>
+        /// <param name="markEnd">Нужен знак в конце сегмента.</param>
+        /// <param name="left">Ширина области, занятой знаком слева.</param>
+        /// <param name="right">Ширина области, занятой знаком справа.</param>
+        private static void GetTaskOverdueMarkerInsets(Rectangle band, Font font,
+            bool markStart, bool markEnd, out int left, out int right)
+        {
+            int reserved = TaskOverdueMarkerEdgeInset + TaskOverdueMarkerWidth(font) +
+                TaskOverdueMarkerGap;
+            left = markStart && band.Width >= reserved + 4 ? reserved : 0;
+            right = markEnd && band.Width >= left + reserved + 4 ? reserved : 0;
+        }
+
+        /// <summary>Исключает области знаков просрочки из прямоугольника текста задачи.</summary>
+        /// <param name="band">Фактические границы сегмента.</param>
+        /// <param name="font">Шрифт подписи задачи, по которому рассчитывается размер знака.</param>
+        /// <param name="markStart">Знак в начале сегмента.</param>
+        /// <param name="markEnd">Знак в конце сегмента.</param>
+        internal static Rectangle TaskOverdueTextBounds(Rectangle band, Font font,
+            bool markStart, bool markEnd)
+        {
+            GetTaskOverdueMarkerInsets(band, font, markStart, markEnd,
+                out int left, out int right);
+            return new Rectangle(band.Left + left, band.Top,
+                Math.Max(0, band.Width - left - right), band.Height);
+        }
+
+        /// <summary>Рисует винные знаки просрочки отдельным увеличенным шрифтом без подложки.</summary>
+        /// <param name="graphics">Поверхность отображаемого календаря.</param>
+        /// <param name="band">Границы сегмента задачи.</param>
+        /// <param name="font">Шрифт подписи, определяющий семейство и базовый размер знака.</param>
+        /// <param name="markStart">Знак в начале сегмента.</param>
+        /// <param name="markEnd">Знак в конце сегмента.</param>
+        internal static void DrawTaskOverdueMarkers(Graphics graphics, Rectangle band, Font font,
+            bool markStart, bool markEnd)
+        {
+            GetTaskOverdueMarkerInsets(band, font, markStart, markEnd,
+                out int left, out int right);
+            if (left == 0 && right == 0) return;
+
+            int markerWidth = TaskOverdueMarkerWidth(font);
+            const TextFormatFlags flags = TextFormatFlags.HorizontalCenter |
+                TextFormatFlags.VerticalCenter | TextFormatFlags.SingleLine |
+                TextFormatFlags.NoPrefix | TextFormatFlags.NoPadding;
+            using (Font markerFont = new Font(font.FontFamily,
+                font.Size * TaskOverdueMarkerFontScale, TaskOverdueMarkerFontStyle,
+                font.Unit, font.GdiCharSet, font.GdiVerticalFont))
+            {
+                if (left > 0)
+                    TextRenderer.DrawText(graphics, "!", markerFont,
+                        new Rectangle(band.Left + TaskOverdueMarkerEdgeInset,
+                            band.Top, markerWidth, band.Height), overdueTaskInk, flags);
+                if (right > 0)
+                    TextRenderer.DrawText(graphics, "!", markerFont,
+                        new Rectangle(band.Right - TaskOverdueMarkerEdgeInset - markerWidth,
+                            band.Top, markerWidth, band.Height), overdueTaskInk, flags);
+            }
         }
 
         /// <summary>Ширина видимого свободного промежутка от линии сетки до полосы задачи.</summary>

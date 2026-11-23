@@ -53,26 +53,31 @@ namespace time_schedule
         /// <summary>Перерисовывает элемент при потере фокуса.</summary>
         protected override void OnLostFocus(EventArgs e) { Invalidate(); base.OnLostFocus(e); }
 
-        /// <summary>Рисует единый переключатель с движущимся ползунком вместо двух кнопок.</summary>
+        /// <summary>Рисует двухпозиционный переключатель с масштабированием пиктограмм по DPI.</summary>
         protected override void OnPaint(PaintEventArgs e)
         {
             ThemePalette palette = ThemeManager.Palette;
             e.Graphics.Clear(Parent != null ? Parent.BackColor : palette.Window);
             e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
 
-            Rectangle track = new Rectangle(5, (Height - 24) / 2, Width - 10, 24);
+            float scale = e.Graphics.DpiX / 96f;
+            int sideInset = Math.Max(1, (int)Math.Round(5f * scale));
+            int trackHeight = Math.Min(Height, Math.Max(2, (int)Math.Round(24f * scale)));
+            Rectangle track = new Rectangle(sideInset, (Height - trackHeight) / 2,
+                Math.Max(1, Width - 2 * sideInset), trackHeight);
             using (GraphicsPath trackPath = Capsule(track))
             using (SolidBrush background = new SolidBrush(hovered ? palette.ButtonHover : palette.Button))
-            using (Pen outline = new Pen(Color.FromArgb(125, palette.Grid), 1f))
+            using (Pen outline = new Pen(Color.FromArgb(125, palette.Grid), scale))
             {
                 e.Graphics.FillPath(background, trackPath);
                 e.Graphics.DrawPath(outline, trackPath);
             }
 
             bool isDark = ThemeManager.Current == ThemeKind.Dark;
-            const int thumbSize = 20;
-            Rectangle thumb = new Rectangle(isDark ? track.Right - thumbSize - 2 : track.Left + 2,
-                track.Top + 2, thumbSize, thumbSize);
+            int thumbInset = Math.Max(1, (int)Math.Round(2f * scale));
+            int thumbSize = Math.Max(1, Math.Min(track.Height - 2 * thumbInset, (int)Math.Round(20f * scale)));
+            Rectangle thumb = new Rectangle(isDark ? track.Right - thumbSize - thumbInset : track.Left + thumbInset,
+                track.Top + thumbInset, thumbSize, thumbSize);
             using (GraphicsPath thumbPath = Capsule(thumb))
             using (SolidBrush thumbBrush = new SolidBrush(palette.Accent))
             {
@@ -81,47 +86,53 @@ namespace time_schedule
 
             float cx = thumb.Left + thumb.Width / 2f;
             float cy = thumb.Top + thumb.Height / 2f;
-            if (isDark) DrawMoon(e.Graphics, cx, cy, palette.Text);
-            else DrawSun(e.Graphics, cx, cy, palette.Text);
+            if (isDark) DrawMoon(e.Graphics, cx, cy, palette.Text, scale);
+            else DrawSun(e.Graphics, cx, cy, palette.Text, scale);
 
             if (Focused && ShowFocusCues)
             {
-                using (GraphicsPath focusPath = Capsule(Rectangle.Inflate(track, 1, 1)))
-                using (Pen focusPen = new Pen(palette.Focus, 1f))
+                int inset = Math.Max(1, (int)Math.Round(scale));
+                using (GraphicsPath focusPath = Capsule(Rectangle.Inflate(track, inset, inset)))
+                using (Pen focusPen = new Pen(palette.Focus, scale))
                     e.Graphics.DrawPath(focusPen, focusPath);
             }
         }
 
-        /// <summary>Рисует солнце внутри ползунка светлой темы.</summary>
-        private static void DrawSun(Graphics graphics, float cx, float cy, Color color)
+        /// <summary>Рисует солнечную пиктограмму с масштабированием размера и толщины линий.</summary>
+        private static void DrawSun(Graphics graphics, float cx, float cy, Color color, float scale)
         {
-            using (Pen pen = new Pen(color, 1.3f))
+            using (Pen pen = new Pen(color, 1.3f * scale))
             {
                 pen.StartCap = LineCap.Round;
                 pen.EndCap = LineCap.Round;
-                graphics.DrawEllipse(pen, cx - 2.8f, cy - 2.8f, 5.6f, 5.6f);
+                graphics.DrawEllipse(pen, cx - 2.8f * scale, cy - 2.8f * scale,
+                    5.6f * scale, 5.6f * scale);
                 for (int i = 0; i < 8; i++)
                 {
                     double angle = i * Math.PI / 4;
                     float dx = (float)Math.Cos(angle);
                     float dy = (float)Math.Sin(angle);
-                    graphics.DrawLine(pen, cx + 4.8f * dx, cy + 4.8f * dy,
-                        cx + 6.9f * dx, cy + 6.9f * dy);
+                    graphics.DrawLine(pen, cx + 4.8f * scale * dx, cy + 4.8f * scale * dy,
+                        cx + 6.9f * scale * dx, cy + 6.9f * scale * dy);
                 }
             }
         }
 
-        /// <summary>Рисует цельный контур полумесяца без пересечения дуг в верхней части.</summary>
-        private static void DrawMoon(Graphics graphics, float cx, float cy, Color color)
+        /// <summary>Рисует полумесяц с сохранением пропорций при изменении DPI.</summary>
+        private static void DrawMoon(Graphics graphics, float cx, float cy, Color color, float scale)
         {
             using (GraphicsPath moon = new GraphicsPath())
             using (SolidBrush brush = new SolidBrush(color))
             {
                 moon.StartFigure();
-                moon.AddBezier(cx + 2.9f, cy - 5.4f, cx - 4.3f, cy - 6.4f,
-                    cx - 6.4f, cy + 4.7f, cx + 1.8f, cy + 5.5f);
-                moon.AddBezier(cx + 1.8f, cy + 5.5f, cx - 1.6f, cy + 3.5f,
-                    cx - 1.6f, cy - 2.1f, cx + 2.9f, cy - 5.4f);
+                moon.AddBezier(cx + 2.9f * scale, cy - 5.4f * scale,
+                    cx - 4.3f * scale, cy - 6.4f * scale,
+                    cx - 6.4f * scale, cy + 4.7f * scale,
+                    cx + 1.8f * scale, cy + 5.5f * scale);
+                moon.AddBezier(cx + 1.8f * scale, cy + 5.5f * scale,
+                    cx - 1.6f * scale, cy + 3.5f * scale,
+                    cx - 1.6f * scale, cy - 2.1f * scale,
+                    cx + 2.9f * scale, cy - 5.4f * scale);
                 moon.CloseFigure();
                 graphics.FillPath(brush, moon);
             }

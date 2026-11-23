@@ -40,7 +40,7 @@ namespace time_schedule
             this.butOk.Name = "butOk";
             this.butOk.Size = new System.Drawing.Size(75, 23);
             this.butOk.TabIndex = 1;
-            this.butOk.Text = "Ok";
+            this.butOk.Text = "ОК";
             this.butOk.UseVisualStyleBackColor = true;
             this.butOk.Click += new System.EventHandler(this.butOk_Click);
             // 
@@ -61,7 +61,7 @@ namespace time_schedule
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(35, 13);
             this.label1.TabIndex = 3;
-            this.label1.Text = "label1";
+            this.label1.Text = "Выберите вариант";
             // 
             // frmWithRadioButton
             // 

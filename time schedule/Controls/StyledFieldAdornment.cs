@@ -19,7 +19,7 @@ namespace time_schedule
         private bool synchronizing;
 
         /// <summary>Создаёт рамку над существующим полем без перемещения поля.</summary>
-        /// <param name="target">Существующий ComboBox или DateTimePicker.</param>
+        /// <param name="target">Существующий ComboBox, DateTimePicker или NumericUpDown.</param>
         internal StyledFieldAdornment(Control target)
         {
             field = target ?? throw new ArgumentNullException(nameof(target));
@@ -76,11 +76,12 @@ namespace time_schedule
         private void UpdateHitRegion()
         {
             if (Width < 3 || Height < 3) return;
-            using (var border = new Region(new Rectangle(0, 0, Width, 1)))
+            int edge = field is NumericUpDown ? 2 : 1;
+            using (var border = new Region(new Rectangle(0, 0, Width, edge)))
             {
-                border.Union(new Rectangle(0, Height - 1, Width, 1));
-                border.Union(new Rectangle(0, 0, 1, Height));
-                border.Union(new Rectangle(Width - 1, 0, 1, Height));
+                border.Union(new Rectangle(0, Height - edge, Width, edge));
+                border.Union(new Rectangle(0, 0, edge, Height));
+                border.Union(new Rectangle(Width - edge, 0, edge, Height));
                 int corner = Math.Min(ThemeVisuals.InputCornerRadius + 1, Math.Min(Width, Height));
                 border.Union(new Rectangle(0, 0, corner, corner));
                 border.Union(new Rectangle(Width - corner, 0, corner, corner));
@@ -92,7 +93,7 @@ namespace time_schedule
             }
         }
 
-        /// <summary>Рисует контур из общей палитры без дополнительного фона и теней.</summary>
+        /// <summary>Рисует скруглённый контур и маскирует прямые углы исходного поля его собственным цветом.</summary>
         protected override void OnPaint(PaintEventArgs e)
         {
             ThemePalette palette = ThemeManager.Palette;
@@ -100,8 +101,12 @@ namespace time_schedule
             if (Width < 3 || Height < 3) return;
             e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
             using (GraphicsPath path = ThemeVisuals.InputPath(new Rectangle(0, 0, Width - 1, Height - 1)))
+            using (SolidBrush surface = new SolidBrush(field.BackColor))
             using (Pen pen = new Pen(ThemeVisuals.InputBorderColor(field.Enabled, field.ContainsFocus)))
+            {
+                e.Graphics.FillPath(surface, path);
                 e.Graphics.DrawPath(pen, path);
+            }
         }
 
         /// <summary>Обновляет декоратор после перемещения или смены состояния поля.</summary>

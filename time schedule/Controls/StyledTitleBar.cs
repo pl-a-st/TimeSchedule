@@ -129,19 +129,21 @@ namespace time_schedule
         /// <summary>Синхронизирует текст заголовка с текстом формы.</summary>
         private void OwnerTextChanged(object sender, EventArgs e) { caption.Text = owner.Text; }
 
-        /// <summary>Рисует единую календарную пиктограмму слева от заголовка каждого окна.</summary>
+        /// <summary>Рисует календарную пиктограмму в физических размерах текущего DPI.</summary>
         private void CaptionPaint(object sender, PaintEventArgs e)
         {
             e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-            int x = 14, y = (caption.Height - 15) / 2;
-            using (Pen pen = new Pen(ThemeManager.Palette.Focus, 1.5f))
+            float scale = e.Graphics.DpiX / 96f;
+            float x = 14f * scale;
+            float y = (int)((caption.Height - 15f * scale) / 2f);
+            using (Pen pen = new Pen(ThemeManager.Palette.Focus, 1.5f * scale))
             {
-                e.Graphics.DrawRectangle(pen, x, y + 2, 15, 13);
-                e.Graphics.DrawLine(pen, x, y + 6, x + 15, y + 6);
-                e.Graphics.DrawLine(pen, x + 4, y, x + 4, y + 4);
-                e.Graphics.DrawLine(pen, x + 11, y, x + 11, y + 4);
-                e.Graphics.DrawLine(pen, x + 4, y + 10, x + 6, y + 10);
-                e.Graphics.DrawLine(pen, x + 9, y + 10, x + 11, y + 10);
+                e.Graphics.DrawRectangle(pen, x, y + 2f * scale, 15f * scale, 13f * scale);
+                e.Graphics.DrawLine(pen, x, y + 6f * scale, x + 15f * scale, y + 6f * scale);
+                e.Graphics.DrawLine(pen, x + 4f * scale, y, x + 4f * scale, y + 4f * scale);
+                e.Graphics.DrawLine(pen, x + 11f * scale, y, x + 11f * scale, y + 4f * scale);
+                e.Graphics.DrawLine(pen, x + 4f * scale, y + 10f * scale, x + 6f * scale, y + 10f * scale);
+                e.Graphics.DrawLine(pen, x + 9f * scale, y + 10f * scale, x + 11f * scale, y + 10f * scale);
             }
         }
 
@@ -215,7 +217,7 @@ namespace time_schedule
             /// <summary>Перерисовывает потерю фокуса.</summary>
             protected override void OnLostFocus(EventArgs e) { Invalidate(); base.OnLostFocus(e); }
 
-            /// <summary>Рисует матовую поверхность и системный знак без зависимости от шрифта.</summary>
+            /// <summary>Рисует системный знак с сохранением пропорций при масштабировании DPI.</summary>
             protected override void OnPaint(PaintEventArgs e)
             {
                 Color background = BackColor;
@@ -226,25 +228,29 @@ namespace time_schedule
                         e.Graphics.FillRectangle(brush, ClientRectangle);
                 }
                 e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+                float scale = e.Graphics.DpiX / 96f;
                 float cx = Width / 2f, cy = Height / 2f;
-                using (var pen = new Pen(ForeColor, 1.5f))
+                using (var pen = new Pen(ForeColor, 1.5f * scale))
                 {
                     if (icon == TitleBarIcon.Minimize)
-                        e.Graphics.DrawLine(pen, cx - 6, cy, cx + 6, cy);
+                        e.Graphics.DrawLine(pen, cx - 6f * scale, cy, cx + 6f * scale, cy);
                     else if (icon == TitleBarIcon.Close)
                     {
-                        e.Graphics.DrawLine(pen, cx - 5, cy - 5, cx + 5, cy + 5);
-                        e.Graphics.DrawLine(pen, cx + 5, cy - 5, cx - 5, cy + 5);
+                        e.Graphics.DrawLine(pen, cx - 5f * scale, cy - 5f * scale, cx + 5f * scale, cy + 5f * scale);
+                        e.Graphics.DrawLine(pen, cx + 5f * scale, cy - 5f * scale, cx - 5f * scale, cy + 5f * scale);
                     }
                     else if (isRestore)
                     {
-                        e.Graphics.DrawRectangle(pen, cx - 3, cy - 6, 10, 10);
-                        e.Graphics.DrawRectangle(pen, cx - 7, cy - 2, 10, 10);
+                        e.Graphics.DrawRectangle(pen, cx - 3f * scale, cy - 6f * scale, 10f * scale, 10f * scale);
+                        e.Graphics.DrawRectangle(pen, cx - 7f * scale, cy - 2f * scale, 10f * scale, 10f * scale);
                     }
-                    else e.Graphics.DrawRectangle(pen, cx - 6, cy - 6, 12, 12);
+                    else e.Graphics.DrawRectangle(pen, cx - 6f * scale, cy - 6f * scale, 12f * scale, 12f * scale);
                 }
                 if (Focused && ShowFocusCues)
-                    ControlPaint.DrawFocusRectangle(e.Graphics, Rectangle.Inflate(ClientRectangle, -5, -5));
+                {
+                    int inset = Math.Max(1, (int)Math.Round(5f * scale));
+                    ControlPaint.DrawFocusRectangle(e.Graphics, Rectangle.Inflate(ClientRectangle, -inset, -inset));
+                }
             }
         }
 

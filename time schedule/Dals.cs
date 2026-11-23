@@ -44,11 +44,12 @@ namespace time_schedule
                 }
                 else
                 {
-                    MessageBox.Show("Не удалось зачитать файл " + Constants.PROJECT_FILE_NAME + "Создайте или выбирите проект.");
+                    ThemedMessageBox.Show("Не удалось зачитать файл " + Constants.PROJECT_FILE_NAME + "Создайте или выбирите проект.");
                 }
 
             }
         }
+        /// <summary>Сохраняет выбор каталога только после подтверждения и проверки существующего проекта.</summary>
         public static void WriteMainPathFolder(string targetFolderName, Statuses.WorkWithProject workWithProject)
         {
             try
@@ -73,14 +74,23 @@ namespace time_schedule
                         return;
                     }
                     string folderPath = fmProjectChoise.SetTBxAddress().Text;
+                    if (!Directory.Exists(folderPath))
+                    {
+                        ThemedMessageBox.Show("Папка выбранного проекта не найдена:\n" + folderPath,
+                            "Ошибка выбора проекта", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        return;
+                    }
                     WritePaht(folderPath);
                     return;
                 }
                 WritePaht("Проект");
             }
-            catch
+            catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException ||
+                ex is ArgumentException || ex is InvalidOperationException)
             {
-                MessageBox.Show("Не удалось произвести запись в файл: " + Constants.PROJECT_FILE_NAME);
+                Trace.WriteLine("TimeSchedule project selection write failed: " + ex);
+                ThemedMessageBox.Show("Не удалось изменить выбранный проект. " + ex.Message,
+                    "Ошибка выбора проекта", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
 
         }
@@ -110,7 +120,7 @@ namespace time_schedule
             }
             catch
             {
-                MessageBox.Show("Не удалось произвести запись в файл: " + fileName);
+                ThemedMessageBox.Show("Не удалось произвести запись в файл: " + fileName);
             }
         }
         public static void WriteObjectToFile(string fileName, List<string> listForWrite)
@@ -303,22 +313,22 @@ namespace time_schedule
             if (fileName.Contains(Constants.PERSONS) ||
                 fileName.Contains(Constants.PERSONS_BIN))
             {
-                MessageBox.Show("В текущем проекте не создано ни одного исполнителя!", "");
+                ThemedMessageBox.Show("В текущем проекте не создано ни одного исполнителя!", "");
                 return;
             }
             if (fileName.Contains(Constants.TASKS) ||
                 fileName.Contains(Constants.TASKS_BIN))
             {
-                MessageBox.Show("Не удалось зачитать задачи!", "");
+                ThemedMessageBox.Show("Не удалось зачитать задачи!", "");
                 return;
             }
             if (fileName.Contains(Constants.HOLYDAYS) ||
                 fileName.Contains(Constants.HOLYDAYS_BIN))
             {
-                MessageBox.Show("В текущем проекте не занесены праздничные дни!", "");
+                ThemedMessageBox.Show("В текущем проекте не занесены праздничные дни!", "");
                 return;
             }
-            MessageBox.Show("Не удалось зачитать файл " + fileName, "");
+            ThemedMessageBox.Show("Не удалось зачитать файл " + fileName, "");
         }
 
         public static List<string> ReadListFromFile(string fileName, string textForError)
@@ -337,7 +347,7 @@ namespace time_schedule
             }
             else
             {
-                MessageBox.Show(textForError);
+                ThemedMessageBox.Show(textForError);
             }
             return listFromFile;
         }
@@ -421,7 +431,7 @@ namespace time_schedule
                 saveAsError is IOException || saveAsError is UnauthorizedAccessException)
             {
                 Trace.WriteLine("TimeSchedule Excel SaveAs failed: " + saveAsError);
-                MessageBox.Show("Не удалось сохранить файл " + pathFileToSave +
+                System.Windows.Forms.MessageBox.Show("Не удалось сохранить файл " + pathFileToSave +
                     ". Заполнение будет произведено в файл шаблона. Необходимо его сохранить самстоятельно",
                     "Проблема", MessageBoxButtons.OK, MessageBoxIcon.Error,
                     MessageBoxDefaultButton.Button1, MessageBoxOptions.ServiceNotification);
@@ -437,7 +447,7 @@ namespace time_schedule
                 }
                 return;
             }
-            MessageBox.Show("Файл будет сохранен по адресу: " + pathFileToSave);
+            ThemedMessageBox.Show("Файл будет сохранен по адресу: " + pathFileToSave);
         }
 
         /// <summary>Открывает шаблон либо создаёт новую книгу; при отказе сохраняет причины обеих попыток.</summary>

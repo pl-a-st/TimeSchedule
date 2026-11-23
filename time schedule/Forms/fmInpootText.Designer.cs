@@ -41,7 +41,7 @@
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(35, 13);
             this.label1.TabIndex = 0;
-            this.label1.Text = "label1";
+            this.label1.Text = "Введите текст";
             // 
             // tbxInpootText
             // 
@@ -56,7 +56,7 @@
             this.btnYes.Name = "btnYes";
             this.btnYes.Size = new System.Drawing.Size(96, 25);
             this.btnYes.TabIndex = 2;
-            this.btnYes.Text = "button1";
+            this.btnYes.Text = "ОК";
             this.btnYes.UseVisualStyleBackColor = true;
             this.btnYes.Click += new System.EventHandler(this.btnYes_Click);
             // 
@@ -84,7 +84,7 @@
             this.ShowIcon = false;
             this.Name = "fmInpootText";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
-            this.Text = "fmInpootText";
+            this.Text = "Ввод текста";
             this.Load += new System.EventHandler(this.fmInpootText_Load);
             this.ResumeLayout(false);
             this.PerformLayout();

@@ -72,7 +72,7 @@ namespace time_schedule
         }
 
         /// <summary>
-        /// Рисует одну общую матовую поверхность вместо нескольких накладных рамок.
+        /// Рисует матовую поверхность с непрерывной заливкой внутренних пикселей скруглений.
         /// Исходный ComboBox остаётся владельцем списка, фокуса и событий выбора.
         /// </summary>
         protected override void OnPaint(PaintEventArgs e)
@@ -88,6 +88,9 @@ namespace time_schedule
             using (SolidBrush surface = new SolidBrush(Enabled ? palette.Surface : palette.ButtonDisabled))
             using (Pen border = new Pen(ThemeVisuals.InputBorderColor(Enabled, combo.ContainsFocus)))
             {
+                Rectangle interior = Rectangle.Inflate(outer, -2, -2);
+                if (interior.Width > 0 && interior.Height > 0)
+                    e.Graphics.FillRectangle(surface, interior);
                 e.Graphics.FillPath(surface, path);
                 if (hoverArrow && Enabled)
                 {
@@ -257,7 +260,7 @@ namespace time_schedule
         {
             if (combo.IsDisposed) return;
             ThemePalette palette = ThemeManager.Palette;
-            Control.BackColor = palette.Window;
+            Control.BackColor = palette.Surface;
             combo.BackColor = palette.Surface;
             combo.ForeColor = palette.Text;
             ThemeControlStyler.EnableComboList(combo);

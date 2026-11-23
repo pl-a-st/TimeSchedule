@@ -20,8 +20,12 @@ namespace time_schedule
         {
             base.OnShown(e);
             HarmonizeEditorGeometry();
+            AlignProjectField();
+            AlignTaskNameField();
+            PrepareWorkOptionFields();
             ThemeControlStyler.EnsureInputFrames(this);
             ThemeControlStyler.EnsureInputSkins(this);
+            HarmonizeWorkOptionFields();
         }
 
         /// <summary>
@@ -40,7 +44,6 @@ namespace time_schedule
             dTmTaskDateStart.Top = label3.Bottom + 6;
             dTmTaskDateFinish.Top = label4.Bottom + 6;
             rBnDayStart.Top = dTmTaskDateStart.Top;
-            ArrangeFinishDateChoices();
             int requiredBottom = Math.Max(Math.Max(dTmTaskDateStart.Bottom, dTmTaskDateFinish.Bottom),
                 Math.Max(rBnDayFinish.Bottom, rBnWorksDay.Bottom));
             int groupHeight = Math.Max(groupBox1.Height, requiredBottom + borderSpace);
@@ -57,29 +60,99 @@ namespace time_schedule
         }
 
         /// <summary>
-        /// Размещает варианты завершения рядом с подписями полей, не пересекая контур группы.
-        /// При недостатке ширины переносит вариант даты ниже поля с сохранением полного текста.
+        /// Выравнивает внешнюю рамку поля проекта с левым краем групп, сохраняя
+        /// расстояние до кнопки выбора и центрируя подпись над строкой.
         /// </summary>
-        private void ArrangeFinishDateChoices()
+        private void AlignProjectField()
         {
-            const int horizontalSpace = 9;
-            const int choiceGap = 8;
-            int finishChoiceWidth = rBnDayFinish.PreferredSize.Width;
-            int choiceLeft = groupBox2.ClientSize.Width - horizontalSpace - finishChoiceWidth;
-            if (choiceLeft >= label4.Right + choiceGap)
-            {
-                rBnDayFinish.Location = new Point(choiceLeft, label4.Top);
-            }
-            else
-            {
-                rBnDayFinish.Location = new Point(dTmTaskDateFinish.Left,
-                    dTmTaskDateFinish.Bottom + choiceGap);
-            }
+            if (tBxProjects.Parent == null || !ReferenceEquals(tBxProjects.Parent, button2.Parent)) return;
+            const int frameInset = 2;
+            const int buttonGap = 6;
+            int visualLeft = groupBox1.Left;
+            int visualRight = button2.Left - buttonGap;
+            int visualWidth = visualRight - visualLeft;
+            if (visualWidth <= frameInset * 2) return;
+            tBxProjects.Left = visualLeft + frameInset;
+            tBxProjects.Width = visualWidth - frameInset * 2;
+            label9.Left = visualLeft + Math.Max(0, (visualWidth - label9.Width) / 2);
+        }
 
-            int workChoiceLeft = Math.Max(label5.Right + choiceGap,
-                groupBox2.ClientSize.Width - horizontalSpace - rBnWorksDay.PreferredSize.Width);
-            if (workChoiceLeft + rBnWorksDay.PreferredSize.Width <= groupBox2.ClientSize.Width - horizontalSpace)
-                rBnWorksDay.Location = new Point(workChoiceLeft, label5.Top);
+        /// <summary>
+        /// Выравнивает внешние границы приоритета со статусом и сохраняет
+        /// одинаковый зазор между рамками названия работы и приоритета.
+        /// </summary>
+        private void AlignTaskNameField()
+        {
+            const int frameInset = 2;
+            const int fieldGap = 6;
+            if (tBxTaskName.Parent == null || nUpDnPrioirity.Parent == null || cmBxTaskStatus.Parent == null ||
+                !ReferenceEquals(nUpDnPrioirity.Parent, cmBxTaskStatus.Parent) ||
+                !ReferenceEquals(tBxTaskName.Parent, nUpDnPrioirity.Parent)) return;
+
+            nUpDnPrioirity.Left = cmBxTaskStatus.Left + frameInset;
+            nUpDnPrioirity.Width = Math.Max(1, cmBxTaskStatus.Width - frameInset * 2);
+            int visualNameLeft = tBxTaskName.Left - frameInset;
+            int visualNameWidth = cmBxTaskStatus.Left - fieldGap - visualNameLeft;
+            if (visualNameWidth > 100 + frameInset * 2)
+                tBxTaskName.Width = visualNameWidth - frameInset * 2;
+        }
+
+        /// <summary>
+        /// Задаёт размеры полей до подключения декоративных рамок, чтобы NumericUpDown
+        /// не переразмечал внутренний редактор после оформления.
+        /// </summary>
+        private void PrepareWorkOptionFields()
+        {
+            const int frameInset = 2;
+            const int fieldInset = 6;
+            const int optionGap = 8;
+            const int rightInset = 8;
+            int startOptionWidth = Math.Max(rBnPreviousTask.PreferredSize.Width, rBnDayStart.PreferredSize.Width);
+            int finishOptionWidth = Math.Max(rBnWorksDay.PreferredSize.Width, rBnDayFinish.PreferredSize.Width);
+            int availableStart = groupBox1.ClientSize.Width - fieldInset - optionGap - rightInset - startOptionWidth;
+            int availableFinish = groupBox2.ClientSize.Width - fieldInset - optionGap - rightInset - finishOptionWidth;
+            int fieldWidth = Math.Min(availableStart, availableFinish);
+            if (fieldWidth < 90) return;
+
+            nUpDnPreviousTask.Left = fieldInset + frameInset;
+            nUpDnPreviousTask.Width = Math.Max(1, fieldWidth - frameInset * 2);
+            nUpDnCounWorkDay.Left = fieldInset + frameInset;
+            nUpDnCounWorkDay.Width = Math.Max(1, fieldWidth - frameInset * 2);
+            dTmTaskDateStart.Left = fieldInset;
+            dTmTaskDateStart.Width = fieldWidth;
+            dTmTaskDateFinish.Left = fieldInset;
+            dTmTaskDateFinish.Width = fieldWidth;
+        }
+
+        /// <summary>
+        /// Завершает выравнивание после подключения рамок, не изменяя размеры
+        /// уже оформленных NumericUpDown.
+        /// </summary>
+        private void HarmonizeWorkOptionFields()
+        {
+            const int optionGap = 8;
+            Control previousDays = ThemeControlStyler.GetVisualControl(nUpDnPreviousTask);
+            Control workingDays = ThemeControlStyler.GetVisualControl(nUpDnCounWorkDay);
+            if (previousDays == null || workingDays == null) return;
+
+            int visualHeight = Math.Max(previousDays.Height, workingDays.Height);
+            ThemeControlStyler.SetDatePickerVisualHeight(dTmTaskDateStart, visualHeight);
+            ThemeControlStyler.SetDatePickerVisualHeight(dTmTaskDateFinish, visualHeight);
+            int optionLeft = previousDays.Right + optionGap;
+            AlignWorkOption(rBnPreviousTask, previousDays, optionLeft);
+            AlignWorkOption(rBnDayStart, dTmTaskDateStart, optionLeft);
+            AlignWorkOption(rBnWorksDay, workingDays, optionLeft);
+            AlignWorkOption(rBnDayFinish, dTmTaskDateFinish, optionLeft);
+        }
+
+        /// <summary>Выравнивает переключатель по вертикальному центру своего поля.</summary>
+        /// <param name="option">Радиокнопка варианта начала или окончания работы.</param>
+        /// <param name="field">Внешняя поверхность соответствующего поля.</param>
+        /// <param name="left">Единая левая граница радиокнопки в группе.</param>
+        private static void AlignWorkOption(RadioButton option, Control field, int left)
+        {
+            option.Left = left;
+            option.Top = field.Top + (field.Height - option.Height) / 2;
         }
 
         /// <summary>Подключает единую тему и оформление раскрываемых списков.</summary>

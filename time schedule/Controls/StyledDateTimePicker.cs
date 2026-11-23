@@ -124,7 +124,7 @@ namespace time_schedule
             {
                 Trace.TraceWarning("TS-04: тематический календарь не открыт: " + ex);
                 CloseFailedPopup(popup, calendar);
-                MessageBox.Show("Не удалось открыть выбор даты. Можно ввести дату с клавиатуры.",
+                ThemedMessageBox.Show("Не удалось открыть выбор даты. Можно ввести дату с клавиатуры.",
                     "Выбор даты", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }

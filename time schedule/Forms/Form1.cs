@@ -354,9 +354,13 @@ namespace time_schedule
         /// <summary>Дерево отбора проектов для текущего цикла обновления; повторное чтение с диска не требуется.</summary>
         private TreeProjects selectionTreeForRefresh;
 
+        /// <summary>Признак успешного завершения последнего полного обновления календаря.</summary>
+        private bool lastCalendarRefreshSucceeded;
+
         /// <summary>Координирует обновление календаря, сохраняя предпросмотр до скрытия старого изображения.</summary>
         public void LoadRefreshForm()
         {
+            lastCalendarRefreshSucceeded = false;
             CancelPendingPaintDiagnostics();
             ResetCanvasPilotPaintMetrics();
             CalendarRefreshMetrics metrics = new CalendarRefreshMetrics();
@@ -409,7 +413,7 @@ namespace time_schedule
                 ex is System.Runtime.Serialization.SerializationException || ex is InvalidCastException ||
                 ex is InvalidDataException)
             {
-                MessageBox.Show(
+                ThemedMessageBox.Show(
                     "Не удалось загрузить задачи проекта. Данные не изменены.\n\n" + ex.Message,
                     "Ошибка хранилища задач", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return false;
@@ -450,7 +454,7 @@ namespace time_schedule
                 plForDate.Enabled = true;
                 ChangePanelVisibility(Statuses.Visibility.Visible);
                 Trace.WriteLine("TimeSchedule calendar models failed: " + ex);
-                MessageBox.Show("Не удалось построить календарь из актуальных данных. " + ex.Message,
+                ThemedMessageBox.Show("Не удалось построить календарь из актуальных данных. " + ex.Message,
                     "Ошибка обновления календаря", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return false;
             }
@@ -471,6 +475,7 @@ namespace time_schedule
                 AttachCalendarControls(metrics, phase);
                 LogRefreshMetrics(metrics, readMs, modelMs, timing.ElapsedMilliseconds);
                 ScheduleRefreshPaintDiagnostics(metrics);
+                lastCalendarRefreshSucceeded = true;
             }
             catch (Exception ex) when (
                 ex is IOException ||
@@ -488,7 +493,7 @@ namespace time_schedule
                 ChangePanelVisibility(Statuses.Visibility.Invisible);
 
                 Trace.WriteLine("TimeSchedule refresh failed: " + ex);
-                MessageBox.Show(
+                ThemedMessageBox.Show(
                     "Не удалось завершить обновление календаря.\n" +
                     "Повторите обновление после устранения причины.\n\n" + ex.Message,
                     "Ошибка обновления календаря",
@@ -707,6 +712,44 @@ namespace time_schedule
 
 
         }
+        /// <summary>Ожидает завершения автоматической прокрутки при переходе к исполнителю по Tab.</summary>
+        private void PersonButton_Enter(object sender, EventArgs e)
+        {
+            if (IsDisposed || Disposing || !IsHandleCreated)
+                return;
+
+            BeginInvoke(new Action(() =>
+            {
+                if (!IsDisposed && !Disposing && plPersonButton.ContainsFocus)
+                    SyncCalendarVerticalScrollFromPersons();
+            }));
+        }
+
+        /// <summary>Передаёт фактическое вертикальное смещение списка исполнителей календарной сетке.</summary>
+        private void SyncCalendarVerticalScrollFromPersons()
+        {
+            if (FormReadyToBeAddedControl != Statuses.FormReadyToBeAddedControl.Ready ||
+                plPersonButton.IsDisposed || plMain.IsDisposed)
+                return;
+
+            int requested = Math.Max(0, -plPersonButton.AutoScrollPosition.Y);
+            int y = Math.Min(ClampCalendarScroll(plPersonButton.VerticalScroll, requested),
+                ClampCalendarScroll(plMain.VerticalScroll, requested));
+            if (plMain.VerticalScroll.Value == y && VerticalScrollValue == y)
+                return;
+
+            try
+            {
+                plMain.VerticalScroll.Value = y;
+                plMain.VerticalScroll.Value = y;
+                VerticalScrollValue = plMain.VerticalScroll.Value;
+                LoadTaskButtons();
+            }
+            catch (Exception ex)
+            {
+                Trace.WriteLine("TimeSchedule person-to-calendar scroll synchronization failed: " + ex);
+            }
+        }
         VScrollBar myScrollBar = new VScrollBar();
         /// <summary>Обновляет размер окна рисования после изменения ширины главной панели.</summary>
         private void PlMain_ClientSizeChanged(object sender, EventArgs e)
@@ -854,6 +897,7 @@ namespace time_schedule
                     if (control is Button)
                     {
                         long started = Stopwatch.GetTimestamp();
+                        control.Enter -= PersonButton_Enter;
                         plPersonButton.Controls.RemoveAt(i);
                         removeTicks += Stopwatch.GetTimestamp() - started;
                         started = Stopwatch.GetTimestamp();
@@ -1109,6 +1153,7 @@ namespace time_schedule
             if (statusProgressBar != Statuses.ProgressBar.Use)
                 return;
 
+            lastCalendarRefreshSucceeded = false;
             RunWithProgressWindow(() => LoadRefreshForm(RefreshType.All));
         }
 
@@ -1254,7 +1299,10 @@ namespace time_schedule
             }
             else
             {
-                Program.ListTasksAllPersonToSave.SetTasksFromList(Dals.ReadListFromMainPathFile(Constants.TASKS));
+                string legacyTasks = Dals.TakeMainPathFile(Constants.TASKS);
+                Program.ListTasksAllPersonToSave = new ListTasks();
+                if (File.Exists(legacyTasks))
+                    Program.ListTasksAllPersonToSave.SetTasksFromList(Dals.ReadListFromFile(legacyTasks));
             }
             metrics.TotalTasks = Program.ListTasksAllPersonToSave.Tasks.Count;
             phase.Restart();
@@ -1287,15 +1335,16 @@ namespace time_schedule
             pBForLine.Height = Math.Max(1, maxButtonLocationY);
             metrics.BuildPersonButtonsMs = phase.ElapsedMilliseconds;
             metrics.PersonModels = Program.ListPersonButton.PersonButtons.Count;
-            if (File.Exists(Dals.TakeMainPathFile(Constants.HOLYDAYS_BIN)))
+            string holidaysFile = Dals.TakeMainPathFile(Constants.HOLYDAYS_BIN);
+            if (File.Exists(holidaysFile))
             {
-                Program.ListHolidays = Dals.binReadFileToObject(
-                    Program.ListHolidays, Dals.TakeMainPathFile(Constants.HOLYDAYS_BIN));
+                Program.ListHolidays = Dals.binReadFileToObject(Program.ListHolidays, holidaysFile);
             }
             else
             {
-                Program.ListHolidays.SetHolidaysFromList(
-                    Dals.ReadListFromMainPathFile(Constants.HOLYDAYS));
+                string legacyHolidays = Dals.TakeMainPathFile(Constants.HOLYDAYS);
+                if (File.Exists(legacyHolidays))
+                    Program.ListHolidays.SetHolidaysFromList(Dals.ReadListFromFile(legacyHolidays));
             }
             DateTime firstCalendarDate, lastCalendarDate;
             GetCalendarDateBounds(out firstCalendarDate, out lastCalendarDate);
@@ -1310,6 +1359,7 @@ namespace time_schedule
         }
 
         /// <summary>Читает согласованную версию списка исполнителей.</summary>
+        /// <summary>Читает исполнителей из компактного или прежнего проекта; новый проект допускает пустой список.</summary>
         public void ReReadListPerson()
         {
             if (TaskStore.HasTaskData(Dals.TakeMainPathFile(Constants.TASKS_BIN)))
@@ -1319,9 +1369,12 @@ namespace time_schedule
             }
             else
             {
-                Program.listPersons.SetPersonsFromList(
-                 Dals.ReadListFromMainPathFile(Constants.PERSONS),
-                 Program.ListTasksAllPersonToShow.Tasks);
+                Program.listPersons = new ListPersons();
+                string legacyPersons = Dals.TakeMainPathFile(Constants.PERSONS);
+                if (File.Exists(legacyPersons))
+                    Program.listPersons.SetPersonsFromList(
+                        Dals.ReadListFromFile(legacyPersons),
+                        Program.ListTasksAllPersonToShow.Tasks);
             }
         }
 
@@ -1536,10 +1589,8 @@ namespace time_schedule
             Trace.WriteLine("TimeSchedule calendar-render-mode: virtual=" + calendarVirtualViewport +
                 " width=" + locationX + " height=" + pBForLine.Height +
                 " estimated-bitmap-bytes=" + (long)locationX * pBForLine.Height * 4);
-            plMain.AutoScrollMinSize = calendarVirtualViewport
-                ? new Size(locationX, 0) : Size.Empty;
-            plForDate.AutoScrollMinSize = calendarVirtualViewport
-                ? new Size(locationX, 0) : Size.Empty;
+            plMain.AutoScrollMinSize = new Size(locationX, 0);
+            plForDate.AutoScrollMinSize = new Size(locationX, 0);
             pBForLine.Width = calendarVirtualViewport
                 ? Math.Max(1, plMain.ClientSize.Width) : locationX;
             ResizeImage(new Size(pBForLine.Width, pBForLine.Height));
@@ -1873,21 +1924,33 @@ namespace time_schedule
         {
             LoadRefreshForm(Statuses.ProgressBar.Use);
         }
-        /// <summary>Сдвигает календарь по рабочим датам с сохранением текущей синхронизации панелей.</summary>
+        /// <summary>Сдвигает календарь по рабочим датам через единое AutoScroll-смещение шкалы и задач.</summary>
         /// <param name="value">Сдвиг в количестве столбцов календаря.</param>
         private void HorizontalScrollAdd(int value)
         {
             try
             {
-                plMain.HorizontalScroll.Value += value * Constants.COLUMN_WITH;
-                plForDate.HorizontalScroll.Value = plMain.HorizontalScroll.Value;
-                plForDate.HorizontalScroll.Value = plMain.HorizontalScroll.Value;
+                int requested = plMain.HorizontalScroll.Value + value * Constants.COLUMN_WITH;
+                int x = Math.Min(ClampCalendarScroll(plMain.HorizontalScroll, requested),
+                    ClampCalendarScroll(plForDate.HorizontalScroll, requested));
+                int y = plMain.VerticalScroll.Value;
+
+                plMain.AutoScrollPosition = new Point(x, y);
+                plForDate.AutoScrollPosition = new Point(x, 0);
+
+                int actualX = Math.Min(plMain.HorizontalScroll.Value, plForDate.HorizontalScroll.Value);
+                if (plMain.HorizontalScroll.Value != actualX)
+                    plMain.AutoScrollPosition = new Point(actualX, y);
+                if (plForDate.HorizontalScroll.Value != actualX)
+                    plForDate.AutoScrollPosition = new Point(actualX, 0);
+
+                HorizontalScrollValue = actualX;
+                UpdateCalendarViewport();
             }
             catch (Exception ex)
             {
                 Trace.WriteLine("TimeSchedule horizontal scroll adjustment failed: " + ex);
             }
-            HorizontalScrollValue = plMain.HorizontalScroll.Value;
         }
         private void PlusFiveDays(object sender, EventArgs e)
         {
@@ -1951,7 +2014,7 @@ namespace time_schedule
 
         private void button1_Click_1(object sender, EventArgs e)
         {
-            MessageBox.Show("" + plForDate.HorizontalScroll.Value);
+            ThemedMessageBox.Show("" + plForDate.HorizontalScroll.Value);
         }
         //LoadRefreshForm ThisloadRefreshForm;
         private void задачиToolStripMenuItem_Click(object sender, EventArgs e)
@@ -2020,20 +2083,88 @@ namespace time_schedule
 
         private void создатьToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            Dals.WriteMainPathFolder("Проект", Statuses.WorkWithProject.NewProject);
-            SetNewTextForForm();
-            ZeroingScrolss();
-            LoadRefreshForm(Statuses.ProgressBar.Use);
-            ScrollToDate(DateTime.Now.Date);
+            ChangeProject(Statuses.WorkWithProject.NewProject);
         }
+
         private void выбратьToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            Dals.WriteMainPathFolder("", Statuses.WorkWithProject.LoadProject);
-            SetNewTextForForm();
-            ZeroingScrolss();
-            LoadRefreshForm(Statuses.ProgressBar.Use);
-            ScrollToDate(DateTime.Now.Date);
+            ChangeProject(Statuses.WorkWithProject.LoadProject);
         }
+
+        /// <summary>
+        /// Загружает выбранный проект и возвращает прежний путь, если обновление не завершилось.
+        /// PROJECT.txt хранит только выбор пользователя; файлы задач при откате не меняются.
+        /// </summary>
+        /// <param name="operation">Создание или выбор проекта.</param>
+        private void ChangeProject(Statuses.WorkWithProject operation)
+        {
+            string previousFolder = Dals.ProjectFolderPath;
+            byte[] previousSelection = File.Exists(Constants.PROJECT_FILE_NAME)
+                ? File.ReadAllBytes(Constants.PROJECT_FILE_NAME) : null;
+            bool selectionChanged = false;
+            try
+            {
+                Dals.WriteMainPathFolder(operation == Statuses.WorkWithProject.NewProject
+                    ? "Проект" : "", operation);
+                selectionChanged = !string.Equals(previousFolder, Dals.ProjectFolderPath,
+                    StringComparison.OrdinalIgnoreCase);
+                if (!selectionChanged)
+                    return;
+
+                ZeroingScrolss();
+                LoadRefreshForm(Statuses.ProgressBar.Use);
+                if (!lastCalendarRefreshSucceeded)
+                    return;
+
+                SetNewTextForForm();
+                ScrollToDate(DateTime.Now.Date);
+                selectionChanged = false;
+            }
+            catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException ||
+                ex is InvalidDataException || ex is InvalidOperationException || ex is ArgumentException)
+            {
+                Trace.WriteLine("TimeSchedule project switch failed: " + ex);
+                ThemedMessageBox.Show("Не удалось открыть проект. " + ex.Message,
+                    "Ошибка выбора проекта", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            finally
+            {
+                if (selectionChanged)
+                    RestoreProjectSelection(previousFolder, previousSelection);
+            }
+        }
+
+        /// <summary>
+        /// Возвращает прежний выбор и изображение календаря после неудачной загрузки,
+        /// не изменяя файлы задач ни одного из проектов.
+        /// </summary>
+        /// <param name="previousFolder">Рабочий каталог до переключения.</param>
+        /// <param name="previousSelection">Исходное содержимое PROJECT.txt или null.</param>
+        private void RestoreProjectSelection(string previousFolder, byte[] previousSelection)
+        {
+            try
+            {
+                Dals.SetProjectFolderPath(previousFolder);
+                if (previousSelection == null)
+                {
+                    if (File.Exists(Constants.PROJECT_FILE_NAME))
+                        File.Delete(Constants.PROJECT_FILE_NAME);
+                }
+                else
+                    File.WriteAllBytes(Constants.PROJECT_FILE_NAME, previousSelection);
+                SetNewTextForForm();
+                if (!plMain.Visible || !plForDate.Visible)
+                    LoadRefreshForm();
+            }
+            catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException ||
+                ex is InvalidOperationException || ex is ArgumentException)
+            {
+                Trace.WriteLine("TimeSchedule project rollback failed: " + ex);
+                ThemedMessageBox.Show("Не удалось восстановить предыдущий проект. " + ex.Message,
+                    "Ошибка восстановления выбора проекта", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
         private void ZeroingScrolss()
         {
             HorizontalScrollValue = 0;
@@ -2077,6 +2208,7 @@ namespace time_schedule
                     if (personButton.Person.ListTask.Tasks.Count > 0)
                     {
                         plPersonButton.Controls.Add(personButton.Button);
+                        personButton.Button.Enter += PersonButton_Enter;
                         ApplyPersonTheme(personButton.Button);
                         personButton.Button.BringToFront();
                     }
@@ -2424,7 +2556,7 @@ namespace time_schedule
                 ex is InvalidDataException || ex is System.Runtime.Serialization.SerializationException ||
                 ex is AggregateException || ex is ArgumentException || ex is FormatException)
             {
-                MessageBox.Show("Восстановление HEAD из history недоступно. " +
+                ThemedMessageBox.Show("Восстановление HEAD из history недоступно. " +
                     "Можно выбрать независимую резервную копию задач.\n\n" + ex.Message,
                     "Восстановление задач", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return false;
@@ -2449,7 +2581,7 @@ namespace time_schedule
                 "Сегментов: " + candidate.SegmentCount + "\n\n" +
                 "Изменения, выполненные после этой ревизии, могут быть утрачены.\n" +
                 "Восстановить этот снимок?";
-            return MessageBox.Show(message +
+            return ThemedMessageBox.Show(message +
                 "\n\nНет — выбрать независимую резервную копию задач.",
                 "Подтверждение восстановления HEAD", MessageBoxButtons.YesNoCancel,
                 MessageBoxIcon.Warning);
@@ -2469,7 +2601,7 @@ namespace time_schedule
                 ex is InvalidDataException || ex is System.Runtime.Serialization.SerializationException ||
                 ex is AggregateException || ex is ArgumentException || ex is FormatException)
             {
-                MessageBox.Show("Восстановление HEAD не выполнено.\n\n" + ex.Message,
+                ThemedMessageBox.Show("Восстановление HEAD не выполнено.\n\n" + ex.Message,
                     "Ошибка восстановления", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
@@ -2484,13 +2616,13 @@ namespace time_schedule
             catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException ||
                 ex is ArgumentException)
             {
-                MessageBox.Show("Не удалось прочитать резервные копии задач.\n\n" + ex.Message,
+                ThemedMessageBox.Show("Не удалось прочитать резервные копии задач.\n\n" + ex.Message,
                     "Ошибка восстановления", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
             if (availableBackups.Count == 0)
             {
-                MessageBox.Show("Резервные копии задач для этого проекта не найдены.",
+                ThemedMessageBox.Show("Резервные копии задач для этого проекта не найдены.",
                     "Восстановление задач", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
@@ -2503,7 +2635,7 @@ namespace time_schedule
             catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException ||
                 ex is InvalidDataException || ex is System.Runtime.Serialization.SerializationException)
             {
-                MessageBox.Show("Не удалось проверить состояние задач: " + ex.Message);
+                ThemedMessageBox.Show("Не удалось проверить состояние задач: " + ex.Message);
                 return;
             }
             fm.ShowDialog();
@@ -2527,7 +2659,6 @@ namespace time_schedule
             fm.BtnApply.Text = "Восстановить";
             fm.BtnApply.Enabled = false;
             fm.GroupBox1.Visible = false;
-            fm.LBx.Width = fm.Width - fm.LBx.Location.X * 3;
             return fm;
         }
 
@@ -2581,7 +2712,7 @@ namespace time_schedule
         {
             if (fm.BtnClick != BtnClick.aplly || fm.LBx.SelectedItem == null) return;
             string fileName = availableBackups[fm.LBx.SelectedIndex].Value;
-            if (MessageBox.Show("Заменить все текущие задачи выбранной копией? " +
+            if (ThemedMessageBox.Show("Заменить все текущие задачи выбранной копией? " +
                 "Если текущее хранилище исправно, его состояние будет сохранено в резервной копии. " +
                 "Повреждённые файлы, когда возможно, сохраняются для диагностики.",
                 "Подтверждение восстановления", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) != DialogResult.Yes)
@@ -2595,7 +2726,7 @@ namespace time_schedule
                 ex is InvalidDataException || ex is System.Runtime.Serialization.SerializationException ||
                 ex is AggregateException || ex is ArgumentException || ex is FormatException)
             {
-                MessageBox.Show("Восстановление не выполнено: " + ex.Message);
+                ThemedMessageBox.Show("Восстановление не выполнено: " + ex.Message);
             }
         }
 
@@ -2630,7 +2761,7 @@ namespace time_schedule
                     ex is InvalidDataException || ex is InvalidOperationException || ex is ArgumentException)
                 {
                     Trace.WriteLine("TimeSchedule scheduled refresh failed: " + ex);
-                    MessageBox.Show("Не удалось завершить обновление календаря.\n\n" + ex.Message,
+                    ThemedMessageBox.Show("Не удалось завершить обновление календаря.\n\n" + ex.Message,
                         "Ошибка обновления календаря", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }));
@@ -2902,7 +3033,7 @@ namespace time_schedule
             }
             catch (TaskConflictException ex)
             {
-                MessageBox.Show(this, ex.Message, "Изменение статуса", MessageBoxButtons.OK,
+                ThemedMessageBox.Show(this, ex.Message, "Изменение статуса", MessageBoxButtons.OK,
                     MessageBoxIcon.Warning);
                 return;
             }
@@ -2917,7 +3048,7 @@ namespace time_schedule
             if (result == Result.Sucess)
                 ShowProgressbarAndMakeRefresh();
             else if (result != Result.Canceled)
-                MessageBox.Show(this, Program.SaveFailureMessage, "Изменение статуса",
+                ThemedMessageBox.Show(this, Program.SaveFailureMessage, "Изменение статуса",
                     MessageBoxButtons.OK, MessageBoxIcon.Warning);
         }
 
@@ -3201,7 +3332,7 @@ namespace time_schedule
             }
             catch (TaskConflictException ex)
             {
-                MessageBox.Show(this, ex.Message, "Перенос задач", MessageBoxButtons.OK,
+                ThemedMessageBox.Show(this, ex.Message, "Перенос задач", MessageBoxButtons.OK,
                     MessageBoxIcon.Warning);
                 return;
             }
@@ -3748,7 +3879,7 @@ namespace time_schedule
                 !preview.TaskBands.Any(band => !band.CanvasPilotSegments.Any()))
                 return true;
             CancelCanvasPilotDragPreview();
-            MessageBox.Show(this, missingMessage, title,
+            ThemedMessageBox.Show(this, missingMessage, title,
                 MessageBoxButtons.OK, MessageBoxIcon.Warning);
             return false;
         }
@@ -3776,7 +3907,7 @@ namespace time_schedule
             }
             CancelCanvasPilotDragPreview();
             if (result != Result.Canceled)
-                MessageBox.Show(this, Program.SaveFailureMessage, title,
+                ThemedMessageBox.Show(this, Program.SaveFailureMessage, title,
                     MessageBoxButtons.OK, MessageBoxIcon.Warning);
         }
 
@@ -3918,7 +4049,7 @@ namespace time_schedule
             }
             catch (TaskConflictException ex)
             {
-                MessageBox.Show(this, ex.Message, "Дублирование задачи", MessageBoxButtons.OK,
+                ThemedMessageBox.Show(this, ex.Message, "Дублирование задачи", MessageBoxButtons.OK,
                     MessageBoxIcon.Warning);
                 return;
             }
@@ -3949,7 +4080,7 @@ namespace time_schedule
             if (result == Result.Sucess)
                 ShowProgressbarAndMakeRefresh();
             else if (result != Result.Canceled)
-                MessageBox.Show(this, Program.SaveFailureMessage, "Дублирование задачи",
+                ThemedMessageBox.Show(this, Program.SaveFailureMessage, "Дублирование задачи",
                     MessageBoxButtons.OK, MessageBoxIcon.Warning);
         }
 
@@ -3969,7 +4100,7 @@ namespace time_schedule
             }
             catch (TaskConflictException ex)
             {
-                MessageBox.Show(this, ex.Message, "Удаление задачи", MessageBoxButtons.OK,
+                ThemedMessageBox.Show(this, ex.Message, "Удаление задачи", MessageBoxButtons.OK,
                     MessageBoxIcon.Warning);
                 return;
             }
@@ -3980,7 +4111,7 @@ namespace time_schedule
                 : "Количество непосредственных потомков задачи №" + number + ": " + dependents + "." +
                   "\n\nДа — удалить задачу и разорвать связи с этими потомками." +
                   "\nНет — отменить удаление.\nДаты потомков останутся прежними.";
-            if (MessageBox.Show(this, message, "Удаление задачи", MessageBoxButtons.YesNo,
+            if (ThemedMessageBox.Show(this, message, "Удаление задачи", MessageBoxButtons.YesNo,
                 MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2) != DialogResult.Yes)
                 return;
 
@@ -3990,7 +4121,7 @@ namespace time_schedule
             if (result == Result.Sucess)
                 ShowProgressbarAndMakeRefresh();
             else if (result != Result.Canceled)
-                MessageBox.Show(this, Program.SaveFailureMessage, "Удаление задачи",
+                ThemedMessageBox.Show(this, Program.SaveFailureMessage, "Удаление задачи",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
 
@@ -4120,11 +4251,9 @@ namespace time_schedule
                         ? GetCanvasPilotHoverColor(displayColor) : displayColor;
                     ThemeVisuals.FillTask(graphics, rectangle, GetCanvasPilotBrush(color),
                         roundLeft: segmentIndex == 0, roundRight: segmentIndex == plannedSegments.Count - 1);
-                    TextRenderer.DrawText(graphics, task.Name ?? string.Empty,
-                        GetCanvasPilotFont(task.Status), rectangle,
-                        GetCanvasPilotTextColor(task),
-                        TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter |
-                        TextFormatFlags.EndEllipsis | TextFormatFlags.NoPrefix);
+                    DrawCanvasPilotTaskLabel(graphics, task, rectangle,
+                        segmentIndex == 0 || taskButton.IsWeekSplit(segmentIndex - 1),
+                        segmentIndex == plannedSegments.Count - 1);
                     segments++;
                 }
             }
@@ -4186,14 +4315,35 @@ namespace time_schedule
                         ? Color.FromArgb(195, displayColor) : displayColor;
                     ThemeVisuals.FillTask(graphics, rectangle, GetCanvasPilotBrush(previewColor), outline,
                         segmentIndex == 0, segmentIndex == plannedSegments.Count - 1);
-                    TextRenderer.DrawText(graphics, task.Name ?? string.Empty,
-                        GetCanvasPilotFont(task.Status), rectangle,
-                        GetCanvasPilotTextColor(task),
-                        TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter |
-                        TextFormatFlags.EndEllipsis | TextFormatFlags.NoPrefix);
+                    DrawCanvasPilotTaskLabel(graphics, task, rectangle,
+                        segmentIndex == 0 || taskBand.IsWeekSplit(segmentIndex - 1),
+                        segmentIndex == plannedSegments.Count - 1);
                     segments++;
                 }
             }
+        }
+
+        /// <summary>Выводит подпись сегмента и отдельные винные знаки просрочки без их пересечения.</summary>
+        /// <param name="graphics">Поверхность интерактивного календаря.</param>
+        /// <param name="task">Задача с её исходным статусом и названием.</param>
+        /// <param name="band">Прямоугольник видимой полосы.</param>
+        /// <param name="markStart">Первый сегмент или начало после недельной границы.</param>
+        /// <param name="markEnd">Последний сегмент задачи.</param>
+        private void DrawCanvasPilotTaskLabel(Graphics graphics, Task task, Rectangle band,
+            bool markStart, bool markEnd)
+        {
+            Font font = GetCanvasPilotFont(task);
+            bool overdue = ThemeVisuals.IsTaskOverdue(task);
+            Rectangle textBounds = overdue
+                ? ThemeVisuals.TaskOverdueTextBounds(band, font, markStart, markEnd)
+                : band;
+            if (textBounds.Width > 0)
+                TextRenderer.DrawText(graphics, task.Name ?? string.Empty, font, textBounds,
+                    GetCanvasPilotTextColor(task),
+                    TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter |
+                    TextFormatFlags.EndEllipsis | TextFormatFlags.NoPrefix);
+            if (overdue)
+                ThemeVisuals.DrawTaskOverdueMarkers(graphics, band, font, markStart, markEnd);
         }
 
         /// <summary>После ошибки рисования сообщает пользователю о неполном календаре без модального окна внутри Paint.</summary>
@@ -4209,7 +4359,7 @@ namespace time_schedule
                 BeginInvoke(new Action(() =>
                 {
                     if (!IsDisposed && !Disposing)
-                        MessageBox.Show(this, "Не удалось отобразить задачи календаря. " +
+                        ThemedMessageBox.Show(this, "Не удалось отобразить задачи календаря. " +
                             "Обновите календарь. Если ошибка повторится, передайте журнал диагностики.\n\n" +
                             exception.Message, "Ошибка отображения задач",
                             MessageBoxButtons.OK, MessageBoxIcon.Warning);
@@ -4246,15 +4396,16 @@ namespace time_schedule
             return brush;
         }
 
-        /// <summary>Воспроизводит оформление статусов, не создавая шрифт при каждом Paint.</summary>
-        private Font GetCanvasPilotFont(TaskStatus status)
+        /// <summary>Кэширует шрифты статусов задач без выделения графических ресурсов при Paint.</summary>
+        /// <param name="task">Задача, определяющая оформление шрифта по статусу.</param>
+        private Font GetCanvasPilotFont(Task task)
         {
             FontStyle style = FontStyle.Regular;
-            if (status == TaskStatus.Closed)
+            if (task.Status == TaskStatus.Closed)
                 style = FontStyle.Strikeout;
-            else if (status == TaskStatus.Active)
+            else if (task.Status == TaskStatus.Active)
                 style = FontStyle.Underline;
-            else if (status == TaskStatus.To_approving)
+            else if (task.Status == TaskStatus.To_approving)
                 style = FontStyle.Italic | FontStyle.Underline;
             if (!canvasPilotFonts.TryGetValue(style, out Font font))
             {

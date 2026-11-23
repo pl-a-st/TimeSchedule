@@ -27,39 +27,77 @@ namespace time_schedule
             get;
             private set;
         } = 0;
+        /// <summary>Динамические варианты выбора в порядке добавления.</summary>
+        private readonly List<RadioButton> choiceButtons = new List<RadioButton>();
+
+        /// <summary>Связывает Enter и Esc с существующими действиями подтверждения и отмены.</summary>
         public frmWithRadioButton()
         {
             InitializeComponent();
+            AcceptButton = butOk;
+            CancelButton = butCancel;
+        }
+
+        /// <summary>Учитывает итоговые размеры системного шрифта после оформления формы.</summary>
+        protected override void OnShown(EventArgs e)
+        {
+            base.OnShown(e);
+            ArrangeChoiceControls();
         }
 
         private void frmWithRadioButton_Load(object sender, EventArgs e)
         {
-            foreach(Control control in WindowContentControls)
-            {
-                if(!(control is RadioButton))
-                {
-                    continue;
-                }
-                (control as RadioButton).Checked = true;
-                break;
-            }
+            if (choiceButtons.Count > 0)
+                choiceButtons[0].Checked = true;
         }
+
         public void SetLable(string text)
         {
             label1.Text = text;
+            ArrangeChoiceControls();
         }
+
         public void AddRaioButton(string TextRadioButton)
         {
-            RadioButton radioButton = new RadioButton();
-            radioButton.AutoSize = true;
-            radioButton.Text = TextRadioButton;
-            
-            radioButton.Location = new Point(x: 5, y: 20 + label1.Height + CoutnRaioButton * radioButton.Height);
+            RadioButton radioButton = new RadioButton
+            {
+                AutoSize = true,
+                Text = TextRadioButton,
+                TabIndex = CoutnRaioButton
+            };
             WindowContentControls.Add(radioButton);
-            butOk.Location = new Point(butOk.Location.X, butOk.Location.Y + radioButton.Height+6);
-            butCancel.Location = new Point(butCancel.Location.X, butCancel.Location.Y +   radioButton.Height+6);
-            this.Height += radioButton.Height+6;
+            choiceButtons.Add(radioButton);
             CoutnRaioButton++;
+            ArrangeChoiceControls();
+        }
+
+        /// <summary>Расставляет динамические варианты и кнопки по фактическим размерам текста, включая масштабирование Windows.</summary>
+        private void ArrangeChoiceControls()
+        {
+            if (label1 == null || butOk == null || butCancel == null) return;
+            Control content = butOk.Parent;
+            if (content == null) return;
+            int availableWidth = Math.Max(120, content.ClientSize.Width - 24);
+            label1.MaximumSize = new Size(availableWidth, 0);
+            int nextTop = label1.Bottom + 9;
+            foreach (RadioButton choice in choiceButtons)
+            {
+                choice.MaximumSize = new Size(availableWidth, 0);
+                choice.Location = new Point(12, nextTop);
+                nextTop = choice.Bottom + 5;
+            }
+            int buttonTop = choiceButtons.Count > 0
+                ? nextTop + 7
+                : Math.Max(44, label1.Bottom + 18);
+            butOk.Top = buttonTop;
+            butCancel.Top = buttonTop;
+            butOk.TabIndex = choiceButtons.Count;
+            butCancel.TabIndex = choiceButtons.Count + 1;
+            int contentHeight = Math.Max(butOk.Bottom, butCancel.Bottom) + 11;
+            int headerHeight = ReferenceEquals(content, this) ? 0 : WindowChromeHeight;
+            int height = contentHeight + headerHeight;
+            if (ClientSize.Height != height)
+                ClientSize = new Size(ClientSize.Width, height);
         }
         public string GetTextSelectedRadio()
         {

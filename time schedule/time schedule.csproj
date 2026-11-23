@@ -141,6 +141,7 @@
     <Compile Include="Controls\StyledTitleBar.cs">
       <SubType>UserControl</SubType>
     </Compile>
+    <Compile Include="Forms\ThemedMessageBox.cs" />
     <Compile Include="Forms\StyledWindowForm.cs">
       <SubType>Form</SubType>
     </Compile>

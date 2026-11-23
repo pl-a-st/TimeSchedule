@@ -27,7 +27,7 @@ namespace time_schedule
         private Font mainToolbarDateFont;
         /// <summary>Высота визуальных элементов нижней панели команд.</summary>
         private const int MainToolbarControlHeight = 34;
-        /// <summary>Пиксель, зарезервированный тематической отрисовкой справа от кнопки.</summary>
+        /// <summary>Краевой пиксель, учитываемый при отрисовке правой и нижней границ кнопки.</summary>
         private const int ProjectButtonPaintInset = 1;
         /// <summary>Смещение календарного блока, создающее воздух слева и сверху.</summary>
         private const int CalendarWorkspaceOffset = 12;
@@ -92,6 +92,7 @@ namespace time_schedule
                 button.FlatAppearance.BorderSize = 0;
             }
             button1.ThemeSquareCorners = true;
+            button1.Paint += PaintMainProjectHeaderEdge;
             btnSetings.ThemeSquareCorners = true;
             bTnToDay.ThemeAccent = true;
             menuStrip1.Font = mainThemeFont;
@@ -264,7 +265,10 @@ namespace time_schedule
             }
         }
 
-        /// <summary>Совмещает видимую правую границу кнопки проектов с границами кнопок исполнителей.</summary>
+        /// <summary>
+        /// Совмещает кнопку «Проекты» с верхней линией шапки календаря и правой
+        /// границей списка исполнителей, сохраняя двухпиксельный промежуток до первой строки.
+        /// </summary>
         private void AlignMainProjectRow()
         {
             if (plMain.Parent == null ||
@@ -273,8 +277,12 @@ namespace time_schedule
             if (button1.Left != plPersonButton.Left)
                 button1.Left = plPersonButton.Left;
             // Тематическая отрисовка ButtonForShedule оставляет один пиксель у правого края.
-            int projectWidth = Math.Max(1, GetPersonButtonWith()) + 1;
-            if (button1.Width != projectWidth) button1.Width = projectWidth;
+            int projectWidth = Math.Max(1, GetPersonButtonWith()) + ProjectButtonPaintInset;
+            int projectTop = Math.Max(0, plForDate.Top - 1);
+            int projectHeight = Math.Max(1, plPersonButton.Top - projectTop -
+                Constants.MIN_ROW_HIGHT + ProjectButtonPaintInset);
+            Rectangle projectBounds = new Rectangle(plPersonButton.Left, projectTop, projectWidth, projectHeight);
+            if (button1.Bounds != projectBounds) button1.Bounds = projectBounds;
             int top = btnSetings.Top + (btnSetings.Height - cBxSeetingsProjects.Height) / 2;
             Point comboLocation = new Point(btnSetings.Right + 3, top);
             if (cBxSeetingsProjects.Location != comboLocation)
@@ -561,6 +569,16 @@ namespace time_schedule
                     button.Width - 1, button.Height - 1);
         }
 
+        /// <summary>Завершает кнопку проектов одной линией календарной шапки.</summary>
+        private static void PaintMainProjectHeaderEdge(object sender, PaintEventArgs e)
+        {
+            Control header = sender as Control;
+            if (header == null || header.Width < 2 || header.Height < 2) return;
+            using (var pen = new Pen(ThemeVisuals.CalendarHeaderLine))
+                e.Graphics.DrawLine(pen, 0, header.Height - 1,
+                    header.Width - 1, header.Height - 1);
+        }
+
         /// <summary>Применяет утверждённую палитру к существующему контекстному меню задач Canvas.</summary>
         /// <param name="palette">Палитра активной темы.</param>
         private void ApplyCanvasPilotMenuTheme(ThemePalette palette)
@@ -626,6 +644,7 @@ namespace time_schedule
             plMain.VisibleChanged -= MainCalendarVisibilityChanged;
             plForDate.SizeChanged -= MainCalendarBoundsChanged;
             plPersonButton.SizeChanged -= MainCalendarBoundsChanged;
+            button1.Paint -= PaintMainProjectHeaderEdge;
             btnNewTask.VisibleChanged -= MainToolbarVisibilityChanged;
             Shown -= MainThemeShown;
             calendarDateFont.Dispose();

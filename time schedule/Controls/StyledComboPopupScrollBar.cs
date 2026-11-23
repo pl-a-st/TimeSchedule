@@ -177,7 +177,7 @@ namespace time_schedule
                 popup = null;
                 QueueForDisposal(next);
                 RestoreOwnerMenu();
-                MessageBox.Show("Не удалось открыть список. Повторите действие.",
+                ThemedMessageBox.Show("Не удалось открыть список. Повторите действие.",
                     "Выбор значения", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
         }

@@ -218,7 +218,7 @@ namespace time_schedule
             {
                 if (treeNode.Text == inpootText.GetTextBox().Text)
                 {
-                    MessageBox.Show("Такое название уже существует.");
+                    ThemedMessageBox.Show("Такое название уже существует.");
                     isNameCorrecrt = false;
                     return isNameCorrecrt;
                 }
@@ -257,16 +257,15 @@ namespace time_schedule
             projectTreeView.Focus();
             if (projectTreeView.SelectedNode.Level == 0)
             {
-                MessageBox.Show("Нельзя удалять корневой элемент!");
+                ThemedMessageBox.Show("Нельзя удалять корневой элемент!");
                 return;
             }
-            DialogResult result = MessageBox.Show(
+            DialogResult result = ThemedMessageBox.Show(this,
                 "Вы уверены что хотите удалить ветку?",
                 "Сообщение",
                 MessageBoxButtons.YesNo,
                 MessageBoxIcon.Warning,
-                MessageBoxDefaultButton.Button1,
-                MessageBoxOptions.DefaultDesktopOnly);
+                MessageBoxDefaultButton.Button1);
             this.Activate();
             if (result == DialogResult.Yes)
             {
@@ -312,7 +311,7 @@ namespace time_schedule
             projectTreeView.Focus();
             if (projectTreeView.SelectedNode.Level == 0)
             {
-                MessageBox.Show("Нельзя перемещать корневой элемент!");
+                ThemedMessageBox.Show("Нельзя перемещать корневой элемент!");
                 return;
             }
             if (projectTreeView.SelectedNode.Index == 0)
@@ -327,7 +326,7 @@ namespace time_schedule
             projectTreeView.Focus();
             if (projectTreeView.SelectedNode.Level == 0)
             {
-                MessageBox.Show("Нельзя перемещать корневой элемент!");
+                ThemedMessageBox.Show("Нельзя перемещать корневой элемент!");
                 return;
             }
             if (
@@ -444,12 +443,12 @@ namespace time_schedule
         {
             if (inpootText.GetTextBox().Text == "")
             {
-                MessageBox.Show("Введите название");
+                ThemedMessageBox.Show("Введите название");
                 return false;
             }
             if (listString.Contains(inpootText.GetTextBox().Text))
             {
-                MessageBox.Show("такое название уже существует");
+                ThemedMessageBox.Show("такое название уже существует");
                 return false;
             }
             return true;

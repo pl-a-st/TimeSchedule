@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
 
@@ -11,13 +12,15 @@ namespace time_schedule
         private readonly Label themeTitle;
         /// <summary>Счётчик полей, добавленных после открытия формы.</summary>
         private int dynamicFieldCount;
+        /// <summary>Исходные динамические поля, удаляемые вместе с оформляющими оболочками.</summary>
+        private readonly List<Control> dynamicFields = new List<Control>();
 
         /// <summary>Создаёт проверочную форму без доступа к календарю и рабочим данным.</summary>
         internal ThemePreviewForm()
         {
             Text = "TimeSchedule — TS-04 проверка оформления";
-            Size = new Size(790, 545);
-            MinimumSize = new Size(730, 510);
+            Size = new Size(790, 650);
+            MinimumSize = new Size(730, 600);
             StartPosition = FormStartPosition.CenterScreen;
             themeTitle = new Label { Left = 25, Top = 20, Width = 530, Height = 26 };
             Controls.Add(themeTitle);
@@ -83,6 +86,8 @@ namespace time_schedule
             Controls.Add(new NumericUpDown { Left = 265, Top = 219, Width = 140, Value = 5 });
             Controls.Add(new CheckBox { Left = 505, Top = 219, Width = 205,
                 Text = "Активный параметр", Checked = true });
+            Controls.Add(new TextBox { Left = 505, Top = 257, Width = 210,
+                Text = "Недоступное поле", Enabled = false });
 
             AddLabel("Список с прокруткой", 25, 276, 210);
             var list = new ListBox { Left = 25, Top = 299, Width = 210, Height = 130 };
@@ -103,6 +108,27 @@ namespace time_schedule
             };
             addField.Click += AddDynamicField;
             Controls.Add(addField);
+            var removeField = new StyledButton
+            {
+                Text = "Удалить поле",
+                Left = 505, Top = 339, Width = 160, Height = 34
+            };
+            removeField.Click += RemoveDynamicField;
+            Controls.Add(removeField);
+
+            var choices = new StyledGroupBox
+            {
+                Text = "Варианты выбора", Left = 25, Top = 455, Width = 450, Height = 86
+            };
+            choices.Controls.Add(new RadioButton
+            {
+                Text = "Первый", Left = 14, Top = 31, Width = 170, Checked = true
+            });
+            choices.Controls.Add(new RadioButton
+            {
+                Text = "Второй", Left = 190, Top = 31, Width = 170
+            });
+            Controls.Add(choices);
         }
 
         /// <summary>Создаёт подпись, использующую шрифт и оформление контейнера.</summary>
@@ -154,8 +180,25 @@ namespace time_schedule
                     break;
             }
             field.Left = 505;
-            field.Top = 343 + (dynamicFieldCount - 1) * 34;
+            field.Top = 382 + (dynamicFieldCount - 1) * 34;
             WindowContentControls.Add(field);
+            dynamicFields.Add(field);
+        }
+
+        /// <summary>Удаляет последний динамический контрол вместе с его визуальной оболочкой.</summary>
+        private void RemoveDynamicField(object sender, EventArgs e)
+        {
+            if (dynamicFields.Count == 0) return;
+            int last = dynamicFields.Count - 1;
+            Control source = dynamicFields[last];
+            dynamicFields.RemoveAt(last);
+            Control visual = ThemeControlStyler.GetVisualControl(source);
+            if (visual != null && !visual.IsDisposed)
+            {
+                if (visual.Parent != null) visual.Parent.Controls.Remove(visual);
+                visual.Dispose();
+            }
+            dynamicFieldCount--;
         }
 
         /// <summary>Обновляет подпись после переключения темы.</summary>

@@ -111,7 +111,7 @@ namespace time_schedule
             ArrangeTaskFilterGroups(margin, gap);
             ArrangeTaskSearch(margin, gap);
 
-            butOpenTaskInExcell.Text = "Открыть в Excell\nвсе задачи списка";
+            butOpenTaskInExcell.Text = "Открыть в Excel\nвсе задачи списка";
             butAddProjectToSelectTasks.Text = "Добавить проекты\nвсем задачам списка";
             btnChangeToSelectTasks.Text = "Изменить все\nзадачи списка";
             butDeleteTaskInlBx.Text = "Удалить все\nзадачи списка";
@@ -337,14 +337,14 @@ namespace time_schedule
         {
             if (lBxTasks.SelectedIndex == -1)
             {
-                MessageBox.Show("Не выбрана задача.");
+                ThemedMessageBox.Show("Не выбрана задача.");
                 return;
             }
             long number = Convert.ToInt64(lBxTasks.SelectedItem.ToString().Split('\t')[0]);
             long[] numbers = { number };
             Dictionary<long, string> expected;
             try { expected = TaskStore.CaptureDeletion(Program.ListTasksAllPersonToSave, numbers); }
-            catch (TaskConflictException ex) { MessageBox.Show(this, ex.Message); return; }
+            catch (TaskConflictException ex) { ThemedMessageBox.Show(this, ex.Message); return; }
             if (!ConfirmTaskDeletion(numbers, expected))
                 return;
 
@@ -352,7 +352,7 @@ namespace time_schedule
             if (Program.SaveProgramData(() => TaskStore.DeleteWithDirectDependents(
                 Program.ListTasksAllPersonToSave, numbers, expected), expected) != Result.Sucess)
             {
-                MessageBox.Show(this, Program.SaveFailureMessage);
+                ThemedMessageBox.Show(this, Program.SaveFailureMessage);
                 return;
             }
             Program.fmMain.ShowProgressbarAndMakeRefresh();
@@ -379,7 +379,7 @@ namespace time_schedule
                 message = "Количество непосредственных потомков, остающихся в проекте: " + dependents + "." +
                     "\n\nДа — удалить выбранные задачи и разорвать связи с этими потомками." +
                     "\nНет — отменить удаление.\nДаты потомков останутся прежними.";
-            return MessageBox.Show(this, message, "Удаление задач", MessageBoxButtons.YesNo,
+            return ThemedMessageBox.Show(this, message, "Удаление задач", MessageBoxButtons.YesNo,
                 MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2) == DialogResult.Yes;
         }
 
@@ -387,7 +387,7 @@ namespace time_schedule
         {
             if (lBxTasks.SelectedIndex == -1)
             {
-                MessageBox.Show("Не выбрана задача.");
+                ThemedMessageBox.Show("Не выбрана задача.");
                 return;
             }
             fmAddChangeTask fmAddTask = new fmAddChangeTask();
@@ -423,7 +423,7 @@ namespace time_schedule
             Form1 form1 = this.Form1Delegat.SetForm1();
             if (lBxTasks.SelectedIndex == -1)
             {
-                MessageBox.Show("Не выбрана задача.");
+                ThemedMessageBox.Show("Не выбрана задача.");
                 return;
             }
 
@@ -501,7 +501,7 @@ namespace time_schedule
             bool workerStarted = false;
             using (fmProgressBar progressForm = new fmProgressBar())
             {
-                progressForm.SetTextMessege("Идет формирование файла Excell");
+                progressForm.SetTextMessege("Идет формирование файла Excel");
                 Thread worker = new Thread(() =>
                 {
                     try
@@ -546,7 +546,7 @@ namespace time_schedule
                     worker.Join();
             }
             if (exportError != null)
-                MessageBox.Show(this, "Не удалось сформировать файл Excel.\n\n" + exportError.Message,
+                ThemedMessageBox.Show(this, "Не удалось сформировать файл Excel.\n\n" + exportError.Message,
                     "Ошибка экспорта", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
 
@@ -746,7 +746,7 @@ namespace time_schedule
             string[] selected = GetTargetItems();
             Dictionary<long, string> expected;
             try { expected = CaptureTargets(selected); }
-            catch (TaskConflictException ex) { MessageBox.Show(ex.Message); return; }
+            catch (TaskConflictException ex) { ThemedMessageBox.Show(ex.Message); return; }
             fmAddChangeTask fmChangeTask = new fmAddChangeTask(Program.delegatLoadRefreshForm);
             fmChangeTask.GhangeNamebtnCreateTask("Изменить для \n выбранных задач");
             fmChangeTask.SetCreateOrChange(CreateOrChange.ChangeToSelectTasks);
@@ -755,7 +755,7 @@ namespace time_schedule
             {
                 if (Program.SaveProgramData(ChangeTasks, expected) != Result.Sucess)
                 {
-                    MessageBox.Show(Program.SaveFailureMessage);
+                    ThemedMessageBox.Show(Program.SaveFailureMessage);
                     fmChangeTask.ShowDialog();
                     return;
                 }
@@ -806,7 +806,7 @@ namespace time_schedule
             {
                 butDeleteTaskInlBx.Text = "Удалить выделенные\nзадачи в списке";
                 btnChangeToSelectTasks.Text = "Изменить выделенные\nзадачи в списке";
-                butOpenTaskInExcell.Text = "Открыть выделенные\nзадачи в Excell";
+                butOpenTaskInExcell.Text = "Открыть выделенные\nзадачи в Excel";
                 butAddProjectToSelectTasks.Text = "Добавить проекты\nвыделенным задачам\nсписка";
                 btnChangeTask.Enabled = false;
                 btnDeleteTask.Enabled = false;
@@ -816,7 +816,7 @@ namespace time_schedule
             {
                 butDeleteTaskInlBx.Text = "Удалить все\nзадачи из списка";
                 btnChangeToSelectTasks.Text = "Изменить все\nзадачи в списке";
-                butOpenTaskInExcell.Text = "Открыть в Excell\nвсе задачи списка";
+                butOpenTaskInExcell.Text = "Открыть в Excel\nвсе задачи списка";
                 butAddProjectToSelectTasks.Text = "Добавить проекты\nвсем задачам списка";
                 btnChangeTask.Enabled = true;
                 btnDeleteTask.Enabled = true;
@@ -834,7 +834,7 @@ namespace time_schedule
 
             Dictionary<long, string> expected;
             try { expected = TaskStore.CaptureDeletion(Program.ListTasksAllPersonToSave, numbers); }
-            catch (TaskConflictException ex) { MessageBox.Show(this, ex.Message); return; }
+            catch (TaskConflictException ex) { ThemedMessageBox.Show(this, ex.Message); return; }
             if (!ConfirmTaskDeletion(numbers, expected))
                 return;
 
@@ -842,7 +842,7 @@ namespace time_schedule
             if (Program.SaveProgramData(() => TaskStore.DeleteWithDirectDependents(
                 Program.ListTasksAllPersonToSave, numbers, expected), expected) != Result.Sucess)
             {
-                MessageBox.Show(this, Program.SaveFailureMessage);
+                ThemedMessageBox.Show(this, Program.SaveFailureMessage);
                 return;
             }
             Form1 form1 = this.Form1Delegat.SetForm1();
@@ -856,7 +856,7 @@ namespace time_schedule
             string[] targetItems = GetTargetItems();
             Dictionary<long, string> expected;
             try { expected = CaptureTargets(targetItems); }
-            catch (TaskConflictException ex) { MessageBox.Show(ex.Message); return; }
+            catch (TaskConflictException ex) { ThemedMessageBox.Show(ex.Message); return; }
             fmProjectTree fmProjectTree = new fmProjectTree();
             fmProjectTree.StartPosition = FormStartPosition.CenterParent;
             TreeProjects patternTtreeProjects = TreeProjects.GetMainTree();
@@ -885,7 +885,7 @@ namespace time_schedule
                 }
             }, expected) != Result.Sucess)
             {
-                MessageBox.Show(Program.SaveFailureMessage);
+                ThemedMessageBox.Show(Program.SaveFailureMessage);
                 return;
             }
             LoadLBxTasks();

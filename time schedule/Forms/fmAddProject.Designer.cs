@@ -36,16 +36,16 @@
             // 
             // tBxNameProject
             // 
-            this.tBxNameProject.Location = new System.Drawing.Point(12, 30);
+            this.tBxNameProject.Location = new System.Drawing.Point(14, 30);
             this.tBxNameProject.Name = "tBxNameProject";
-            this.tBxNameProject.Size = new System.Drawing.Size(283, 20);
+            this.tBxNameProject.Size = new System.Drawing.Size(278, 20);
             this.tBxNameProject.TabIndex = 0;
             // 
             // btnChosePath
             // 
             this.btnChosePath.Location = new System.Drawing.Point(12, 56);
             this.btnChosePath.Name = "btnChosePath";
-            this.btnChosePath.Size = new System.Drawing.Size(130, 23);
+            this.btnChosePath.Size = new System.Drawing.Size(139, 23);
             this.btnChosePath.TabIndex = 1;
             this.btnChosePath.Text = "Выбрать проект";
             this.btnChosePath.UseVisualStyleBackColor = true;
@@ -58,13 +58,13 @@
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(220, 13);
             this.label1.TabIndex = 2;
-            this.label1.Text = "Назначте условное обозначение проекта:";
+            this.label1.Text = "Укажите условное обозначение проекта:";
             // 
             // Cancel
             // 
-            this.Cancel.Location = new System.Drawing.Point(148, 56);
+            this.Cancel.Location = new System.Drawing.Point(156, 56);
             this.Cancel.Name = "Cancel";
-            this.Cancel.Size = new System.Drawing.Size(147, 23);
+            this.Cancel.Size = new System.Drawing.Size(139, 23);
             this.Cancel.TabIndex = 3;
             this.Cancel.Text = "Отмена";
             this.Cancel.UseVisualStyleBackColor = true;
@@ -84,7 +84,7 @@
             this.ShowIcon = false;
             this.Name = "fmAddProject";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
-            this.Text = "Добавте проект";
+            this.Text = "Добавить проект";
             this.Load += new System.EventHandler(this.fmAddProject_Load);
             this.ResumeLayout(false);
             this.PerformLayout();

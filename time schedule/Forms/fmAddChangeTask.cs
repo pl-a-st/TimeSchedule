@@ -331,7 +331,7 @@ namespace time_schedule
             catch (TaskConflictException ex)
             {
                 btnCreateTask.Enabled = false;
-                MessageBox.Show(ex.Message);
+                ThemedMessageBox.Show(ex.Message);
             }
         }
         public void WorkDaysDatesCalculate()
@@ -446,7 +446,7 @@ namespace time_schedule
                 this.Close();
                 return;
             }
-            MessageBox.Show("Не удалось сохранить изменения. " + Program.SaveFailureMessage);
+            ThemedMessageBox.Show("Не удалось сохранить изменения. " + Program.SaveFailureMessage);
         }
 
         /// <summary>Создаёт задачу либо изменяет выбранную в рамках подтверждённого снимка.</summary>
@@ -494,7 +494,7 @@ namespace time_schedule
         {
             if (tBxTaskName.Text == "" && CreateOrChange != CreateOrChange.ChangeToSelectTasks)
             {
-                MessageBox.Show(
+                ThemedMessageBox.Show(
                     "Использвание пустых наименований задач недопустимо!",
                     "Предупреждение",
                     MessageBoxButtons.OK,
@@ -663,12 +663,12 @@ namespace time_schedule
                 task.SetTaskNumberAfter(NUBER_AFTER_FOR_COPY);
                 listTasks.AddTask(task);
                 Dals.binWriteObjectToFile(listTasks, folderName + "\\" + Constants.TASKS_BIN);
-                MessageBox.Show("Задача успешно скопирована.");
+                ThemedMessageBox.Show("Задача успешно скопирована.");
                 Program.fmMain.LoadRefreshForm(Statuses.ProgressBar.Use);
             }
             catch
             {
-                MessageBox.Show("Не удалось произвести запись в файл: " + folderName + "\\" + Constants.TASKS);
+                ThemedMessageBox.Show("Не удалось произвести запись в файл: " + folderName + "\\" + Constants.TASKS);
             }
         }
 

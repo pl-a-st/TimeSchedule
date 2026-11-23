@@ -88,7 +88,7 @@ namespace time_schedule {
 
         private void btnSetIntervalDays_Click(object sender, EventArgs e) {
             if (dTPFirstInTheInterval.Value.Date > dTPSecondInTheInterval.Value.Date)
-                MessageBox.Show("Дата окончания интервала должна быть больше даты начала");
+                ThemedMessageBox.Show("Дата окончания интервала должна быть больше даты начала");
             if (dTPFirstInTheInterval.Value.Date <= dTPSecondInTheInterval.Value.Date) {
                 DateTime CurentDateTime = dTPFirstInTheInterval.Value.Date;
                 DateTime secondInTheInterval = dTPSecondInTheInterval.Value.Date;
@@ -101,7 +101,7 @@ namespace time_schedule {
 
         private void RemoveDay_Click(object sender, EventArgs e) {
             if (LBxHolidays.SelectedIndex == -1) {
-                MessageBox.Show("Не выбрана дата.");
+                ThemedMessageBox.Show("Не выбрана дата.");
                 return;
             }
             int selectedIndex = LBxHolidays.SelectedIndex;

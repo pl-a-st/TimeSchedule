@@ -14,8 +14,25 @@ namespace time_schedule {
         no
     }
     public partial class fmAddPerson : StyledWindowForm {
+        /// <summary>Устанавливает Enter как подтверждение ввода имени исполнителя.</summary>
         public fmAddPerson() {
             InitializeComponent();
+            AcceptButton = btnAddPerson;
+        }
+        /// <summary>Согласует вертикальные центры поля и кнопки и убирает пустое пространство снизу.</summary>
+        protected override void OnShown(EventArgs e) {
+            base.OnShown(e);
+            Control visualInput = ThemeControlStyler.GetVisualControl(personName);
+            if (visualInput == null || !ReferenceEquals(visualInput.Parent, btnAddPerson.Parent)) return;
+            const int spacing = 6;
+            const int bottomMargin = 12;
+            label1.Left = visualInput.Left;
+            label1.Top = visualInput.Top - label1.Height - spacing;
+            btnAddPerson.Top = visualInput.Top + (visualInput.Height - btnAddPerson.Height) / 2;
+            int contentHeight = Math.Max(visualInput.Bottom, btnAddPerson.Bottom) + bottomMargin;
+            int chrome = ReferenceEquals(btnAddPerson.Parent, this) ? 0 : WindowChromeHeight;
+            if (ClientSize.Height != chrome + contentHeight)
+                ClientSize = new Size(ClientSize.Width, chrome + contentHeight);
         }
         public CreatePerson CreatePerson { get; private set; } = CreatePerson.no;
         public void SetCreatePerson(CreatePerson createPerson) {
@@ -27,7 +44,7 @@ namespace time_schedule {
         /// <summary>Добавляет исполнителя в актуальный согласованный список без потери чужих записей.</summary>
         private void btnAddPerson_Click(object sender, EventArgs e) {
             if (personName.Text == "") {
-                MessageBox.Show("Не указанно имя испонителя!");
+                ThemedMessageBox.Show("Не указано имя исполнителя.");
                 return;
             }
             try {
@@ -40,10 +57,10 @@ namespace time_schedule {
                 this.Close();
             }
             catch (System.IO.IOException ex) {
-                MessageBox.Show("Не удалось записать нового исполнителя: " + ex.Message);
+                ThemedMessageBox.Show("Не удалось записать нового исполнителя: " + ex.Message);
             }
             catch (UnauthorizedAccessException ex) {
-                MessageBox.Show("Нет доступа к файлу исполнителей: " + ex.Message);
+                ThemedMessageBox.Show("Нет доступа к файлу исполнителей: " + ex.Message);
             }
         }
 

@@ -108,7 +108,7 @@ namespace time_schedule {
             catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException ||
                 ex is System.Runtime.Serialization.SerializationException)
             {
-                MessageBox.Show("Не удалось прочитать список исполнителей: " + ex.Message);
+                ThemedMessageBox.Show("Не удалось прочитать список исполнителей: " + ex.Message);
                 this.Close();
                 return;
             }
@@ -120,7 +120,7 @@ namespace time_schedule {
         private void btnChangePerson_Click(object sender, EventArgs e) {
             fmInpootText fmInpootText = new fmInpootText();
             if (lBxPersons.SelectedIndex == -1) {
-                MessageBox.Show("Не выбран исполнитель.");
+                ThemedMessageBox.Show("Не выбран исполнитель.");
                 return;
             }
             fmInpootText.GetTextBox().Text = lBxPersons.Items[lBxPersons.SelectedIndex].ToString();
@@ -153,7 +153,7 @@ namespace time_schedule {
             catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException ||
                 ex is System.Runtime.Serialization.SerializationException)
             {
-                MessageBox.Show("Переименование не завершено: " + ex.Message);
+                ThemedMessageBox.Show("Переименование не завершено: " + ex.Message);
                 return;
             }
             LisBoxRefresh();
@@ -163,16 +163,15 @@ namespace time_schedule {
         /// <summary>Удаляет исполнителя после проверки версии списка.</summary>
         private void btnDelete_Click(object sender, EventArgs e) {
             if (lBxPersons.SelectedIndex == -1) {
-                MessageBox.Show("Не выбран исполнитель.");
+                ThemedMessageBox.Show("Не выбран исполнитель.");
                 return;
             }
-            DialogResult result = MessageBox.Show(
+            DialogResult result = ThemedMessageBox.Show(this,
                 "Вы уверены что хотите удалить исполнителя?",
                 "Сообщение",
                 MessageBoxButtons.YesNo,
                 MessageBoxIcon.Warning,
-                MessageBoxDefaultButton.Button1,
-                MessageBoxOptions.DefaultDesktopOnly);
+                MessageBoxDefaultButton.Button1);
             if (result == DialogResult.No) {
                 Program.fmMain.TopMost = true;
                 this.TopMost = true;
@@ -194,18 +193,18 @@ namespace time_schedule {
             }
             catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException)
             {
-                MessageBox.Show("Не удалось удалить исполнителя: " + ex.Message);
+                ThemedMessageBox.Show("Не удалось удалить исполнителя: " + ex.Message);
             }
         }
 
         private void button1_Click(object sender, EventArgs e) {
             if (lBxPersons.SelectedIndex == -1) {
-                MessageBox.Show("Не выбрана задача.");
+                ThemedMessageBox.Show("Не выбран исполнитель.");
                 return;
             }
             foreach (Person person in Program.listPersons.Persons) {
                 if (person.PersonFamaly == lBxPersons.SelectedItem.ToString().Split('\t')[0]) {
-                    MessageBox.Show(Convert.ToString(person.GetMaxCountSynchTask(Program.ListTasksAllPersonToSave)));
+                    ThemedMessageBox.Show(Convert.ToString(person.GetMaxCountSynchTask(Program.ListTasksAllPersonToSave)));
                     break;
                 }
             }
@@ -233,7 +232,7 @@ namespace time_schedule {
             }
             catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException)
             {
-                MessageBox.Show("Не удалось сохранить порядок исполнителей: " + ex.Message);
+                ThemedMessageBox.Show("Не удалось сохранить порядок исполнителей: " + ex.Message);
                 Program.listPersons = TaskStore.ReadPersons(Dals.TakeMainPathFile(Constants.PERSONS_BIN));
                 personRevision = TaskStore.Revision(Dals.TakeMainPathFile(Constants.PERSONS_BIN));
                 LisBoxRefresh();
@@ -241,7 +240,7 @@ namespace time_schedule {
         }
         private void RemovePersonPlace(PersonPlaceUpDowm personPlaceUpDowm) {
             if (lBxPersons.SelectedIndex == -1) {
-                MessageBox.Show("Не выбран исполнитель.");
+                ThemedMessageBox.Show("Не выбран исполнитель.");
                 return;
             }
             object selectedItem = lBxPersons.SelectedItem;

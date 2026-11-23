@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -1120,12 +1121,27 @@ namespace time_schedule
             {
                 button.Font = new Font(button.Font.FontFamily, button.Font.Size, FontStyle.Italic | FontStyle.Underline);
             }
-            if (
-                ((Task.Status == TaskStatus.New) && Task.DateStart.Date < DateTime.Now.Date) ||
-                (Task.DateFinish.Date < DateTime.Now.Date) && (Task.Status != TaskStatus.Closed)
-                )
+            if (ThemeVisuals.IsTaskOverdue(Task))
             {
-                button.Font = new Font(button.Font.FontFamily, button.Font.Size, button.Font.Style);
+                bool markStart = segmentIndex == 0 || IsWeekSplit(segmentIndex - 1);
+                bool markEnd = segmentIndex == plannedButtonCount - 1;
+                void UpdateMarkerLayout(object sender, EventArgs e)
+                {
+                    Button taskSegment = (Button)sender;
+                    Rectangle content = ThemeVisuals.TaskOverdueTextBounds(taskSegment.ClientRectangle,
+                        taskSegment.Font, markStart, markEnd);
+                    taskSegment.Padding = new Padding(content.Left, 0,
+                        taskSegment.ClientSize.Width - content.Right, 0);
+                }
+                button.SizeChanged += UpdateMarkerLayout;
+                button.FontChanged += UpdateMarkerLayout;
+                UpdateMarkerLayout(button, EventArgs.Empty);
+                button.Paint += (sender, e) =>
+                {
+                    Button taskSegment = (Button)sender;
+                    ThemeVisuals.DrawTaskOverdueMarkers(e.Graphics, taskSegment.ClientRectangle,
+                        taskSegment.Font, markStart, markEnd);
+                };
             }
             void Button_MouseDown(object sender, MouseEventArgs e)
             {
@@ -1183,7 +1199,7 @@ namespace time_schedule
                     }
                     catch (TaskConflictException ex)
                     {
-                        MessageBox.Show(ex.Message);
+                        ThemedMessageBox.Show(ex.Message);
                         isDown = false;
                         return;
                     }
@@ -1212,7 +1228,7 @@ namespace time_schedule
                         Program.fmMain.ShowProgressbarAndMakeRefresh();
                         return;
                     }
-                    MessageBox.Show(Program.SaveFailureMessage);
+                    ThemedMessageBox.Show(Program.SaveFailureMessage);
                     Program.fmMain.SetPlMain().Focus();
                     isDown = false;
 
@@ -1705,10 +1721,13 @@ namespace time_schedule
             return resultTree;
         }
 
+        /// <summary>Читает настройки отбора; при первом запуске создаёт выбор «Все» без предупреждения об отсутствии файла.</summary>
         private static TreeProjects GetSettingsTreeFromFile()
         {
             TreeProjects settingsTree = new TreeProjects();
-            settingsTree.SetTreeViewProjects(Dals.binReadUserPathFileToObject(settingsTree, Constants.PROJECTS_LIST).ListTreeNode);
+            string settingsFile = Dals.TakeUserPath(Constants.PROJECTS_LIST);
+            if (File.Exists(settingsFile))
+                settingsTree.SetTreeViewProjects(Dals.binReadUserPathFileToObject(settingsTree, Constants.PROJECTS_LIST).ListTreeNode);
             if (settingsTree.ListTreeNode == null || settingsTree.ListTreeNode.Count == 0)
             {
                 settingsTree.ListTreeNode = new List<TreeNode>();
@@ -1720,10 +1739,13 @@ namespace time_schedule
             return settingsTree;
         }
 
+        /// <summary>Загружает дерево проектов, если оно создано; в новом проекте возвращает пустое дерево.</summary>
         public static TreeProjects GetMainTree()
         {
             TreeProjects mainTree = new TreeProjects();
-            mainTree.SetTreeViewProjects(Dals.binReadMainPathFileToObject(mainTree, Constants.PROJECTS_LIST).ListTreeNode);
+            string projectTreeFile = Dals.TakeMainPathFile(Constants.PROJECTS_LIST);
+            if (File.Exists(projectTreeFile))
+                mainTree.SetTreeViewProjects(Dals.binReadMainPathFileToObject(mainTree, Constants.PROJECTS_LIST).ListTreeNode);
             if (mainTree.ListTreeNode != null)
             {
                 foreach (TreeNode treeNode in mainTree.ListTreeNode)

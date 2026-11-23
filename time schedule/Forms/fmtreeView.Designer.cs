@@ -75,7 +75,7 @@ namespace time_schedule {
             this.ShowIcon = false;
             this.Name = "fmtreeView";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
-            this.Text = "fmtreeView";
+            this.Text = "Выбор элементов";
             this.Load += new System.EventHandler(this.fmtreeView_Load);
             this.ResumeLayout(false);
 

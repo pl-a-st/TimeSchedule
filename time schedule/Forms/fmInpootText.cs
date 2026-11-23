@@ -12,9 +12,12 @@ namespace time_schedule
 {
     public partial class fmInpootText : StyledWindowForm
     {
+        /// <summary>Назначает штатные клавиши Enter и Esc кнопкам ввода и отмены.</summary>
         public fmInpootText()
         {
             InitializeComponent();
+            AcceptButton = btnYes;
+            CancelButton = btnCancel;
         }
         public ChoiceIsMade ChoiceIsMade
         { get; private set; } = ChoiceIsMade.no;
